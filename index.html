@@ -1,22 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#07100b">
-<title>Baran Game</title>
+<title>BARAN GAME</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--green:#19e68c;--bg:#070b09;--panel:#111a15;--line:#294333;--muted:#a8b9ad}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
-header{padding:25px 12px;text-align:center;background:linear-gradient(135deg,#10251a,#07100b);border-bottom:2px solid var(--green)}
+header{padding:24px 12px;text-align:center;background:linear-gradient(135deg,#10251a,#07100b);border-bottom:2px solid var(--green)}
 .logo{font-size:32px;font-weight:900;color:var(--green);letter-spacing:2px}
 header p{color:var(--muted);margin-bottom:0}
 main{max-width:1050px;margin:auto;padding:14px}
 nav{position:sticky;top:0;z-index:5;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:12px;background:#0d130f;border-bottom:1px solid var(--line)}
 button{border:0;border-radius:11px;padding:13px 16px;background:var(--green);color:#06140b;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
 nav button{background:#1a2920;color:white;padding:11px}
 nav button.active{background:var(--green);color:#06140b}
 input{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;color:white;border:1px solid #38523f;border-radius:10px;font-size:16px}
@@ -38,6 +38,8 @@ p{line-height:1.7}
 .auth-card{max-width:480px;margin:25px auto;padding:22px}
 .auth-logo{text-align:center;color:var(--green);font-size:28px;font-weight:bold}
 #message{padding:10px;color:var(--green);overflow-wrap:anywhere;line-height:1.7}
+.lock-screen{position:fixed;inset:0;z-index:20;background:#070b09;display:flex;align-items:center;justify-content:center;padding:18px}
+.lock-card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--green);border-radius:18px;padding:24px;text-align:center}
 footer{text-align:center;padding:25px;color:#839487}
 @media(max-width:500px){.grid{grid-template-columns:1fr}nav button{padding:10px;font-size:12px}.item img{height:175px}}
 </style>
@@ -45,110 +47,133 @@ footer{text-align:center;padding:25px;color:#839487}
 <body>
 
 <header>
-<div class="logo">BARAN GAME</div>
-<p>متجرك للألعاب والخدمات الرقمية 🎮</p>
+  <div class="logo">BARAN GAME</div>
+  <p>متجرك للألعاب والخدمات الرقمية 🎮</p>
 </header>
 
 <div id="authScreen">
-<div class="auth-card">
-<div class="auth-logo">BARAN GAME</div>
-<h2 style="text-align:center">تسجيل الدخول الآمن 🔐</h2>
-<p class="small" style="text-align:center">سجّل دخولك للوصول إلى المتجر والمحفظة.</p>
-<input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
-<input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password">
-<button id="loginButton" class="full" onclick="signIn()">تسجيل الدخول</button>
-<button id="signupButton" class="full secondary" onclick="signUp()">إنشاء حساب جديد</button>
-<div id="message">أهلاً بك في Baran Game</div>
+  <div class="auth-card">
+    <div class="auth-logo">BARAN GAME</div>
+    <h2 style="text-align:center">تسجيل الدخول 🔐</h2>
+    <p class="small" style="text-align:center">سجّل دخولك للوصول إلى المتجر والمحفظة.</p>
+    <input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
+    <input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password">
+    <button id="loginButton" class="full" onclick="signIn()">تسجيل الدخول</button>
+    <button id="signupButton" class="full secondary" onclick="signUp()">إنشاء حساب جديد</button>
+    <div id="message">أهلاً بك في Baran Game</div>
+  </div>
 </div>
+
+<div id="lockScreen" class="lock-screen hidden">
+  <div class="lock-card">
+    <div class="logo">BARAN GAME</div>
+    <h2 id="lockTitle">قفل المتجر 🔐</h2>
+    <p id="lockDescription">أدخل كلمة مرور القفل للمتابعة.</p>
+    <input id="lockPassword" type="password" placeholder="كلمة مرور القفل" autocomplete="off">
+    <input id="lockPassword2" class="hidden" type="password" placeholder="تأكيد كلمة المرور">
+    <button id="lockButton" class="full" onclick="submitLock()">فتح المتجر</button>
+    <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
+    <div id="lockMessage" class="small"></div>
+  </div>
 </div>
 
 <div id="appShell" class="hidden">
-<nav>
-<button class="active" onclick="showSection('home',this)">الرئيسية</button>
-<button onclick="showSection('games',this)">الألعاب</button>
-<button onclick="showSection('services',this)">الخدمات</button>
-<button onclick="showSection('wallet',this)">المحفظة</button>
-<button onclick="showSection('account',this)">حسابي</button>
-</nav>
+  <nav>
+    <button class="active" onclick="showSection('home',this)">الرئيسية</button>
+    <button onclick="showSection('games',this)">الألعاب</button>
+    <button onclick="showSection('services',this)">الخدمات</button>
+    <button onclick="showSection('wallet',this)">المحفظة</button>
+    <button onclick="showSection('account',this)">حسابي</button>
+  </nav>
 
-<main>
-<section id="home">
-<div class="hero">
-<h2>عالمك الرقمي يبدأ من هنا</h2>
-<p>شحن ألعاب واشتراكات وخدمات رقمية بمكان واحد.</p>
-</div>
-<h2>أقسام المتجر</h2>
-<div class="grid">
-<div class="item">
-<img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700" alt="ألعاب إلكترونية">
-<div class="item-content"><strong>PUBG MOBILE</strong>شحن شدات UC</div>
-</div>
-<div class="item">
-<img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=700" alt="ألعاب">
-<div class="item-content"><strong>FREE FIRE</strong>شحن جواهر</div>
-</div>
-<div class="item">
-<img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=700" alt="ذكاء اصطناعي">
-<div class="item-content"><strong>AI SERVICES</strong>خدمات الذكاء الاصطناعي</div>
-</div>
-<div class="item">
-<img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700" alt="بطاقات رقمية">
-<div class="item-content"><strong>GIFT CARDS</strong>بطاقات رقمية</div>
-</div>
-</div>
-</section>
+  <main>
+    <section id="home">
+      <div class="hero">
+        <h2>عالمك الرقمي يبدأ من هنا</h2>
+        <p>شحن ألعاب واشتراكات وخدمات رقمية بمكان واحد.</p>
+      </div>
+      <h2>أقسام المتجر</h2>
+      <div class="grid">
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700" alt="ألعاب إلكترونية">
+          <div class="item-content"><strong>PUBG MOBILE</strong>شحن شدات UC</div>
+        </div>
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=700" alt="ألعاب">
+          <div class="item-content"><strong>FREE FIRE</strong>شحن جواهر</div>
+        </div>
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=700" alt="ذكاء اصطناعي">
+          <div class="item-content"><strong>AI SERVICES</strong>خدمات الذكاء الاصطناعي</div>
+        </div>
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700" alt="بطاقات رقمية">
+          <div class="item-content"><strong>GIFT CARDS</strong>بطاقات رقمية</div>
+        </div>
+      </div>
+    </section>
 
-<section id="games" class="hidden">
-<h2>قسم الألعاب 🎮</h2>
-<div class="grid">
-<div class="item">
-<img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700" alt="PUBG">
-<div class="item-content"><strong>PUBG MOBILE</strong><p>شحن شدات UC</p><button onclick="orderAlert('PUBG Mobile')">اطلب الآن</button></div>
-</div>
-<div class="item">
-<img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=700" alt="Free Fire">
-<div class="item-content"><strong>FREE FIRE</strong><p>شحن جواهر</p><button onclick="orderAlert('Free Fire')">اطلب الآن</button></div>
-</div>
-</div>
-<p class="small">الشحن الفعلي يحتاج ربط مورد معتمد.</p>
-</section>
+    <section id="games" class="hidden">
+      <h2>قسم الألعاب 🎮</h2>
+      <div class="grid">
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700" alt="PUBG">
+          <div class="item-content">
+            <strong>PUBG MOBILE</strong>
+            <p>شحن شدات UC</p>
+            <button onclick="orderAlert('PUBG Mobile')">اطلب الآن</button>
+          </div>
+        </div>
+        <div class="item">
+          <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=700" alt="Free Fire">
+          <div class="item-content">
+            <strong>FREE FIRE</strong>
+            <p>شحن جواهر</p>
+            <button onclick="orderAlert('Free Fire')">اطلب الآن</button>
+          </div>
+        </div>
+      </div>
+      <p class="small">الشحن الفعلي يحتاج ربط مورد معتمد.</p>
+    </section>
 
-<section id="services" class="hidden">
-<h2>الخدمات الرقمية</h2>
-<div class="grid">
-<div class="item"><div class="item-content"><strong>ChatGPT Plus</strong>اشتراكات الذكاء الاصطناعي</div></div>
-<div class="item"><div class="item-content"><strong>VPN</strong>اشتراكات VPN</div></div>
-<div class="item"><div class="item-content"><strong>Google Play</strong>بطاقات رقمية</div></div>
-<div class="item"><div class="item-content"><strong>Apps</strong>تطبيقات مدفوعة</div></div>
-</div>
-<p class="small">الأسعار والطلبات ستضاف عند تجهيز الموردين.</p>
-</section>
+    <section id="services" class="hidden">
+      <h2>الخدمات الرقمية</h2>
+      <div class="grid">
+        <div class="item"><div class="item-content"><strong>ChatGPT Plus</strong>اشتراكات الذكاء الاصطناعي</div></div>
+        <div class="item"><div class="item-content"><strong>VPN</strong>اشتراكات VPN</div></div>
+        <div class="item"><div class="item-content"><strong>Google Play</strong>بطاقات رقمية</div></div>
+        <div class="item"><div class="item-content"><strong>Apps</strong>تطبيقات مدفوعة</div></div>
+      </div>
+      <p class="small">الأسعار والطلبات ستضاف عند تجهيز الموردين.</p>
+    </section>
 
-<section id="wallet" class="hidden">
-<h2>محفظتي 💳</h2>
-<p>رصيد الدولار</p>
-<div class="balance" id="usd">0.00 $</div>
-<p>رصيد الليرة السورية</p>
-<div class="balance" id="syp">0 ل.س</div>
-<button class="full" onclick="loadWallet()">تحديث الرصيد</button>
-<p class="small">لا يمكن إضافة رصيد إلا بعد التحقق من التحويل وتفعيل الدفع.</p>
-</section>
+    <section id="wallet" class="hidden">
+      <h2>محفظتي 💳</h2>
+      <p>رصيد الدولار</p>
+      <div class="balance" id="usd">0.00 $</div>
+      <p>رصيد الليرة السورية</p>
+      <div class="balance" id="syp">0 ل.س</div>
+      <button class="full" onclick="loadWallet()">تحديث الرصيد</button>
+      <p class="small">لا يمكن إضافة رصيد إلا بعد التحقق من التحويل وتفعيل الدفع.</p>
+    </section>
 
-<section id="account" class="hidden">
-<h2>حسابي</h2>
-<p id="accountInfo"></p>
-<button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
-</section>
+    <section id="account" class="hidden">
+      <h2>حسابي</h2>
+      <p id="accountInfo"></p>
+      <button class="full secondary" onclick="changeLock()">تغيير كلمة مرور القفل</button>
+      <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
+    </section>
 
-<section>
-<h2>🎁 المكافآت ودعوة الأصدقاء</h2>
-<p>قريباً: نظام نقاط ومكافآت ودعوات وجوائز شهرية.</p>
-</section>
-<section>
-<h2>الدعم الفني</h2>
-<p>تواصل مع إدارة Baran Game للمساعدة والاستفسارات.</p>
-</section>
-</main>
+    <section>
+      <h2>🎁 المكافآت ودعوة الأصدقاء</h2>
+      <p>قريباً: نظام نقاط ومكافآت ودعوات وجوائز شهرية.</p>
+    </section>
+
+    <section>
+      <h2>الدعم الفني</h2>
+      <p>تواصل مع إدارة Baran Game للمساعدة والاستفسارات.</p>
+    </section>
+  </main>
 </div>
 
 <footer>© 2026 Baran Game</footer>
@@ -159,37 +184,32 @@ const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
 
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
   auth:{
-    persistSession:false,
-    autoRefreshToken:false,
-    detectSessionInUrl:false
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:true
   }
 });
 
 let currentUser=null;
-let locking=false;
+let lockMode="unlock";
+let idleTimer=null;
 
-const message=document.getElementById("message");
+const LOCK_KEY="baran_lock_hash";
+const SALT_KEY="baran_lock_salt";
+const ACTIVITY_KEY="baran_last_activity";
 
 function say(text){
-  if(message) message.textContent=text;
+  document.getElementById("message").textContent=text;
 }
 
 function showLogin(text){
   currentUser=null;
   document.getElementById("authScreen").classList.remove("hidden");
   document.getElementById("appShell").classList.add("hidden");
+  document.getElementById("lockScreen").classList.add("hidden");
   document.getElementById("usd").textContent="0.00 $";
   document.getElementById("syp").textContent="0 ل.س";
   if(text) say(text);
-}
-
-function showApp(user){
-  currentUser=user;
-  document.getElementById("authScreen").classList.add("hidden");
-  document.getElementById("appShell").classList.remove("hidden");
-  document.getElementById("accountInfo").textContent=user.email||"";
-  showSection("home",document.querySelector("nav button"));
-  loadWallet();
 }
 
 function showSection(id,button){
@@ -199,6 +219,18 @@ function showSection(id,button){
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
   window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function showApp(user){
+  currentUser=user;
+  document.getElementById("authScreen").classList.add("hidden");
+  document.getElementById("lockScreen").classList.add("hidden");
+  document.getElementById("appShell").classList.remove("hidden");
+  document.getElementById("accountInfo").textContent=user.email||"";
+  showSection("home",document.querySelector("nav button"));
+  recordActivity();
+  startIdleCheck();
+  loadWallet();
 }
 
 async function signUp(){
@@ -224,8 +256,8 @@ async function signUp(){
     if(error) throw error;
 
     if(data.session&&data.user){
-      showApp(data.user);
-      say("تم إنشاء الحساب بنجاح.");
+      currentUser=data.user;
+      await prepareLock();
     }else{
       say("تم إنشاء الحساب. افتح بريدك واضغط رابط تأكيد الحساب، ثم سجّل الدخول.");
     }
@@ -251,9 +283,8 @@ async function signIn(){
   try{
     const {data,error}=await sb.auth.signInWithPassword({email,password});
     if(error) throw error;
-
-    showApp(data.user);
-    say("تم تسجيل الدخول بنجاح.");
+    currentUser=data.user;
+    await prepareLock();
   }catch(error){
     say("تعذر تسجيل الدخول: "+error.message);
   }finally{
@@ -261,24 +292,158 @@ async function signIn(){
   }
 }
 
-async function forceLock(){
-  if(!currentUser||locking) return;
+async function hashPassword(password,salt){
+  const encoder=new TextEncoder();
+  const key=await crypto.subtle.importKey(
+    "raw",encoder.encode(password),"PBKDF2",false,["deriveBits"]
+  );
+  const bits=await crypto.subtle.deriveBits({
+    name:"PBKDF2",
+    salt:encoder.encode(salt),
+    iterations:150000,
+    hash:"SHA-256"
+  },key,256);
 
-  locking=true;
-  showLogin("تم قفل المتجر. سجّل الدخول للمتابعة.");
+  return Array.from(new Uint8Array(bits))
+    .map(b=>b.toString(16).padStart(2,"0")).join("");
+}
 
-  try{
+function showLock(mode){
+  lockMode=mode;
+  document.getElementById("appShell").classList.add("hidden");
+  document.getElementById("authScreen").classList.add("hidden");
+  document.getElementById("lockScreen").classList.remove("hidden");
+
+  document.getElementById("lockPassword").value="";
+  document.getElementById("lockPassword2").value="";
+  document.getElementById("lockMessage").textContent="";
+
+  const setup=mode==="setup";
+
+  document.getElementById("lockTitle").textContent=
+    setup?"إنشاء كلمة مرور القفل 🔐":"قفل المتجر 🔐";
+
+  document.getElementById("lockDescription").textContent=
+    setup?"اختر كلمة مرور خاصة لفتح المتجر.":"أدخل كلمة مرور القفل للمتابعة.";
+
+  document.getElementById("lockPassword2").classList.toggle("hidden",!setup);
+  document.getElementById("lockPassword").placeholder=
+    setup?"كلمة مرور جديدة":"كلمة مرور القفل";
+
+  document.getElementById("lockButton").textContent=
+    setup?"حفظ كلمة المرور":"فتح المتجر";
+}
+
+async function prepareLock(){
+  const last=Number(localStorage.getItem(ACTIVITY_KEY)||0);
+
+  if(last && Date.now()-last>7*24*60*60*1000){
     await sb.auth.signOut({scope:"local"});
-  }catch(error){
-    console.log("Local sign out:",error.message);
-  }finally{
-    locking=false;
+    localStorage.removeItem(ACTIVITY_KEY);
+    showLogin("انتهت مدة الجلسة بعد 7 أيام من عدم الاستخدام. سجّل الدخول مجدداً.");
+    return;
+  }
+
+  if(!localStorage.getItem(LOCK_KEY)){
+    showLock("setup");
+  }else{
+    showLock("unlock");
   }
 }
 
+async function submitLock(){
+  if(!currentUser) return;
+
+  const pass=document.getElementById("lockPassword").value;
+  const note=document.getElementById("lockMessage");
+
+  if(pass.length<6){
+    note.textContent="كلمة المرور يجب أن تكون 6 أحرف على الأقل.";
+    return;
+  }
+
+  try{
+    if(lockMode==="setup"){
+      const confirm=document.getElementById("lockPassword2").value;
+
+      if(pass!==confirm){
+        note.textContent="كلمتا المرور غير متطابقتين.";
+        return;
+      }
+
+      const salt=crypto.randomUUID();
+      const hash=await hashPassword(pass,salt);
+
+      localStorage.setItem(SALT_KEY,salt);
+      localStorage.setItem(LOCK_KEY,hash);
+      recordActivity();
+      showApp(currentUser);
+      return;
+    }
+
+    const salt=localStorage.getItem(SALT_KEY);
+    const saved=localStorage.getItem(LOCK_KEY);
+    const entered=await hashPassword(pass,salt||"");
+
+    if(entered!==saved){
+      note.textContent="كلمة المرور غير صحيحة.";
+      return;
+    }
+
+    recordActivity();
+    showApp(currentUser);
+  }catch(error){
+    note.textContent="تعذر التحقق من كلمة المرور. جرّب متصفحاً حديثاً.";
+  }
+}
+
+function changeLock(){
+  if(!currentUser) return;
+  localStorage.removeItem(LOCK_KEY);
+  localStorage.removeItem(SALT_KEY);
+  showLock("setup");
+}
+
+function recordActivity(){
+  localStorage.setItem(ACTIVITY_KEY,String(Date.now()));
+}
+
+function startIdleCheck(){
+  if(idleTimer) clearInterval(idleTimer);
+
+  idleTimer=setInterval(async()=>{
+    const last=Number(localStorage.getItem(ACTIVITY_KEY)||0);
+
+    if(currentUser && last && Date.now()-last>7*24*60*60*1000){
+      clearInterval(idleTimer);
+      await sb.auth.signOut({scope:"local"});
+      localStorage.removeItem(ACTIVITY_KEY);
+      showLogin("انتهت الجلسة بعد 7 أيام من عدم الاستخدام. سجّل الدخول مجدداً.");
+    }
+  },60000);
+}
+
+document.addEventListener("click",()=>{
+  if(currentUser && !document.hidden &&
+     !document.getElementById("appShell").classList.contains("hidden")){
+    recordActivity();
+  }
+});
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden && currentUser &&
+     !document.getElementById("appShell").classList.contains("hidden")){
+    showLock("unlock");
+  }
+});
+
 async function signOut(){
-  await forceLock();
-  say("تم تسجيل الخروج.");
+  if(idleTimer) clearInterval(idleTimer);
+
+  await sb.auth.signOut({scope:"local"});
+  currentUser=null;
+  localStorage.removeItem(ACTIVITY_KEY);
+  showLogin("تم تسجيل الخروج بنجاح.");
 }
 
 async function loadWallet(){
@@ -286,8 +451,9 @@ async function loadWallet(){
 
   try{
     const {data:{user},error:userError}=await sb.auth.getUser();
+
     if(userError||!user){
-      await forceLock();
+      showLogin("انتهت الجلسة. سجّل الدخول مجدداً.");
       return;
     }
 
@@ -321,27 +487,31 @@ function orderAlert(game){
   alert("طلبات "+game+" ستتوفر بعد تفعيل نظام الشحن.");
 }
 
-/* لا نستعيد جلسة قديمة عند فتح الصفحة */
-showLogin("سجّل الدخول للبدء باستخدام المتجر.");
+async function restoreSession(){
+  try{
+    const {data,error}=await sb.auth.getSession();
 
-/* قفل الواجهة عند مغادرة الصفحة أو انتقالها للخلفية */
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){
-    forceLock();
+    if(error) throw error;
+
+    if(data.session){
+      currentUser=data.session.user;
+      await prepareLock();
+    }else{
+      showLogin("سجّل الدخول للبدء باستخدام المتجر.");
+    }
+  }catch(error){
+    showLogin("تعذر استعادة الجلسة. سجّل الدخول مجدداً.");
   }
-});
+}
 
-window.addEventListener("pagehide",()=>{
-  forceLock();
-});
-
-/* لا يتم فتح المتجر تلقائياً من جلسة قديمة */
 sb.auth.onAuthStateChange((event,session)=>{
   if(event==="SIGNED_OUT"){
     currentUser=null;
     showLogin("تم تسجيل الخروج. سجّل الدخول للمتابعة.");
   }
 });
+
+restoreSession();
 </script>
 </body>
 </html>
