@@ -4,41 +4,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07100b">
 <title>Baran Game</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+:root{--green:#19e68c;--bg:#070b09;--panel:#111a15;--line:#294333;--muted:#a8b9ad}
 *{box-sizing:border-box}
-body{margin:0;background:#070b09;color:#fff;font-family:Arial,sans-serif}
-:root{--green:#19e68c;--panel:#111a15;--muted:#a8b9ad}
-header{text-align:center;padding:25px 12px;background:linear-gradient(135deg,#101b14,#07110b);border-bottom:2px solid var(--green)}
+body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
+header{padding:25px 12px;text-align:center;background:linear-gradient(135deg,#10251a,#07100b);border-bottom:2px solid var(--green)}
 .logo{font-size:32px;font-weight:900;color:var(--green);letter-spacing:2px}
 header p{color:var(--muted);margin-bottom:0}
-button{border:0;border-radius:11px;padding:13px 16px;background:var(--green);color:#06140b;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.5}
-input{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;color:white;border:1px solid #38523f;border-radius:10px;font-size:16px}
 main{max-width:1050px;margin:auto;padding:14px}
-section,.auth-card{background:var(--panel);border:1px solid #263b2d;border-radius:17px;padding:18px;margin:14px 0}
-h2{color:var(--green);margin-top:0}
-p{line-height:1.7}
-nav{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;padding:12px;background:#0d130f;position:sticky;top:0;z-index:5}
+nav{position:sticky;top:0;z-index:5;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:12px;background:#0d130f;border-bottom:1px solid var(--line)}
+button{border:0;border-radius:11px;padding:13px 16px;background:var(--green);color:#06140b;font-weight:bold;cursor:pointer}
 nav button{background:#1a2920;color:white;padding:11px}
 nav button.active{background:var(--green);color:#06140b}
+input{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;color:white;border:1px solid #38523f;border-radius:10px;font-size:16px}
+section,.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0}
+h2{color:var(--green);margin-top:0}
+p{line-height:1.7}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
 .item{background:#17231b;border:1px solid #2c4533;border-radius:14px;overflow:hidden;text-align:center}
-.item img{width:100%;height:145px;object-fit:cover;display:block}
+.item img{width:100%;height:155px;object-fit:cover;display:block}
 .item-content{padding:14px}
 .item strong{display:block;color:var(--green);font-size:17px;margin-bottom:7px}
 .full{width:100%;margin-top:8px}
 .secondary{background:#29362d;color:white}
-.small{font-size:13px;color:var(--muted)}
 .hidden{display:none!important}
+.small{font-size:13px;color:var(--muted)}
 .balance{font-size:25px;color:var(--green);font-weight:bold}
 .hero{padding:25px;background:linear-gradient(120deg,#123c28,#101a14 70%);border:1px solid #1a8c58;border-radius:17px;margin-bottom:18px}
 .hero h2{font-size:25px}
-#message{padding:10px;color:var(--green);overflow-wrap:anywhere}
-footer{text-align:center;padding:25px;color:#839487}
 .auth-card{max-width:480px;margin:25px auto;padding:22px}
 .auth-logo{text-align:center;color:var(--green);font-size:28px;font-weight:bold}
+#message{padding:10px;color:var(--green);overflow-wrap:anywhere;line-height:1.7}
+footer{text-align:center;padding:25px;color:#839487}
 @media(max-width:500px){.grid{grid-template-columns:1fr}nav button{padding:10px;font-size:12px}.item img{height:175px}}
 </style>
 </head>
@@ -56,8 +56,8 @@ footer{text-align:center;padding:25px;color:#839487}
 <p class="small" style="text-align:center">سجّل دخولك للوصول إلى المتجر والمحفظة.</p>
 <input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
 <input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password">
-<button class="full" onclick="signIn()">تسجيل الدخول</button>
-<button class="full secondary" onclick="signUp()">إنشاء حساب جديد</button>
+<button id="loginButton" class="full" onclick="signIn()">تسجيل الدخول</button>
+<button id="signupButton" class="full secondary" onclick="signUp()">إنشاء حساب جديد</button>
 <div id="message">أهلاً بك في Baran Game</div>
 </div>
 </div>
@@ -101,8 +101,14 @@ footer{text-align:center;padding:25px;color:#839487}
 <section id="games" class="hidden">
 <h2>قسم الألعاب 🎮</h2>
 <div class="grid">
-<div class="item"><img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700" alt="PUBG"><div class="item-content"><strong>PUBG MOBILE</strong><p>شحن شدات UC</p><button onclick="orderAlert('PUBG Mobile')">اطلب الآن</button></div></div>
-<div class="item"><img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=700" alt="Free Fire"><div class="item-content"><strong>FREE FIRE</strong><p>شحن جواهر</p><button onclick="orderAlert('Free Fire')">اطلب الآن</button></div></div>
+<div class="item">
+<img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700" alt="PUBG">
+<div class="item-content"><strong>PUBG MOBILE</strong><p>شحن شدات UC</p><button onclick="orderAlert('PUBG Mobile')">اطلب الآن</button></div>
+</div>
+<div class="item">
+<img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=700" alt="Free Fire">
+<div class="item-content"><strong>FREE FIRE</strong><p>شحن جواهر</p><button onclick="orderAlert('Free Fire')">اطلب الآن</button></div>
+</div>
 </div>
 <p class="small">الشحن الفعلي يحتاج ربط مورد معتمد.</p>
 </section>
@@ -130,7 +136,7 @@ footer{text-align:center;padding:25px;color:#839487}
 
 <section id="account" class="hidden">
 <h2>حسابي</h2>
-<div id="accountInfo"></div>
+<p id="accountInfo"></p>
 <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
 </section>
 
@@ -154,10 +160,13 @@ const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
   auth:{
     persistSession:false,
-    autoRefreshToken:true,
-    detectSessionInUrl:true
+    autoRefreshToken:false,
+    detectSessionInUrl:false
   }
 });
+
+let currentUser=null;
+let locking=false;
 
 const message=document.getElementById("message");
 
@@ -165,7 +174,17 @@ function say(text){
   if(message) message.textContent=text;
 }
 
+function showLogin(text){
+  currentUser=null;
+  document.getElementById("authScreen").classList.remove("hidden");
+  document.getElementById("appShell").classList.add("hidden");
+  document.getElementById("usd").textContent="0.00 $";
+  document.getElementById("syp").textContent="0 ل.س";
+  if(text) say(text);
+}
+
 function showApp(user){
+  currentUser=user;
   document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("appShell").classList.remove("hidden");
   document.getElementById("accountInfo").textContent=user.email||"";
@@ -173,14 +192,8 @@ function showApp(user){
   loadWallet();
 }
 
-function showLogin(){
-  document.getElementById("authScreen").classList.remove("hidden");
-  document.getElementById("appShell").classList.add("hidden");
-}
-
 function showSection(id,button){
-  const userApp=document.getElementById("appShell");
-  if(userApp.classList.contains("hidden")) return;
+  if(!currentUser) return;
   document.querySelectorAll("main section[id]").forEach(s=>s.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
@@ -191,65 +204,144 @@ function showSection(id,button){
 async function signUp(){
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
-  if(!email||password.length<6){say("أدخل البريد وكلمة مرور من 6 أحرف على الأقل.");return;}
+
+  if(!email||password.length<6){
+    say("أدخل البريد وكلمة مرور من 6 أحرف على الأقل.");
+    return;
+  }
+
   say("جاري إنشاء الحساب...");
-  const redirect=window.location.origin+window.location.pathname;
-  const {data,error}=await sb.auth.signUp({
-    email,password,
-    options:{emailRedirectTo:redirect}
-  });
-  if(error){say("خطأ: "+error.message);return;}
-  if(data.session&&data.user){showApp(data.user);say("تم إنشاء الحساب بنجاح.");}
-  else{say("تم إنشاء الحساب. افتح بريدك واضغط رابط تأكيد الحساب، ثم سجّل الدخول.");}
+  document.getElementById("signupButton").disabled=true;
+
+  try{
+    const redirect=window.location.origin+window.location.pathname;
+    const {data,error}=await sb.auth.signUp({
+      email,
+      password,
+      options:{emailRedirectTo:redirect}
+    });
+
+    if(error) throw error;
+
+    if(data.session&&data.user){
+      showApp(data.user);
+      say("تم إنشاء الحساب بنجاح.");
+    }else{
+      say("تم إنشاء الحساب. افتح بريدك واضغط رابط تأكيد الحساب، ثم سجّل الدخول.");
+    }
+  }catch(error){
+    say("خطأ: "+error.message);
+  }finally{
+    document.getElementById("signupButton").disabled=false;
+  }
 }
 
 async function signIn(){
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
-  if(!email||!password){say("أدخل البريد الإلكتروني وكلمة المرور.");return;}
+
+  if(!email||!password){
+    say("أدخل البريد الإلكتروني وكلمة المرور.");
+    return;
+  }
+
   say("جاري تسجيل الدخول...");
-  const {data,error}=await sb.auth.signInWithPassword({email,password});
-  if(error){say("تعذر تسجيل الدخول: "+error.message);return;}
-  showApp(data.user);
-  say("تم تسجيل الدخول بنجاح.");
+  document.getElementById("loginButton").disabled=true;
+
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    if(error) throw error;
+
+    showApp(data.user);
+    say("تم تسجيل الدخول بنجاح.");
+  }catch(error){
+    say("تعذر تسجيل الدخول: "+error.message);
+  }finally{
+    document.getElementById("loginButton").disabled=false;
+  }
+}
+
+async function forceLock(){
+  if(!currentUser||locking) return;
+
+  locking=true;
+  showLogin("تم قفل المتجر. سجّل الدخول للمتابعة.");
+
+  try{
+    await sb.auth.signOut({scope:"local"});
+  }catch(error){
+    console.log("Local sign out:",error.message);
+  }finally{
+    locking=false;
+  }
 }
 
 async function signOut(){
-  const {error}=await sb.auth.signOut({scope:"local"});
-  if(error){say("تعذر تسجيل الخروج: "+error.message);return;}
-  document.getElementById("usd").textContent="0.00 $";
-  document.getElementById("syp").textContent="0 ل.س";
-  showLogin();
+  await forceLock();
   say("تم تسجيل الخروج.");
 }
 
 async function loadWallet(){
-  const {data:{user},error:userError}=await sb.auth.getUser();
-  if(userError||!user){say("سجّل الدخول أولاً.");showLogin();return;}
-  const {data,error}=await sb.from("wallets")
-    .select("balance_usd,balance_syp")
-    .eq("user_id",user.id).maybeSingle();
-  if(error){say("تعذر تحميل المحفظة: "+error.message);return;}
-  if(!data){say("لم يتم العثور على محفظة لهذا الحساب.");return;}
-  document.getElementById("usd").textContent=Number(data.balance_usd||0).toFixed(2)+" $";
-  document.getElementById("syp").textContent=Number(data.balance_syp||0).toLocaleString("en-US")+" ل.س";
+  if(!currentUser) return;
+
+  try{
+    const {data:{user},error:userError}=await sb.auth.getUser();
+    if(userError||!user){
+      await forceLock();
+      return;
+    }
+
+    const {data,error}=await sb.from("wallets")
+      .select("balance_usd,balance_syp")
+      .eq("user_id",user.id)
+      .maybeSingle();
+
+    if(error){
+      say("تعذر تحميل المحفظة: "+error.message);
+      return;
+    }
+
+    if(!data){
+      say("لم يتم العثور على محفظة لهذا الحساب.");
+      return;
+    }
+
+    document.getElementById("usd").textContent=
+      Number(data.balance_usd||0).toFixed(2)+" $";
+
+    document.getElementById("syp").textContent=
+      Number(data.balance_syp||0).toLocaleString("en-US")+" ل.س";
+
+  }catch(error){
+    say("حدث خطأ أثناء تحميل المحفظة: "+error.message);
+  }
 }
 
 function orderAlert(game){
   alert("طلبات "+game+" ستتوفر بعد تفعيل نظام الشحن.");
 }
 
-sb.auth.onAuthStateChange((event,session)=>{
-  if(event==="SIGNED_IN"&&session){showApp(session.user);}
-  if(event==="SIGNED_OUT"){showLogin();}
+/* لا نستعيد جلسة قديمة عند فتح الصفحة */
+showLogin("سجّل الدخول للبدء باستخدام المتجر.");
+
+/* قفل الواجهة عند مغادرة الصفحة أو انتقالها للخلفية */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){
+    forceLock();
+  }
 });
 
-async function checkSession(){
-  const {data,error}=await sb.auth.getSession();
-  if(!error&&data.session){showApp(data.session.user);}
-  else{showLogin();}
-}
-checkSession();
+window.addEventListener("pagehide",()=>{
+  forceLock();
+});
+
+/* لا يتم فتح المتجر تلقائياً من جلسة قديمة */
+sb.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"){
+    currentUser=null;
+    showLogin("تم تسجيل الخروج. سجّل الدخول للمتابعة.");
+  }
+});
 </script>
 </body>
 </html>
