@@ -4,229 +4,272 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#080d0a">
-<title>BARAN GAME</title>
+<title>Baran Game</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{
- margin:0;background:#080d0a;color:#fff;
- font-family:Arial,sans-serif;padding-bottom:85px
-}
-header{
- padding:18px;background:#0d1510;
- display:flex;justify-content:space-between;align-items:center;
- border-bottom:1px solid #1d3425
-}
-.logo{font-size:26px;font-weight:900;color:#40ef85}
-.logo span{color:white}
-.profile{
- width:42px;height:42px;border-radius:50%;
- background:#183b27;display:grid;place-items:center;
- border:1px solid #39d879;font-size:21px
-}
-.container{padding:16px;max-width:900px;margin:auto}
-.welcome{color:#a0b3a6;font-size:13px}
-.hero{
- position:relative;overflow:hidden;border-radius:20px;
- min-height:230px;padding:22px;
- background:linear-gradient(120deg,#07130c,#123c25,#09130d);
- border:1px solid #285438;
- display:flex;flex-direction:column;justify-content:center
-}
-.hero:after{
- content:"🎮";position:absolute;left:10px;bottom:5px;
- font-size:105px;opacity:.25
-}
-.hero small{color:#52f294;font-weight:bold}
-.hero h1{font-size:27px;line-height:1.4;margin:12px 0}
-.hero p{color:#c1d2c6;font-size:13px;max-width:250px}
-.btn{
- background:#38e77d;color:#06150b;padding:12px 18px;
- border-radius:10px;border:0;font-weight:bold;cursor:pointer
-}
-.section-title{
- display:flex;justify-content:space-between;
- align-items:center;margin:27px 2px 14px
-}
-.section-title h2{font-size:18px;margin:0}
-.section-title small{color:#42ed86}
-.balance{
- background:linear-gradient(120deg,#164c2c,#10271a);
- border:1px solid #33794b;border-radius:18px;
- padding:19px;margin-top:17px
-}
-.balance small{color:#c2e4cd}
-.balance h2{font-size:30px;color:#55f593;margin:10px 0 15px}
-.balance button{background:white}
-.games{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.card{
- background:#111b14;border:1px solid #263b2c;
- border-radius:16px;overflow:hidden
-}
-.game-img{
- height:135px;width:100%;object-fit:cover;
- display:block;background:#17251b
-}
-.card-body{padding:12px}
-.card h3{font-size:15px;margin:2px 0 7px}
-.card p{font-size:12px;color:#a4b4a8;margin:0 0 12px}
-.card button{width:100%}
-.services{
- display:grid;grid-template-columns:repeat(2,1fr);gap:11px
-}
-.service{
- background:linear-gradient(145deg,#15241a,#101812);
- border:1px solid #263b2c;border-radius:15px;
- padding:17px 12px;min-height:112px
-}
-.service .icon{font-size:28px;margin-bottom:10px}
-.service h3{font-size:14px;margin:0 0 6px}
-.service p{font-size:11px;color:#9caea1;margin:0}
-.promo{
- margin-top:18px;padding:17px;border-radius:16px;
- background:#171d29;border:1px solid #30384c;
- display:flex;align-items:center;justify-content:space-between
-}
-.promo h3{font-size:15px;margin:0 0 7px}
-.promo p{font-size:12px;color:#b4bdcc;margin:0}
-.promo span{font-size:35px}
-footer{
- position:fixed;bottom:0;left:0;width:100%;
- background:#101812;border-top:1px solid #263b2c;
- display:flex;justify-content:space-around;
- padding:12px 4px;z-index:10
-}
-footer a{
- color:#9aada0;text-decoration:none;
- font-size:11px;text-align:center
-}
-footer b{display:block;font-size:20px;margin-bottom:4px}
-footer a:first-child{color:#48ef8b}
-@media(min-width:700px){
- .games{grid-template-columns:repeat(2,1fr)}
- .services{grid-template-columns:repeat(4,1fr)}
-}
+body{margin:0;background:#080b0a;color:#fff;font-family:Arial,sans-serif}
+header{background:#101713;padding:18px;text-align:center;border-bottom:1px solid #19e68c}
+.logo{font-size:30px;font-weight:bold;color:#19e68c}
+nav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:12px}
+button{background:#19e68c;color:#06130c;border:0;border-radius:9px;padding:12px 16px;font-weight:bold;cursor:pointer}
+button.secondary{background:#202a24;color:#fff}
+button:disabled{opacity:.5}
+main{max-width:850px;margin:auto;padding:15px}
+section{background:#111915;border:1px solid #26382d;border-radius:15px;padding:18px;margin:15px 0}
+h2{color:#19e68c;margin-top:0}
+input{width:100%;padding:13px;margin:7px 0;background:#080d0a;border:1px solid #33483a;border-radius:8px;color:white}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px}
+.item{background:#19241d;padding:18px;border-radius:12px;text-align:center}
+.item strong{display:block;color:#19e68c;margin-bottom:10px}
+.small{color:#aebbb1;font-size:13px}
+#message{padding:10px;color:#19e68c;white-space:pre-wrap}
+.hidden{display:none}
+footer{text-align:center;padding:25px;color:#829087}
 </style>
 </head>
 <body>
 
 <header>
- <div class="logo">BARAN <span>GAME</span></div>
- <div class="profile">👤</div>
+  <div class="logo">BARAN GAME</div>
+  <div class="small">متجرك للألعاب والخدمات الرقمية</div>
 </header>
 
-<main class="container">
+<nav>
+  <button onclick="showSection('home')">الرئيسية</button>
+  <button onclick="showSection('games')">الألعاب</button>
+  <button onclick="showSection('services')">الخدمات</button>
+  <button onclick="showSection('wallet')">المحفظة</button>
+  <button onclick="showSection('account')">حسابي</button>
+</nav>
 
-<p class="welcome">أهلاً بك في عالم باران للألعاب 👋</p>
+<main>
 
-<section class="hero">
- <small>🔥 BARAN GAME STORE</small>
- <h1>كل عالم الألعاب<br>بمكان واحد!</h1>
- <p>اشحن ألعابك واستمتع باشتراكاتك وخدماتك الرقمية بسهولة.</p>
- <button class="btn" onclick="document.getElementById('games').scrollIntoView({behavior:'smooth'})">اكتشف المتجر ←</button>
+<section id="home">
+  <h2>أهلاً بك في Baran Game 🎮</h2>
+  <p>اشحن ألعابك واطلب خدماتك الرقمية بسهولة.</p>
+  <div class="grid">
+    <div class="item"><strong>PUBG MOBILE</strong>شحن شدات</div>
+    <div class="item"><strong>FREE FIRE</strong>شحن جواهر</div>
+    <div class="item"><strong>AI SERVICES</strong>خدمات الذكاء الاصطناعي</div>
+    <div class="item"><strong>GIFT CARDS</strong>بطاقات رقمية</div>
+  </div>
 </section>
 
-<section class="balance">
- <small>💰 رصيد محفظتك</small>
- <h2>0.00 $</h2>
- <button class="btn" onclick="alert('قريباً: شحن المحفظة عبر شام كاش')">＋ شحن المحفظة</button>
+<section id="games" class="hidden">
+  <h2>الألعاب</h2>
+  <div class="grid">
+    <div class="item"><strong>PUBG MOBILE</strong><p>شحن شدات</p><button onclick="orderAlert('PUBG Mobile')">اطلب الآن</button></div>
+    <div class="item"><strong>FREE FIRE</strong><p>شحن جواهر</p><button onclick="orderAlert('Free Fire')">اطلب الآن</button></div>
+  </div>
+  <p class="small">طلبات الشحن الفعلية ستُفعّل بعد ربط المورد ونظام الطلبات.</p>
 </section>
 
-<div class="section-title" id="games">
- <h2>🎮 الألعاب والشحن</h2>
- <small>BARAN STORE</small>
-</div>
-
-<div class="games">
- <div class="card">
-  <img class="game-img" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700" alt="PUBG gaming">
-  <div class="card-body">
-   <h3>PUBG Mobile</h3>
-   <p>شحن شدات UC</p>
-   <button class="btn" onclick="alert('قسم PUBG قريباً')">اشحن الآن</button>
+<section id="services" class="hidden">
+  <h2>الخدمات الرقمية</h2>
+  <div class="grid">
+    <div class="item"><strong>ChatGPT Plus</strong>اشتراكات الذكاء الاصطناعي</div>
+    <div class="item"><strong>VPN</strong>اشتراكات VPN</div>
+    <div class="item"><strong>Google Play</strong>بطاقات رقمية</div>
+    <div class="item"><strong>Apps</strong>تطبيقات مدفوعة</div>
   </div>
- </div>
- <div class="card">
-  <img class="game-img" src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=700" alt="Free Fire gaming">
-  <div class="card-body">
-   <h3>Free Fire</h3>
-   <p>شحن جواهر Diamonds</p>
-   <button class="btn" onclick="alert('قسم Free Fire قريباً')">اشحن الآن</button>
+  <p class="small">الخدمات والأسعار قيد الإعداد.</p>
+</section>
+
+<section id="wallet" class="hidden">
+  <h2>محفظتي</h2>
+  <p>رصيد الدولار: <strong id="usd">0.00 $</strong></p>
+  <p>رصيد الليرة: <strong id="syp">0</strong> ل.س</p>
+  <p class="small">الرصيد يُقرأ من قاعدة البيانات. الشحن والسحب غير مفعّلين بعد.</p>
+  <button onclick="loadWallet()">تحديث الرصيد</button>
+</section>
+
+<section id="account">
+  <h2>حساب الزبون</h2>
+  <div id="authForm">
+    <input id="email" type="email" placeholder="البريد الإلكتروني">
+    <input id="password" type="password" placeholder="كلمة المرور">
+    <button id="signupBtn" onclick="signUp()">إنشاء حساب</button>
+    <button id="loginBtn" class="secondary" onclick="signIn()">تسجيل الدخول</button>
   </div>
- </div>
-</div>
+  <div id="userBox" class="hidden">
+    <p>أهلاً بك <strong id="userEmail"></strong></p>
+    <button onclick="loadWallet()">تحديث المحفظة</button>
+    <button class="secondary" onclick="signOut()">تسجيل الخروج</button>
+  </div>
+  <div id="message"></div>
+</section>
 
-<div class="section-title">
- <h2>💎 الخدمات الرقمية</h2>
- <small>خدماتنا</small>
-</div>
+<section>
+  <h2>المكافآت ودعوة الأصدقاء 🎁</h2>
+  <p>قريباً: نقاط ومكافآت عند دعوة الأصدقاء وإتمام الطلبات.</p>
+</section>
 
-<div class="services">
- <div class="service">
-  <div class="icon">🤖</div>
-  <h3>الذكاء الاصطناعي</h3>
-  <p>اشتراكات AI</p>
- </div>
- <div class="service">
-  <div class="icon">🛡️</div>
-  <h3>اشتراكات VPN</h3>
-  <p>حماية واتصال</p>
- </div>
- <div class="service">
-  <div class="icon">💳</div>
-  <h3>البطاقات الرقمية</h3>
-  <p>Google Play وغيرها</p>
- </div>
- <div class="service">
-  <div class="icon">📱</div>
-  <h3>التطبيقات المدفوعة</h3>
-  <p>تطبيقات واشتراكات</p>
- </div>
-</div>
-
-<div class="section-title">
- <h2>🎁 المكافآت والدعوات</h2>
-</div>
-
-<div class="services">
- <div class="service">
-  <div class="icon">🎁</div>
-  <h3>المكافآت</h3>
-  <p>عروض وهدايا</p>
- </div>
- <div class="service">
-  <div class="icon">👥</div>
-  <h3>دعوة الأصدقاء</h3>
-  <p>شارك رابط الدعوة</p>
- </div>
-</div>
-
-<div class="promo">
- <div>
-  <h3>🔥 عروض Baran Game</h3>
-  <p>تابع أحدث العروض والمفاجآت</p>
- </div>
- <span>🎮</span>
-</div>
+<section>
+  <h2>الدعم الفني</h2>
+  <p>للمساعدة والاستفسارات تواصل مع إدارة Baran Game.</p>
+</section>
 
 </main>
 
-<footer>
- <a href="#"><b>🏠</b>الرئيسية</a>
- <a href="#"><b>💰</b>المحفظة</a>
- <a href="#"><b>📦</b>طلباتي</a>
- <a href="#"><b>👤</b>حسابي</a>
-</footer>
+<footer>© 2026 Baran Game</footer>
+
+<script>
+const SUPABASE_URL = "https://yabpmdzsiuyxxkcqakfs.supabase.co";
+const SUPABASE_KEY = "sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const message = document.getElementById("message");
+
+function say(text){
+  message.textContent = text;
+}
+
+function showSection(id){
+  document.querySelectorAll("main section").forEach(s=>{
+    s.classList.add("hidden");
+  });
+  document.getElementById(id).classList.remove("hidden");
+}
+
+function orderAlert(game){
+  alert("طلب " + game + " سيكون متاحاً بعد تفعيل نظام الشحن.");
+}
+
+async function signUp(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!email || password.length < 6){
+    say("أدخل البريد وكلمة مرور من 6 أحرف على الأقل.");
+    return;
+  }
+
+  say("جاري إنشاء الحساب...");
+
+  const {data,error} = await sb.auth.signUp({
+    email,
+    password
+  });
+
+  if(error){
+    say("تعذر إنشاء الحساب: " + error.message);
+    return;
+  }
+
+  if(data.session){
+    say("تم إنشاء الحساب وتسجيل الدخول بنجاح.");
+    updateUser(data.user);
+  }else{
+    say("تم إنشاء الحساب. افتح بريدك الإلكتروني لتأكيد التسجيل إذا طُلب منك ذلك.");
+  }
+}
+
+async function signIn(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    say("أدخل البريد الإلكتروني وكلمة المرور.");
+    return;
+  }
+
+  say("جاري تسجيل الدخول...");
+
+  const {data,error} = await sb.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    say("تعذر تسجيل الدخول: " + error.message);
+    return;
+  }
+
+  say("أهلاً بك في Baran Game.");
+  updateUser(data.user);
+}
+
+function updateUser(user){
+  document.getElementById("authForm").classList.add("hidden");
+  document.getElementById("userBox").classList.remove("hidden");
+  document.getElementById("userEmail").textContent = user.email || "";
+  loadWallet();
+}
+
+async function signOut(){
+  const {error} = await sb.auth.signOut();
+
+  if(error){
+    say("تعذر تسجيل الخروج: " + error.message);
+    return;
+  }
+
+  document.getElementById("authForm").classList.remove("hidden");
+  document.getElementById("userBox").classList.add("hidden");
+  document.getElementById("usd").textContent = "0.00 $";
+  document.getElementById("syp").textContent = "0";
+  say("تم تسجيل الخروج.");
+}
+
+async function loadWallet(){
+  const {data:{user}} = await sb.auth.getUser();
+
+  if(!user){
+    say("سجل الدخول أولاً لعرض محفظتك.");
+    return;
+  }
+
+  const {data,error} = await sb
+    .from("wallets")
+    .select("balance_usd,balance_syp")
+    .eq("user_id",user.id)
+    .maybeSingle();
+
+  if(error){
+    say("تعذر تحميل المحفظة: " + error.message);
+    return;
+  }
+
+  if(!data){
+    say("لم يتم العثور على محفظة لهذا الحساب.");
+    return;
+  }
+
+  document.getElementById("usd").textContent =
+    Number(data.balance_usd || 0).toFixed(2) + " $";
+
+  document.getElementById("syp").textContent =
+    Number(data.balance_syp || 0).toLocaleString("en-US");
+
+  say("تم تحديث المحفظة.");
+}
+
+async function checkSession(){
+  const {data,error} = await sb.auth.getSession();
+
+  if(error){
+    say("تعذر التحقق من الجلسة.");
+    return;
+  }
+
+  if(data.session){
+    updateUser(data.session.user);
+  }
+}
+
+sb.auth.onAuthStateChange((event,session)=>{
+  if(session){
+    updateUser(session.user);
+  }else if(event === "SIGNED_OUT"){
+    document.getElementById("authForm").classList.remove("hidden");
+    document.getElementById("userBox").classList.add("hidden");
+  }
+});
+
+checkSession();
+</script>
 
 </body>
 </html>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASE_URL = "ضع رابط API URL هنا";
-const SUPABASE_KEY = "ضع publishable key هنا";
-
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-</script>
