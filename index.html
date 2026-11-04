@@ -220,3 +220,13 @@ footer a:first-child{color:#48ef8b}
 
 </body>
 </html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "ضع رابط API URL هنا";
+const SUPABASE_KEY = "ضع publishable key هنا";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+</script>
