@@ -1,5 +1,5 @@
 function passwordMeetsPolicy(value){
-  const symbols="!@#$%^&*()_+-=[]{};'\" :|<>?,./`~";
+  const symbols="!@#$%^&*()_+-=[]{};\'\"|<>?,./`~";
   return value.length>=8 &&
     /[a-z]/.test(value) &&
     /[A-Z]/.test(value) &&
