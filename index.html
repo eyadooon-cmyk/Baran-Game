@@ -56,6 +56,7 @@ p{line-height:1.7}
 .lock-screen{position:fixed;inset:0;z-index:20;background:#070b09;display:flex;align-items:center;justify-content:center;padding:18px}
 .lock-card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--green);border-radius:18px;padding:24px;text-align:center}
 footer{text-align:center;padding:25px;color:#839487}
+.support-fab{position:fixed;right:16px;bottom:18px;z-index:10;border-radius:999px;padding:14px 18px;box-shadow:0 5px 22px #0009;display:flex;align-items:center;gap:8px}
 @media(max-width:500px){.grid{grid-template-columns:1fr}nav button{padding:10px;font-size:12px}.item img{height:175px}}
 </style>
 </head>
@@ -197,6 +198,7 @@ footer{text-align:center;padding:25px;color:#839487}
     <section id="account" class="hidden">
       <h2>حسابي</h2>
       <p id="accountInfo"></p>
+      <button class="full secondary" onclick="showSection('rewards',null)">النقاط والمكافآت 🎁</button>
       <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
     </section>
 
@@ -248,17 +250,23 @@ footer{text-align:center;padding:25px;color:#839487}
       <div id="financeEntries">لا توجد حركات مالية بعد.</div>
     </section>
 
-    <section>
-      <h2>🎁 المكافآت ودعوة الأصدقاء</h2>
-      <p>قريباً: نظام نقاط ومكافآت ودعوات وجوائز شهرية.</p>
+    <section id="rewards" class="hidden">
+      <h2>🎁 النقاط والمكافآت</h2>
+      <p>سيظهر رصيد نقاطك وسجلّ المكافآت ودعوات الأصدقاء هنا بعد تفعيل النظام.</p>
+      <p class="small">نظام النقاط والدعوات ما زال قيد التجهيز، ولا تُحتسب نقاط حالياً.</p>
+      <button class="full secondary" onclick="showSection('account',document.querySelectorAll('nav button')[4])">العودة إلى حسابي</button>
     </section>
 
-    <section>
-      <h2>الدعم الفني</h2>
-      <p>تواصل مع إدارة Baran Game للمساعدة والاستفسارات.</p>
+    <section id="support" class="hidden">
+      <h2>الدعم الفني 💬</h2>
+      <p>أهلاً بك في دعم Baran Game. سيتم وضع محادثات الدعم ومتابعة طلبات المساعدة هنا.</p>
+      <p class="small">استقبال وإرسال الرسائل لم يُفعّل بعد، لذلك لا ترسل معلومات حساسة أو كلمات مرور هنا.</p>
+      <button class="full secondary" onclick="showSection('home',document.querySelector('nav button'))">العودة للرئيسية</button>
     </section>
   </main>
 </div>
+
+<button class="support-fab" type="button" onclick="showSection('support',null)" aria-label="فتح الدعم الفني">💬 الدعم الفني</button>
 
 <footer>© 2026 Baran Game</footer>
 
