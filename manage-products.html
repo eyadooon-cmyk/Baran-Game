@@ -32,8 +32,17 @@ a{color:#72ffb5}
   <a href="./">العودة إلى المتجر</a>
 </div>
 <section id="manager" class="panel hidden">
+  <div class="panel" style="margin:0 0 18px">
+    <h2>سعر صرف الدولار 💱</h2>
+    <p id="currentExchangeRate" class="small">1 $ = 14,400 ل.س</p>
+    <label for="exchangeRateInput">سعر الدولار مقابل الليرة السورية</label>
+    <input id="exchangeRateInput" type="number" min="1" step="1" value="14400" inputmode="numeric">
+    <button id="saveExchangeRateButton" type="button" onclick="saveExchangeRate()">حفظ سعر الصرف وتحديث الأسعار</button>
+    <p id="exchangeRateMessage" class="small" role="status"></p>
+    <p class="small">عند تغيير السعر، تتحدث أسعار الليرة لكل المنتجات تلقائياً. الطلبات السابقة تحتفظ بسعر الصرف وقت إنشائها.</p>
+  </div>
   <h2>إضافة منتج أو تعديله</h2>
-  <p class="small">المنتجات المفعّلة تظهر في هذه القائمة الإدارية، ويمكن لاحقاً عرضها للزبائن. الطلب والشحن غير مفعّلين بهذه المرحلة.</p>
+  <p class="small">أدخل سعر المنتج بالدولار فقط؛ سعر الليرة يُحسب تلقائياً حسب سعر الصرف الحالي. الطلب والشحن غير مفعّلين بهذه المرحلة.</p>
   <div id="productMessage" class="small" role="status"></div>
   <input id="productId" type="hidden">
   <label for="productCode">رمز المنتج (إنجليزي)</label>
@@ -48,10 +57,9 @@ a{color:#72ffb5}
   <input id="productName" type="text" maxlength="120" placeholder="Free Fire - 100 جوهرة">
   <label for="productDescription">وصف مختصر</label>
   <input id="productDescription" type="text" maxlength="500" placeholder="تفاصيل المنتج أو مدة الاشتراك">
-  <label for="productPriceUsd">السعر بالدولار (0 إذا غير متوفر)</label>
-  <input id="productPriceUsd" type="number" min="0" step="0.01" value="0" inputmode="decimal">
-  <label for="productPriceSyp">السعر بالليرة السورية (0 إذا غير متوفر)</label>
-  <input id="productPriceSyp" type="number" min="0" step="1" value="0" inputmode="decimal">
+  <label for="productPriceUsd">السعر بالدولار</label>
+  <input id="productPriceUsd" type="number" min="0" step="0.01" value="0" inputmode="decimal" oninput="updateProductPricePreview()">
+  <p id="productPricePreview" class="small">أدخل سعر الدولار لمعاينة سعر الليرة.</p>
   <label for="productSortOrder">ترتيب العرض</label>
   <input id="productSortOrder" type="number" min="0" step="1" value="100">
   <label for="productActive">حالة المنتج</label>
@@ -83,7 +91,7 @@ async function callAdminApi(method="GET",payload=null){
 async function loadAdminPanel(){
   const box=document.getElementById("adminProducts");
   box.textContent="جاري تحميل المنتجات...";
-  try{const result=await callAdminApi("GET");renderProducts(result.products||[])}
+  try{const result=await callAdminApi("GET");applyExchangeRate(result.exchange_rate);renderProducts(result.products||[])}
   catch(error){box.textContent="تعذر تحميل المنتجات: "+error.message}
 }
 async function boot(){
