@@ -197,7 +197,6 @@ footer{text-align:center;padding:25px;color:#839487}
     <section id="account" class="hidden">
       <h2>حسابي</h2>
       <p id="accountInfo"></p>
-      <button class="full secondary" onclick="lockNow()">قفل التطبيق الآن</button>
       <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
     </section>
 
@@ -405,12 +404,7 @@ async function submitLock(){
 
 function lockNow(){ if(currentUser) showLock("unlock"); }
 
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden && currentUser &&
-     !document.getElementById("appShell").classList.contains("hidden")){
-    showLock("unlock");
-  }
-});
+// لا نقفل التطبيق عند الانتقال إلى تطبيق آخر؛ تبقى الجلسة مفتوحة حتى تسجيل الخروج أو إعادة فتح التطبيق.
 
 async function signOut(){
   await sb.auth.signOut({scope:"local"});
