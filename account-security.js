@@ -1,9 +1,10 @@
 function passwordMeetsPolicy(value){
+  const symbols="!@#$%^&*()_+-=[]{};'\" :|<>?,./`~";
   return value.length>=8 &&
     /[a-z]/.test(value) &&
     /[A-Z]/.test(value) &&
     /[0-9]/.test(value) &&
-    /[!@#$%^&*()_+\\-=[\\]{};'":|<>?,./`~]/.test(value);
+    Array.from(symbols).some(symbol=>value.includes(symbol));
 }
 
 function showPasswordRecovery(){
