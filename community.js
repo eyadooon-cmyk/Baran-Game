@@ -3,7 +3,31 @@ const feedbackStatusLabels={pending:"جديد / قيد المراجعة",in_prog
 
 async function loadCommunity(){
   if(!currentUser)return;
-  await Promise.all([loadCompletedOrders(),loadMyFeedback()]);
+  await Promise.all([loadCompletedOrders(),loadMyFeedback(),loadPublicReviews()]);
+}
+
+async function loadPublicReviews(){
+  const box=document.getElementById("publicReviews");
+  if(!box)return;
+  box.textContent="جاري تحميل التقييمات المنشورة...";
+  try{
+    const {data,error}=await sb.from("customer_feedback")
+      .select("rating,message,created_at")
+      .eq("feedback_type","review")
+      .eq("status","approved")
+      .order("created_at",{ascending:false})
+      .limit(20);
+    if(error)throw error;
+    box.replaceChildren();
+    if(!data?.length){box.textContent="لا توجد تقييمات منشورة بعد. كن أول من يشارك تجربته بعد اكتمال طلبه.";return;}
+    data.forEach(item=>{
+      const card=document.createElement("div");card.className="deposit-row";
+      const stars=document.createElement("strong");stars.textContent="★".repeat(Number(item.rating))+"☆".repeat(5-Number(item.rating));
+      const message=document.createElement("p");message.textContent=item.message;
+      const date=document.createElement("div");date.className="small";date.textContent=new Date(item.created_at).toLocaleDateString("ar");
+      card.append(stars,message,date);box.appendChild(card);
+    });
+  }catch(error){box.textContent="تعذر تحميل التقييمات: "+error.message;}
 }
 
 async function loadCompletedOrders(){
