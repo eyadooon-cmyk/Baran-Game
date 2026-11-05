@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إدارة المنتجات | Baran Game</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--green:#19e68c;--bg:#070b09;--panel:#111a15;--line:#294333;--muted:#a8b9ad}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
+header{padding:24px 16px;text-align:center;background:linear-gradient(120deg,#06130b,#13271b);border-bottom:2px solid var(--green)}
+h1{margin:0;color:#eafff2;text-shadow:0 0 12px #19e68c}main{max-width:760px;margin:auto;padding:16px}
+.panel{padding:16px;margin:14px 0;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+label{display:block;margin-top:12px;color:var(--muted);font-size:14px}
+input,select{display:block;width:100%;padding:13px;margin:8px 0;background:#080e0a;color:#fff;border:1px solid #38523f;border-radius:10px;font-size:16px}
+button{border:0;border-radius:10px;padding:12px 16px;background:var(--green);color:#06140b;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}.secondary{background:#24372b;color:#fff}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1}
+.small{color:var(--muted);font-size:13px;line-height:1.7}.hidden{display:none!important}
+.product-admin-card{padding:14px;margin:10px 0;background:#101b14;border:1px solid #31543c;border-radius:12px;line-height:1.7;overflow-wrap:anywhere}
+.product-prices{display:flex;gap:10px;flex-wrap:wrap;color:#72ffb5;font-weight:bold;margin:8px 0}
+.product-admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.product-admin-actions button{flex:1}
+a{color:#72ffb5}
+</style>
+</head>
+<body>
+<header><h1>BARAN GAME</h1><div>إدارة المنتجات والأسعار 🛍️</div></header>
+<main>
+<div class="panel">
+  <p id="pageMessage" class="small">جاري التحقق من جلسة الدخول وصلاحية الإدارة...</p>
+  <p class="small">هذه الصفحة مخصصة للمدير فقط. يجب تسجيل الدخول أولاً من المتجر الأساسي.</p>
+  <a href="./">العودة إلى المتجر</a>
+</div>
+<section id="manager" class="panel hidden">
+  <h2>إضافة منتج أو تعديله</h2>
+  <p class="small">المنتجات المفعّلة تظهر في هذه القائمة الإدارية، ويمكن لاحقاً عرضها للزبائن. الطلب والشحن غير مفعّلين بهذه المرحلة.</p>
+  <div id="productMessage" class="small" role="status"></div>
+  <input id="productId" type="hidden">
+  <label for="productCode">رمز المنتج (إنجليزي)</label>
+  <input id="productCode" type="text" maxlength="60" dir="ltr" placeholder="FREEFIRE_100">
+  <label for="productCategory">القسم</label>
+  <select id="productCategory">
+    <option value="game">الألعاب</option><option value="ai">الذكاء الاصطناعي</option>
+    <option value="vpn">VPN</option><option value="gift_card">البطاقات الرقمية</option>
+    <option value="app">التطبيقات المدفوعة</option>
+  </select>
+  <label for="productName">اسم المنتج</label>
+  <input id="productName" type="text" maxlength="120" placeholder="Free Fire - 100 جوهرة">
+  <label for="productDescription">وصف مختصر</label>
+  <input id="productDescription" type="text" maxlength="500" placeholder="تفاصيل المنتج أو مدة الاشتراك">
+  <label for="productPriceUsd">السعر بالدولار (0 إذا غير متوفر)</label>
+  <input id="productPriceUsd" type="number" min="0" step="0.01" value="0" inputmode="decimal">
+  <label for="productPriceSyp">السعر بالليرة السورية (0 إذا غير متوفر)</label>
+  <input id="productPriceSyp" type="number" min="0" step="1" value="0" inputmode="decimal">
+  <label for="productSortOrder">ترتيب العرض</label>
+  <input id="productSortOrder" type="number" min="0" step="1" value="100">
+  <label for="productActive">حالة المنتج</label>
+  <select id="productActive"><option value="true">مفعّل</option><option value="false">متوقف ومخفي</option></select>
+  <div class="actions">
+    <button id="saveProductButton" type="button" onclick="saveProduct()">حفظ المنتج</button>
+    <button type="button" class="secondary" onclick="resetProductForm()">تفريغ النموذج</button>
+    <button type="button" class="secondary" onclick="loadAdminPanel()">تحديث القائمة</button>
+  </div>
+  <h3>المنتجات المسجلة</h3>
+  <div id="adminProducts" class="small">جاري تحميل المنتجات...</div>
+</section>
+</main>
+<script>
+const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
+const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+let currentUser=null;
+async function callAdminApi(method="GET",payload=null){
+  const {data:{session},error}=await sb.auth.getSession();
+  if(error||!session)throw new Error("سجّل الدخول من المتجر أولاً.");
+  const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin",{method,headers:{
+    "Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"
+  },body:payload?JSON.stringify(payload):undefined});
+  let result={};try{result=await response.json()}catch(e){}
+  if(!response.ok)throw new Error(result.error||"تعذر تنفيذ الطلب.");
+  return result;
+}
+async function loadAdminPanel(){
+  const box=document.getElementById("adminProducts");
+  box.textContent="جاري تحميل المنتجات...";
+  try{const result=await callAdminApi("GET");renderProducts(result.products||[])}
+  catch(error){box.textContent="تعذر تحميل المنتجات: "+error.message}
+}
+async function boot(){
+  const note=document.getElementById("pageMessage");
+  try{
+    const {data,error}=await sb.auth.getUser();
+    if(error||!data.user){note.textContent="ما في جلسة دخول. افتح المتجر وسجّل الدخول أولاً، ثم ارجع لهذه الصفحة.";return}
+    currentUser=data.user;
+    await callAdminApi("GET");
+    document.getElementById("manager").classList.remove("hidden");
+    note.textContent="تم التحقق من صلاحية الإدارة.";
+    await loadAdminPanel();
+  }catch(error){note.textContent="لا يمكن فتح إدارة المنتجات: "+error.message+" — إذا لم تكن مسجلاً، افتح المتجر وسجّل الدخول."}
+}
+</script>
+<script src="./products.js"></script>
+<script>boot();</script>
+</body>
+</html>
