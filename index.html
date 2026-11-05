@@ -25,7 +25,8 @@ button{border:0;border-radius:11px;padding:13px 16px;background:var(--green);col
 button:disabled{opacity:.5}
 nav button{background:#1a2920;color:white;padding:11px}
 nav button.active{background:var(--green);color:#06140b}
-input{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;color:white;border:1px solid #38523f;border-radius:10px;font-size:16px}
+input,textarea{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;color:white;border:1px solid #38523f;border-radius:10px;font-size:16px}
+textarea{resize:vertical;font-family:Arial,sans-serif;line-height:1.7}
 select{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;color:white;border:1px solid #38523f;border-radius:10px;font-size:16px}
 .deposit-card{margin-top:20px;padding:16px;background:#0b130e;border:1px solid #1a8c58;border-radius:14px}
 .deposit-id{padding:14px;margin:12px 0;background:#050906;border:1px dashed var(--green);border-radius:10px;color:var(--green);font-weight:bold;text-align:center;overflow-wrap:anywhere;user-select:all}
@@ -87,9 +88,20 @@ footer{text-align:center;padding:25px;color:#839487}
     <input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password">
     <button id="loginButton" class="full" onclick="signIn()">تسجيل الدخول</button>
     <button id="signupButton" class="full secondary" onclick="signUp()">إنشاء حساب جديد</button>
+    <button id="forgotPasswordButton" class="full secondary" type="button" onclick="sendPasswordReset()">نسيت كلمة المرور؟</button>
     <p class="small" style="text-align:center;margin:12px 0 4px">باستخدام المتجر، يمكنك الاطلاع على <a href="./terms.html" style="color:#71ffb4">شروط الاستخدام</a> و<a href="./privacy.html" style="color:#71ffb4">سياسة الخصوصية</a>.</p>
     <div id="message">أهلاً بك في Baran Game</div>
   </div>
+</div>
+
+<div id="passwordRecoveryScreen" class="auth-card hidden">
+  <div class="auth-logo">BARAN GAME</div>
+  <h2 style="text-align:center">تعيين كلمة مرور جديدة 🔐</h2>
+  <p class="small">أدخل كلمة مرور جديدة لحسابك بعد فتح رابط الاستعادة المرسل إلى بريدك.</p>
+  <input id="recoveryPassword" type="password" autocomplete="new-password" placeholder="كلمة المرور الجديدة">
+  <input id="recoveryPasswordConfirm" type="password" autocomplete="new-password" placeholder="تأكيد كلمة المرور الجديدة">
+  <button class="full" type="button" onclick="saveRecoveredPassword()">حفظ كلمة المرور</button>
+  <div id="recoveryMessage" class="small" role="status"></div>
 </div>
 
 <div id="lockScreen" class="lock-screen hidden">
@@ -111,6 +123,7 @@ footer{text-align:center;padding:25px;color:#839487}
     <button onclick="showSection('services',this)">الخدمات</button>
     <button onclick="showSection('wallet',this)">المحفظة</button>
     <button onclick="showSection('account',this)">حسابي</button>
+    <button onclick="showSection('support',this)">آراء ودعم</button>
     <button id="adminNavButton" class="hidden" onclick="showSection('admin',this);loadAdminPanel()">لوحة الإدارة</button>
   </nav>
 
@@ -204,7 +217,7 @@ footer{text-align:center;padding:25px;color:#839487}
         <div id="depositMessage" class="small" role="status"></div>
       </div>
 
-      <h2 style="margin-top:22px">طلبات الشحن السابقة</h2>
+      <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
       <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
     </section>
 
@@ -212,6 +225,17 @@ footer{text-align:center;padding:25px;color:#839487}
       <h2>حسابي</h2>
       <p id="accountInfo"></p>
       <button class="full secondary" onclick="showSection('rewards',null)">النقاط والمكافآت 🎁</button>
+      <div class="deposit-card">
+        <h3>تغيير كلمة المرور 🔐</h3>
+        <label for="currentAccountPassword">كلمة المرور الحالية</label>
+        <input id="currentAccountPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية">
+        <label for="newAccountPassword">كلمة المرور الجديدة</label>
+        <input id="newAccountPassword" type="password" autocomplete="new-password" placeholder="8 أحرف على الأقل مع حرف كبير وصغير ورقم ورمز">
+        <label for="confirmAccountPassword">تأكيد كلمة المرور الجديدة</label>
+        <input id="confirmAccountPassword" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور الجديدة">
+        <button id="changePasswordButton" class="full" type="button" onclick="changeAccountPassword()">تحديث كلمة المرور</button>
+        <div id="changePasswordMessage" class="small" role="status"></div>
+      </div>
       <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
     </section>
 
@@ -219,9 +243,14 @@ footer{text-align:center;padding:25px;color:#839487}
       <h2>لوحة الإدارة 🔐</h2>
       <button class="full secondary" type="button" onclick="window.location.href='./manage-products.html'">إدارة المنتجات وسعر الصرف 💱</button>
       <p class="small">راجع إشعار التحويل في شام كاش أولاً. الموافقة تضيف الرصيد مرة واحدة فقط، والرفض لا يغيّر الرصيد.</p>
-      <button class="full secondary" onclick="loadAdminPanel()">تحديث طلبات الشحن</button>
+      <button class="full secondary" onclick="loadAdminPanel()">تحديث طلبات الإيداع</button>
       <div id="adminMessage" class="small" role="status"></div>
       <div id="adminRequests">جاري تحميل الطلبات...</div>
+
+      <hr style="border-color:#294333;margin:24px 0">
+      <h2>آراء العملاء والاقتراحات والدعم 💬</h2>
+      <p class="small">راجع الرسائل، واكتب رداً، وحدد حالة كل طلب.</p>
+      <div id="adminFeedback">جاري تحميل الرسائل...</div>
 
       <hr style="border-color:#294333;margin:24px 0">
       <h2>الحسابات المالية 💰</h2>
@@ -272,10 +301,46 @@ footer{text-align:center;padding:25px;color:#839487}
     </section>
 
     <section id="support" class="hidden">
-      <h2>الدعم الفني 💬</h2>
-      <p>أهلاً بك في دعم Baran Game. سيتم وضع محادثات الدعم ومتابعة طلبات المساعدة هنا.</p>
-      <p class="small">استقبال وإرسال الرسائل لم يُفعّل بعد، لذلك لا ترسل معلومات حساسة أو كلمات مرور هنا.</p>
-      <button class="full secondary" onclick="showSection('home',document.querySelector('nav button'))">العودة للرئيسية</button>
+      <h2>آراء العملاء والاقتراحات والدعم 💬</h2>
+      <p class="small">رأيك بيساعدنا نحسّن Baran Game. لا ترسل كلمات مرور أو بيانات مالية حساسة.</p>
+      <div class="deposit-card">
+        <h3>⭐ قيّم تجربتك</h3>
+        <label for="reviewOrder">الطلب المكتمل</label>
+        <select id="reviewOrder"><option value="">جاري تحميل طلباتك المكتملة...</option></select>
+        <p id="reviewAvailability" class="small">التقييم متاح بعد اكتمال الطلب.</p>
+        <label for="reviewRating">التقييم</label>
+        <select id="reviewRating">
+          <option value="5">5 نجوم — ممتاز</option>
+          <option value="4">4 نجوم — جيد جداً</option>
+          <option value="3">3 نجوم — جيد</option>
+          <option value="2">نجمتان — يحتاج تحسين</option>
+          <option value="1">نجمة — غير راضٍ</option>
+        </select>
+        <label for="reviewMessage">اكتب رأيك</label>
+        <textarea id="reviewMessage" rows="3" maxlength="2000" placeholder="شاركنا تجربتك بعد اكتمال الطلب"></textarea>
+        <button id="reviewSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('review')">إرسال التقييم</button>
+        <div id="reviewMessageStatus" class="small" role="status"></div>
+      </div>
+      <div class="deposit-card">
+        <h3>💡 اقترح ميزة جديدة</h3>
+        <label for="suggestionSubject">عنوان الاقتراح</label>
+        <input id="suggestionSubject" type="text" maxlength="120" placeholder="مثلاً: إضافة لعبة جديدة">
+        <label for="suggestionMessage">تفاصيل الاقتراح</label>
+        <textarea id="suggestionMessage" rows="3" maxlength="2000" placeholder="شو الميزة اللي بتحب نشوفها بالمتجر؟"></textarea>
+        <button id="suggestionSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('suggestion')">إرسال الاقتراح</button>
+        <div id="suggestionMessageStatus" class="small" role="status"></div>
+      </div>
+      <div class="deposit-card">
+        <h3>🛟 تواصل مع الدعم</h3>
+        <label for="supportSubject">موضوع الرسالة</label>
+        <input id="supportSubject" type="text" maxlength="120" placeholder="مثلاً: مشكلة بطلب أو إيداع">
+        <label for="supportMessage">تفاصيل المشكلة أو الاستفسار</label>
+        <textarea id="supportMessage" rows="3" maxlength="2000" placeholder="اكتب تفاصيل طلب المساعدة"></textarea>
+        <button id="supportSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('support')">إرسال للدعم</button>
+        <div id="supportMessageStatus" class="small" role="status"></div>
+      </div>
+      <h3>طلباتي ورسائلي السابقة</h3>
+      <div id="myFeedbackList" class="small">جاري تحميل الرسائل...</div>
     </section>
   </main>
 <button class="support-fab" type="button" onclick="showSection('support',null)" aria-label="فتح الدعم الفني">💬 الدعم الفني</button>
@@ -284,6 +349,8 @@ footer{text-align:center;padding:25px;color:#839487}
 <footer>© 2026 Baran Game<br><a href="./terms.html" style="color:#71ffb4;margin:0 8px">شروط الاستخدام</a> | <a href="./privacy.html" style="color:#71ffb4;margin:0 8px">سياسة الخصوصية</a></footer>
 
 <script src="./products.js"></script>
+<script src="./account-security.js"></script>
+<script src="./community.js"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
@@ -297,6 +364,8 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
 });
 
 let currentUser=null;
+let passwordRecoveryActive=window.location.hash.includes("type=recovery") ||
+  new URLSearchParams(window.location.search).get("type")==="recovery";
 
 
 function say(text){
@@ -305,6 +374,7 @@ function say(text){
 
 function showLogin(text){
   currentUser=null;
+  document.getElementById("passwordRecoveryScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
   document.getElementById("appShell").classList.add("hidden");
   document.getElementById("lockScreen").classList.add("hidden");
@@ -324,6 +394,8 @@ function showSection(id,button){
 
 function showApp(user){
   currentUser=user;
+  passwordRecoveryActive=false;
+  document.getElementById("passwordRecoveryScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("lockScreen").classList.add("hidden");
   document.getElementById("appShell").classList.remove("hidden");
@@ -332,6 +404,7 @@ function showApp(user){
   loadWallet();
   checkAdminAccess();
   if(typeof loadCatalog==="function")loadCatalog();
+  if(typeof loadCommunity==="function")loadCommunity();
 }
 
 async function signUp(){
@@ -776,6 +849,7 @@ async function restoreSession(){
 
     if(error) throw error;
 
+    if(passwordRecoveryActive)return;
     if(data.session){
       const {data:verified,error:verifyError}=await sb.auth.getUser();
       if(verifyError||!verified.user){
@@ -794,6 +868,10 @@ async function restoreSession(){
 }
 
 sb.auth.onAuthStateChange((event,session)=>{
+  if(event==="PASSWORD_RECOVERY"){
+    passwordRecoveryActive=true;
+    if(typeof showPasswordRecovery==="function")showPasswordRecovery();
+  }
   if(event==="SIGNED_OUT"){
     currentUser=null;
     showLogin("تم تسجيل الخروج. سجّل الدخول للمتابعة.");
