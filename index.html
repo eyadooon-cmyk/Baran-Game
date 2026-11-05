@@ -157,6 +157,7 @@ footer{text-align:center;padding:25px;color:#839487}
           </div>
         </div>
       </div>
+      <div id="gameProductCatalog"></div>
       <p class="small">الشحن الفعلي يحتاج ربط مورد معتمد.</p>
     </section>
 
@@ -168,6 +169,7 @@ footer{text-align:center;padding:25px;color:#839487}
         <div class="item"><div class="item-content"><strong>Google Play</strong>بطاقات رقمية</div></div>
         <div class="item"><div class="item-content"><strong>Apps</strong>تطبيقات مدفوعة</div></div>
       </div>
+      <div id="serviceProductCatalog"></div>
       <p class="small">الأسعار والطلبات ستضاف عند تجهيز الموردين.</p>
     </section>
 
@@ -211,6 +213,7 @@ footer{text-align:center;padding:25px;color:#839487}
 
     <section id="admin" class="hidden">
       <h2>لوحة الإدارة 🔐</h2>
+      <button class="full secondary" type="button" onclick="window.location.href='./manage-products.html'">إدارة المنتجات وسعر الصرف 💱</button>
       <p class="small">راجع إشعار التحويل في شام كاش أولاً. الموافقة تضيف الرصيد مرة واحدة فقط، والرفض لا يغيّر الرصيد.</p>
       <button class="full secondary" onclick="loadAdminPanel()">تحديث طلبات الشحن</button>
       <div id="adminMessage" class="small" role="status"></div>
@@ -276,6 +279,7 @@ footer{text-align:center;padding:25px;color:#839487}
 
 <footer>© 2026 Baran Game</footer>
 
+<script src="./products.js"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
@@ -323,6 +327,7 @@ function showApp(user){
   showSection("home",document.querySelector("nav button"));
   loadWallet();
   checkAdminAccess();
+  if(typeof loadCatalog==="function")loadCatalog();
 }
 
 async function signUp(){
