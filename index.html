@@ -29,6 +29,12 @@ select{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;co
 .admin-request{padding:14px;margin:12px 0;background:#101b14;border:1px solid #31543c;border-radius:12px;line-height:1.8;overflow-wrap:anywhere}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .admin-actions button{flex:1;min-width:110px}
+.finance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.finance-card{padding:13px;background:#17231b;border:1px solid #2c4533;border-radius:12px;line-height:1.8}
+.finance-card strong{display:block;color:var(--green);font-size:18px}
+.finance-entry{padding:12px;margin:9px 0;background:#101b14;border:1px solid #31543c;border-radius:10px;line-height:1.8;overflow-wrap:anywhere}
+.finance-form label{display:block;margin-top:10px;color:var(--muted);font-size:14px}
+.finance-form input,.finance-form select{margin-top:6px}
 section,.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0}
 h2{color:var(--green);margin-top:0}
 p{line-height:1.7}
@@ -201,6 +207,46 @@ footer{text-align:center;padding:25px;color:#839487}
       <button class="full secondary" onclick="loadAdminPanel()">تحديث طلبات الشحن</button>
       <div id="adminMessage" class="small" role="status"></div>
       <div id="adminRequests">جاري تحميل الطلبات...</div>
+
+      <hr style="border-color:#294333;margin:24px 0">
+      <h2>الحسابات المالية 💰</h2>
+      <p class="small">سجّل رأس المال والمبيعات وتكلفة شراء المنتجات والمصاريف. الأرباح تُحسب تلقائياً، ولا تدخل أرصدة الزبائن ضمن أرباح المتجر.</p>
+      <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
+
+      <div class="deposit-card finance-form">
+        <h2>إضافة حركة مالية</h2>
+        <label for="financeType">نوع الحركة</label>
+        <select id="financeType" onchange="updateFinanceForm()">
+          <option value="capital">إضافة رأس مال</option>
+          <option value="sale">تسجيل بيع منتج</option>
+          <option value="expense">تسجيل مصروف</option>
+        </select>
+        <label for="financeTitle">الوصف</label>
+        <input id="financeTitle" type="text" maxlength="160" placeholder="مثلاً: رأس مال بداية المتجر أو فاتورة إنترنت">
+        <div id="financeSaleFields" class="hidden">
+          <label for="financeProductName">اسم المنتج</label>
+          <input id="financeProductName" type="text" maxlength="160" placeholder="اسم المنتج أو الاشتراك">
+          <label for="financeQuantity">الكمية المباعة</label>
+          <input id="financeQuantity" type="number" min="1" step="1" value="1">
+          <label for="financeUnitSalePrice">سعر بيع القطعة الواحدة</label>
+          <input id="financeUnitSalePrice" type="number" min="0.01" step="0.01" placeholder="سعر البيع">
+          <label for="financeUnitCostPrice">تكلفة شراء القطعة الواحدة</label>
+          <input id="financeUnitCostPrice" type="number" min="0" step="0.01" placeholder="تكلفة الشراء">
+        </div>
+        <div id="financeAmountField">
+          <label id="financeAmountLabel" for="financeAmount">مبلغ رأس المال</label>
+          <input id="financeAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
+        </div>
+        <label for="financeCurrency">العملة</label>
+        <select id="financeCurrency">
+          <option value="USD">دولار أمريكي (USD)</option>
+          <option value="SYP">ليرة سورية (SYP)</option>
+        </select>
+        <button id="financeSubmitButton" class="full" type="button" onclick="submitFinanceEntry()">حفظ الحركة المالية</button>
+        <div id="financeMessage" class="small" role="status"></div>
+      </div>
+      <h2 style="margin-top:22px">آخر الحركات المالية</h2>
+      <div id="financeEntries">لا توجد حركات مالية بعد.</div>
     </section>
 
     <section>
@@ -541,8 +587,8 @@ async function loadAdminPanel(){
     const requests=result.requests||[];
     if(requests.length===0){
       container.textContent="لا توجد طلبات شحن حتى الآن.";
-      return;
-    }
+    } else {
+    container.replaceChildren();
     requests.forEach(item=>{
       const card=document.createElement("div");
       card.className="admin-request";
@@ -570,9 +616,119 @@ async function loadAdminPanel(){
       }
       container.appendChild(card);
     });
+    }
+    renderFinance(result.finance||{});
   }catch(error){
     container.textContent="تعذر تحميل لوحة الإدارة: "+error.message;
+    document.getElementById("financeSummary").textContent="تعذر تحميل الحسابات المالية.";
   }
+}
+
+function financeMoney(value,currency){
+  const amount=Number(value||0);
+  const digits=currency==="SYP"?0:2;
+  return amount.toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits})+(currency==="USD"?" $":" ل.س");
+}
+
+function renderFinance(finance){
+  const summary=document.getElementById("financeSummary");
+  const entriesBox=document.getElementById("financeEntries");
+  summary.replaceChildren();
+  const totals=finance.totals||[];
+  ["USD","SYP"].forEach(currency=>{
+    const t=totals.find(x=>x.currency===currency)||{};
+    const card=document.createElement("div");
+    card.className="finance-card";
+    const heading=document.createElement("strong");
+    heading.textContent=currency==="USD"?"حساب الدولار":"حساب الليرة السورية";
+    const lines=[
+      "رأس المال: "+financeMoney(t.capital,currency),
+      "إجمالي المبيعات: "+financeMoney(t.sales,currency),
+      "تكلفة المنتجات المباعة: "+financeMoney(t.cost,currency),
+      "المصاريف: "+financeMoney(t.expenses,currency),
+      "صافي الربح: "+financeMoney(t.profit,currency),
+      "ربح اليوم: "+financeMoney(t.today_profit,currency),
+      "ربح الشهر: "+financeMoney(t.month_profit,currency)
+    ];
+    card.appendChild(heading);
+    lines.forEach(line=>{const p=document.createElement("div");p.textContent=line;card.appendChild(p);});
+    summary.appendChild(card);
+  });
+
+  entriesBox.replaceChildren();
+  const entries=finance.entries||[];
+  if(!entries.length){entriesBox.textContent="لا توجد حركات مالية بعد.";return;}
+  const labels={capital:"رأس مال",sale:"بيع",expense:"مصروف"};
+  entries.forEach(item=>{
+    const row=document.createElement("div");
+    row.className="finance-entry";
+    const name=document.createElement("strong");
+    name.textContent=(labels[item.entry_type]||item.entry_type)+" — "+item.title;
+    const detail=document.createElement("div");
+    detail.textContent=item.entry_type==="sale"
+      ? "المنتج: "+(item.product_name||"")+" | الكمية: "+item.quantity+
+        " | إجمالي البيع: "+financeMoney(item.amount,item.currency)+
+        " | تكلفة الشراء: "+financeMoney(item.cost_amount,item.currency)
+      : "المبلغ: "+financeMoney(item.amount,item.currency);
+    const date=document.createElement("div");
+    date.className="small";
+    date.textContent=new Date(item.created_at).toLocaleString("ar");
+    row.append(name,detail,date);
+    entriesBox.appendChild(row);
+  });
+}
+
+function updateFinanceForm(){
+  const type=document.getElementById("financeType").value;
+  const isSale=type==="sale";
+  document.getElementById("financeSaleFields").classList.toggle("hidden",!isSale);
+  document.getElementById("financeAmountField").classList.toggle("hidden",isSale);
+  document.getElementById("financeAmountLabel").textContent=type==="capital"?"مبلغ رأس المال":"مبلغ المصروف";
+  document.getElementById("financeTitle").placeholder=
+    type==="capital"?"مثلاً: رأس مال بداية المتجر":
+    type==="sale"?"مثلاً: بيع اشتراك ChatGPT":
+    "مثلاً: رسوم تحويل أو إنترنت";
+}
+
+async function submitFinanceEntry(){
+  const type=document.getElementById("financeType").value;
+  const title=document.getElementById("financeTitle").value.trim();
+  const currency=document.getElementById("financeCurrency").value;
+  const message=document.getElementById("financeMessage");
+  const button=document.getElementById("financeSubmitButton");
+  if(title.length<2){message.textContent="اكتب وصفاً واضحاً للحركة.";return;}
+  const payload={action:"finance_add",entry_type:type,title,currency};
+  if(type==="sale"){
+    const quantity=Number(document.getElementById("financeQuantity").value);
+    const salePrice=Number(document.getElementById("financeUnitSalePrice").value);
+    const costPrice=Number(document.getElementById("financeUnitCostPrice").value);
+    const productName=document.getElementById("financeProductName").value.trim();
+    if(!productName||!Number.isInteger(quantity)||quantity<1||
+       !Number.isFinite(salePrice)||salePrice<=0||
+       !Number.isFinite(costPrice)||costPrice<0){
+      message.textContent="تأكد من اسم المنتج والكمية وسعر البيع وتكلفة الشراء.";
+      return;
+    }
+    Object.assign(payload,{product_name:productName,quantity,unit_sale_price:salePrice,unit_cost_price:costPrice});
+  }else{
+    const amount=Number(document.getElementById("financeAmount").value);
+    if(!Number.isFinite(amount)||amount<=0){message.textContent="أدخل مبلغاً صحيحاً أكبر من صفر.";return;}
+    payload.amount=amount;
+  }
+  button.disabled=true;
+  message.textContent="جاري حفظ الحركة المالية...";
+  try{
+    await callAdminApi("POST",payload);
+    document.getElementById("financeTitle").value="";
+    ["financeProductName","financeUnitSalePrice","financeUnitCostPrice","financeAmount"].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value="";
+    });
+    document.getElementById("financeQuantity").value="1";
+    await loadAdminPanel();
+    message.textContent="تم حفظ الحركة وتحديث الحسابات.";
+  }catch(error){
+    message.textContent="تعذر حفظ الحركة: "+error.message;
+  }finally{button.disabled=false;}
 }
 
 async function reviewDeposit(requestId,decision){
