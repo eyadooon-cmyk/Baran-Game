@@ -26,6 +26,9 @@ select{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;co
 .deposit-row{padding:12px;margin:9px 0;background:#17231b;border:1px solid #2c4533;border-radius:10px;line-height:1.8}
 .deposit-status{font-weight:bold;color:var(--green)}
 .deposit-card label{display:block;margin-top:12px;color:var(--muted);font-size:14px}
+.admin-request{padding:14px;margin:12px 0;background:#101b14;border:1px solid #31543c;border-radius:12px;line-height:1.8;overflow-wrap:anywhere}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.admin-actions button{flex:1;min-width:110px}
 section,.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0}
 h2{color:var(--green);margin-top:0}
 p{line-height:1.7}
@@ -90,6 +93,7 @@ footer{text-align:center;padding:25px;color:#839487}
     <button onclick="showSection('services',this)">الخدمات</button>
     <button onclick="showSection('wallet',this)">المحفظة</button>
     <button onclick="showSection('account',this)">حسابي</button>
+    <button id="adminNavButton" class="hidden" onclick="showSection('admin',this);loadAdminPanel()">لوحة الإدارة</button>
   </nav>
 
   <main>
@@ -191,6 +195,14 @@ footer{text-align:center;padding:25px;color:#839487}
       <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
     </section>
 
+    <section id="admin" class="hidden">
+      <h2>لوحة الإدارة 🔐</h2>
+      <p class="small">راجع إشعار التحويل في شام كاش أولاً. الموافقة تضيف الرصيد مرة واحدة فقط، والرفض لا يغيّر الرصيد.</p>
+      <button class="full secondary" onclick="loadAdminPanel()">تحديث طلبات الشحن</button>
+      <div id="adminMessage" class="small" role="status"></div>
+      <div id="adminRequests">جاري تحميل الطلبات...</div>
+    </section>
+
     <section>
       <h2>🎁 المكافآت ودعوة الأصدقاء</h2>
       <p>قريباً: نظام نقاط ومكافآت ودعوات وجوائز شهرية.</p>
@@ -251,6 +263,7 @@ function showApp(user){
   document.getElementById("accountInfo").textContent=user.email||"";
   showSection("home",document.querySelector("nav button"));
   loadWallet();
+  checkAdminAccess();
 }
 
 async function signUp(){
@@ -482,6 +495,101 @@ async function loadWallet(){
 
   }catch(error){
     say("حدث خطأ أثناء تحميل المحفظة: "+error.message);
+  }
+}
+
+
+async function callAdminApi(method="GET",payload=null){
+  const {data:{session},error:sessionError}=await sb.auth.getSession();
+  if(sessionError||!session) throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
+  const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin",{
+    method,
+    headers:{
+      "Authorization":"Bearer "+session.access_token,
+      "apikey":SUPABASE_KEY,
+      "Content-Type":"application/json"
+    },
+    body:payload?JSON.stringify(payload):undefined
+  });
+  let result={};
+  try{result=await response.json();}catch(error){}
+  if(!response.ok) throw new Error(result.error||"تعذر تنفيذ طلب الإدارة.");
+  return result;
+}
+
+async function checkAdminAccess(){
+  const navButton=document.getElementById("adminNavButton");
+  navButton.classList.add("hidden");
+  if(!currentUser) return;
+  try{
+    await callAdminApi("GET");
+    navButton.classList.remove("hidden");
+  }catch(error){
+    // A normal customer receives 403; keep the admin entry hidden.
+  }
+}
+
+async function loadAdminPanel(){
+  const container=document.getElementById("adminRequests");
+  const message=document.getElementById("adminMessage");
+  if(!currentUser) return;
+  container.textContent="جاري تحميل طلبات الشحن...";
+  message.textContent="";
+  try{
+    const result=await callAdminApi("GET");
+    container.replaceChildren();
+    const requests=result.requests||[];
+    if(requests.length===0){
+      container.textContent="لا توجد طلبات شحن حتى الآن.";
+      return;
+    }
+    requests.forEach(item=>{
+      const card=document.createElement("div");
+      card.className="admin-request";
+      const title=document.createElement("strong");
+      title.textContent="طلب "+item.id;
+      const details=document.createElement("p");
+      details.textContent="الزبون: "+(item.customer_email||item.user_id)+
+        " | المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
+        " | رقم العملية: "+item.transfer_reference+
+        " | الحالة: "+({pending:"قيد المراجعة",approved:"مقبول",rejected:"مرفوض"}[item.status]||item.status)+
+        " | التاريخ: "+new Date(item.created_at).toLocaleString("ar");
+      card.append(title,details);
+      if(item.status==="pending"){
+        const actions=document.createElement("div");
+        actions.className="admin-actions";
+        const approve=document.createElement("button");
+        approve.textContent="تأكيد التحويل والموافقة";
+        approve.onclick=()=>reviewDeposit(item.id,"approved");
+        const reject=document.createElement("button");
+        reject.textContent="رفض الطلب";
+        reject.className="secondary";
+        reject.onclick=()=>reviewDeposit(item.id,"rejected");
+        actions.append(approve,reject);
+        card.appendChild(actions);
+      }
+      container.appendChild(card);
+    });
+  }catch(error){
+    container.textContent="تعذر تحميل لوحة الإدارة: "+error.message;
+  }
+}
+
+async function reviewDeposit(requestId,decision){
+  const promptText=decision==="approved"
+    ?"هل تحققت بنفسك من وصول التحويل في إشعار شام كاش؟ لن يُضاف الرصيد إلا بعد التأكد."
+    :"هل تريد رفض طلب الشحن؟ لن يتغير رصيد الزبون.";
+  if(!confirm(promptText)) return;
+  const message=document.getElementById("adminMessage");
+  message.textContent="جاري تنفيذ القرار بأمان...";
+  try{
+    const result=await callAdminApi("POST",{request_id:requestId,decision});
+    message.textContent=decision==="approved"
+      ?"تمت الموافقة وإضافة "+Number(result.amount).toLocaleString("en-US")+" "+result.currency+" مرة واحدة."
+      :"تم رفض الطلب.";
+    await loadAdminPanel();
+  }catch(error){
+    message.textContent="لم يكتمل الإجراء: "+error.message;
   }
 }
 
