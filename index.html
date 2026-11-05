@@ -68,10 +68,9 @@ footer{text-align:center;padding:25px;color:#839487}
 <div id="lockScreen" class="lock-screen hidden">
   <div class="lock-card">
     <div class="logo">BARAN GAME</div>
-    <h2 id="lockTitle">قفل المتجر 🔐</h2>
-    <p id="lockDescription">أدخل كلمة مرور القفل للمتابعة.</p>
-    <input id="lockPassword" type="password" placeholder="كلمة مرور القفل" autocomplete="off">
-    <input id="lockPassword2" class="hidden" type="password" placeholder="تأكيد كلمة المرور">
+    <h2 id="lockTitle">تأكيد هوية الحساب 🔐</h2>
+    <p id="lockDescription">أدخل كلمة مرور حسابك للتأكد من هويتك.</p>
+    <input id="lockPassword" type="password" placeholder="كلمة مرور الحساب" autocomplete="current-password">
     <button id="lockButton" class="full" onclick="submitLock()">فتح المتجر</button>
     <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
     <div id="lockMessage" class="small"></div>
@@ -161,7 +160,7 @@ footer{text-align:center;padding:25px;color:#839487}
     <section id="account" class="hidden">
       <h2>حسابي</h2>
       <p id="accountInfo"></p>
-      <button class="full secondary" onclick="changeLock()">تغيير كلمة مرور القفل</button>
+      <button class="full secondary" onclick="lockNow()">قفل التطبيق الآن</button>
       <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
     </section>
 
@@ -192,12 +191,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
 });
 
 let currentUser=null;
-let lockMode="unlock";
-let idleTimer=null;
 
-const LOCK_KEY="baran_lock_hash";
-const SALT_KEY="baran_lock_salt";
-const ACTIVITY_KEY="baran_last_activity";
 
 function say(text){
   document.getElementById("message").textContent=text;
@@ -229,8 +223,6 @@ function showApp(user){
   document.getElementById("appShell").classList.remove("hidden");
   document.getElementById("accountInfo").textContent=user.email||"";
   showSection("home",document.querySelector("nav button"));
-  recordActivity();
-  startIdleCheck();
   loadWallet();
 }
 
@@ -238,8 +230,8 @@ async function signUp(){
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
 
-  if(!email||password.length<6){
-    say("أدخل البريد وكلمة مرور من 6 أحرف على الأقل.");
+  if(!email||password.length<8||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[!@#$%^&*()_+\-=[\]{};\'":|<>?,./`~]/.test(password)){
+    say("كلمة المرور يجب أن تكون 8 أحرف على الأقل، وتحتوي حرفاً كبيراً وصغيراً ورقماً ورمزاً.");
     return;
   }
 
@@ -257,8 +249,7 @@ async function signUp(){
     if(error) throw error;
 
     if(data.session&&data.user){
-      currentUser=data.user;
-      await prepareLock();
+      showApp(data.user);
     }else{
       say("تم إنشاء الحساب. افتح بريدك واضغط رابط تأكيد الحساب، ثم سجّل الدخول.");
     }
@@ -284,8 +275,7 @@ async function signIn(){
   try{
     const {data,error}=await sb.auth.signInWithPassword({email,password});
     if(error) throw error;
-    currentUser=data.user;
-    await prepareLock();
+    showApp(data.user);
   }catch(error){
     say("تعذر تسجيل الدخول: "+error.message);
   }finally{
@@ -293,143 +283,41 @@ async function signIn(){
   }
 }
 
-async function hashPassword(password,salt){
-  const encoder=new TextEncoder();
-  const key=await crypto.subtle.importKey(
-    "raw",encoder.encode(password),"PBKDF2",false,["deriveBits"]
-  );
-  const bits=await crypto.subtle.deriveBits({
-    name:"PBKDF2",
-    salt:encoder.encode(salt),
-    iterations:150000,
-    hash:"SHA-256"
-  },key,256);
-
-  return Array.from(new Uint8Array(bits))
-    .map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-
 function showLock(mode){
-  lockMode=mode;
   document.getElementById("appShell").classList.add("hidden");
   document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("lockScreen").classList.remove("hidden");
-
   document.getElementById("lockPassword").value="";
-  document.getElementById("lockPassword2").value="";
   document.getElementById("lockMessage").textContent="";
-
-  const setup=mode==="setup";
-
-  document.getElementById("lockTitle").textContent=
-    setup?"إنشاء كلمة مرور القفل 🔐":"قفل المتجر 🔐";
-
-  document.getElementById("lockDescription").textContent=
-    setup?"اختر كلمة مرور خاصة لفتح المتجر.":"أدخل كلمة مرور القفل للمتابعة.";
-
-  document.getElementById("lockPassword2").classList.toggle("hidden",!setup);
-  document.getElementById("lockPassword").placeholder=
-    setup?"كلمة مرور جديدة":"كلمة مرور القفل";
-
-  document.getElementById("lockButton").textContent=
-    setup?"حفظ كلمة المرور":"فتح المتجر";
+  document.getElementById("lockTitle").textContent="تأكيد هوية الحساب 🔐";
+  document.getElementById("lockDescription").textContent="أدخل كلمة مرور حسابك للمتابعة.";
+  document.getElementById("lockPassword").placeholder="كلمة مرور الحساب";
+  document.getElementById("lockButton").textContent="تأكيد وفتح المتجر";
 }
 
 async function prepareLock(){
-  const last=Number(localStorage.getItem(ACTIVITY_KEY)||0);
-
-  if(last && Date.now()-last>7*24*60*60*1000){
-    await sb.auth.signOut({scope:"local"});
-    localStorage.removeItem(ACTIVITY_KEY);
-    showLogin("انتهت مدة الجلسة بعد 7 أيام من عدم الاستخدام. سجّل الدخول مجدداً.");
-    return;
-  }
-
-  if(!localStorage.getItem(LOCK_KEY)){
-    showLock("setup");
-  }else{
-    showLock("unlock");
-  }
+  showLock("unlock");
 }
 
 async function submitLock(){
-  if(!currentUser) return;
-
+  if(!currentUser || !currentUser.email) return;
   const pass=document.getElementById("lockPassword").value;
   const note=document.getElementById("lockMessage");
-
-  if(pass.length<6){
-    note.textContent="كلمة المرور يجب أن تكون 6 أحرف على الأقل.";
-    return;
-  }
-
+  const button=document.getElementById("lockButton");
+  if(!pass){ note.textContent="أدخل كلمة مرور حسابك للمتابعة."; return; }
+  button.disabled=true;
+  note.textContent="جاري التحقق من كلمة المرور عبر خادم الحساب...";
   try{
-    if(lockMode==="setup"){
-      const confirm=document.getElementById("lockPassword2").value;
-
-      if(pass!==confirm){
-        note.textContent="كلمتا المرور غير متطابقتين.";
-        return;
-      }
-
-      const salt=crypto.randomUUID();
-      const hash=await hashPassword(pass,salt);
-
-      localStorage.setItem(SALT_KEY,salt);
-      localStorage.setItem(LOCK_KEY,hash);
-      recordActivity();
-      showApp(currentUser);
-      return;
-    }
-
-    const salt=localStorage.getItem(SALT_KEY);
-    const saved=localStorage.getItem(LOCK_KEY);
-    const entered=await hashPassword(pass,salt||"");
-
-    if(entered!==saved){
-      note.textContent="كلمة المرور غير صحيحة.";
-      return;
-    }
-
-    recordActivity();
-    showApp(currentUser);
+    const {data,error}=await sb.auth.signInWithPassword({email:currentUser.email,password:pass});
+    if(error) throw error;
+    if(!data.user) throw new Error("لم يتم تأكيد هوية الحساب.");
+    showApp(data.user);
   }catch(error){
-    note.textContent="تعذر التحقق من كلمة المرور. جرّب متصفحاً حديثاً.";
-  }
+    note.textContent="تعذر التحقق: تأكد من كلمة مرور حسابك وحاول مجدداً.";
+  }finally{ button.disabled=false; }
 }
 
-function changeLock(){
-  if(!currentUser) return;
-  localStorage.removeItem(LOCK_KEY);
-  localStorage.removeItem(SALT_KEY);
-  showLock("setup");
-}
-
-function recordActivity(){
-  localStorage.setItem(ACTIVITY_KEY,String(Date.now()));
-}
-
-function startIdleCheck(){
-  if(idleTimer) clearInterval(idleTimer);
-
-  idleTimer=setInterval(async()=>{
-    const last=Number(localStorage.getItem(ACTIVITY_KEY)||0);
-
-    if(currentUser && last && Date.now()-last>7*24*60*60*1000){
-      clearInterval(idleTimer);
-      await sb.auth.signOut({scope:"local"});
-      localStorage.removeItem(ACTIVITY_KEY);
-      showLogin("انتهت الجلسة بعد 7 أيام من عدم الاستخدام. سجّل الدخول مجدداً.");
-    }
-  },60000);
-}
-
-document.addEventListener("click",()=>{
-  if(currentUser && !document.hidden &&
-     !document.getElementById("appShell").classList.contains("hidden")){
-    recordActivity();
-  }
-});
+function lockNow(){ if(currentUser) showLock("unlock"); }
 
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden && currentUser &&
@@ -439,11 +327,8 @@ document.addEventListener("visibilitychange",()=>{
 });
 
 async function signOut(){
-  if(idleTimer) clearInterval(idleTimer);
-
   await sb.auth.signOut({scope:"local"});
   currentUser=null;
-  localStorage.removeItem(ACTIVITY_KEY);
   showLogin("تم تسجيل الخروج بنجاح.");
 }
 
@@ -495,7 +380,13 @@ async function restoreSession(){
     if(error) throw error;
 
     if(data.session){
-      currentUser=data.session.user;
+      const {data:verified,error:verifyError}=await sb.auth.getUser();
+      if(verifyError||!verified.user){
+        await sb.auth.signOut({scope:"local"});
+        showLogin("تعذر تأكيد الجلسة. سجّل الدخول مجدداً.");
+        return;
+      }
+      currentUser=verified.user;
       await prepareLock();
     }else{
       showLogin("سجّل الدخول للبدء باستخدام المتجر.");
