@@ -422,6 +422,7 @@ function showApp(user){
   document.getElementById("lockScreen").classList.add("hidden");
   document.getElementById("appShell").classList.remove("hidden");
   document.getElementById("accountInfo").textContent=user.email||"";
+  if(typeof loadProfileDetails==="function")loadProfileDetails();
   showSection("home",document.querySelector("nav button"));
   loadWallet();
   checkAdminAccess();
