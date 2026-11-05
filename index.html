@@ -226,6 +226,25 @@ footer{text-align:center;padding:25px;color:#839487}
       <p id="accountInfo"></p>
       <button class="full secondary" onclick="showSection('rewards',null)">النقاط والمكافآت 🎁</button>
       <div class="deposit-card">
+        <h3>تعديل بيانات الحساب 👤</h3>
+        <label for="profileFullName">الاسم الكامل</label>
+        <input id="profileFullName" type="text" maxlength="80" autocomplete="name" placeholder="اكتب اسمك">
+        <label for="profilePhone">رقم الهاتف (اختياري)</label>
+        <input id="profilePhone" type="tel" maxlength="30" autocomplete="tel" placeholder="رقم التواصل">
+        <button id="saveProfileButton" class="full" type="button" onclick="saveProfileDetails()">حفظ البيانات</button>
+        <div id="profileMessage" class="small" role="status"></div>
+      </div>
+      <div class="deposit-card">
+        <h3>تغيير البريد الإلكتروني ✉️</h3>
+        <p class="small">سيُرسل رابط تأكيد إلى البريد الجديد. لن يتغير بريد الحساب قبل تأكيده.</p>
+        <label for="newAccountEmail">البريد الإلكتروني الجديد</label>
+        <input id="newAccountEmail" type="email" autocomplete="email" placeholder="name@example.com">
+        <label for="emailChangePassword">كلمة المرور الحالية للتأكيد</label>
+        <input id="emailChangePassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية">
+        <button id="changeEmailButton" class="full" type="button" onclick="changeAccountEmail()">إرسال رابط تأكيد البريد</button>
+        <div id="emailChangeMessage" class="small" role="status"></div>
+      </div>
+      <div class="deposit-card">
         <h3>تغيير كلمة المرور 🔐</h3>
         <label for="currentAccountPassword">كلمة المرور الحالية</label>
         <input id="currentAccountPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية">
@@ -352,6 +371,7 @@ footer{text-align:center;padding:25px;color:#839487}
 
 <script src="./products.js"></script>
 <script src="./account-security.js"></script>
+<script src="./profile-settings.js"></script>
 <script src="./community.js"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
