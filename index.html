@@ -20,6 +20,12 @@ button:disabled{opacity:.5}
 nav button{background:#1a2920;color:white;padding:11px}
 nav button.active{background:var(--green);color:#06140b}
 input{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;color:white;border:1px solid #38523f;border-radius:10px;font-size:16px}
+select{display:block;width:100%;padding:14px;margin:10px 0;background:#080e0a;color:white;border:1px solid #38523f;border-radius:10px;font-size:16px}
+.deposit-card{margin-top:20px;padding:16px;background:#0b130e;border:1px solid #1a8c58;border-radius:14px}
+.deposit-id{padding:14px;margin:12px 0;background:#050906;border:1px dashed var(--green);border-radius:10px;color:var(--green);font-weight:bold;text-align:center;overflow-wrap:anywhere;user-select:all}
+.deposit-row{padding:12px;margin:9px 0;background:#17231b;border:1px solid #2c4533;border-radius:10px;line-height:1.8}
+.deposit-status{font-weight:bold;color:var(--green)}
+.deposit-card label{display:block;margin-top:12px;color:var(--muted);font-size:14px}
 section,.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0}
 h2{color:var(--green);margin-top:0}
 p{line-height:1.7}
@@ -153,8 +159,29 @@ footer{text-align:center;padding:25px;color:#839487}
       <div class="balance" id="usd">0.00 $</div>
       <p>رصيد الليرة السورية</p>
       <div class="balance" id="syp">0 ل.س</div>
-      <button class="full" onclick="loadWallet()">تحديث الرصيد</button>
-      <p class="small">لا يمكن إضافة رصيد إلا بعد التحقق من التحويل وتفعيل الدفع.</p>
+      <button class="full secondary" onclick="loadWallet()">تحديث الرصيد</button>
+
+      <div class="deposit-card">
+        <h2>شحن المحفظة عبر شام كاش</h2>
+        <p>حوّل المبلغ إلى معرّف محفظة الاستلام التالي، ثم أرسل طلب الشحن مع رقم العملية.</p>
+        <div class="deposit-id" dir="ltr" id="shamCashReceiver">bf37143ce15dd68389c21285e71818d1</div>
+        <button class="full" type="button" onclick="copyShamCashReceiver()">نسخ معرّف الاستلام</button>
+        <label for="depositCurrency">عملة التحويل</label>
+        <select id="depositCurrency">
+          <option value="USD">دولار أمريكي (USD)</option>
+          <option value="SYP">ليرة سورية (SYP)</option>
+        </select>
+        <label for="depositAmount">المبلغ المحوّل</label>
+        <input id="depositAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
+        <label for="depositReference">رقم العملية / مرجع التحويل</label>
+        <input id="depositReference" type="text" maxlength="120" placeholder="أدخل رقم العملية الظاهر بإشعار شام كاش">
+        <button id="depositSubmitButton" class="full" type="button" onclick="submitDepositRequest()">إرسال طلب الشحن</button>
+        <p class="small">تنبيه: إرسال الطلب لا يضيف الرصيد تلقائياً. تتم مراجعة التحويل يدوياً، ثم يُحدّث الرصيد عند الموافقة.</p>
+        <div id="depositMessage" class="small" role="status"></div>
+      </div>
+
+      <h2 style="margin-top:22px">طلبات الشحن السابقة</h2>
+      <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
     </section>
 
     <section id="account" class="hidden">
@@ -332,6 +359,94 @@ async function signOut(){
   showLogin("تم تسجيل الخروج بنجاح.");
 }
 
+async function copyShamCashReceiver(){
+  const receiver=document.getElementById("shamCashReceiver").textContent.trim();
+  const message=document.getElementById("depositMessage");
+  try{
+    await navigator.clipboard.writeText(receiver);
+    message.textContent="تم نسخ معرّف محفظة الاستلام.";
+  }catch(error){
+    message.textContent="تعذر النسخ تلقائياً. اضغط مطولاً على المعرّف وانسخه.";
+  }
+}
+
+async function submitDepositRequest(){
+  if(!currentUser) return;
+  const amount=Number(document.getElementById("depositAmount").value);
+  const currency=document.getElementById("depositCurrency").value;
+  const reference=document.getElementById("depositReference").value.trim();
+  const message=document.getElementById("depositMessage");
+  const button=document.getElementById("depositSubmitButton");
+  if(!Number.isFinite(amount)||amount<=0){
+    message.textContent="أدخل مبلغاً صحيحاً أكبر من صفر.";
+    return;
+  }
+  if(reference.length<3){
+    message.textContent="أدخل رقم العملية أو مرجع التحويل الصحيح.";
+    return;
+  }
+  button.disabled=true;
+  message.textContent="جاري إرسال طلب الشحن...";
+  try{
+    const {data:{user},error:userError}=await sb.auth.getUser();
+    if(userError||!user) throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
+    const {error}=await sb.from("deposit_requests").insert({
+      user_id:user.id,
+      payment_method:"sham_cash",
+      amount,
+      currency,
+      transfer_reference:reference,
+      status:"pending"
+    });
+    if(error) throw error;
+    document.getElementById("depositAmount").value="";
+    document.getElementById("depositReference").value="";
+    message.textContent="تم إرسال طلبك للمراجعة. لن يُضاف الرصيد قبل التأكد من التحويل.";
+    await loadDepositRequests();
+  }catch(error){
+    if(error.code==="23505"){
+      message.textContent="رقم العملية مستخدم مسبقاً. تحقق من الرقم وأدخل مرجع التحويل الصحيح.";
+    }else{
+      message.textContent="تعذر إرسال الطلب: "+error.message;
+    }
+  }finally{
+    button.disabled=false;
+  }
+}
+
+async function loadDepositRequests(){
+  if(!currentUser) return;
+  const container=document.getElementById("depositHistory");
+  try{
+    const {data:{user},error:userError}=await sb.auth.getUser();
+    if(userError||!user) throw new Error("انتهت الجلسة.");
+    const {data,error}=await sb.from("deposit_requests")
+      .select("id,amount,currency,transfer_reference,status,created_at")
+      .eq("user_id",user.id)
+      .order("created_at",{ascending:false})
+      .limit(15);
+    if(error) throw error;
+    container.replaceChildren();
+    if(!data||data.length===0){
+      container.textContent="لا توجد طلبات شحن حتى الآن.";
+      return;
+    }
+    const labels={pending:"قيد المراجعة",approved:"تمت الموافقة",rejected:"مرفوض"};
+    data.forEach(item=>{
+      const row=document.createElement("div");
+      row.className="deposit-row";
+      const date=new Date(item.created_at).toLocaleString("ar");
+      row.textContent="المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
+        " | رقم العملية: "+item.transfer_reference+
+        " | الحالة: "+(labels[item.status]||item.status)+
+        " | التاريخ: "+date;
+      container.appendChild(row);
+    });
+  }catch(error){
+    container.textContent="تعذر تحميل الطلبات: "+error.message;
+  }
+}
+
 async function loadWallet(){
   if(!currentUser) return;
 
@@ -363,6 +478,7 @@ async function loadWallet(){
 
     document.getElementById("syp").textContent=
       Number(data.balance_syp||0).toLocaleString("en-US")+" ل.س";
+    await loadDepositRequests();
 
   }catch(error){
     say("حدث خطأ أثناء تحميل المحفظة: "+error.message);
