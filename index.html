@@ -708,6 +708,7 @@ async function loadAdminPanel(){
     });
     }
     renderFinance(result.finance||{});
+    if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
   }catch(error){
     container.textContent="تعذر تحميل لوحة الإدارة: "+error.message;
     document.getElementById("financeSummary").textContent="تعذر تحميل الحسابات المالية.";
