@@ -10,9 +10,15 @@
 :root{--green:#19e68c;--bg:#070b09;--panel:#111a15;--line:#294333;--muted:#a8b9ad}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
-header{padding:24px 12px;text-align:center;background:linear-gradient(135deg,#10251a,#07100b);border-bottom:2px solid var(--green)}
-.logo{font-size:32px;font-weight:900;color:var(--green);letter-spacing:2px}
-header p{color:var(--muted);margin-bottom:0}
+header{position:relative;isolation:isolate;min-height:260px;padding:42px 16px 34px;text-align:center;overflow:hidden;background:linear-gradient(110deg,rgba(3,12,8,.94),rgba(5,20,12,.68) 52%,rgba(3,10,7,.9)),url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=85") center 42%/cover no-repeat;border-bottom:2px solid var(--green);box-shadow:0 12px 35px #0008}
+header:before{content:"";position:absolute;inset:-45%;z-index:-1;background:radial-gradient(circle at 50% 45%,rgba(25,230,140,.24),transparent 36%);animation:baranGlow 7s ease-in-out infinite alternate}
+header:after{content:"";position:absolute;left:10%;right:10%;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#19e68c,transparent);box-shadow:0 0 18px #19e68c}
+header .logo{display:inline-flex;align-items:center;justify-content:center;gap:11px;font-size:clamp(30px,6vw,46px);font-weight:1000;letter-spacing:2px;color:#eafff2;text-shadow:0 0 12px #19e68c,0 0 30px #19e68c;animation:baranPulse 3.5s ease-in-out infinite}
+header .logo-mark{display:inline-flex;width:50px;height:50px;align-items:center;justify-content:center;border:2px solid #54ffad;border-radius:15px;background:linear-gradient(145deg,#173d2a,#07100b);color:#54ffad;font-size:29px;box-shadow:0 0 18px #19e68c88,inset 0 0 12px #19e68c33}
+header p{position:relative;color:#e0f8e9;margin:10px 0 0;text-shadow:0 2px 8px #000;font-weight:600}
+header .header-tag{display:inline-block;margin-top:16px;padding:7px 15px;border:1px solid #46f59c88;border-radius:999px;background:#06150dbb;color:#70ffb5;font-size:11px;letter-spacing:2px}
+@keyframes baranGlow{from{transform:translateX(-4%) scale(.92);opacity:.55}to{transform:translateX(4%) scale(1.12);opacity:1}}
+@keyframes baranPulse{0%,100%{filter:drop-shadow(0 0 3px #19e68c55)}50%{filter:drop-shadow(0 0 12px #19e68c)}}
 main{max-width:1050px;margin:auto;padding:14px}
 nav{position:sticky;top:0;z-index:5;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:12px;background:#0d130f;border-bottom:1px solid var(--line)}
 button{border:0;border-radius:11px;padding:13px 16px;background:var(--green);color:#06140b;font-weight:bold;cursor:pointer}
@@ -63,9 +69,10 @@ footer{text-align:center;padding:25px;color:#839487}
 <body>
 
 <header>
-  <div class="logo">BARAN GAME</div>
-  <p>مرحباً بك في Baran Game 👋</p>
-  <p>متجرك للألعاب والخدمات الرقمية 🎮</p>
+  <div class="logo"><span class="logo-mark">B</span><span>BARAN GAME</span></div>
+  <p>مرحباً بك في عالم الألعاب والخدمات الرقمية</p>
+  <p>كل ما تحبّه… بمكان واحد 🎮</p>
+  <div class="header-tag">GAMING • DIGITAL • REWARDS</div>
 </header>
 
 <div id="authScreen">
