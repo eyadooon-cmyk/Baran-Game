@@ -261,28 +261,42 @@ function renderAdminFeedback(items){
   const box=document.getElementById("adminFeedback");
   if(!box)return;
   box.replaceChildren();
-  if(!items.length){box.textContent="لا توجد آراء أو اقتراحات أو رسائل دعم بعد.";return;}
-  items.forEach(item=>{
+  const rows=[...(items||[])].sort((a,b)=>{
+    const rank=x=>x.feedback_type==="support"&&["pending","in_progress"].includes(x.status)?0:
+      x.feedback_type==="suggestion"&&["pending","in_progress"].includes(x.status)?1:2;
+    return rank(a)-rank(b)||new Date(b.created_at)-new Date(a.created_at);
+  });
+  const openTickets=rows.filter(x=>x.feedback_type==="support"&&["pending","in_progress"].includes(x.status)).length;
+  const summary=document.createElement("div");
+  summary.className="ops-item";
+  summary.textContent="تذاكر الدعم المفتوحة: "+openTickets+" | إجمالي الرسائل: "+rows.length+
+    " — تظهر الحالات المفتوحة أولاً.";
+  box.appendChild(summary);
+  if(!rows.length){box.appendChild(document.createTextNode("لا توجد آراء أو اقتراحات أو رسائل دعم بعد."));return;}
+  rows.forEach(item=>{
     const card=document.createElement("div");card.className="admin-request";
     const title=document.createElement("strong");
-    title.textContent=(feedbackTypeLabels[item.feedback_type]||item.feedback_type)+(item.feedback_type==="support"&&item.ticket_code?" — "+item.ticket_code:"")+" — "+(item.customer_email||item.user_id);
+    title.textContent=(feedbackTypeLabels[item.feedback_type]||item.feedback_type)+
+      (item.feedback_type==="support"&&item.ticket_code?" — "+item.ticket_code:"")+" — "+(item.customer_email||item.user_id);
     const body=document.createElement("p");
     body.textContent=(item.subject?item.subject+" | ":"")+
       (item.rating?"التقييم: "+item.rating+"/5 | ":"")+
       item.message+" | الحالة: "+(feedbackStatusLabels[item.status]||item.status)+
       " | "+new Date(item.created_at).toLocaleString("ar");
     card.append(title,body);
-    const replyLabel=document.createElement("label");replyLabel.textContent="رد الإدارة";card.appendChild(replyLabel);
-    const reply=document.createElement("textarea");reply.rows=2;reply.maxLength=2000;reply.placeholder="اكتب رداً للعميل";reply.value=item.admin_reply||"";card.appendChild(reply);
-    const statusLabel=document.createElement("label");statusLabel.textContent="تحديث الحالة";card.appendChild(statusLabel);
+    if(item.order_id){const order=document.createElement("div");order.className="small";order.textContent="رقم الطلب المرتبط: "+item.order_id;card.appendChild(order);}
+    if(item.admin_reply){const previous=document.createElement("p");previous.className="small";previous.textContent="آخر رد محفوظ: "+item.admin_reply;card.appendChild(previous);}
+    const replyLabel=document.createElement("label");replyLabel.textContent="الرد الذي سيصل للزبون كإشعار داخل المتجر";card.appendChild(replyLabel);
+    const reply=document.createElement("textarea");reply.rows=3;reply.maxLength=2000;reply.placeholder="اكتب رداً واضحاً للزبون";reply.value=item.admin_reply||"";card.appendChild(reply);
+    const statusLabel=document.createElement("label");statusLabel.textContent="حالة التذكرة";card.appendChild(statusLabel);
     const status=document.createElement("select");
     const choices=item.feedback_type==="review"
       ?[["approved","اعتماد التقييم"],["rejected","رفض التقييم"]]
-      :[["in_progress","قيد المعالجة"],["completed","تم التنفيذ / الإغلاق"],["rejected","رفض"]];
+      :[["pending","جديدة / قيد المراجعة"],["in_progress","قيد المعالجة"],["completed","تم الحل / الإغلاق"],["rejected","مرفوضة"]];
     choices.forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;status.appendChild(option);});
-    if(choices.some(x=>x[0]===item.status))status.value=item.status;
+    status.value=item.status;
     card.appendChild(status);
-    const save=document.createElement("button");save.type="button";save.className="full";save.textContent="حفظ الرد والحالة";
+    const save=document.createElement("button");save.type="button";save.className="full";save.textContent="حفظ الرد والحالة وإشعار الزبون";
     save.onclick=()=>saveAdminFeedback(item.id,status.value,reply.value,save);
     card.appendChild(save);box.appendChild(card);
   });
