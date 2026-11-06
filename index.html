@@ -182,6 +182,10 @@ button{font-weight:700}
 @media(min-width:700px){.ops-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
 
+/* مساعد الإدارة — لوحة خاصة بالمدير */
+#baranAdminAssistant{border-color:#8b6ba8;background:linear-gradient(145deg,#1b1522,#100d15)}
+#baranAdminAssistant .ai-assistant-messages{min-height:180px}
+#baranAdminAssistant .ai-chat-message{max-width:96%}
 /* مركز إشعارات Baran Game */
 .notification-modal{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:8vh 14px 20px;background:#000b;overflow-y:auto}
 .notification-panel{width:min(620px,100%);max-height:78vh;overflow-y:auto;padding:17px;background:#17121e;border:1px solid #8b6ba8;border-radius:17px;box-shadow:0 18px 55px #000b}
@@ -486,6 +490,19 @@ button{font-weight:700}
       <h2>لوحة الإدارة 🔐</h2>
       <h3>نظرة عامة على المتجر</h3>
       <div id="opsStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
+
+      <section id="baranAdminAssistant" class="deposit-card" aria-label="مساعد الإدارة الذكي">
+        <h2>🧠 مساعد إدارة Baran Game</h2>
+        <p class="small">اسأل عن الأرباح والمبيعات والطلبات والموردين والتنبيهات. يعتمد على بيانات لوحة الإدارة المحمّلة، ويعمل حالياً بوضع القراءة والتحليل فقط.</p>
+        <div id="baranAdminAssistantMessages" class="ai-assistant-messages" style="height:210px;max-height:35vh;background:#100b16;border-radius:12px" aria-live="polite">
+          <div class="ai-chat-message bot">أهلاً! فيني أعطيك ملخصاً عن وضع المتجر وأحلل الأرقام المسجلة. جرّب: «ملخص اليوم» أو «الطلبات المعلقة» أو «أفضل المنتجات».</div>
+        </div>
+        <form id="baranAdminAssistantForm" class="ai-assistant-form" onsubmit="askBaranAdminAssistant(event)">
+          <input id="baranAdminAssistantInput" type="text" maxlength="500" autocomplete="off" placeholder="اسأل عن أرباحك أو طلباتك أو الموردين..." aria-label="سؤال مساعد الإدارة">
+          <button id="baranAdminAssistantSend" type="submit">اسأل</button>
+        </form>
+        <div class="ops-muted">🔒 خاص بالمدير فقط — لا ينفذ تعديلات مالية أو يغيّر الطلبات.</div>
+      </section>
       <hr style="border-color:#40334b;margin:24px 0">
       <h2>إدارة المستخدمين 👥</h2>
       <p class="small">عرض آخر الحسابات المسجلة ومعلومات التواصل الأساسية.</p>
@@ -726,6 +743,7 @@ button{font-weight:700}
 <script src="./community.js"></script>
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js"></script>
+<script src="./admin-assistant.js"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
