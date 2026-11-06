@@ -73,6 +73,12 @@
     }
   }
 
+  window.askBaranAdminPrompt = function (question) {
+    const input = document.getElementById("baranAdminAssistantInput");
+    if (input) input.value = String(question || "");
+    void send(question);
+  };
+
   window.askBaranAdminAssistant = function (event) {
     if (event) event.preventDefault();
     const input = document.getElementById("baranAdminAssistantInput");
