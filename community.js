@@ -1,9 +1,120 @@
 const feedbackTypeLabels={review:"تقييم عميل",suggestion:"اقتراح ميزة",support:"طلب دعم"};
 const feedbackStatusLabels={pending:"جديد / قيد المراجعة",in_progress:"قيد المعالجة",approved:"تم اعتماد التقييم",rejected:"مرفوض",completed:"تم التنفيذ / الإغلاق"};
 
+let baranNotificationPoll=null;
+
 async function loadCommunity(){
   if(!currentUser)return;
-  await Promise.all([loadCompletedOrders(),loadMyFeedback(),loadPublicReviews()]);
+  await Promise.all([loadCompletedOrders(),loadMyFeedback(),loadPublicReviews(),loadMyNotifications()]);
+  startBaranNotificationPolling();
+}
+
+function startBaranNotificationPolling(){
+  if(baranNotificationPoll)clearInterval(baranNotificationPoll);
+  baranNotificationPoll=setInterval(()=>{
+    if(currentUser)loadMyNotifications();
+  },45000);
+}
+
+function stopBaranNotificationPolling(){
+  if(baranNotificationPoll)clearInterval(baranNotificationPoll);
+  baranNotificationPoll=null;
+}
+
+function openCustomerNotifications(){
+  if(typeof showSection==="function")showSection("support",null);
+  loadMyNotifications();
+  const box=document.getElementById("myNotifications");
+  if(box)box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function loadMyNotifications(){
+  const box=document.getElementById("myNotifications");
+  if(!box||!currentUser)return;
+  try{
+    const {data,error}=await sb.from("baran_notifications")
+      .select("id,kind,title,body,read_at,created_at")
+      .eq("recipient_id",currentUser.id)
+      .eq("audience","customer")
+      .order("created_at",{ascending:false})
+      .limit(30);
+    if(error)throw error;
+    const items=data||[];
+    const unread=items.filter(item=>!item.read_at);
+    const badge=document.getElementById("notificationCount");
+    if(badge){
+      badge.textContent=unread.length>99?"99+":String(unread.length);
+      badge.classList.toggle("hidden",unread.length===0);
+    }
+    box.replaceChildren();
+    const heading=document.createElement("div");
+    heading.className="notification-heading";
+    const title=document.createElement("strong");title.textContent="🔔 إشعاراتك";
+    const markAll=document.createElement("button");markAll.type="button";markAll.className="secondary";
+    markAll.textContent=unread.length?"قراءة الكل":"محدّثة";
+    markAll.disabled=!unread.length;
+    markAll.onclick=async()=>{
+      markAll.disabled=true;
+      const {error:readError}=await sb.rpc("mark_baran_notifications_read",{p_ids:unread.map(item=>item.id)});
+      if(readError){markAll.disabled=false;alert("تعذر تحديث الإشعارات.");return;}
+      await loadMyNotifications();
+    };
+    heading.append(title,markAll);box.appendChild(heading);
+    if(!items.length){
+      const empty=document.createElement("p");empty.className="small";empty.textContent="ما عندك إشعارات حالياً. رح تظهر هون تحديثات الطلبات والإيداعات وتذاكر الدعم.";
+      box.appendChild(empty);return;
+    }
+    items.forEach(item=>{
+      const card=document.createElement("div");card.className="notification-item"+(item.read_at?"":" unread");
+      const name=document.createElement("strong");name.textContent=item.title;
+      const body=document.createElement("p");body.textContent=item.body;
+      const date=document.createElement("div");date.className="small";date.textContent=new Date(item.created_at).toLocaleString("ar");
+      card.append(name,body,date);
+      if(!item.read_at){
+        const read=document.createElement("button");read.type="button";read.className="secondary";read.textContent="تحديد كمقروء";
+        read.onclick=async()=>{
+          read.disabled=true;
+          const {error:readError}=await sb.rpc("mark_baran_notifications_read",{p_ids:[item.id]});
+          if(readError){read.disabled=false;alert("تعذر تحديث الإشعار.");return;}
+          await loadMyNotifications();
+        };
+        card.appendChild(read);
+      }
+      box.appendChild(card);
+    });
+  }catch(error){
+    box.textContent="تعذر تحميل الإشعارات حالياً.";
+  }
+}
+
+function renderAdminNotifications(items){
+  const box=document.getElementById("adminNotifications");
+  if(!box)return;
+  box.replaceChildren();
+  const unread=(items||[]).filter(item=>!item.read_at);
+  const heading=document.createElement("div");heading.className="notification-heading";
+  const title=document.createElement("strong");title.textContent="🔔 تنبيهات الإدارة ("+unread.length+" غير مقروء)";
+  const refresh=document.createElement("button");refresh.type="button";refresh.className="secondary";refresh.textContent="تحديث";
+  refresh.onclick=()=>loadAdminPanel();
+  heading.append(title,refresh);box.appendChild(heading);
+  if(!items?.length){const empty=document.createElement("p");empty.className="small";empty.textContent="لا توجد تنبيهات جديدة حالياً.";box.appendChild(empty);return;}
+  items.forEach(item=>{
+    const card=document.createElement("div");card.className="notification-item"+(item.read_at?"":" unread");
+    const name=document.createElement("strong");name.textContent=item.title;
+    const body=document.createElement("p");body.textContent=item.body;
+    const date=document.createElement("div");date.className="small";date.textContent=new Date(item.created_at).toLocaleString("ar");
+    card.append(name,body,date);
+    if(!item.read_at){
+      const read=document.createElement("button");read.type="button";read.className="secondary";read.textContent="تحديد كمقروء";
+      read.onclick=async()=>{
+        read.disabled=true;
+        try{await callAdminApi("POST",{action:"notification_read",notification_id:item.id});await loadAdminPanel();}
+        catch(error){read.disabled=false;alert("تعذر تحديث التنبيه: "+error.message);}
+      };
+      card.appendChild(read);
+    }
+    box.appendChild(card);
+  });
 }
 
 async function loadPublicReviews(){
@@ -109,7 +220,7 @@ async function loadMyFeedback(){
   box.textContent="جاري تحميل رسائلك...";
   try{
     const {data,error}=await sb.from("customer_feedback")
-      .select("id,feedback_type,subject,message,rating,status,admin_reply,created_at")
+      .select("id,feedback_type,ticket_code,subject,message,rating,status,admin_reply,created_at")
       .eq("user_id",currentUser.id)
       .order("created_at",{ascending:false})
       .limit(30);
@@ -119,7 +230,7 @@ async function loadMyFeedback(){
     data.forEach(item=>{
       const card=document.createElement("div");card.className="deposit-row";
       const title=document.createElement("strong");
-      title.textContent=feedbackTypeLabels[item.feedback_type]||item.feedback_type;
+      title.textContent=(feedbackTypeLabels[item.feedback_type]||item.feedback_type)+(item.feedback_type==="support"&&item.ticket_code?" — "+item.ticket_code:"");
       const details=document.createElement("p");
       details.textContent=(item.subject?item.subject+" — ":"")+
         (item.rating?"التقييم: "+item.rating+"/5 — ":"")+
@@ -142,7 +253,7 @@ function renderAdminFeedback(items){
   items.forEach(item=>{
     const card=document.createElement("div");card.className="admin-request";
     const title=document.createElement("strong");
-    title.textContent=(feedbackTypeLabels[item.feedback_type]||item.feedback_type)+" — "+(item.customer_email||item.user_id);
+    title.textContent=(feedbackTypeLabels[item.feedback_type]||item.feedback_type)+(item.feedback_type==="support"&&item.ticket_code?" — "+item.ticket_code:"")+" — "+(item.customer_email||item.user_id);
     const body=document.createElement("p");
     body.textContent=(item.subject?item.subject+" | ":"")+
       (item.rating?"التقييم: "+item.rating+"/5 | ":"")+
