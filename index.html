@@ -375,8 +375,11 @@ button{font-weight:700}
         <input id="depositAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
         <label for="depositReference">رقم العملية / مرجع التحويل</label>
         <input id="depositReference" type="text" maxlength="120" placeholder="أدخل رقم العملية الظاهر بإشعار شام كاش">
+        <label for="depositReceipt">صورة إشعار التحويل (إلزامية)</label>
+        <input id="depositReceipt" type="file" accept="image/jpeg,image/png,image/webp">
+        <p class="small">الصيغ المقبولة: JPG أو PNG أو WEBP، والحد الأقصى 5 ميغابايت. اخفِ أي بيانات لا نحتاجها قبل الإرسال.</p>
         <button id="depositSubmitButton" class="full" type="button" onclick="submitDepositRequest()">إرسال طلب الشحن</button>
-        <p class="small">تنبيه: إرسال الطلب لا يضيف الرصيد تلقائياً. تتم مراجعة التحويل يدوياً، ثم يُحدّث الرصيد عند الموافقة.</p>
+        <p class="small">تنبيه: الصورة دليل للمراجعة فقط وليست تأكيداً للدفع. لن يُضاف الرصيد إلا بعد التحقق من وصول الحوالة.</p>
         <div id="depositMessage" class="small" role="status"></div>
       </div>
 
@@ -802,8 +805,11 @@ async function submitDepositRequest(){
   const amount=Number(document.getElementById("depositAmount").value);
   const currency=document.getElementById("depositCurrency").value;
   const reference=document.getElementById("depositReference").value.trim();
+  const receiptInput=document.getElementById("depositReceipt");
+  const receipt=receiptInput?.files?.[0];
   const message=document.getElementById("depositMessage");
   const button=document.getElementById("depositSubmitButton");
+  const allowedTypes=["image/jpeg","image/png","image/webp"];
   if(!Number.isFinite(amount)||amount<=0){
     message.textContent="أدخل مبلغاً صحيحاً أكبر من صفر.";
     return;
@@ -812,25 +818,51 @@ async function submitDepositRequest(){
     message.textContent="أدخل رقم العملية أو مرجع التحويل الصحيح.";
     return;
   }
+  if(!receipt){
+    message.textContent="أرفق صورة إشعار التحويل أولاً.";
+    return;
+  }
+  if(!allowedTypes.includes(receipt.type)){
+    message.textContent="نوع الصورة غير مدعوم. استخدم JPG أو PNG أو WEBP.";
+    return;
+  }
+  if(receipt.size>5*1024*1024){
+    message.textContent="حجم الصورة أكبر من 5 ميغابايت.";
+    return;
+  }
   button.disabled=true;
-  message.textContent="جاري إرسال طلب الشحن...";
+  message.textContent="جاري رفع صورة الإشعار وإرسال الطلب...";
+  let uploadedPath=null;
   try{
     const {data:{user},error:userError}=await sb.auth.getUser();
     if(userError||!user) throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
+    const extension=receipt.type==="image/jpeg"?"jpg":receipt.type==="image/png"?"png":"webp";
+    uploadedPath=user.id+"/"+crypto.randomUUID()+"."+extension;
+    const {error:uploadError}=await sb.storage.from("shamcash-receipts").upload(uploadedPath,receipt,{
+      contentType:receipt.type,
+      cacheControl:"3600",
+      upsert:false
+    });
+    if(uploadError) throw uploadError;
     const {error}=await sb.from("deposit_requests").insert({
       user_id:user.id,
       payment_method:"sham_cash",
       amount,
       currency,
       transfer_reference:reference,
+      receipt_path:uploadedPath,
       status:"pending"
     });
     if(error) throw error;
     document.getElementById("depositAmount").value="";
     document.getElementById("depositReference").value="";
-    message.textContent="تم إرسال طلبك للمراجعة. لن يُضاف الرصيد قبل التأكد من التحويل.";
+    receiptInput.value="";
+    message.textContent="تم إرسال طلبك وصورة الإشعار للمراجعة. لن يُضاف الرصيد قبل التأكد من وصول التحويل.";
     await loadDepositRequests();
   }catch(error){
+    if(uploadedPath){
+      try{await sb.storage.from("shamcash-receipts").remove([uploadedPath]);}catch(cleanupError){}
+    }
     if(error.code==="23505"){
       message.textContent="رقم العملية مستخدم مسبقاً. تحقق من الرقم وأدخل مرجع التحويل الصحيح.";
     }else{
@@ -848,7 +880,7 @@ async function loadDepositRequests(){
     const {data:{user},error:userError}=await sb.auth.getUser();
     if(userError||!user) throw new Error("انتهت الجلسة.");
     const {data,error}=await sb.from("deposit_requests")
-      .select("id,amount,currency,transfer_reference,status,created_at")
+      .select("id,amount,currency,transfer_reference,receipt_path,status,created_at")
       .eq("user_id",user.id)
       .order("created_at",{ascending:false})
       .limit(15);
@@ -859,16 +891,30 @@ async function loadDepositRequests(){
       return;
     }
     const labels={pending:"قيد المراجعة",approved:"تمت الموافقة",rejected:"مرفوض"};
-    data.forEach(item=>{
+    for(const item of data){
       const row=document.createElement("div");
       row.className="deposit-row";
       const date=new Date(item.created_at).toLocaleString("ar");
-      row.textContent="المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
+      const details=document.createElement("div");
+      details.textContent="المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
         " | رقم العملية: "+item.transfer_reference+
         " | الحالة: "+(labels[item.status]||item.status)+
         " | التاريخ: "+date;
+      row.appendChild(details);
+      if(item.receipt_path){
+        const {data:signed,error:signedError}=await sb.storage.from("shamcash-receipts").createSignedUrl(item.receipt_path,300);
+        if(!signedError&&signed?.signedUrl){
+          const link=document.createElement("a");
+          link.href=signed.signedUrl;
+          link.target="_blank";
+          link.rel="noopener noreferrer";
+          link.textContent="عرض صورة الإشعار";
+          link.className="small";
+          row.appendChild(link);
+        }
+      }
       container.appendChild(row);
-    });
+    }
   }catch(error){
     container.textContent="تعذر تحميل الطلبات: "+error.message;
   }
@@ -1080,6 +1126,20 @@ async function loadAdminPanel(){
         " | الحالة: "+({pending:"قيد المراجعة",approved:"مقبول",rejected:"مرفوض"}[item.status]||item.status)+
         " | التاريخ: "+new Date(item.created_at).toLocaleString("ar");
       card.append(title,details);
+      if(item.receipt_url){
+        const receiptLink=document.createElement("a");
+        receiptLink.href=item.receipt_url;
+        receiptLink.target="_blank";
+        receiptLink.rel="noopener noreferrer";
+        receiptLink.textContent="فتح صورة إشعار شام كاش";
+        receiptLink.className="small";
+        card.appendChild(receiptLink);
+      }else{
+        const noReceipt=document.createElement("p");
+        noReceipt.className="small";
+        noReceipt.textContent="لا توجد صورة مرفقة لهذا الطلب.";
+        card.appendChild(noReceipt);
+      }
       if(item.status==="pending"){
         const actions=document.createElement("div");
         actions.className="admin-actions";
