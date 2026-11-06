@@ -191,6 +191,24 @@ button{font-weight:700}
 .notification-item time{display:block;color:#a99ab5;font-size:12px;margin-top:7px}
 .notification-item button{width:auto}
 
+
+/* تتبع الطلبات */
+.customer-order-card{border:1px solid #51405f}
+.customer-order-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.order-status-pill{display:inline-flex;align-items:center;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid #6d5a7c;background:#30243b;color:#e8d9f4}
+.order-status-pill.active{background:#332c1b;border-color:#8b7139;color:#f5d98e}
+.order-status-pill.done{background:#183a2b;border-color:#367b55;color:#a6ebc2}
+.order-status-pill.failed{background:#421f2a;border-color:#914355;color:#ffc0ca}
+.order-timeline{margin-top:14px;padding:12px;border-radius:12px;background:#120e17;border:1px solid #40334b}
+.order-timeline>strong{display:block;margin-bottom:10px}
+.order-timeline-item{display:flex;gap:10px;position:relative;padding:0 0 14px}
+.order-timeline-item:not(:last-child):after{content:"";position:absolute;right:5px;top:12px;bottom:-1px;width:2px;background:#594765}
+.order-timeline-dot{width:12px;height:12px;flex:0 0 12px;border-radius:50%;margin-top:5px;background:#89739c;border:2px solid #c7b3d8;z-index:1}
+.order-timeline-dot.current{background:#9b6ac0;border-color:#e1c6f5;box-shadow:0 0 0 3px #9b6ac033}
+.order-timeline-content{min-width:0;flex:1}
+.order-timeline-content time{display:block;font-size:12px;margin:2px 0 4px}
+.order-timeline-content p{margin:4px 0 0;line-height:1.65;color:#e0d6e8}
+
 </style>
 </head>
 <body>
