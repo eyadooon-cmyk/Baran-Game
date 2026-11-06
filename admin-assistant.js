@@ -75,8 +75,9 @@
 
   window.askBaranAdminPrompt = function (question) {
     const input = document.getElementById("baranAdminAssistantInput");
-    if (input) input.value = String(question || "");
-    void send(question);
+    const prompt = String(question || "");
+    if (input) input.value = "";
+    void send(prompt);
   };
 
   window.askBaranAdminAssistant = function (event) {
