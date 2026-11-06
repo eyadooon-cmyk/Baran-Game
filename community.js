@@ -164,6 +164,7 @@ async function loadCompletedOrders(){
   try{
     const {data,error}=await sb.from("orders")
       .select("id,product_code,created_at,status")
+      .eq("user_id",currentUser.id)
       .in("status",["completed","fulfilled","delivered"])
       .order("created_at",{ascending:false})
       .limit(50);
