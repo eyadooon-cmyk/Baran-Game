@@ -260,39 +260,77 @@ async function opsAdjustLoyalty(){
 
 
 async function loadMyOrders(){
-  const box=document.getElementById("customerOrdersList");if(!box||!currentUser)return;
+  const box=document.getElementById("customerOrdersList");
+  if(!box||!currentUser)return;
   box.textContent="جاري تحميل طلباتك...";
   const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار المورد",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
+  const statusTone={pending:"pending",processing:"active",awaiting_supplier:"active",completed:"done",rejected:"failed",cancelled:"failed"};
   try{
-    const [{data:orders,error},{data:events,error:eventError}]=await Promise.all([
-      sb.from("orders").select("id,product_code,player_id,quantity,status,created_at,total_price_usd,total_price_syp")
-        .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50),
-      sb.from("order_status_events").select("id,order_id,new_status,customer_message,created_at")
-        .order("created_at",{ascending:false}).limit(200)
-    ]);
-    if(error)throw error;if(eventError)throw eventError;
+    const {data:orders,error}=await sb.from("orders")
+      .select("id,product_code,player_id,quantity,status,created_at,total_price_usd,total_price_syp")
+      .eq("user_id",currentUser.id)
+      .order("created_at",{ascending:false})
+      .limit(50);
+    if(error)throw error;
     box.replaceChildren();
-    if(!orders?.length){box.textContent="ما عندك طلبات مسجلة حالياً.";return;}
+    if(!orders?.length){
+      box.textContent="ما عندك طلبات مسجلة حالياً.";
+      return;
+    }
+    const orderIds=orders.map(order=>order.id);
+    const {data:events,error:eventError}=await sb.from("order_status_events")
+      .select("id,order_id,old_status,new_status,customer_message,created_at")
+      .in("order_id",orderIds)
+      .order("created_at",{ascending:true});
+    if(eventError)throw eventError;
+    const eventsByOrder=new Map();
+    (events||[]).forEach(event=>{
+      if(!eventsByOrder.has(event.order_id))eventsByOrder.set(event.order_id,[]);
+      eventsByOrder.get(event.order_id).push(event);
+    });
     orders.forEach(order=>{
-      const card=opsNode("div","ops-item");
-      card.append(opsNode("strong","","طلب "+order.id.slice(0,8)));
+      const card=opsNode("article","ops-item customer-order-card");
+      const top=opsNode("div","customer-order-top");
+      top.append(
+        opsNode("strong","","طلب #"+order.id.slice(0,8)),
+        opsNode("span","order-status-pill "+(statusTone[order.status]||"pending"),labels[order.status]||order.status)
+      );
+      card.appendChild(top);
       card.append(opsNode("div","","المنتج: "+opsText(order.product_code)+" | الكمية: "+order.quantity));
-      card.append(opsNode("div","","معرّف اللاعب: "+opsText(order.player_id)));
-      card.append(opsNode("div","","الحالة الحالية: "+(labels[order.status]||order.status)));
+      if(order.player_id)card.append(opsNode("div","","معرّف اللاعب: "+opsText(order.player_id)));
       card.append(opsNode("div","ops-muted","تاريخ الطلب: "+opsDate(order.created_at)));
-      if(order.total_price_usd!==null)card.append(opsNode("div","ops-muted","الإجمالي: "+opsMoney(order.total_price_usd,"USD")+" | "+opsMoney(order.total_price_syp,"SYP")));
-      const history=(events||[]).filter(e=>e.order_id===order.id);
-      if(history.length){
-        card.append(opsNode("strong","","تحديثات الطلب"));
-        history.forEach(e=>{
-          const line=opsNode("div","ops-muted",(labels[e.new_status]||e.new_status)+" — "+opsDate(e.created_at));
-          if(e.customer_message)line.textContent+=" | "+e.customer_message;
-          card.appendChild(line);
+      if(order.total_price_usd!==null||order.total_price_syp!==null){
+        const totals=[];
+        if(order.total_price_usd!==null)totals.push(opsMoney(order.total_price_usd,"USD"));
+        if(order.total_price_syp!==null)totals.push(opsMoney(order.total_price_syp,"SYP"));
+        card.append(opsNode("div","ops-muted","إجمالي الطلب: "+totals.join(" | ")));
+      }
+      const timeline=opsNode("div","order-timeline");
+      timeline.appendChild(opsNode("strong","","سجل متابعة الطلب"));
+      const history=eventsByOrder.get(order.id)||[];
+      if(!history.length){
+        timeline.appendChild(opsNode("div","ops-muted","تم استلام الطلب. سيظهر هنا كل تحديث جديد."));
+      }else{
+        history.forEach((event,index)=>{
+          const item=opsNode("div","order-timeline-item");
+          item.appendChild(opsNode("span","order-timeline-dot "+(index===history.length-1?"current":"")));
+          const content=opsNode("div","order-timeline-content");
+          content.append(
+            opsNode("strong","",labels[event.new_status]||event.new_status),
+            opsNode("time","ops-muted",opsDate(event.created_at))
+          );
+          if(event.customer_message)content.appendChild(opsNode("p","",event.customer_message));
+          item.appendChild(content);
+          timeline.appendChild(item);
         });
-      }else card.append(opsNode("div","ops-muted","لم تُسجل تحديثات إضافية لهذا الطلب بعد."));
+      }
+      card.appendChild(timeline);
       box.appendChild(card);
     });
-  }catch(error){box.textContent="تعذر تحميل الطلبات: "+error.message;}
+  }catch(error){
+    box.textContent="تعذر تحميل الطلبات حالياً. حاول التحديث مرة أخرى.";
+    console.error("Baran order tracking:",error);
+  }
 }
 async function loadMyRewards(){
   const balanceBox=document.getElementById("customerLoyaltyBalance");
