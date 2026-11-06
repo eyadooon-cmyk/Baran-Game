@@ -28,8 +28,8 @@ function renderOpsNotifications(rows){
     if(!item.read_at){
       const button=opsNode("button","secondary","تحديد كمقروء");
       button.type="button";
-      button.onclick=async()=>{
-        button.disabled=true;
+      button.onclick=async(event)=>{
+        event.stopPropagation();button.disabled=true;
         try{
           await callAdminApi("POST",{action:"notification_read",notification_id:item.id});
           item.read_at=new Date().toISOString();
