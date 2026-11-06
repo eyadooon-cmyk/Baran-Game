@@ -34,7 +34,7 @@ async function loadMyNotifications(){
   if(!box||!currentUser)return;
   try{
     const {data,error}=await sb.from("baran_notifications")
-      .select("id,kind,title,body,read_at,created_at")
+      .select("id,kind,title,body,entity_type,entity_id,read_at,created_at")
       .eq("recipient_id",currentUser.id)
       .eq("audience","customer")
       .order("created_at",{ascending:false})
@@ -66,15 +66,17 @@ async function loadMyNotifications(){
       box.appendChild(empty);return;
     }
     items.forEach(item=>{
-      const card=document.createElement("div");card.className="notification-item"+(item.read_at?"":" unread");
+      const card=document.createElement("div");card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
+      card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"customer");
+      card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openBaranNotificationTarget(item,"customer");}};
       const name=document.createElement("strong");name.textContent=item.title;
       const body=document.createElement("p");body.textContent=item.body;
       const date=document.createElement("div");date.className="small";date.textContent=new Date(item.created_at).toLocaleString("ar");
       card.append(name,body,date);
       if(!item.read_at){
         const read=document.createElement("button");read.type="button";read.className="secondary";read.textContent="تحديد كمقروء";
-        read.onclick=async()=>{
-          read.disabled=true;
+        read.onclick=async(event)=>{
+          event.stopPropagation();read.disabled=true;
           const {error:readError}=await sb.rpc("mark_baran_notifications_read",{p_ids:[item.id]});
           if(readError){read.disabled=false;alert("تعذر تحديث الإشعار.");return;}
           await loadMyNotifications();
@@ -86,6 +88,39 @@ async function loadMyNotifications(){
   }catch(error){
     box.textContent="تعذر تحميل الإشعارات حالياً.";
   }
+}
+
+async function openBaranNotificationTarget(item,audience){
+  if(!item)return;
+  const isAdmin=audience==="admin";
+  const entityType=String(item.entity_type||"").toLowerCase();
+  const kind=String(item.kind||"").toLowerCase();
+  const entityId=item.entity_id||null;
+  const section=isAdmin?"admin":
+    (entityType==="ticket"||kind.includes("support")?"support":
+     entityType==="order"||kind.includes("order")?"orders":
+     entityType==="deposit_request"||entityType==="wallet"||kind.includes("deposit")||kind.includes("wallet")?"wallet":"account");
+  if(!item.read_at){
+    try{
+      if(isAdmin)await callAdminApi("POST",{action:"notification_read",notification_id:item.id});
+      else{
+        const {error}=await sb.rpc("baran_mark_notification_read",{p_notification_id:item.id});
+        if(error)throw error;
+      }
+      item.read_at=new Date().toISOString();
+    }catch(error){console.warn("تعذر تعليم الإشعار كمقروء:",error);}
+  }
+  if(typeof showSection==="function")showSection(section,null);
+  if(isAdmin){
+    if(typeof loadAdminPanel==="function")await loadAdminPanel();
+  }else if(section==="support"&&typeof loadMyFeedback==="function")await loadMyFeedback();
+  else if(section==="orders"&&typeof loadMyOrders==="function")await loadMyOrders();
+  if(entityId){
+    const target=document.querySelector('[data-notification-entity-id="'+entityId+'"]');
+    if(target){target.scrollIntoView({behavior:"smooth",block:"center"});target.classList.add("notification-target-highlight");}
+    else{const sectionTarget=document.getElementById(section);if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});}
+  }else{const sectionTarget=document.getElementById(section);if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});}
+  if(!isAdmin&&typeof loadCustomerNotifications==="function")loadCustomerNotifications();
 }
 
 function renderAdminNotifications(items){
@@ -105,15 +140,17 @@ function renderAdminNotifications(items){
   heading.append(title,refresh);box.appendChild(heading);
   if(!items?.length){const empty=document.createElement("p");empty.className="small";empty.textContent="لا توجد تنبيهات جديدة حالياً.";box.appendChild(empty);return;}
   items.forEach(item=>{
-    const card=document.createElement("div");card.className="notification-item"+(item.read_at?"":" unread");
+    const card=document.createElement("div");card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
+    card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"admin");
+    card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openBaranNotificationTarget(item,"admin");}};
     const name=document.createElement("strong");name.textContent=item.title;
     const body=document.createElement("p");body.textContent=item.body;
     const date=document.createElement("div");date.className="small";date.textContent=new Date(item.created_at).toLocaleString("ar");
     card.append(name,body,date);
     if(!item.read_at){
       const read=document.createElement("button");read.type="button";read.className="secondary";read.textContent="تحديد كمقروء";
-      read.onclick=async()=>{
-        read.disabled=true;
+      read.onclick=async(event)=>{
+        event.stopPropagation();read.disabled=true;
         try{await callAdminApi("POST",{action:"notification_read",notification_id:item.id});await loadAdminPanel();}
         catch(error){read.disabled=false;alert("تعذر تحديث التنبيه: "+error.message);}
       };
