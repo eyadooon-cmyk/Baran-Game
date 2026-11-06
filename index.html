@@ -493,7 +493,7 @@ button{font-weight:700}
 
       <section id="baranAdminAssistant" class="deposit-card" aria-label="مساعد الإدارة الذكي">
         <h2>🧠 مساعد إدارة Baran Game</h2>
-        <p class="small">اسأل عن الأرباح والمبيعات والطلبات والموردين والتنبيهات. يعتمد على بيانات لوحة الإدارة المحمّلة، ويعمل حالياً بوضع القراءة والتحليل فقط.</p>
+        <p class="small">مساعد إداري وتقني متصل ببيانات المتجر الحقيقية: الأرباح، الطلبات، الموردون، الإيداعات، تذاكر الدعم، وفحص الحالة التشغيلية.</p>
         <div id="baranAdminAssistantMessages" class="ai-assistant-messages" style="height:210px;max-height:35vh;background:#100b16;border-radius:12px" aria-live="polite">
           <div class="ai-chat-message bot">أهلاً! فيني أعطيك ملخصاً عن وضع المتجر وأحلل الأرقام المسجلة. جرّب: «ملخص اليوم» أو «الطلبات المعلقة» أو «أفضل المنتجات».</div>
         </div>
@@ -501,7 +501,7 @@ button{font-weight:700}
           <input id="baranAdminAssistantInput" type="text" maxlength="500" autocomplete="off" placeholder="اسأل عن أرباحك أو طلباتك أو الموردين..." aria-label="سؤال مساعد الإدارة">
           <button id="baranAdminAssistantSend" type="submit">اسأل</button>
         </form>
-        <div class="ops-muted">🔒 خاص بالمدير فقط — لا ينفذ تعديلات مالية أو يغيّر الطلبات.</div>
+        <div class="ops-actions"><button type="button" class="secondary" onclick="runBaranAdminHealthCheck()">🛡️ فحص حالة المتجر الآن</button></div><div id="baranAdminAssistantStatus" class="ops-muted">🔒 خاص بالمدير فقط — يقرأ البيانات مباشرة، ولا ينفذ تغييرات مالية أو حساسة.</div>
       </section>
       <hr style="border-color:#40334b;margin:24px 0">
       <h2>إدارة المستخدمين 👥</h2>
