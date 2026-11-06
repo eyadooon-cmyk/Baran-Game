@@ -357,6 +357,12 @@ footer{text-align:center;padding:25px;color:#839487}
       <div id="financeEntries">لا توجد حركات مالية بعد.</div>
     </section>
 
+    <section id="orders" class="hidden">
+      <h2>📦 طلباتي</h2>
+      <p>سيظهر سجل طلباتك وحالاتها هنا بعد تفعيل نظام الطلبات والشحن.</p>
+      <p class="small">حالياً لم يتم تفعيل تنفيذ الطلبات أو الشحن الفعلي بعد.</p>
+    </section>
+
     <section id="rewards" class="hidden">
       <h2>🎁 النقاط والمكافآت</h2>
       <p>سيظهر رصيد نقاطك وسجلّ المكافآت ودعوات الأصدقاء هنا بعد تفعيل النظام.</p>
@@ -489,11 +495,6 @@ function closeSideMenu(){
   if(toggle)toggle.setAttribute("aria-expanded","false");
 }
 function navigateDrawer(id){
-  if(id==="orders"){
-    alert("قسم طلباتي سيظهر هنا عند تفعيل نظام الطلبات.");
-    closeSideMenu();
-    return;
-  }
   const legacyButtons={home:0,games:1,services:2,wallet:3,account:4,support:5,admin:6};
   const oldButton=document.querySelectorAll("nav button")[legacyButtons[id]];
   showSection(id,oldButton||null);
