@@ -504,6 +504,14 @@ button{font-weight:700}
 
     <section id="admin" class="hidden">
       <h2>لوحة الإدارة 🔐</h2>
+      <section id="baranFinancialSupportPanel" class="deposit-card" style="display:block!important;visibility:visible!important;position:relative!important;margin:16px 0;padding:16px;border:2px solid #b58a42" aria-label="تذاكر الشؤون المالية">
+        <h2>💰 تذاكر الشؤون المالية</h2>
+        <p class="small">كل تذاكر الزبائن المتعلقة بالحوالات وشام كاش والإيداع والسحب والمحفظة والأرصدة والاسترداد. هذه التذاكر تحتاج مراجعتك؛ لا يتم تأكيد حوالة أو تعديل رصيد تلقائياً.</p>
+        <div id="baranFinancialSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل التذاكر المالية...</div></div>
+        <div class="ops-actions"><button class="secondary" type="button" onclick="loadAdminPanel()">🔄 تحديث التذاكر المالية</button></div>
+        <div id="baranFinancialSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
+      </section>
+
       <section id="baranAdminAssistant" class="deposit-card" aria-label="مساعد الإدارة الذكي" style="display:block!important;visibility:visible!important;position:relative!important;order:-1;margin:16px 0;padding:16px;border:1px solid #8b6ba8">
         <h2>🧠 مساعد إدارة Baran Game</h2>
         <p class="small">مساعد إداري وتقني متصل ببيانات المتجر الحقيقية: الأرباح، الطلبات، الموردون، الإيداعات، تذاكر الدعم، وفحص الحالة التشغيلية.</p>
@@ -651,13 +659,7 @@ button{font-weight:700}
       <hr style="border-color:#40334b;margin:24px 0">
       <h2>الحسابات المالية 💰</h2>
       <p class="small">سجّل رأس المال والمصاريف اليدوية، وتُضاف مبيعات الطلبات المكتملة وتكاليف المورد تلقائياً مرة واحدة بعد تسجيل تكلفة المورد. تُعرض حسابات الدولار والليرة كلٌ على حدة، ولا تدخل أرصدة الزبائن ضمن أرباح المتجر. لا يمكن إكمال الطلب قبل تسجيل تكلفة المورد وسعر الصرف.</p>
-      <section id="baranFinancialSupportPanel" class="deposit-card" aria-label="تذاكر الشؤون المالية" style="margin:16px 0;padding:16px;border:1px solid #b58a42">
-        <h2>💰 تذاكر الشؤون المالية</h2>
-        <p class="small">كل تذاكر الزبائن المتعلقة بالحوالات وشام كاش والإيداع والسحب والمحفظة والأرصدة والاسترداد. هذه التذاكر تحتاج مراجعتك؛ لا يتم تأكيد حوالة أو تعديل رصيد تلقائياً.</p>
-        <div id="baranFinancialSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل التذاكر المالية...</div></div>
-        <div class="ops-actions"><button class="secondary" type="button" onclick="loadAdminPanel()">🔄 تحديث التذاكر المالية</button></div>
-        <div id="baranFinancialSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
-      </section>
+
       <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
       <h3 id="financeReportHeading" style="margin-top:22px;color:#c2b1d1">تقرير أرباح المنتجات</h3>
       <p class="small">اختر الشهر والسنة لعرض المبيعات وتكلفة المورد والربح الإجمالي لكل منتج، مع فصل الدولار عن الليرة السورية.</p>
