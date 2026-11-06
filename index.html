@@ -1905,6 +1905,25 @@ async function enableBaranPushNotifications(){
   }finally{if(button)button.disabled=false;}
 }
 
+async function openBaranPushNotificationFromUrl(){
+  const params=new URLSearchParams(window.location.search);
+  const notificationId=params.get("baran_notification");
+  if(!notificationId||!currentUser)return;
+  params.delete("baran_notification");
+  const query=params.toString();
+  const cleanUrl=window.location.pathname+(query?"?"+query:"")+window.location.hash;
+  window.history.replaceState({},document.title,cleanUrl);
+  try{
+    const {data:item,error}=await sb.from("baran_notifications")
+      .select("id,recipient_id,audience,kind,title,body,entity_type,entity_id,read_at,created_at")
+      .eq("id",notificationId).eq("recipient_id",currentUser.id).maybeSingle();
+    if(error)throw error;
+    if(item&&typeof openBaranNotificationTarget==="function"){
+      await openBaranNotificationTarget(item,item.audience);
+    }
+  }catch(error){console.warn("تعذر فتح وجهة إشعار الهاتف:",error);}
+}
+
 async function restoreSession(){
   try{
     const {data,error}=await sb.auth.getSession();
@@ -1921,6 +1940,7 @@ async function restoreSession(){
       }
       currentUser=verified.user;
       await prepareLock();
+      await openBaranPushNotificationFromUrl();
     }else{
       showLogin("سجّل الدخول للبدء باستخدام المتجر.");
     }
