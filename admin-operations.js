@@ -19,7 +19,9 @@ function renderOpsNotifications(rows){
     return;
   }
   notifications.forEach(item=>{
-    const card=opsNode("article","notification-item"+(item.read_at?"":" unread"));
+    const card=opsNode("article","notification-item notification-clickable"+(item.read_at?"":" unread"));
+    card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"admin");
+    card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openBaranNotificationTarget(item,"admin");}};
     card.append(opsNode("strong","",item.title||"تنبيه إداري"),
       opsNode("p","",item.body||""),
       opsNode("div","ops-muted",opsDate(item.created_at)));
@@ -150,6 +152,7 @@ function renderOpsOrders(orders){
   const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار المورد",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
   orders.forEach(order=>{
     const card=opsNode("div","ops-item");
+    card.dataset.notificationEntityId=order.id;
     card.append(opsNode("strong","","طلب رقم "+order.id.slice(0,8)));
     card.append(opsNode("div","","الزبون: "+opsText(order.customer_name||order.customer_email)));
     card.append(opsNode("div","","البريد: "+opsText(order.customer_email)+" | الهاتف: "+opsText(order.customer_phone)));
@@ -364,6 +367,7 @@ async function loadMyOrders(){
     });
     orders.forEach(order=>{
       const card=opsNode("article","ops-item customer-order-card");
+      card.dataset.notificationEntityId=order.id;
       const top=opsNode("div","customer-order-top");
       top.append(
         opsNode("strong","","طلب #"+order.id.slice(0,8)),
