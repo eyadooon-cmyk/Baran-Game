@@ -3,53 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#08060c">
+<meta name="theme-color" content="#09080d">
 <title>BARAN GAME</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--green:#a855f7;--bg:#08060c;--panel:#15101d;--line:#49345f;--muted:#b9a9c9}
+:root{--green:#8b6ba8;--bg:#09080d;--panel:#17131b;--line:#40334b;--muted:#b9a9c9}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
 header{position:relative;isolation:isolate;min-height:260px;padding:42px 16px 34px;text-align:center;overflow:hidden;background:linear-gradient(110deg,rgba(3,12,8,.94),rgba(5,20,12,.68) 52%,rgba(3,10,7,.9)),url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=85") center 42%/cover no-repeat;border-bottom:2px solid var(--green);box-shadow:0 12px 35px #0008}
 header:before{content:"";position:absolute;inset:-45%;z-index:-1;background:radial-gradient(circle at 50% 45%,rgba(25,230,140,.24),transparent 36%);animation:baranGlow 7s ease-in-out infinite alternate}
-header:after{content:"";position:absolute;left:10%;right:10%;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#a855f7,transparent);box-shadow:0 0 18px #a855f7}
-header .logo{display:inline-flex;align-items:center;justify-content:center;gap:11px;font-size:clamp(30px,6vw,46px);font-weight:1000;letter-spacing:2px;color:#f5edff;text-shadow:0 0 12px #a855f7,0 0 30px #a855f7;animation:baranPulse 3.5s ease-in-out infinite}
-header .logo-mark{display:inline-flex;width:50px;height:50px;align-items:center;justify-content:center;border:2px solid #d8b4fe;border-radius:15px;background:linear-gradient(145deg,#302044,#08060c);color:#d8b4fe;font-size:29px;box-shadow:0 0 18px #a855f788,inset 0 0 12px #a855f733}
-header p{position:relative;color:#eee4ff;margin:10px 0 0;text-shadow:0 2px 8px #000;font-weight:600}
-header .header-tag{display:inline-block;margin-top:16px;padding:7px 15px;border:1px solid #c084fc88;border-radius:999px;background:#160d22bb;color:#d8b4fe;font-size:11px;letter-spacing:2px}
+header:after{content:"";position:absolute;left:10%;right:10%;bottom:0;height:1px;background:linear-gradient(90deg,transparent,#8b6ba8,transparent);box-shadow:0 0 18px #8b6ba8}
+header .logo{display:inline-flex;align-items:center;justify-content:center;gap:11px;font-size:clamp(30px,6vw,46px);font-weight:1000;letter-spacing:2px;color:#eee8f4;text-shadow:0 0 12px #8b6ba8,0 0 30px #8b6ba8;animation:baranPulse 3.5s ease-in-out infinite}
+header .logo-mark{display:inline-flex;width:50px;height:50px;align-items:center;justify-content:center;border:2px solid #c5b4d6;border-radius:15px;background:linear-gradient(145deg,#292033,#09080d);color:#c5b4d6;font-size:29px;box-shadow:0 0 18px #8b6ba888,inset 0 0 12px #8b6ba833}
+header p{position:relative;color:#e2d9eb;margin:10px 0 0;text-shadow:0 2px 8px #000;font-weight:600}
+header .header-tag{display:inline-block;margin-top:16px;padding:7px 15px;border:1px solid #b09ac288;border-radius:999px;background:#17121dbb;color:#c5b4d6;font-size:11px;letter-spacing:2px}
 @keyframes baranGlow{from{transform:translateX(-4%) scale(.92);opacity:.55}to{transform:translateX(4%) scale(1.12);opacity:1}}
-@keyframes baranPulse{0%,100%{filter:drop-shadow(0 0 3px #a855f755)}50%{filter:drop-shadow(0 0 12px #a855f7)}}
+@keyframes baranPulse{0%,100%{filter:drop-shadow(0 0 3px #8b6ba855)}50%{filter:drop-shadow(0 0 12px #8b6ba8)}}
 main{max-width:1050px;margin:auto;padding:14px}
 nav{position:sticky;top:0;z-index:5;display:flex;justify-content:center;gap:7px;flex-wrap:wrap;padding:12px;background:#100b16;border-bottom:1px solid var(--line)}
-button{border:0;border-radius:11px;padding:13px 16px;background:var(--green);color:#160d22;font-weight:bold;cursor:pointer}
+button{border:0;border-radius:11px;padding:13px 16px;background:var(--green);color:#17121d;font-weight:bold;cursor:pointer}
 button:disabled{opacity:.5}
-nav button{background:#24182f;color:white;padding:11px}
-nav button.active{background:var(--green);color:#160d22}
-input,textarea{display:block;width:100%;padding:14px;margin:10px 0;background:#0b0810;color:white;border:1px solid #49335f;border-radius:10px;font-size:16px}
+nav button{background:#241d2a;color:white;padding:11px}
+nav button.active{background:var(--green);color:#17121d}
+input,textarea{display:block;width:100%;padding:14px;margin:10px 0;background:#0b0910;color:white;border:1px solid #40334b;border-radius:10px;font-size:16px}
 textarea{resize:vertical;font-family:Arial,sans-serif;line-height:1.7}
-select{display:block;width:100%;padding:14px;margin:10px 0;background:#0b0810;color:white;border:1px solid #49335f;border-radius:10px;font-size:16px}
-.deposit-card{margin-top:20px;padding:16px;background:#100b17;border:1px solid #7540a8;border-radius:14px}
-.deposit-id{padding:14px;margin:12px 0;background:#08060c;border:1px dashed var(--green);border-radius:10px;color:var(--green);font-weight:bold;text-align:center;overflow-wrap:anywhere;user-select:all}
-.deposit-row{padding:12px;margin:9px 0;background:#21172c;border:1px solid #49345f;border-radius:10px;line-height:1.8}
+select{display:block;width:100%;padding:14px;margin:10px 0;background:#0b0910;color:white;border:1px solid #40334b;border-radius:10px;font-size:16px}
+.deposit-card{margin-top:20px;padding:16px;background:#100b17;border:1px solid #665078;border-radius:14px}
+.deposit-id{padding:14px;margin:12px 0;background:#09080d;border:1px dashed var(--green);border-radius:10px;color:var(--green);font-weight:bold;text-align:center;overflow-wrap:anywhere;user-select:all}
+.deposit-row{padding:12px;margin:9px 0;background:#201b26;border:1px solid #40334b;border-radius:10px;line-height:1.8}
 .deposit-status{font-weight:bold;color:var(--green)}
 .deposit-card label{display:block;margin-top:12px;color:var(--muted);font-size:14px}
-.admin-request{padding:14px;margin:12px 0;background:#181020;border:1px solid #52396c;border-radius:12px;line-height:1.8;overflow-wrap:anywhere}
+.admin-request{padding:14px;margin:12px 0;background:#19151e;border:1px solid #493b55;border-radius:12px;line-height:1.8;overflow-wrap:anywhere}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .admin-actions button{flex:1;min-width:110px}
 .finance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
-.finance-card{padding:13px;background:#21172c;border:1px solid #49345f;border-radius:12px;line-height:1.8}
+.finance-card{padding:13px;background:#201b26;border:1px solid #40334b;border-radius:12px;line-height:1.8}
 .finance-card strong{display:block;color:var(--green);font-size:18px}
-.finance-entry{padding:12px;margin:9px 0;background:#181020;border:1px solid #52396c;border-radius:10px;line-height:1.8;overflow-wrap:anywhere}
+.finance-entry{padding:12px;margin:9px 0;background:#19151e;border:1px solid #493b55;border-radius:10px;line-height:1.8;overflow-wrap:anywhere}
 .finance-form label{display:block;margin-top:10px;color:var(--muted);font-size:14px}
 .finance-form input,.finance-form select{margin-top:6px}
-.product-card{padding:14px;margin:10px 0;background:#181020;border:1px solid #52396c;border-radius:12px;line-height:1.7}
+.product-card{padding:14px;margin:10px 0;background:#19151e;border:1px solid #493b55;border-radius:12px;line-height:1.7}
 .product-card strong{display:block;color:var(--green);font-size:17px}
-.product-prices{color:#d8b4fe;font-weight:bold;margin:8px 0}
+.product-prices{color:#c5b4d6;font-weight:bold;margin:8px 0}
 section,.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0}
 h2{color:var(--green);margin-top:0}
 p{line-height:1.7}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
-.item{background:#21172c;border:1px solid #49345f;border-radius:14px;overflow:hidden;text-align:center}
+.item{background:#201b26;border:1px solid #40334b;border-radius:14px;overflow:hidden;text-align:center}
 .item img{width:100%;height:155px;object-fit:cover;display:block}
 .item-content{padding:14px}
 .item strong{display:block;color:var(--green);font-size:17px;margin-bottom:7px}
@@ -58,12 +58,12 @@ p{line-height:1.7}
 .hidden{display:none!important}
 .small{font-size:13px;color:var(--muted)}
 .balance{font-size:25px;color:var(--green);font-weight:bold}
-.hero{padding:25px;background:linear-gradient(120deg,#39224f,#1a1223 70%);border:1px solid #7540a8;border-radius:17px;margin-bottom:18px}
+.hero{padding:25px;background:linear-gradient(120deg,#30243a,#1b1621 70%);border:1px solid #665078;border-radius:17px;margin-bottom:18px}
 .hero h2{font-size:25px}
 .auth-card{max-width:480px;margin:25px auto;padding:22px}
 .auth-logo{text-align:center;color:var(--green);font-size:28px;font-weight:bold}
 #message{padding:10px;color:var(--green);overflow-wrap:anywhere;line-height:1.7}
-.lock-screen{position:fixed;inset:0;z-index:20;background:#08060c;display:flex;align-items:center;justify-content:center;padding:18px}
+.lock-screen{position:fixed;inset:0;z-index:20;background:#09080d;display:flex;align-items:center;justify-content:center;padding:18px}
 .lock-card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--green);border-radius:18px;padding:24px;text-align:center}
 footer{text-align:center;padding:25px;color:#839487}
 .support-fab{position:fixed;right:16px;bottom:18px;z-index:10;border-radius:999px;padding:14px 18px;box-shadow:0 5px 22px #0009;display:flex;align-items:center;gap:8px}
@@ -71,20 +71,20 @@ footer{text-align:center;padding:25px;color:#839487}
 /* القائمة الجانبية — تحافظ على هوية Baran Game الحالية */
 #appShell>nav{display:none}
 .store-toolbar{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#100b16;border-bottom:1px solid var(--line);box-shadow:0 5px 18px #0006}
-.menu-toggle{width:46px;height:42px;padding:7px;background:#2b1b3a;color:var(--green);border:1px solid #65408a;border-radius:11px;font-size:25px;line-height:1}
-.toolbar-brand{font-weight:900;letter-spacing:1px;color:#f5edff;text-shadow:0 0 10px #a855f755}
+.menu-toggle{width:46px;height:42px;padding:7px;background:#2b1b3a;color:var(--green);border:1px solid #59456b;border-radius:11px;font-size:25px;line-height:1}
+.toolbar-brand{font-weight:900;letter-spacing:1px;color:#eee8f4;text-shadow:0 0 10px #8b6ba855}
 .toolbar-brand span{color:var(--green)}
 .drawer-backdrop{position:fixed;inset:0;z-index:30;background:#000a;opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
 .drawer-backdrop.open{opacity:1;visibility:visible}
-.side-drawer{position:fixed;top:0;right:0;bottom:0;z-index:31;width:min(310px,86vw);padding:18px 14px;background:linear-gradient(160deg,#181020,#08060c 75%);border-left:1px solid #7540a8;box-shadow:-14px 0 38px #0009;transform:translateX(105%);transition:transform .24s ease;overflow-y:auto}
+.side-drawer{position:fixed;top:0;right:0;bottom:0;z-index:31;width:min(310px,86vw);padding:18px 14px;background:linear-gradient(160deg,#19151e,#09080d 75%);border-left:1px solid #665078;box-shadow:-14px 0 38px #0009;transform:translateX(105%);transition:transform .24s ease;overflow-y:auto}
 .side-drawer.open{transform:translateX(0)}
 .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 17px;margin-bottom:12px;border-bottom:1px solid var(--line)}
-.drawer-title{font-size:20px;font-weight:900;color:var(--green);text-shadow:0 0 10px #a855f755}
-.drawer-close{width:38px;height:36px;padding:4px;background:#24182f;color:white;border:1px solid #52396c;font-size:22px}
-.drawer-link{display:flex;align-items:center;gap:12px;width:100%;margin:7px 0;padding:13px 14px;text-align:right;background:#1d1428;color:#f5edff;border:1px solid #49345f;border-radius:11px;font-size:15px}
-.drawer-link:active,.drawer-link:hover{background:#342044;border-color:var(--green);color:#e9d5ff}
+.drawer-title{font-size:20px;font-weight:900;color:var(--green);text-shadow:0 0 10px #8b6ba855}
+.drawer-close{width:38px;height:36px;padding:4px;background:#241d2a;color:white;border:1px solid #493b55;font-size:22px}
+.drawer-link{display:flex;align-items:center;gap:12px;width:100%;margin:7px 0;padding:13px 14px;text-align:right;background:#1c1721;color:#eee8f4;border:1px solid #40334b;border-radius:11px;font-size:15px}
+.drawer-link:active,.drawer-link:hover{background:#30243a;border-color:var(--green);color:#d2c2e2}
 .drawer-link .drawer-icon{width:24px;text-align:center;font-size:18px}
-.drawer-divider{height:1px;background:#49345f;margin:14px 3px}
+.drawer-divider{height:1px;background:#40334b;margin:14px 3px}
 .drawer-link.logout{color:#ffb4b4;border-color:#63345c;background:#251322}
 @media(max-width:500px){.grid{grid-template-columns:1fr}nav button{padding:10px;font-size:12px}.item img{height:175px}.store-toolbar{padding:9px 12px}}
 
@@ -109,7 +109,7 @@ footer{text-align:center;padding:25px;color:#839487}
     <button id="loginButton" class="full" onclick="signIn()">تسجيل الدخول</button>
     <button id="signupButton" class="full secondary" onclick="signUp()">إنشاء حساب جديد</button>
     <button id="forgotPasswordButton" class="full secondary" type="button" onclick="sendPasswordReset()">نسيت كلمة المرور؟</button>
-    <p class="small" style="text-align:center;margin:12px 0 4px">باستخدام المتجر، يمكنك الاطلاع على <a href="./terms.html" style="color:#d8b4fe">شروط الاستخدام</a> و<a href="./privacy.html" style="color:#d8b4fe">سياسة الخصوصية</a>.</p>
+    <p class="small" style="text-align:center;margin:12px 0 4px">باستخدام المتجر، يمكنك الاطلاع على <a href="./terms.html" style="color:#c5b4d6">شروط الاستخدام</a> و<a href="./privacy.html" style="color:#c5b4d6">سياسة الخصوصية</a>.</p>
     <div id="message">أهلاً بك في Baran Game</div>
   </div>
 </div>
@@ -311,12 +311,12 @@ footer{text-align:center;padding:25px;color:#839487}
       <div id="adminMessage" class="small" role="status"></div>
       <div id="adminRequests">جاري تحميل الطلبات...</div>
 
-      <hr style="border-color:#49345f;margin:24px 0">
+      <hr style="border-color:#40334b;margin:24px 0">
       <h2>آراء العملاء والاقتراحات والدعم 💬</h2>
       <p class="small">راجع الرسائل، واكتب رداً، وحدد حالة كل طلب.</p>
       <div id="adminFeedback">جاري تحميل الرسائل...</div>
 
-      <hr style="border-color:#49345f;margin:24px 0">
+      <hr style="border-color:#40334b;margin:24px 0">
       <h2>الحسابات المالية 💰</h2>
       <p class="small">سجّل رأس المال والمبيعات وتكلفة شراء المنتجات والمصاريف. الأرباح تُحسب تلقائياً، ولا تدخل أرصدة الزبائن ضمن أرباح المتجر.</p>
       <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
@@ -418,7 +418,7 @@ footer{text-align:center;padding:25px;color:#839487}
 <button class="support-fab" type="button" onclick="showSection('support',null)" aria-label="فتح الدعم الفني">💬 الدعم الفني</button>
   </div>
 
-<footer>© 2026 Baran Game<br><a href="./terms.html" style="color:#d8b4fe;margin:0 8px">شروط الاستخدام</a> | <a href="./privacy.html" style="color:#d8b4fe;margin:0 8px">سياسة الخصوصية</a></footer>
+<footer>© 2026 Baran Game<br><a href="./terms.html" style="color:#c5b4d6;margin:0 8px">شروط الاستخدام</a> | <a href="./privacy.html" style="color:#c5b4d6;margin:0 8px">سياسة الخصوصية</a></footer>
 
 <script src="./products.js"></script>
 <script src="./account-security.js"></script>
