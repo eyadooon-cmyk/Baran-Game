@@ -33,6 +33,7 @@ function renderOperationsDashboard(data){
   renderOpsOrders(data.orders||[]);
   renderOpsSuppliers(data.suppliers||[],data.supplier_products||[],data.products||[]);
   renderOpsLoyalty(data.customers||[],data.loyalty_customers||[]);
+  renderOpsAuditLog(data.audit_log||[]);
 }
 function renderOpsCustomers(customers){
   const box=document.getElementById("opsCustomers");if(!box)return;box.replaceChildren();
@@ -294,4 +295,17 @@ async function opsSaveFulfillment(orderId){
     document.getElementById("adminMessage").textContent="تم حفظ متابعة المورد (معلومات داخلية).";
     await loadAdminPanel();
   }catch(error){document.getElementById("adminMessage").textContent="تعذر حفظ متابعة المورد: "+error.message;}
+}
+
+function renderOpsAuditLog(rows){
+  const box=document.getElementById("opsAuditLog");if(!box)return;box.replaceChildren();
+  if(!rows.length){box.textContent="لا توجد عمليات إدارية مسجلة بعد.";return;}
+  rows.forEach(item=>{
+    const card=opsNode("div","ops-item");
+    card.append(opsNode("strong","",item.action));
+    card.append(opsNode("div","ops-muted","النوع: "+opsText(item.entity_type)+" | المعرّف: "+opsText(item.entity_id)));
+    card.append(opsNode("div","ops-muted","المدير: "+opsText(item.admin_id)+" | "+opsDate(item.created_at)));
+    if(item.details)card.append(opsNode("div","ops-muted",JSON.stringify(item.details)));
+    box.appendChild(card);
+  });
 }
