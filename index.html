@@ -67,7 +67,27 @@ p{line-height:1.7}
 .lock-card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--green);border-radius:18px;padding:24px;text-align:center}
 footer{text-align:center;padding:25px;color:#839487}
 .support-fab{position:fixed;right:16px;bottom:18px;z-index:10;border-radius:999px;padding:14px 18px;box-shadow:0 5px 22px #0009;display:flex;align-items:center;gap:8px}
-@media(max-width:500px){.grid{grid-template-columns:1fr}nav button{padding:10px;font-size:12px}.item img{height:175px}}
+
+/* القائمة الجانبية — تحافظ على هوية Baran Game الحالية */
+#appShell>nav{display:none}
+.store-toolbar{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#0d130f;border-bottom:1px solid var(--line);box-shadow:0 5px 18px #0006}
+.menu-toggle{width:46px;height:42px;padding:7px;background:#14251b;color:var(--green);border:1px solid #286342;border-radius:11px;font-size:25px;line-height:1}
+.toolbar-brand{font-weight:900;letter-spacing:1px;color:#eafff2;text-shadow:0 0 10px #19e68c55}
+.toolbar-brand span{color:var(--green)}
+.drawer-backdrop{position:fixed;inset:0;z-index:30;background:#000a;opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
+.drawer-backdrop.open{opacity:1;visibility:visible}
+.side-drawer{position:fixed;top:0;right:0;bottom:0;z-index:31;width:min(310px,86vw);padding:18px 14px;background:linear-gradient(160deg,#101b14,#070b09 75%);border-left:1px solid #1a8c58;box-shadow:-14px 0 38px #0009;transform:translateX(105%);transition:transform .24s ease;overflow-y:auto}
+.side-drawer.open{transform:translateX(0)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 17px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.drawer-title{font-size:20px;font-weight:900;color:var(--green);text-shadow:0 0 10px #19e68c55}
+.drawer-close{width:38px;height:36px;padding:4px;background:#1a2920;color:white;border:1px solid #31543c;font-size:22px}
+.drawer-link{display:flex;align-items:center;gap:12px;width:100%;margin:7px 0;padding:13px 14px;text-align:right;background:#121e16;color:#eafff2;border:1px solid #294333;border-radius:11px;font-size:15px}
+.drawer-link:active,.drawer-link:hover{background:#183324;border-color:var(--green);color:#7dffba}
+.drawer-link .drawer-icon{width:24px;text-align:center;font-size:18px}
+.drawer-divider{height:1px;background:#294333;margin:14px 3px}
+.drawer-link.logout{color:#ffb4b4;border-color:#633434;background:#241313}
+@media(max-width:500px){.grid{grid-template-columns:1fr}nav button{padding:10px;font-size:12px}.item img{height:175px}.store-toolbar{padding:9px 12px}}
+
 </style>
 </head>
 <body>
@@ -126,6 +146,31 @@ footer{text-align:center;padding:25px;color:#839487}
     <button onclick="showSection('support',this)">آراء ودعم</button>
     <button id="adminNavButton" class="hidden" onclick="showSection('admin',this);loadAdminPanel()">لوحة الإدارة</button>
   </nav>
+  <div class="store-toolbar">
+    <button class="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" onclick="toggleSideMenu()" id="menuToggle">☰</button>
+    <div class="toolbar-brand">BARAN <span>GAME</span></div>
+    <div id="currentSectionLabel" class="small">الرئيسية</div>
+  </div>
+  <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeSideMenu()" aria-hidden="true"></div>
+  <aside id="sideDrawer" class="side-drawer" aria-label="القائمة الرئيسية" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="drawer-title">BARAN GAME</div>
+      <button class="drawer-close" type="button" onclick="closeSideMenu()" aria-label="إغلاق القائمة">×</button>
+    </div>
+    <button class="drawer-link" onclick="navigateDrawer('home')"><span class="drawer-icon">🏠</span>الرئيسية</button>
+    <button class="drawer-link" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span>الألعاب</button>
+    <button class="drawer-link" onclick="navigateDrawer('services')"><span class="drawer-icon">🤖</span>الخدمات الرقمية</button>
+    <button class="drawer-link" onclick="navigateDrawer('wallet')"><span class="drawer-icon">💳</span>محفظتي</button>
+    <button class="drawer-link" onclick="navigateDrawer('orders')"><span class="drawer-icon">📦</span>طلباتي</button>
+    <button class="drawer-link" onclick="navigateDrawer('rewards')"><span class="drawer-icon">🎁</span>المكافآت ودعوة الأصدقاء</button>
+    <button class="drawer-link" onclick="navigateDrawer('support')"><span class="drawer-icon">⭐</span>التقييمات والاقتراحات والدعم</button>
+    <button class="drawer-link" onclick="navigateDrawer('account')"><span class="drawer-icon">👤</span>حسابي</button>
+    <button id="adminDrawerButton" class="drawer-link hidden" onclick="navigateDrawer('admin')"><span class="drawer-icon">🛠️</span>لوحة الإدارة</button>
+    <div class="drawer-divider"></div>
+    <a class="drawer-link" href="./terms.html" style="text-decoration:none"><span class="drawer-icon">📜</span>شروط الاستخدام</a>
+    <a class="drawer-link" href="./privacy.html" style="text-decoration:none"><span class="drawer-icon">🔒</span>سياسة الخصوصية</a>
+    <button class="drawer-link logout" onclick="closeSideMenu();signOut()"><span class="drawer-icon">🚪</span>تسجيل الخروج</button>
+  </aside>
 
   <main>
     <section id="home">
@@ -407,12 +452,54 @@ function showLogin(text){
 
 function showSection(id,button){
   if(!currentUser) return;
+  const target=document.getElementById(id);
+  if(!target) return;
   document.querySelectorAll("main section[id]").forEach(s=>s.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
+  target.classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
+  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",wallet:"المحفظة",orders:"طلباتي",rewards:"المكافآت",support:"آراء ودعم",account:"حسابي",admin:"لوحة الإدارة"};
+  const label=document.getElementById("currentSectionLabel");
+  if(label)label.textContent=labels[id]||"BARAN GAME";
+  closeSideMenu();
   window.scrollTo({top:0,behavior:"smooth"});
 }
+
+function toggleSideMenu(){
+  const drawer=document.getElementById("sideDrawer");
+  if(!drawer)return;
+  if(drawer.classList.contains("open"))closeSideMenu();
+  else{
+    drawer.classList.add("open");
+    document.getElementById("drawerBackdrop").classList.add("open");
+    drawer.setAttribute("aria-hidden","false");
+    document.getElementById("drawerBackdrop").setAttribute("aria-hidden","false");
+    document.getElementById("menuToggle").setAttribute("aria-expanded","true");
+  }
+}
+function closeSideMenu(){
+  const drawer=document.getElementById("sideDrawer");
+  const backdrop=document.getElementById("drawerBackdrop");
+  if(!drawer||!backdrop)return;
+  drawer.classList.remove("open");
+  backdrop.classList.remove("open");
+  drawer.setAttribute("aria-hidden","true");
+  backdrop.setAttribute("aria-hidden","true");
+  const toggle=document.getElementById("menuToggle");
+  if(toggle)toggle.setAttribute("aria-expanded","false");
+}
+function navigateDrawer(id){
+  if(id==="orders"){
+    alert("قسم طلباتي سيظهر هنا عند تفعيل نظام الطلبات.");
+    closeSideMenu();
+    return;
+  }
+  const legacyButtons={home:0,games:1,services:2,wallet:3,account:4,support:5,admin:6};
+  const oldButton=document.querySelectorAll("nav button")[legacyButtons[id]];
+  showSection(id,oldButton||null);
+  if(id==="admin")loadAdminPanel();
+}
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeSideMenu()});
 
 function showApp(user){
   currentUser=user;
@@ -683,7 +770,12 @@ async function checkAdminAccess(){
   try{
     await callAdminApi("GET");
     navButton.classList.remove("hidden");
+    const drawerButton=document.getElementById("adminDrawerButton");
+    if(drawerButton)drawerButton.classList.remove("hidden");
   }catch(error){
+    navButton.classList.add("hidden");
+    const drawerButton=document.getElementById("adminDrawerButton");
+    if(drawerButton)drawerButton.classList.add("hidden");
     // A normal customer receives 403; keep the admin entry hidden.
   }
 }
