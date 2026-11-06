@@ -76,7 +76,10 @@ async function sendBaranAssistantMessage(event) {
     baranAssistantHistory.push({ role: "assistant", content: result.reply });
     baranAssistantHistory = baranAssistantHistory.slice(-10);
     if (result.escalated) {
-      appendBaranAssistantMessage("حوّلت الموضوع لفريق الإدارة، ورح يراجعوا رسالتك من لوحة الدعم.", "bot");
+      const ticketText = result.ticket_code ? " رقم تذكرتك: " + result.ticket_code + "." : "";
+      appendBaranAssistantMessage("حوّلت الموضوع لفريق الإدارة، ورح يراجعوا رسالتك من لوحة الدعم."+ticketText, "bot");
+      if (typeof loadMyFeedback === "function") await loadMyFeedback();
+      if (typeof loadMyNotifications === "function") await loadMyNotifications();
     }
   } catch (error) {
     if (pending) pending.remove();
