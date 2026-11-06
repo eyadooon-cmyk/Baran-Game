@@ -272,7 +272,7 @@ async function loadMyFeedback(){
     box.replaceChildren();
     if(!data?.length){box.textContent="ما أرسلت أي تقييم أو اقتراح أو رسالة دعم بعد.";return;}
     data.forEach(item=>{
-      const card=document.createElement("div");card.className="deposit-row";
+      const card=document.createElement("div");card.className="deposit-row";card.dataset.notificationEntityId=item.id;
       const title=document.createElement("strong");
       title.textContent=(feedbackTypeLabels[item.feedback_type]||item.feedback_type)+(item.feedback_type==="support"&&item.ticket_code?" — "+item.ticket_code:"");
       const details=document.createElement("p");
@@ -306,7 +306,7 @@ function renderAdminFeedback(items){
   box.appendChild(summary);
   if(!rows.length){box.appendChild(document.createTextNode("لا توجد آراء أو اقتراحات أو رسائل دعم بعد."));return;}
   rows.forEach(item=>{
-    const card=document.createElement("div");card.className="admin-request";
+    const card=document.createElement("div");card.className="admin-request";card.dataset.notificationEntityId=item.id;
     const title=document.createElement("strong");
     title.textContent=(feedbackTypeLabels[item.feedback_type]||item.feedback_type)+
       (item.feedback_type==="support"&&item.ticket_code?" — "+item.ticket_code:"")+" — "+(item.customer_email||item.user_id);
