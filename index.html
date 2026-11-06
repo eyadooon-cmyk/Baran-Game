@@ -1069,18 +1069,16 @@ async function callAdminApi(method="GET",payload=null){
 
 async function checkAdminAccess(){
   const navButton=document.getElementById("adminNavButton");
-  navButton.classList.add("hidden");
+  const drawerButton=document.getElementById("adminDrawerButton");
+  if(navButton)navButton.classList.add("hidden");
+  if(drawerButton)drawerButton.classList.add("hidden");
   if(!currentUser) return;
   try{
-    await callAdminApi("GET");
-    navButton.classList.remove("hidden");
-    const drawerButton=document.getElementById("adminDrawerButton");
+    await callAdminApi("POST",{action:"admin_check"});
+    if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
   }catch(error){
-    navButton.classList.add("hidden");
-    const drawerButton=document.getElementById("adminDrawerButton");
-    if(drawerButton)drawerButton.classList.add("hidden");
-    // A normal customer receives 403; keep the admin entry hidden.
+    console.error("Baran Game admin access check failed:",error.message);
   }
 }
 
