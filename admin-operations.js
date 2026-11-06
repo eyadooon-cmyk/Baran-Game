@@ -74,6 +74,31 @@ function renderOpsOrders(orders){
     save.type="button";save.onclick=()=>opsUpdateOrder(order.id);
     row.append(select,save);
     card.append(row,note);
+    const supplierPanel=opsNode("div","ops-form");
+    supplierPanel.append(opsNode("strong","","متابعة تنفيذ المورد (داخلية)"));
+    const supplierSelect=document.createElement("select");
+    supplierSelect.id="opsFulfillmentSupplier_"+order.id;
+    opsOption(supplierSelect,"","لم يتم تعيين مورد");
+    (latestBaranOperations.suppliers||[]).forEach(s=>opsOption(supplierSelect,s.id,s.name));
+    supplierSelect.value=fulfillment?.supplier_id||"";
+    const supplierReference=document.createElement("input");
+    supplierReference.id="opsFulfillmentRef_"+order.id;
+    supplierReference.maxLength=160;supplierReference.placeholder="رقم الطلب لدى المورد";
+    supplierReference.value=fulfillment?.supplier_reference||"";
+    const supplierStatus=document.createElement("select");
+    supplierStatus.id="opsFulfillmentStatus_"+order.id;
+    [["not_sent","لم يُرسل"],["sent","تم الإرسال"],["accepted","قبله المورد"],["processing","قيد التنفيذ"],["completed","اكتمل"],["failed","تعذر التنفيذ"]]
+      .forEach(([v,l])=>opsOption(supplierStatus,v,l));
+    supplierStatus.value=fulfillment?.supplier_status||"not_sent";
+    const internalNotes=document.createElement("textarea");
+    internalNotes.id="opsFulfillmentNotes_"+order.id;
+    internalNotes.maxLength=2000;internalNotes.rows=2;
+    internalNotes.placeholder="ملاحظات داخلية لا تظهر للزبون";
+    internalNotes.value=fulfillment?.internal_notes||"";
+    const fulfillmentSave=opsNode("button","","حفظ متابعة المورد");
+    fulfillmentSave.type="button";fulfillmentSave.onclick=()=>opsSaveFulfillment(order.id);
+    supplierPanel.append(supplierSelect,supplierReference,supplierStatus,internalNotes,fulfillmentSave);
+    card.appendChild(supplierPanel);
     box.appendChild(card);
   });
 }
@@ -256,4 +281,17 @@ async function loadMyRewards(){
     balanceBox.textContent="تعذر تحميل النقاط: "+error.message;
     historyBox.replaceChildren();
   }
+}
+
+async function opsSaveFulfillment(orderId){
+  const supplier=document.getElementById("opsFulfillmentSupplier_"+orderId).value||null;
+  const reference=document.getElementById("opsFulfillmentRef_"+orderId).value.trim();
+  const status=document.getElementById("opsFulfillmentStatus_"+orderId).value;
+  const notes=document.getElementById("opsFulfillmentNotes_"+orderId).value.trim();
+  try{
+    await callAdminApi("POST",{action:"order_fulfillment_update",order_id:orderId,
+      supplier_id:supplier,supplier_reference:reference,supplier_status:status,internal_notes:notes});
+    document.getElementById("adminMessage").textContent="تم حفظ متابعة المورد (معلومات داخلية).";
+    await loadAdminPanel();
+  }catch(error){document.getElementById("adminMessage").textContent="تعذر حفظ متابعة المورد: "+error.message;}
 }
