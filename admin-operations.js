@@ -5,6 +5,47 @@ function opsDate(value){return value?new Date(value).toLocaleString("ar"): "—"
 function opsMoney(value,currency){return Number(value||0).toLocaleString("en-US",{maximumFractionDigits:2})+(currency==="USD"?" $":" ل.س");}
 function opsNode(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;}
 function opsOption(select,value,label){const o=document.createElement("option");o.value=value;o.textContent=label;select.appendChild(o);}
+
+function renderOpsNotifications(rows){
+  const box=document.getElementById("adminNotifications");
+  if(!box)return;
+  box.replaceChildren();
+  const notifications=Array.isArray(rows)?rows:[];
+  const unread=notifications.filter(item=>!item.read_at).length;
+  const heading=opsNode("div","ops-muted","آخر التنبيهات: "+notifications.length+" | غير المقروءة: "+unread);
+  box.appendChild(heading);
+  if(!notifications.length){
+    box.appendChild(opsNode("div","notification-empty","لا توجد تنبيهات إدارية حالياً."));
+    return;
+  }
+  notifications.forEach(item=>{
+    const card=opsNode("article","notification-item"+(item.read_at?"":" unread"));
+    card.append(opsNode("strong","",item.title||"تنبيه إداري"),
+      opsNode("p","",item.body||""),
+      opsNode("div","ops-muted",opsDate(item.created_at)));
+    if(!item.read_at){
+      const button=opsNode("button","secondary","تحديد كمقروء");
+      button.type="button";
+      button.onclick=async()=>{
+        button.disabled=true;
+        try{
+          await callAdminApi("POST",{action:"notification_read",notification_id:item.id});
+          item.read_at=new Date().toISOString();
+          renderOpsNotifications(latestBaranOperations?.notifications||[]);
+        }catch(error){
+          button.disabled=false;
+          const message=document.getElementById("adminMessage");
+          if(message)message.textContent="تعذر تحديث التنبيه: "+error.message;
+        }
+      };
+      card.appendChild(button);
+    }else{
+      card.appendChild(opsNode("span","ops-muted","مقروء"));
+    }
+    box.appendChild(card);
+  });
+}
+
 function renderOperationsDashboard(data){
   latestBaranOperations=data||{};
   const stats=data.stats||{};
@@ -34,6 +75,7 @@ function renderOperationsDashboard(data){
   renderOpsSuppliers(data.suppliers||[],data.supplier_products||[],data.products||[]);
   renderOpsLoyalty(data.customers||[],data.loyalty_customers||[]);
   renderOpsAuditLog(data.audit_log||[]);
+  renderOpsNotifications(data.notifications||[]);
 }
 function renderOpsCustomers(customers){
   const box=document.getElementById("opsCustomers");if(!box)return;box.replaceChildren();
