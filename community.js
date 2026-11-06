@@ -22,6 +22,13 @@ function stopBaranNotificationPolling(){
 }
 
 function openCustomerNotifications(){
+  const adminButton=document.getElementById("adminNavButton");
+  if(adminButton&&!adminButton.classList.contains("hidden")){
+    if(typeof showSection==="function")showSection("admin",adminButton);
+    if(typeof loadAdminPanel==="function")loadAdminPanel();
+    setTimeout(()=>document.getElementById("adminNotifications")?.scrollIntoView({behavior:"smooth",block:"start"}),180);
+    return;
+  }
   if(typeof showSection==="function")showSection("support",null);
   loadMyNotifications();
   const box=document.getElementById("myNotifications");
@@ -92,6 +99,11 @@ function renderAdminNotifications(items){
   if(!box)return;
   box.replaceChildren();
   const unread=(items||[]).filter(item=>!item.read_at);
+  const badge=document.getElementById("notificationCount");
+  if(badge){
+    badge.textContent=unread.length>99?"99+":String(unread.length);
+    badge.classList.toggle("hidden",unread.length===0);
+  }
   const heading=document.createElement("div");heading.className="notification-heading";
   const title=document.createElement("strong");title.textContent="🔔 تنبيهات الإدارة ("+unread.length+" غير مقروء)";
   const refresh=document.createElement("button");refresh.type="button";refresh.className="secondary";refresh.textContent="تحديث";
