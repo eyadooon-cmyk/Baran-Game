@@ -589,6 +589,7 @@ button{font-weight:700}
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
 let selectedRecoveryCustomerId=null;
+let baranAdminNotificationPoll=null;
 
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
   auth:{
@@ -609,6 +610,7 @@ function say(text){
 
 function showLogin(text){
   if(typeof stopBaranNotificationPolling==="function")stopBaranNotificationPolling();
+  if(baranAdminNotificationPoll){clearInterval(baranAdminNotificationPoll);baranAdminNotificationPoll=null;}
   currentUser=null;
   document.getElementById("passwordRecoveryScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
@@ -1047,6 +1049,12 @@ async function sendRecoveryReset(){
 }
 
 async function loadAdminPanel(){
+  if(!baranAdminNotificationPoll){
+    baranAdminNotificationPoll=setInterval(()=>{
+      const adminSection=document.getElementById("admin");
+      if(currentUser&&adminSection&&!adminSection.classList.contains("hidden"))loadAdminPanel();
+    },45000);
+  }
   const container=document.getElementById("adminRequests");
   const message=document.getElementById("adminMessage");
   if(!currentUser) return;
