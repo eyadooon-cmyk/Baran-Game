@@ -90,6 +90,14 @@ footer{text-align:center;padding:25px;color:#839487}
 #appShell>nav{display:none}
 .store-toolbar{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#100b16;border-bottom:1px solid var(--line);box-shadow:0 5px 18px #0006}
 .menu-toggle{width:46px;height:42px;padding:7px;background:#2b1b3a;color:var(--green);border:1px solid #59456b;border-radius:11px;font-size:25px;line-height:1}
+.notification-bell{position:relative;width:42px;height:40px;padding:6px;background:#241a2e;color:#eee;border:1px solid #59456b;border-radius:11px;font-size:19px}
+.notification-count{position:absolute;top:-7px;left:-7px;min-width:18px;height:18px;padding:1px 4px;border-radius:20px;background:#d94b66;color:#fff;font-size:11px;font-weight:800}
+.notification-box{margin:14px 0;padding:12px;border:1px solid #51405f;border-radius:14px;background:#17121e}
+.notification-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.notification-heading button,.notification-item button{width:auto;margin-top:6px;padding:7px 10px;font-size:12px}
+.notification-item{padding:10px;margin:8px 0;border:1px solid #40334b;border-radius:10px;background:#100d15}
+.notification-item.unread{border-color:#9b6ac2;box-shadow:inset -3px 0 #a978d0}
+.notification-item p{margin:6px 0;line-height:1.6}
 .toolbar-brand{font-weight:900;letter-spacing:1px;color:#eee8f4;text-shadow:0 0 10px #8b6ba855}
 .toolbar-brand span{color:var(--green)}
 .drawer-backdrop{position:fixed;inset:0;z-index:30;background:#000a;opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
@@ -217,6 +225,7 @@ button{font-weight:700}
     <button class="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" onclick="toggleSideMenu()" id="menuToggle">☰</button>
     <div class="toolbar-brand">BARAN <span>GAME</span></div>
     <div id="currentSectionLabel" class="small">الرئيسية</div>
+    <button id="notificationBell" class="notification-bell" type="button" onclick="openCustomerNotifications()" aria-label="فتح الإشعارات">🔔<span id="notificationCount" class="notification-count hidden">0</span></button>
   </div>
   <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeSideMenu()" aria-hidden="true"></div>
   <aside id="sideDrawer" class="side-drawer" aria-label="القائمة الرئيسية" aria-hidden="true">
@@ -416,6 +425,7 @@ button{font-weight:700}
       <h2>لوحة الإدارة 🔐</h2>
       <button class="full secondary" type="button" onclick="window.location.href='./manage-products.html'">إدارة المنتجات وسعر الصرف 💱</button>
       <p class="small">راجع إشعار التحويل في شام كاش أولاً. الموافقة تضيف الرصيد مرة واحدة فقط، والرفض لا يغيّر الرصيد.</p>
+      <div id="adminNotifications" class="notification-box">جاري تحميل تنبيهات الإدارة...</div>
       <button class="full secondary" onclick="loadAdminPanel()">تحديث طلبات الإيداع</button>
       <div id="adminMessage" class="small" role="status"></div>
       <div id="adminRequests">جاري تحميل الطلبات...</div>
@@ -510,6 +520,7 @@ button{font-weight:700}
     <section id="support" class="hidden">
       <h2>🛟 الدعم الفني ومساعد باران</h2>
       <p class="small">مساعد باران متاح للرد الفوري على استفساراتك ومحاولة حل المشكلة. لا ترسل كلمات مرور أو رموز تحقق أو بيانات دفع سرية.</p>
+      <div id="myNotifications" class="notification-box" aria-live="polite">جاري تحميل إشعاراتك...</div>
       <div id="aiAssistantPanel" class="ai-assistant-panel" role="region" aria-label="محادثة الدعم الفني مع مساعد باران">
         <div class="ai-assistant-head"><strong>🤖 مساعد Baran Game — دعم فوري</strong></div>
         <div class="ai-assistant-notice">اسألني عن حسابك أو طلباتك أو الإيداعات أو استخدام المتجر. إذا احتجت تدخّل الإدارة، بفتح لك تذكرة.</div>
@@ -597,6 +608,7 @@ function say(text){
 }
 
 function showLogin(text){
+  if(typeof stopBaranNotificationPolling==="function")stopBaranNotificationPolling();
   currentUser=null;
   document.getElementById("passwordRecoveryScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
@@ -1076,6 +1088,7 @@ async function loadAdminPanel(){
       container.appendChild(card);
     });
     }
+    if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
     renderRecoveryAudit(result.recovery_audit||[]);
