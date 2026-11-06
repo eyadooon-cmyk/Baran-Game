@@ -507,7 +507,13 @@ button{font-weight:700}
           <input id="baranAdminAssistantInput" type="text" maxlength="500" autocomplete="off" placeholder="اسأل عن أرباحك أو طلباتك أو الموردين..." aria-label="سؤال مساعد الإدارة">
           <button id="baranAdminAssistantSend" type="submit">اسأل</button>
         </form>
-        <div class="ops-actions"><button type="button" class="secondary" onclick="runBaranAdminHealthCheck()">🛡️ فحص حالة المتجر الآن</button></div><div id="baranAdminAssistantStatus" class="ops-muted">🔒 خاص بالمدير فقط — يقرأ البيانات مباشرة، ولا ينفذ تغييرات مالية أو حساسة.</div>
+        <div class="ops-actions" style="display:flex;flex-wrap:wrap;gap:8px">
+          <button type="button" class="secondary" onclick="askBaranAdminPrompt('اعطني تقرير أرباح اليوم والشهر، وافصل الدولار عن الليرة، وبيّن المبيعات والتكاليف والمصاريف وصافي الربح.')">💰 تقرير الأرباح</button>
+          <button type="button" class="secondary" onclick="askBaranAdminPrompt('راجع الطلبات المعلقة والمتأخرة والفاشلة، واذكر أرقامها وأسباب التأخير والخطوات المقترحة.')">📦 متابعة الطلبات</button>
+          <button type="button" class="secondary" onclick="askBaranAdminPrompt('راجع الإيداعات المعلقة وتذاكر الدعم المفتوحة، وصنّف الحالات حسب الأولوية واقترح طريقة معالجتها دون تنفيذ أي تغيير.')">🎧 الدعم والإيداعات</button>
+          <button type="button" class="secondary" onclick="runBaranAdminHealthCheck()">🛡️ فحص حالة المتجر</button>
+        </div>
+        <div id="baranAdminAssistantStatus" class="ops-muted">🔒 خاص بالمدير فقط — يقرأ البيانات مباشرة، ولا ينفذ تغييرات مالية أو حساسة.</div>
       </section>
       <hr style="border-color:#40334b;margin:24px 0">
       <h2>إدارة المستخدمين 👥</h2>
