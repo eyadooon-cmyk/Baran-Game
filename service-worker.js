@@ -3,8 +3,6 @@ self.addEventListener("push",event=>{
   try{if(event.data)data={...data,...event.data.json()};}catch(_){}
   event.waitUntil(self.registration.showNotification(data.title||"Baran Game",{
     body:data.body||"لديك إشعار جديد",
-    icon:"./icon-192.png",
-    badge:"./icon-192.png",
     data:{url:data.url||"./"},
     tag:data.tag||"baran-"+Date.now(),
     renotify:false,
