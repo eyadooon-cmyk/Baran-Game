@@ -212,6 +212,7 @@ button{font-weight:700}
     <button class="drawer-link" onclick="navigateDrawer('home')"><span class="drawer-icon">🏠</span>الرئيسية</button>
     <button class="drawer-link" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span>الألعاب</button>
     <button class="drawer-link" onclick="navigateDrawer('services')"><span class="drawer-icon">🤖</span>الخدمات الرقمية</button>
+    <button class="drawer-link" onclick="navigateDrawer('mobileTopup')"><span class="drawer-icon">📱</span>شحن رصيد الجوال</button>
     <button class="drawer-link" onclick="navigateDrawer('wallet')"><span class="drawer-icon">💳</span>محفظتي</button>
     <button class="drawer-link" onclick="navigateDrawer('orders')"><span class="drawer-icon">📦</span>طلباتي</button>
     <button class="drawer-link" onclick="navigateDrawer('rewards')"><span class="drawer-icon">🎁</span>المكافآت ودعوة الأصدقاء</button>
@@ -285,6 +286,39 @@ button{font-weight:700}
       </div>
       <div id="serviceProductCatalog"></div>
       <p class="small">تُعرض أسعار المنتجات بالدولار والليرة وفق سعر الصرف الحالي. الطلبات تتاح بعد تجهيز الموردين.</p>
+    </section>
+
+    <section id="mobileTopup" class="hidden">
+      <div class="hero">
+        <h2>شحن رصيد الجوال 📱</h2>
+        <p>اختر الشبكة وفئة التعبئة، وأدخل رقم الخط. الخدمة قيد التجهيز حالياً.</p>
+      </div>
+      <div class="deposit-card">
+        <label for="mobileTopupNetwork">شركة الاتصالات</label>
+        <select id="mobileTopupNetwork">
+          <option value="">اختر الشبكة</option>
+          <option value="syriatel">سيريتل – Syriatel</option>
+          <option value="mtn">MTN سوريا</option>
+        </select>
+        <label for="mobileTopupPhone">رقم الموبايل المراد شحنه</label>
+        <input id="mobileTopupPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="09XXXXXXXX" autocomplete="tel">
+        <label for="mobileTopupCategory">فئة التعبئة بالليرة السورية الجديدة</label>
+        <select id="mobileTopupCategory" disabled>
+          <option value="">ستظهر الفئات بعد ربط كتالوج المورّد</option>
+        </select>
+        <div class="deposit-row">
+          <strong>السعر النهائي</strong>
+          <div id="mobileTopupPrice" class="balance">— ل.س</div>
+          <p class="small">سيُعرض السعر من كتالوج المورّد بعد اعتماد حساب التاجر، مع إمكانية ضبط سعر البيع من لوحة الإدارة.</p>
+        </div>
+        <button id="mobileTopupSubmit" class="full" type="button" disabled>الشحن غير متاح حالياً</button>
+        <div class="deposit-row">
+          <strong>حالة الخدمة</strong>
+          <p class="small">القسم مجهّز للعرض فقط. لا يتم إنشاء طلب شحن أو خصم أي رصيد قبل ربط API موثوق واختبار التنفيذ والاسترجاع.</p>
+          <span class="deposit-status">قيد التجهيز</span>
+        </div>
+      </div>
+      <p class="small">ملاحظة: سنحمّل فئات سيريتل وMTN مباشرة من كتالوج المورّد، ولن نستخدم فئات أو أسعاراً تقديرية.</p>
     </section>
 
     <section id="wallet" class="hidden">
@@ -545,7 +579,7 @@ function showSection(id,button){
   target.classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
-  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",wallet:"المحفظة",orders:"طلباتي",rewards:"المكافآت",support:"آراء ودعم",account:"حسابي",admin:"لوحة الإدارة"};
+  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",orders:"طلباتي",rewards:"المكافآت",support:"آراء ودعم",account:"حسابي",admin:"لوحة الإدارة"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
