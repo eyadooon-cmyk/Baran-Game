@@ -97,6 +97,9 @@ footer{text-align:center;padding:25px;color:#a99ab5}
 .notification-heading button,.notification-item button{width:auto;margin-top:6px;padding:7px 10px;font-size:12px}
 .notification-item{padding:10px;margin:8px 0;border:1px solid #40334b;border-radius:10px;background:#100d15}
 .notification-item.unread{border-color:#9b6ac2;box-shadow:inset -3px 0 #a978d0}
+.notification-clickable{cursor:pointer;transition:border-color .18s,background .18s}
+.notification-clickable:hover{border-color:#c5a3df;background:#211a2b}
+.notification-target-highlight{outline:2px solid #c5a3df!important;box-shadow:0 0 0 5px #9b6ac033!important;transition:outline .2s,box-shadow .2s}
 .notification-item p{margin:6px 0;line-height:1.6}
 .toolbar-brand{font-weight:900;letter-spacing:1px;color:#eee8f4;text-shadow:0 0 10px #8b6ba855}
 .toolbar-brand span{color:var(--green)}
@@ -1350,6 +1353,7 @@ function renderBaranFinancialSupportQueue(rows,feedbackRows){
   queue.forEach(item=>{
     const ticket=feedbackById.get(item.feedback_id)||{};
     const card=document.createElement("article");card.className="ops-item";
+    card.dataset.notificationEntityId=ticket.id||item.feedback_id;
     const heading=document.createElement("strong");
     heading.textContent=(item.ticket_code||ticket.ticket_code||"تذكرة مالية")+" — "+({needs_admin:"تحتاج تدخلك",queued:"بانتظار المعالجة",processing:"قيد المعالجة",sent:"رد آلي أُرسل",failed:"فشلت المعالجة"}[item.state]||item.state);
     const meta=document.createElement("p");meta.className="ops-muted";
