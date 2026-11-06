@@ -102,10 +102,15 @@ header .logo,.toolbar-brand,.drawer-title,.auth-logo,.lock-card .logo{
   letter-spacing:1.5px;
   font-weight:800;
 }
+/* إعادة شكل اسم المتجر أعلى الصفحة كما كان، مع الإبقاء على ألوان الموف */
 header .logo{
+  font-family:Arial,sans-serif;
+  font-size:clamp(30px,6vw,46px);
+  font-weight:1000;
+  letter-spacing:2px;
   color:#eee9f2;
-  text-shadow:0 2px 10px #0009;
-  animation:none;
+  text-shadow:0 0 12px #8b6ba8,0 0 30px #8b6ba8;
+  animation:baranPulse 3.5s ease-in-out infinite;
 }
 header .logo-mark{
   color:#c9b9d7;
