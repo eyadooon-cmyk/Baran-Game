@@ -1318,11 +1318,21 @@ function renderFinance(finance){
     const lines=[
       "رأس المال: "+financeMoney(t.capital,currency),
       "إجمالي المبيعات: "+financeMoney(t.sales,currency),
-      "تكلفة المنتجات المباعة: "+financeMoney(t.cost,currency),
-      "المصاريف: "+financeMoney(t.expenses,currency),
-      "صافي الربح: "+financeMoney(t.profit,currency),
-      "ربح اليوم: "+financeMoney(t.today_profit,currency),
-      "ربح الشهر: "+financeMoney(t.month_profit,currency)
+      "إجمالي تكلفة الموردين: "+financeMoney(t.cost,currency),
+      "إجمالي المصاريف: "+financeMoney(t.expenses,currency),
+      "صافي الربح الكلي: "+financeMoney(t.profit,currency),
+      "— ملخص اليوم —",
+      "مبيعات اليوم: "+financeMoney(t.today_sales,currency),
+      "تكلفة الموردين اليوم: "+financeMoney(t.today_cost,currency),
+      "مصاريف اليوم: "+financeMoney(t.today_expenses,currency),
+      "الربح الإجمالي اليوم (قبل المصاريف): "+financeMoney(t.today_gross_profit,currency),
+      "صافي ربح اليوم: "+financeMoney(t.today_profit,currency),
+      "— ملخص الشهر —",
+      "مبيعات الشهر: "+financeMoney(t.month_sales,currency),
+      "تكلفة الموردين هذا الشهر: "+financeMoney(t.month_cost,currency),
+      "مصاريف الشهر: "+financeMoney(t.month_expenses,currency),
+      "الربح الإجمالي للشهر (قبل المصاريف): "+financeMoney(t.month_gross_profit,currency),
+      "صافي ربح الشهر: "+financeMoney(t.month_profit,currency)
     ];
     card.appendChild(heading);
     lines.forEach(line=>{const p=document.createElement("div");p.textContent=line;card.appendChild(p);});
@@ -1342,7 +1352,8 @@ function renderFinance(finance){
     detail.textContent=item.entry_type==="sale"
       ? "المنتج: "+(item.product_name||"")+" | الكمية: "+item.quantity+
         " | إجمالي البيع: "+financeMoney(item.amount,item.currency)+
-        " | تكلفة الشراء: "+financeMoney(item.cost_amount,item.currency)
+        " | تكلفة الشراء: "+financeMoney(item.cost_amount,item.currency)+
+        (item.order_id?" | طلب تلقائي #"+item.order_id.slice(0,8):"")
       : "المبلغ: "+financeMoney(item.amount,item.currency);
     const date=document.createElement("div");
     date.className="small";
