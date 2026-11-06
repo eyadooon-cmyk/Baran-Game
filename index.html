@@ -596,8 +596,13 @@ button{font-weight:700}
       <h2>الحسابات المالية 💰</h2>
       <p class="small">سجّل رأس المال والمصاريف اليدوية، وتُضاف مبيعات الطلبات المكتملة وتكاليف المورد تلقائياً مرة واحدة بعد تسجيل تكلفة المورد. تُعرض حسابات الدولار والليرة كلٌ على حدة، ولا تدخل أرصدة الزبائن ضمن أرباح المتجر. لا يمكن إكمال الطلب قبل تسجيل تكلفة المورد وسعر الصرف.</p>
       <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
-      <h3 style="margin-top:22px;color:#c2b1d1">تقرير أرباح المنتجات — الشهر الحالي</h3>
-      <p class="small">يعرض المبيعات وتكلفة المورد والربح الإجمالي لكل منتج، مع فصل الدولار عن الليرة السورية.</p>
+      <h3 id="financeReportHeading" style="margin-top:22px;color:#c2b1d1">تقرير أرباح المنتجات</h3>
+      <p class="small">اختر الشهر والسنة لعرض المبيعات وتكلفة المورد والربح الإجمالي لكل منتج، مع فصل الدولار عن الليرة السورية.</p>
+      <div class="deposit-card finance-form" style="margin:12px 0">
+        <label for="financeReportPeriod">الشهر والسنة</label>
+        <input id="financeReportPeriod" type="month" aria-label="اختر شهر وسنة التقرير" onchange="loadAdminPanel()">
+        <button class="secondary full" type="button" onclick="loadAdminPanel()">عرض التقرير المحدد</button>
+      </div>
       <div id="financeProductReport" class="ops-list">جاري تحميل تقرير المنتجات...</div>
 
       <div class="deposit-card finance-form">
@@ -1098,7 +1103,23 @@ async function loadWallet(){
 async function callAdminApi(method="GET",payload=null){
   const {data:{session},error:sessionError}=await sb.auth.getSession();
   if(sessionError||!session) throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
-  const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin",{
+  let endpoint=SUPABASE_URL+"/functions/v1/baran-admin";
+  if(method==="GET"){
+    const period=document.getElementById("financeReportPeriod");
+    if(period){
+      if(!period.value){
+        const parts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Damascus",year:"numeric",month:"2-digit"}).formatToParts(new Date());
+        const year=parts.find(part=>part.type==="year").value;
+        const month=parts.find(part=>part.type==="month").value;
+        period.value=year+"-"+month;
+      }
+      if(/^\\d{4}-\\d{2}$/.test(period.value)){
+        const [year,month]=period.value.split("-");
+        endpoint+="?finance_month="+encodeURIComponent(String(Number(month)))+"&finance_year="+encodeURIComponent(year);
+      }
+    }
+  }
+  const response=await fetch(endpoint,{
     method,
     headers:{
       "Authorization":"Bearer "+session.access_token,
@@ -1346,8 +1367,13 @@ function renderFinance(finance){
   if(productReportBox){
     productReportBox.replaceChildren();
     const report=finance.product_report||[];
+    const reportMonth=Number(finance.product_report_month||0);
+    const reportYear=Number(finance.product_report_year||0);
+    const monthLabel=reportMonth?new Date(Date.UTC(reportYear,reportMonth-1,1)).toLocaleDateString("ar",{month:"long",year:"numeric",timeZone:"UTC"}):"الفترة المحددة";
+    const reportHeading=document.getElementById("financeReportHeading");
+    if(reportHeading)reportHeading.textContent="تقرير أرباح المنتجات — "+monthLabel;
     if(!report.length){
-      productReportBox.textContent="لا توجد مبيعات مسجلة خلال الشهر الحالي.";
+      productReportBox.textContent="لا توجد مبيعات مسجلة خلال "+monthLabel+".";
     }else{
       ["USD","SYP"].forEach(currency=>{
         const group=report.filter(item=>item.currency===currency);
