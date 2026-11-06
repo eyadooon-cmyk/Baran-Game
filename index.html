@@ -588,15 +588,18 @@ button{font-weight:700}
     </section>
 
     <section id="orders" class="hidden">
-      <h2>📦 طلباتي</h2>
-      <p>سيظهر سجل طلباتك وحالاتها هنا بعد تفعيل نظام الطلبات والشحن.</p>
-      <p class="small">حالياً لم يتم تفعيل تنفيذ الطلبات أو الشحن الفعلي بعد.</p>
+      <h2>📦 طلباتي وتتبع الطلب</h2>
+      <p class="small">تابع حالة طلباتك وآخر التحديثات التي يرسلها فريق Baran Game.</p>
+      <button class="full secondary" type="button" onclick="loadMyOrders()">تحديث الطلبات</button>
+      <div id="customerOrdersList" class="ops-list">جاري تحميل طلباتك...</div>
     </section>
 
     <section id="rewards" class="hidden">
-      <h2>🎁 النقاط والمكافآت</h2>
-      <p>سيظهر رصيد نقاطك وسجلّ المكافآت ودعوات الأصدقاء هنا بعد تفعيل النظام.</p>
-      <p class="small">نظام النقاط والدعوات ما زال قيد التجهيز، ولا تُحتسب نقاط حالياً.</p>
+      <h2>🎁 نقاط الولاء والمكافآت</h2>
+      <div id="customerLoyaltyBalance" class="ops-card">جاري تحميل رصيد النقاط...</div>
+      <h3>سجل النقاط</h3>
+      <div id="customerLoyaltyHistory" class="ops-list">جاري تحميل سجل النقاط...</div>
+      <p class="small">تُضاف النقاط أو تُخصم وفق العمليات المعتمدة من إدارة المتجر. ستظهر تفاصيل كل حركة هنا.</p>
       <button class="full secondary" onclick="showSection('account',document.querySelectorAll('nav button')[4])">العودة إلى حسابي</button>
     </section>
 
@@ -718,6 +721,8 @@ function showSection(id,button){
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
+  if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
+  if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
