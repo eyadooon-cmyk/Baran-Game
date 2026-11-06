@@ -832,7 +832,7 @@ function showSection(id,button){
   if(!currentUser) return;
   const target=document.getElementById(id);
   if(!target) return;
-  document.querySelectorAll("main section[id]").forEach(s=>s.classList.add("hidden"));
+  document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
   target.classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
