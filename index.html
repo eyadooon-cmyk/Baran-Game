@@ -69,10 +69,8 @@ p{line-height:1.7}
 .lock-screen{position:fixed;inset:0;z-index:20;background:#09080d;display:flex;align-items:center;justify-content:center;padding:18px}
 .lock-card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--green);border-radius:18px;padding:24px;text-align:center}
 footer{text-align:center;padding:25px;color:#839487}
-.support-fab{position:fixed;right:16px;bottom:18px;z-index:10;border-radius:999px;padding:14px 18px;box-shadow:0 5px 22px #0009;display:flex;align-items:center;gap:8px}
-
 .ai-assistant-fab{position:fixed;left:16px;bottom:18px;z-index:12;border-radius:999px;padding:14px 18px;background:#2b1b3a;color:#eee8f4;border:1px solid #8b6ba8;box-shadow:0 5px 22px #0009}
-.ai-assistant-panel{position:fixed;left:16px;bottom:76px;z-index:25;width:min(390px,calc(100vw - 32px));height:min(560px,72vh);display:flex;flex-direction:column;background:#17131b;border:1px solid #8b6ba8;border-radius:17px;box-shadow:0 16px 50px #000c;overflow:hidden}
+.ai-assistant-panel{position:relative;width:100%;height:460px;max-height:65vh;margin:16px 0 24px;display:flex;flex-direction:column;background:#17131b;border:1px solid #8b6ba8;border-radius:17px;box-shadow:0 10px 28px #0007;overflow:hidden}
 .ai-assistant-head{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:#100b16;border-bottom:1px solid #40334b}
 .ai-assistant-head strong{color:#c5b4d6}
 .ai-assistant-close{padding:5px 11px;background:#30243a;color:#eee8f4}
@@ -85,7 +83,7 @@ footer{text-align:center;padding:25px;color:#839487}
 .ai-assistant-form{display:flex;gap:7px;padding:10px;border-top:1px solid #40334b;background:#100b16}
 .ai-assistant-form input{margin:0;min-width:0;flex:1;font-size:14px}
 .ai-assistant-form button{padding:10px 14px;white-space:nowrap}
-@media(max-width:500px){.ai-assistant-panel{left:10px;bottom:72px;width:calc(100vw - 20px);height:min(70vh,560px)}.ai-assistant-fab{left:10px;bottom:18px;padding:12px 14px}}
+@media(max-width:500px){.ai-assistant-panel{height:430px;max-height:62vh;margin:12px 0 20px}.ai-assistant-fab{left:10px;bottom:18px;padding:12px 14px}}
 
 
 /* القائمة الجانبية — تحافظ على هوية Baran Game الحالية */
@@ -510,8 +508,20 @@ button{font-weight:700}
     </section>
 
     <section id="support" class="hidden">
-      <h2>آراء العملاء والاقتراحات والدعم 💬</h2>
-      <p class="small">رأيك بيساعدنا نحسّن Baran Game. لا ترسل كلمات مرور أو بيانات مالية حساسة.</p>
+      <h2>🛟 الدعم الفني ومساعد باران</h2>
+      <p class="small">مساعد باران متاح للرد الفوري على استفساراتك ومحاولة حل المشكلة. لا ترسل كلمات مرور أو رموز تحقق أو بيانات دفع سرية.</p>
+      <div id="aiAssistantPanel" class="ai-assistant-panel" role="region" aria-label="محادثة الدعم الفني مع مساعد باران">
+        <div class="ai-assistant-head"><strong>🤖 مساعد Baran Game — دعم فوري</strong></div>
+        <div class="ai-assistant-notice">اسألني عن حسابك أو طلباتك أو الإيداعات أو استخدام المتجر. إذا احتجت تدخّل الإدارة، بفتح لك تذكرة.</div>
+        <div id="aiAssistantMessages" class="ai-assistant-messages" aria-live="polite">
+          <div class="ai-chat-message bot">أهلاً فيك! أنا مساعد باران 🤖 موجود لمساعدتك مباشرة. شو المشكلة اللي عم تواجهها؟</div>
+        </div>
+        <form class="ai-assistant-form" onsubmit="sendBaranAssistantMessage(event)">
+          <input id="aiAssistantInput" type="text" maxlength="1200" autocomplete="off" placeholder="اكتب سؤالك أو مشكلتك هون..." aria-label="رسالتك للمساعد">
+          <button id="aiAssistantSend" type="submit">إرسال</button>
+        </form>
+      </div>
+      <h3>آراء العملاء والاقتراحات</h3>
       <div class="deposit-card">
         <h3>⭐ قيّم تجربتك</h3>
         <label for="reviewOrder">الطلب المكتمل</label>
@@ -554,20 +564,7 @@ button{font-weight:700}
       <div id="myFeedbackList" class="small">جاري تحميل الرسائل...</div>
     </section>
   </main>
-<button class="support-fab" type="button" onclick="showSection('support',null)" aria-label="فتح الدعم الفني">💬 الدعم الفني</button>
-
-<button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="toggleBaranAssistant()" aria-controls="aiAssistantPanel" aria-expanded="false">🤖 مساعد باران</button>
-<div id="aiAssistantPanel" class="ai-assistant-panel hidden" role="dialog" aria-label="مساعد باران الذكي">
-  <div class="ai-assistant-head"><strong>🤖 مساعد Baran Game</strong><button class="ai-assistant-close" type="button" onclick="toggleBaranAssistant(false)" aria-label="إغلاق">×</button></div>
-  <div class="ai-assistant-notice">مساعد آلي. لا ترسل كلمة مرور أو رمز تحقق أو بيانات دفع سرية.</div>
-  <div id="aiAssistantMessages" class="ai-assistant-messages" aria-live="polite">
-    <div class="ai-chat-message bot">أهلاً فيك! أنا مساعد باران 🤖 اسألني عن حسابك أو طلباتك أو إيداعاتك أو طريقة استخدام المتجر.</div>
-  </div>
-  <form class="ai-assistant-form" onsubmit="sendBaranAssistantMessage(event)">
-    <input id="aiAssistantInput" type="text" maxlength="1200" autocomplete="off" placeholder="اكتب سؤالك هون..." aria-label="رسالتك للمساعد">
-    <button id="aiAssistantSend" type="submit">إرسال</button>
-  </form>
-</div>
+<button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="openBaranSupportAssistant()" aria-controls="aiAssistantPanel">💬 الدعم الفني</button>
   </div>
 
 <footer>© 2026 Baran Game<br><a href="./terms.html" style="color:#c5b4d6;margin:0 8px">شروط الاستخدام</a> | <a href="./privacy.html" style="color:#c5b4d6;margin:0 8px">سياسة الخصوصية</a></footer>
@@ -620,7 +617,7 @@ function showSection(id,button){
   target.classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
-  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",orders:"طلباتي",rewards:"المكافآت",support:"آراء ودعم",account:"حسابي",admin:"لوحة الإدارة"};
+  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",account:"حسابي",admin:"لوحة الإدارة"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
