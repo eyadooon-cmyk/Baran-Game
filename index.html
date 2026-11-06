@@ -232,11 +232,27 @@ button{font-weight:700}
     <input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
     <input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password">
     <button id="loginButton" class="full" onclick="signIn()">تسجيل الدخول</button>
-    <button id="signupButton" class="full secondary" onclick="signUp()">إنشاء حساب جديد</button>
+    <button id="signupButton" class="full secondary" onclick="openSignupScreen()">إنشاء حساب جديد</button>
     <button id="forgotPasswordButton" class="full secondary" type="button" onclick="sendPasswordReset()">نسيت كلمة المرور؟</button>
     <p class="small" style="text-align:center;margin:12px 0 4px">باستخدام المتجر، يمكنك الاطلاع على <a href="./terms.html" style="color:#c5b4d6">شروط الاستخدام</a> و<a href="./privacy.html" style="color:#c5b4d6">سياسة الخصوصية</a>.</p>
     <div id="message">أهلاً بك في Baran Game</div>
   </div>
+</div>
+
+<div id="signupScreen" class="auth-card hidden">
+  <div class="auth-logo">BARAN GAME</div>
+  <h2 style="text-align:center">إنشاء حساب جديد 📝</h2>
+  <p class="small" style="text-align:center">أنشئ حسابك للوصول إلى المتجر والمحفظة.</p>
+  <label for="signupEmail">البريد الإلكتروني</label>
+  <input id="signupEmail" type="email" autocomplete="email" placeholder="أدخل بريدك الإلكتروني">
+  <label for="signupPassword">كلمة المرور</label>
+  <input id="signupPassword" type="password" autocomplete="new-password" placeholder="8 أحرف على الأقل">
+  <p class="small">يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم ورمز.</p>
+  <label for="signupPasswordConfirm">تأكيد كلمة المرور</label>
+  <input id="signupPasswordConfirm" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور">
+  <button id="signupSubmitButton" class="full" type="button" onclick="signUp()">إنشاء الحساب</button>
+  <button class="full secondary" type="button" onclick="backToLogin()">العودة لتسجيل الدخول</button>
+  <div id="signupMessage" class="small" role="status" aria-live="polite">أدخل بياناتك لإنشاء حساب جديد.</div>
 </div>
 
 <div id="passwordRecoveryScreen" class="auth-card hidden">
@@ -786,6 +802,7 @@ function showLogin(text){
   if(baranAdminNotificationPoll){clearInterval(baranAdminNotificationPoll);baranAdminNotificationPoll=null;}
   currentUser=null;
   document.getElementById("passwordRecoveryScreen").classList.add("hidden");
+  document.getElementById("signupScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
   document.getElementById("appShell").classList.add("hidden");
   const assistantFab=document.getElementById("aiAssistantFab");if(assistantFab)assistantFab.classList.add("hidden");
@@ -861,40 +878,43 @@ function showApp(user){
   if(typeof loadCommunity==="function")loadCommunity();
 }
 
+function openSignupScreen(){
+  document.getElementById("authScreen").classList.add("hidden");
+  document.getElementById("passwordRecoveryScreen").classList.add("hidden");
+  document.getElementById("signupScreen").classList.remove("hidden");
+  document.getElementById("signupMessage").textContent="أدخل بياناتك لإنشاء حساب جديد.";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function backToLogin(){
+  document.getElementById("signupScreen").classList.add("hidden");
+  document.getElementById("authScreen").classList.remove("hidden");
+  say("أهلاً بك في Baran Game");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 async function signUp(){
-  const email=document.getElementById("email").value.trim();
-  const password=document.getElementById("password").value;
-
-  if(!email||password.length<8||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[!@#$%^&*()_+\-=[\]{};\'":|<>?,./`~]/.test(password)){
-    say("كلمة المرور يجب أن تكون 8 أحرف على الأقل، وتحتوي حرفاً كبيراً وصغيراً ورقماً ورمزاً.");
-    return;
+  const email=document.getElementById("signupEmail").value.trim();
+  const password=document.getElementById("signupPassword").value;
+  const confirmPassword=document.getElementById("signupPasswordConfirm").value;
+  const note=document.getElementById("signupMessage");
+  const button=document.getElementById("signupSubmitButton");
+  if(!email||!document.getElementById("signupEmail").checkValidity()){
+    note.textContent="أدخل بريداً إلكترونياً صحيحاً."; return;
   }
-
-  say("جاري إنشاء الحساب...");
-  document.getElementById("signupButton").disabled=true;
-
+  if(password!==confirmPassword){note.textContent="كلمتا المرور غير متطابقتين.";return;}
+  if(password.length<8||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[!@#$%^&*()_+\-=[\]{};':"|<>?,./~]/.test(password)){
+    note.textContent="كلمة المرور يجب أن تكون 8 أحرف على الأقل، وتحتوي حرفاً كبيراً وصغيراً ورقماً ورمزاً.";return;
+  }
+  note.textContent="جاري إنشاء الحساب...";
+  button.disabled=true;
   try{
     const redirect=window.location.origin+window.location.pathname;
-    const {data,error}=await sb.auth.signUp({
-      email,
-      password,
-      options:{emailRedirectTo:redirect}
-    });
-
-    if(error) throw error;
-
-    if(data.session&&data.user){
-      showApp(data.user);
-    }else{
-      say("تم إنشاء الحساب. افتح بريدك واضغط رابط تأكيد الحساب، ثم سجّل الدخول.");
-    }
-  }catch(error){
-    say("خطأ: "+error.message);
-  }finally{
-    document.getElementById("signupButton").disabled=false;
-  }
+    const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect}});
+    if(error)throw error;
+    if(data.session&&data.user)showApp(data.user);
+    else note.textContent="تم إنشاء الحساب بنجاح. افتح بريدك واضغط رابط تأكيد الحساب، ثم ارجع وسجّل الدخول.";
+  }catch(error){note.textContent="تعذر إنشاء الحساب: "+(error.message||"حدث خطأ غير معروف.");}
+  finally{button.disabled=false;}
 }
-
 async function signIn(){
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
