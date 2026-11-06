@@ -1015,7 +1015,25 @@ function lockNow(){ if(currentUser) showLock("unlock"); }
 
 // لا نقفل التطبيق عند الانتقال إلى تطبيق آخر؛ تبقى الجلسة مفتوحة حتى تسجيل الخروج أو إعادة فتح التطبيق.
 
+async function unregisterBaranPushNotifications(){
+  try{
+    if(!("serviceWorker" in navigator))return;
+    const registration=await navigator.serviceWorker.getRegistration("./");
+    const subscription=await registration?.pushManager?.getSubscription();
+    if(!subscription)return;
+    const {data:{session}}=await sb.auth.getSession();
+    if(session?.access_token){
+      await fetch(SUPABASE_URL+"/functions/v1/baran-push-register",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token},
+        body:JSON.stringify({action:"remove",endpoint:subscription.endpoint})
+      });
+    }
+    await subscription.unsubscribe();
+  }catch(error){console.warn("تعذر إزالة اشتراك الإشعارات من هذا الجهاز:",error);}
+}
 async function signOut(){
+  await unregisterBaranPushNotifications();
   await sb.auth.signOut({scope:"local"});
   currentUser=null;
   showLogin("تم تسجيل الخروج بنجاح.");
