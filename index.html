@@ -604,6 +604,8 @@ function showLogin(text){
   document.getElementById("passwordRecoveryScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
   document.getElementById("appShell").classList.add("hidden");
+  const assistantFab=document.getElementById("aiAssistantFab");if(assistantFab)assistantFab.classList.add("hidden");
+  const assistantPanel=document.getElementById("aiAssistantPanel");if(assistantPanel)assistantPanel.classList.add("hidden");
   document.getElementById("lockScreen").classList.add("hidden");
   document.getElementById("usd").textContent="0.00 $";
   document.getElementById("syp").textContent="0 ل.س";
