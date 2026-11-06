@@ -71,6 +71,23 @@ p{line-height:1.7}
 footer{text-align:center;padding:25px;color:#839487}
 .support-fab{position:fixed;right:16px;bottom:18px;z-index:10;border-radius:999px;padding:14px 18px;box-shadow:0 5px 22px #0009;display:flex;align-items:center;gap:8px}
 
+.ai-assistant-fab{position:fixed;left:16px;bottom:18px;z-index:12;border-radius:999px;padding:14px 18px;background:#2b1b3a;color:#eee8f4;border:1px solid #8b6ba8;box-shadow:0 5px 22px #0009}
+.ai-assistant-panel{position:fixed;left:16px;bottom:76px;z-index:25;width:min(390px,calc(100vw - 32px));height:min(560px,72vh);display:flex;flex-direction:column;background:#17131b;border:1px solid #8b6ba8;border-radius:17px;box-shadow:0 16px 50px #000c;overflow:hidden}
+.ai-assistant-head{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:#100b16;border-bottom:1px solid #40334b}
+.ai-assistant-head strong{color:#c5b4d6}
+.ai-assistant-close{padding:5px 11px;background:#30243a;color:#eee8f4}
+.ai-assistant-notice{padding:8px 12px;color:#b9a9c9;font-size:11px;border-bottom:1px solid #30243a}
+.ai-assistant-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
+.ai-chat-message{max-width:88%;padding:10px 12px;border-radius:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.ai-chat-message.bot{align-self:flex-start;background:#292033;border:1px solid #493b55;color:#f1eaf7}
+.ai-chat-message.user{align-self:flex-end;background:#57436a;color:white}
+.ai-chat-message.error{border-color:#8b4c62;color:#ffd9e1}
+.ai-assistant-form{display:flex;gap:7px;padding:10px;border-top:1px solid #40334b;background:#100b16}
+.ai-assistant-form input{margin:0;min-width:0;flex:1;font-size:14px}
+.ai-assistant-form button{padding:10px 14px;white-space:nowrap}
+@media(max-width:500px){.ai-assistant-panel{left:10px;bottom:72px;width:calc(100vw - 20px);height:min(70vh,560px)}.ai-assistant-fab{left:10px;bottom:18px;padding:12px 14px}}
+
+
 /* القائمة الجانبية — تحافظ على هوية Baran Game الحالية */
 #appShell>nav{display:none}
 .store-toolbar{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#100b16;border-bottom:1px solid var(--line);box-shadow:0 5px 18px #0006}
@@ -538,6 +555,19 @@ button{font-weight:700}
     </section>
   </main>
 <button class="support-fab" type="button" onclick="showSection('support',null)" aria-label="فتح الدعم الفني">💬 الدعم الفني</button>
+
+<button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="toggleBaranAssistant()" aria-controls="aiAssistantPanel" aria-expanded="false">🤖 مساعد باران</button>
+<div id="aiAssistantPanel" class="ai-assistant-panel hidden" role="dialog" aria-label="مساعد باران الذكي">
+  <div class="ai-assistant-head"><strong>🤖 مساعد Baran Game</strong><button class="ai-assistant-close" type="button" onclick="toggleBaranAssistant(false)" aria-label="إغلاق">×</button></div>
+  <div class="ai-assistant-notice">مساعد آلي. لا ترسل كلمة مرور أو رمز تحقق أو بيانات دفع سرية.</div>
+  <div id="aiAssistantMessages" class="ai-assistant-messages" aria-live="polite">
+    <div class="ai-chat-message bot">أهلاً فيك! أنا مساعد باران 🤖 اسألني عن حسابك أو طلباتك أو إيداعاتك أو طريقة استخدام المتجر.</div>
+  </div>
+  <form class="ai-assistant-form" onsubmit="sendBaranAssistantMessage(event)">
+    <input id="aiAssistantInput" type="text" maxlength="1200" autocomplete="off" placeholder="اكتب سؤالك هون..." aria-label="رسالتك للمساعد">
+    <button id="aiAssistantSend" type="submit">إرسال</button>
+  </form>
+</div>
   </div>
 
 <footer>© 2026 Baran Game<br><a href="./terms.html" style="color:#c5b4d6;margin:0 8px">شروط الاستخدام</a> | <a href="./privacy.html" style="color:#c5b4d6;margin:0 8px">سياسة الخصوصية</a></footer>
@@ -546,6 +576,7 @@ button{font-weight:700}
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js"></script>
 <script src="./community.js"></script>
+<script src="./baran-assistant.js"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
@@ -632,6 +663,7 @@ function showApp(user){
   document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("lockScreen").classList.add("hidden");
   document.getElementById("appShell").classList.remove("hidden");
+  const assistantFab=document.getElementById("aiAssistantFab");if(assistantFab)assistantFab.classList.remove("hidden");
   document.getElementById("accountInfo").textContent=user.email||"";
   if(typeof loadProfileDetails==="function")loadProfileDetails();
   showSection("home",document.querySelector("nav button"));
