@@ -22,17 +22,11 @@ function stopBaranNotificationPolling(){
 }
 
 function openCustomerNotifications(){
-  const adminButton=document.getElementById("adminNavButton");
-  if(adminButton&&!adminButton.classList.contains("hidden")){
-    if(typeof showSection==="function")showSection("admin",adminButton);
-    if(typeof loadAdminPanel==="function")loadAdminPanel();
-    setTimeout(()=>document.getElementById("adminNotifications")?.scrollIntoView({behavior:"smooth",block:"start"}),180);
-    return;
-  }
-  if(typeof showSection==="function")showSection("support",null);
-  loadMyNotifications();
-  const box=document.getElementById("myNotifications");
-  if(box)box.scrollIntoView({behavior:"smooth",block:"start"});
+  const modal=document.getElementById("customerNotificationsModal");
+  if(!modal)return;
+  modal.classList.remove("hidden");
+  if(typeof loadCustomerNotifications==="function")loadCustomerNotifications();
+  else loadMyNotifications();
 }
 
 async function loadMyNotifications(){
@@ -297,6 +291,19 @@ function renderAdminFeedback(items){
     choices.forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;status.appendChild(option);});
     status.value=item.status;
     card.appendChild(status);
+    if(item.feedback_type==="support"){
+      const analyze=document.createElement("button");
+      analyze.type="button";analyze.className="full secondary";
+      analyze.textContent="🧠 حلّل هذه التذكرة بالمساعد الإداري";
+      analyze.onclick=()=>{
+        const code=item.ticket_code||item.id;
+        if(typeof askBaranAdminPrompt!=="function"){alert("مساعد الإدارة غير متاح حالياً.");return;}
+        askBaranAdminPrompt("راجع تذكرة الدعم المحددة رقم "+code+" من بيانات التذاكر المحمّلة لديك. اعرض المشكلة كما كتبها الزبون، صنّفها وحدد الأولوية وسببها، اذكر المعلومات الناقصة وخطوات التشخيص، ثم اكتب مسودة رد مناسبة باللهجة الشامية. لا ترسل الرد ولا تغيّر الحالة.");
+        const assistant=document.getElementById("baranAdminAssistant");
+        if(assistant)assistant.scrollIntoView({behavior:"smooth",block:"start"});
+      };
+      card.appendChild(analyze);
+    }
     const save=document.createElement("button");save.type="button";save.className="full";save.textContent="حفظ الرد والحالة وإشعار الزبون";
     save.onclick=()=>saveAdminFeedback(item.id,status.value,reply.value,save);
     card.appendChild(save);box.appendChild(card);
