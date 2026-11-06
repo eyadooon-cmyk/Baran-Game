@@ -46,9 +46,65 @@ function renderOpsNotifications(rows){
   });
 }
 
+let baranMonitorBusy=false;
+async function loadOpsMonitor(){
+  const statusBox=document.getElementById("opsMonitorStatus");
+  const alertsBox=document.getElementById("opsMonitorAlerts");
+  if(!statusBox||!alertsBox||baranMonitorBusy||!currentUser)return;
+  baranMonitorBusy=true;
+  try{
+    const {data:{session},error:sessionError}=await sb.auth.getSession();
+    if(sessionError||!session)throw new Error("انتهت جلسة المدير.");
+    const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin-monitor",{
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+session.access_token,
+        "apikey":SUPABASE_KEY,
+        "Content-Type":"application/json"
+      },
+      body:"{}"
+    });
+    let result={};try{result=await response.json();}catch(_){}
+    if(!response.ok)throw new Error(result.error||"تعذر جلب حالة المراقبة.");
+    const monitor=result.monitor||{};
+    const job=monitor.job||{};
+    const check=monitor.latest_check||{};
+    const lastRun=monitor.last_run||null;
+    const parts=[];
+    parts.push(job.active?"المراقبة مفعّلة":"المراقبة غير مفعّلة");
+    parts.push("الجدول: "+opsText(job.schedule||"—"));
+    parts.push("آخر فحص بيانات: "+(check.checked_at?opsDate(check.checked_at):"لم يسجل بعد"));
+    parts.push("آخر تشغيل مجدول: "+(lastRun?.started_at?opsDate(lastRun.started_at)+" — "+opsText(lastRun.status):"بانتظار أول تشغيل تلقائي"));
+    parts.push("التنبيهات المفتوحة: "+Number(monitor.active_alert_count||0));
+    statusBox.textContent=parts.join(" | ");
+    alertsBox.replaceChildren();
+    const alerts=Array.isArray(monitor.active_alerts)?monitor.active_alerts:[];
+    if(!alerts.length){
+      alertsBox.appendChild(opsNode("div","ops-item","لا توجد مشاكل مفتوحة حسب آخر فحص."));
+    }else{
+      alerts.forEach(alert=>{
+        const card=opsNode("article","ops-item");
+        const severity=alert.severity==="critical"?"حرج":alert.severity==="warning"?"تحذير":"معلومة";
+        card.append(
+          opsNode("strong","",severity+" — "+opsText(alert.message)),
+          opsNode("div","ops-muted","العدد الحالي: "+opsText(alert.details?.count)+" | آخر رصد: "+opsDate(alert.last_seen_at)),
+          opsNode("div","ops-muted","تكرار الرصد: "+Number(alert.occurrences||1))
+        );
+        alertsBox.appendChild(card);
+      });
+    }
+  }catch(error){
+    statusBox.textContent="تعذر تحميل حالة المراقبة: "+(error?.message||"خطأ غير معروف");
+    alertsBox.replaceChildren();
+  }finally{
+    baranMonitorBusy=false;
+  }
+}
+
 function renderOperationsDashboard(data){
   latestBaranOperations=data||{};
   const stats=data.stats||{};
+  void loadOpsMonitor();
   const statBox=document.getElementById("opsStats");
   if(statBox){
     statBox.replaceChildren();
