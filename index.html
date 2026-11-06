@@ -635,6 +635,15 @@ button{font-weight:700}
       <div id="recoveryAuditList" class="small">جاري تحميل السجل...</div>
 
       <hr style="border-color:#40334b;margin:24px 0">
+      <hr style="border-color:#40334b;margin:24px 0">
+      <section id="baranAutoSupportPanel" class="deposit-card" aria-label="متابعة الردود الآلية" style="margin:16px 0;padding:16px;border:1px solid #8b6ba8">
+        <h2>🤖 متابعة الردود الآلية وتذاكر الإدارة</h2>
+        <p class="small">سجل مباشر لحالة كل تذكرة دعم: الردود التي أرسلها المساعد، والحالات التي حوّلها إليك مع السبب، وأي محاولة فاشلة. هذا القسم للمتابعة فقط ولا ينفذ أي إجراء مالي.</p>
+        <div id="baranAutoSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
+        <div class="ops-actions"><button class="secondary" type="button" onclick="loadAdminPanel()">🔄 تحديث سجل الردود</button></div>
+        <div id="baranAutoSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
+      </section>
+
       <h2>آراء العملاء والاقتراحات والدعم 💬</h2>
       <p class="small">راجع الرسائل، واكتب رداً، وحدد حالة كل طلب.</p>
       <div id="adminFeedback">جاري تحميل الرسائل...</div>
@@ -1301,6 +1310,72 @@ async function sendRecoveryReset(){
   finally{button.disabled=false;}
 }
 
+function renderBaranAutoSupportQueue(rows,feedbackRows){
+  const stats=document.getElementById("baranAutoSupportStats");
+  const box=document.getElementById("baranAutoSupportQueue");
+  if(!stats||!box)return;
+  const queue=Array.isArray(rows)?rows:[];
+  const feedbackById=new Map((feedbackRows||[]).map(item=>[item.id,item]));
+  const counts={
+    sent:queue.filter(x=>x.state==="sent").length,
+    needs_admin:queue.filter(x=>x.state==="needs_admin").length,
+    failed:queue.filter(x=>x.state==="failed").length,
+    queued:queue.filter(x=>["queued","processing"].includes(x.state)).length
+  };
+  stats.replaceChildren();
+  [
+    ["ردود أُرسلت تلقائياً",counts.sent],
+    ["تحتاج تدخلك",counts.needs_admin],
+    ["تعذّر معالجتها",counts.failed],
+    ["بانتظار المعالجة",counts.queued]
+  ].forEach(([label,value])=>{
+    const card=document.createElement("div");card.className="ops-card";
+    const title=document.createElement("span");title.textContent=label;
+    const number=document.createElement("strong");number.className="ops-value";number.textContent=String(value);
+    card.append(title,number);stats.appendChild(card);
+  });
+  box.replaceChildren();
+  if(!queue.length){
+    const empty=document.createElement("div");empty.className="ops-item";
+    empty.textContent="ما في تذاكر ضمن سجل الرد الآلي حالياً. أول ما توصل تذكرة دعم رح تظهر هون.";
+    box.appendChild(empty);return;
+  }
+  queue.forEach(item=>{
+    const ticket=feedbackById.get(item.feedback_id)||{};
+    const card=document.createElement("article");card.className="ops-item";
+    const heading=document.createElement("strong");
+    heading.textContent=(item.ticket_code||ticket.ticket_code||"تذكرة دعم")+
+      " — "+({sent:"تم إرسال رد آلي",needs_admin:"تحتاج تدخلك",failed:"فشلت المعالجة",queued:"بانتظار المعالجة",processing:"قيد المعالجة"}[item.state]||item.state);
+    const meta=document.createElement("p");meta.className="ops-muted";
+    meta.textContent="الموضوع: "+(ticket.subject||"غير محدد")+" | التاريخ: "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"—");
+    card.append(heading,meta);
+    if(ticket.message){
+      const message=document.createElement("p");message.textContent="رسالة الزبون: "+ticket.message;card.appendChild(message);
+    }
+    if(ticket.customer_email){
+      const customer=document.createElement("p");customer.className="ops-muted";customer.textContent="الزبون: "+ticket.customer_email;card.appendChild(customer);
+    }
+    if(item.reason){
+      const reason=document.createElement("p");reason.textContent="سبب التحويل/المعالجة: "+item.reason;card.appendChild(reason);
+    }
+    if(item.state==="needs_admin"){
+      const notice=document.createElement("p");notice.className="ops-muted";
+      notice.textContent="⚠️ لم يرسل المساعد رداً نهائياً؛ راجع التذكرة بنفسك من قسم آراء العملاء والدعم.";
+      card.appendChild(notice);
+    }
+    if(item.generated_reply&&item.state==="sent"){
+      const reply=document.createElement("p");reply.textContent="الرد المرسل: "+item.generated_reply;card.appendChild(reply);
+    }
+    if(item.last_error&&item.state==="failed"){
+      const error=document.createElement("p");error.textContent="تفاصيل الفشل: "+item.last_error;card.appendChild(error);
+    }
+    const footer=document.createElement("p");footer.className="ops-muted";
+    footer.textContent="عدد المحاولات: "+Number(item.attempts||0)+(item.processed_at?" | آخر معالجة: "+new Date(item.processed_at).toLocaleString("ar"):"");
+    card.appendChild(footer);
+    box.appendChild(card);
+  });
+}
+
 async function loadAdminPanel(){
   if(!baranAdminNotificationPoll){
     baranAdminNotificationPoll=setInterval(()=>{
@@ -1367,6 +1442,7 @@ async function loadAdminPanel(){
     if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
+    renderBaranAutoSupportQueue(result.auto_support_queue||[],result.feedback||[]);
     renderRecoveryAudit(result.recovery_audit||[]);
   }catch(error){
     container.textContent="تعذر تحميل لوحة الإدارة: "+error.message;
