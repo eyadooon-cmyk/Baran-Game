@@ -115,11 +115,11 @@ async function openBaranNotificationTarget(item,audience){
     if(typeof loadAdminPanel==="function")await loadAdminPanel();
   }else if(section==="support"&&typeof loadMyFeedback==="function")await loadMyFeedback();
   else if(section==="orders"&&typeof loadMyOrders==="function")await loadMyOrders();
-  if(entityId){
-    const target=document.querySelector('[data-notification-entity-id="'+entityId+'"]');
-    if(target){target.scrollIntoView({behavior:"smooth",block:"center"});target.classList.add("notification-target-highlight");}
-    else{const sectionTarget=document.getElementById(section);if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});}
-  }else{const sectionTarget=document.getElementById(section);if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});}
+  const target=isAdmin&&kind.includes("monitor")
+    ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
+    :(entityId?document.querySelector('[data-notification-entity-id="'+entityId+'"]'):null);
+  if(target){target.scrollIntoView({behavior:"smooth",block:"center"});target.classList.add("notification-target-highlight");}
+  else{const sectionTarget=document.getElementById(section);if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});}
   if(!isAdmin&&typeof loadCustomerNotifications==="function")loadCustomerNotifications();
 }
 
