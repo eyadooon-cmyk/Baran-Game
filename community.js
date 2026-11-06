@@ -1,5 +1,5 @@
 const feedbackTypeLabels={review:"تقييم عميل",suggestion:"اقتراح ميزة",support:"طلب دعم"};
-const feedbackStatusLabels={pending:"جديد / قيد المراجعة",in_progress:"قيد المعالجة",approved:"تم اعتماد التقييم",rejected:"مرفوض",completed:"تم التنفيذ / الإغلاق"};
+const feedbackStatusLabels={pending:"جديد / قيد المراجعة",in_progress:"قيد المعالجة",approved:"تم اعتماد التقييم",rejected:"مرفوض",completed:"تم الحل / الإغلاق"};
 
 let baranNotificationPoll=null;
 
