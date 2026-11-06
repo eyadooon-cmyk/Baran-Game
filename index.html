@@ -1694,7 +1694,7 @@ async function loadCustomerNotifications(){
   try{
     const [{data:rows,error},{count:unreadCount,error:countError}]=await Promise.all([
       sb.from("baran_notifications")
-        .select("id,kind,title,body,read_at,created_at")
+        .select("id,kind,title,body,entity_type,entity_id,read_at,created_at")
         .eq("recipient_id",currentUser.id)
         .eq("audience","customer")
         .order("created_at",{ascending:false})
@@ -1722,7 +1722,8 @@ async function loadCustomerNotifications(){
     }
     rows.forEach(item=>{
       const card=document.createElement("article");
-      card.className="notification-item"+(item.read_at?"":" unread");
+      card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
+      card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"customer");
       const title=document.createElement("strong");
       title.textContent=item.title||"إشعار من Baran Game";
       const body=document.createElement("p");
@@ -1736,7 +1737,7 @@ async function loadCustomerNotifications(){
         readButton.type="button";
         readButton.className="secondary";
         readButton.textContent="تحديد كمقروء";
-        readButton.onclick=()=>markCustomerNotificationRead(item.id,readButton);
+        readButton.onclick=event=>{event.stopPropagation();markCustomerNotificationRead(item.id,readButton);};
         card.appendChild(readButton);
       }else{
         const readLabel=document.createElement("span");
