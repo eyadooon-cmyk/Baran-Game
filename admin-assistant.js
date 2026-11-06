@@ -55,7 +55,7 @@
       if (!response.ok) throw new Error(result.error || "تعذر الوصول إلى مساعد الإدارة.");
       if (!result.reply) throw new Error("وصل رد غير مكتمل من المساعد.");
       if (pending) pending.remove();
-      addMessage(result.reply, "bot");
+      addMessage((result.sent ? "✅ تم إرسال الرد إلى صاحب التذكرة " + result.ticket_code + " ووصل إشعار داخل المتجر.\\n\\n" : "") + result.reply, "bot");
       history.push({ role: "assistant", content: result.reply });
       history = history.slice(-10);
       if (result.data_updated_at) {
