@@ -1113,7 +1113,7 @@ async function callAdminApi(method="GET",payload=null){
         const month=parts.find(part=>part.type==="month").value;
         period.value=year+"-"+month;
       }
-      if(/^\\d{4}-\\d{2}$/.test(period.value)){
+      if(/^\d{4}-\d{2}$/.test(period.value)){
         const [year,month]=period.value.split("-");
         endpoint+="?finance_month="+encodeURIComponent(String(Number(month)))+"&finance_year="+encodeURIComponent(year);
       }
