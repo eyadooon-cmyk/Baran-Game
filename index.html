@@ -596,6 +596,9 @@ button{font-weight:700}
       <h2>الحسابات المالية 💰</h2>
       <p class="small">سجّل رأس المال والمصاريف اليدوية، وتُضاف مبيعات الطلبات المكتملة وتكاليف المورد تلقائياً مرة واحدة بعد تسجيل تكلفة المورد. تُعرض حسابات الدولار والليرة كلٌ على حدة، ولا تدخل أرصدة الزبائن ضمن أرباح المتجر. لا يمكن إكمال الطلب قبل تسجيل تكلفة المورد وسعر الصرف.</p>
       <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
+      <h3 style="margin-top:22px;color:#c2b1d1">تقرير أرباح المنتجات — الشهر الحالي</h3>
+      <p class="small">يعرض المبيعات وتكلفة المورد والربح الإجمالي لكل منتج، مع فصل الدولار عن الليرة السورية.</p>
+      <div id="financeProductReport" class="ops-list">جاري تحميل تقرير المنتجات...</div>
 
       <div class="deposit-card finance-form">
         <h2>إضافة حركة مالية</h2>
@@ -1338,6 +1341,37 @@ function renderFinance(finance){
     lines.forEach(line=>{const p=document.createElement("div");p.textContent=line;card.appendChild(p);});
     summary.appendChild(card);
   });
+
+  const productReportBox=document.getElementById("financeProductReport");
+  if(productReportBox){
+    productReportBox.replaceChildren();
+    const report=finance.product_report||[];
+    if(!report.length){
+      productReportBox.textContent="لا توجد مبيعات مسجلة خلال الشهر الحالي.";
+    }else{
+      ["USD","SYP"].forEach(currency=>{
+        const group=report.filter(item=>item.currency===currency);
+        if(!group.length)return;
+        const heading=document.createElement("h3");
+        heading.style.color="#c2b1d1";
+        heading.textContent=currency==="USD"?"أرباح المنتجات بالدولار":"أرباح المنتجات بالليرة السورية";
+        productReportBox.appendChild(heading);
+        group.forEach(item=>{
+          const card=document.createElement("div");
+          card.className="ops-item";
+          const name=document.createElement("strong");
+          name.textContent=item.product_name||"منتج غير محدد";
+          const details=document.createElement("div");
+          details.textContent="الكمية المباعة: "+Number(item.quantity||0).toLocaleString("en-US")+
+            " | المبيعات: "+financeMoney(item.sales,currency)+
+            " | تكلفة المورد: "+financeMoney(item.cost,currency)+
+            " | الربح الإجمالي: "+financeMoney(item.gross_profit,currency);
+          card.append(name,details);
+          productReportBox.appendChild(card);
+        });
+      });
+    }
+  }
 
   entriesBox.replaceChildren();
   const entries=finance.entries||[];
