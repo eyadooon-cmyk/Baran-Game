@@ -359,6 +359,34 @@ button{font-weight:700}
       <div id="adminRequests">جاري تحميل الطلبات...</div>
 
       <hr style="border-color:#40334b;margin:24px 0">
+      <h2>استعادة حساب الزبون 🔐</h2>
+      <p class="small">ابحث بالاسم أو رقم الهاتف أو البريد المسجل. راجع تفاصيل طلباته وتحويلاته مع الزبون قبل إرسال رابط الاستعادة. رقم الهاتف وحده غير كافٍ لإثبات الملكية.</p>
+      <div class="deposit-card">
+        <label for="recoverySearchQuery">اسم الزبون أو هاتفه أو بريده الإلكتروني</label>
+        <input id="recoverySearchQuery" type="text" maxlength="120" autocomplete="off" placeholder="ابحث عن حساب الزبون">
+        <button id="recoverySearchButton" class="full secondary" type="button" onclick="searchRecoveryCustomers()">البحث عن الحساب</button>
+        <div id="recoverySearchMessage" class="small" role="status"></div>
+        <div id="recoverySearchResults"></div>
+      </div>
+      <div id="recoverySelectedPanel" class="deposit-card hidden">
+        <h3>الحساب المحدد</h3>
+        <div id="recoverySelectedCustomer" class="small"></div>
+        <p class="small">قبل الإرسال، طابق حقيقتين مستقلتين على الأقل من سجل الحساب مع معلومات يقدمها صاحب الحساب.</p>
+        <label class="recovery-check"><input type="checkbox" name="recoveryFact" value="old_transfer_reference"> رقم تحويل سابق ظاهر في سجل شام كاش</label>
+        <label class="recovery-check"><input type="checkbox" name="recoveryFact" value="previous_order_details"> تفاصيل طلب أو منتج سابق</label>
+        <label class="recovery-check"><input type="checkbox" name="recoveryFact" value="player_id"> معرّف اللاعب المرتبط بطلب سابق</label>
+        <label class="recovery-check"><input type="checkbox" name="recoveryFact" value="deposit_amount_date"> مبلغ وتاريخ إيداع سابق</label>
+        <label class="recovery-check"><input type="checkbox" name="recoveryFact" value="account_creation_details"> تفاصيل إنشاء الحساب التي أمكن مطابقتها</label>
+        <label for="recoveryVerificationNotes">ملاحظات التحقق (30 حرفاً على الأقل)</label>
+        <textarea id="recoveryVerificationNotes" rows="4" maxlength="2000" placeholder="اكتب كيف تحققت من ملكية الحساب وما التفاصيل التي طابقتها..."></textarea>
+        <p class="small">سيُرسل الرابط إلى البريد المسجل حالياً فقط. هذه الخطوة لا تغيّر البريد الإلكتروني ولا تكشف كلمة المرور.</p>
+        <button id="recoverySendButton" class="full" type="button" onclick="sendRecoveryReset()">إرسال رابط إعادة تعيين كلمة المرور</button>
+        <div id="recoverySendMessage" class="small" role="status"></div>
+      </div>
+      <h3 style="margin-top:18px">سجل عمليات الاستعادة</h3>
+      <div id="recoveryAuditList" class="small">جاري تحميل السجل...</div>
+
+      <hr style="border-color:#40334b;margin:24px 0">
       <h2>آراء العملاء والاقتراحات والدعم 💬</h2>
       <p class="small">راجع الرسائل، واكتب رداً، وحدد حالة كل طلب.</p>
       <div id="adminFeedback">جاري تحميل الرسائل...</div>
@@ -474,6 +502,7 @@ button{font-weight:700}
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+let selectedRecoveryCustomerId=null;
 
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
   auth:{
@@ -828,6 +857,106 @@ async function checkAdminAccess(){
   }
 }
 
+ 
+function recoveryText(value){
+  return value===null||value===undefined||value===""?"—":String(value);
+}
+function recoveryDate(value){
+  return value?new Date(value).toLocaleString("ar"):"—";
+}
+function renderRecoveryAudit(rows){
+  const box=document.getElementById("recoveryAuditList");
+  if(!box)return;
+  box.replaceChildren();
+  if(!rows.length){box.textContent="لا توجد عمليات استعادة مسجلة بعد.";return;}
+  rows.forEach(item=>{
+    const card=document.createElement("div");card.className="admin-request";
+    const title=document.createElement("strong");title.textContent="إرسال رابط استعادة إلى: "+recoveryText(item.target_email);
+    const facts=document.createElement("p");facts.textContent="عناصر التحقق: "+(item.verified_facts||[]).join("، ");
+    const notes=document.createElement("p");notes.textContent="ملاحظات المدير: "+recoveryText(item.verification_notes);
+    const date=document.createElement("div");date.className="small";date.textContent=recoveryDate(item.created_at);
+    card.append(title,facts,notes,date);box.appendChild(card);
+  });
+}
+function selectRecoveryCustomer(item){
+  selectedRecoveryCustomerId=item.id;
+  document.getElementById("recoverySelectedPanel").classList.remove("hidden");
+  document.getElementById("recoverySelectedCustomer").textContent=
+    "الاسم: "+recoveryText(item.full_name)+" | الهاتف: "+recoveryText(item.phone)+
+    " | البريد المسجل: "+recoveryText(item.customer_email)+" | معرّف الحساب: "+item.id;
+  document.querySelectorAll('input[name="recoveryFact"]').forEach(input=>input.checked=false);
+  document.getElementById("recoveryVerificationNotes").value="";
+  document.getElementById("recoverySendMessage").textContent="";
+}
+async function searchRecoveryCustomers(){
+  const query=document.getElementById("recoverySearchQuery").value.trim();
+  const message=document.getElementById("recoverySearchMessage");
+  const results=document.getElementById("recoverySearchResults");
+  const button=document.getElementById("recoverySearchButton");
+  if(query.length<3){message.textContent="اكتب 3 أحرف على الأقل.";return;}
+  button.disabled=true;message.textContent="جاري البحث...";results.replaceChildren();
+  document.getElementById("recoverySelectedPanel").classList.add("hidden");
+  selectedRecoveryCustomerId=null;
+  try{
+    const result=await callAdminApi("POST",{action:"recovery_search",search_query:query});
+    const customers=result.customers||[];
+    if(!customers.length){message.textContent="لم يتم العثور على حساب مطابق.";return;}
+    message.textContent="تم العثور على "+customers.length+" حساب/حسابات. طابق التفاصيل مع صاحب الحساب قبل المتابعة.";
+    customers.forEach(item=>{
+      const card=document.createElement("div");card.className="admin-request";
+      const title=document.createElement("strong");
+      title.textContent=recoveryText(item.full_name)+" — "+recoveryText(item.customer_email);
+      const profile=document.createElement("p");
+      profile.textContent="الهاتف: "+recoveryText(item.phone)+" | تاريخ التسجيل: "+recoveryDate(item.created_at);
+      card.append(title,profile);
+      const ordersTitle=document.createElement("strong");ordersTitle.textContent="آخر الطلبات";
+      card.appendChild(ordersTitle);
+      if(!(item.orders||[]).length){const none=document.createElement("p");none.textContent="لا توجد طلبات مسجلة.";card.appendChild(none);}
+      (item.orders||[]).forEach(order=>{
+        const line=document.createElement("p");line.textContent=
+          recoveryText(order.product_code)+" | اللاعب: "+recoveryText(order.player_id)+
+          " | الكمية: "+recoveryText(order.quantity)+" | الحالة: "+recoveryText(order.status)+
+          " | التاريخ: "+recoveryDate(order.created_at);
+        card.appendChild(line);
+      });
+      const depositsTitle=document.createElement("strong");depositsTitle.textContent="آخر التحويلات";
+      card.appendChild(depositsTitle);
+      if(!(item.deposits||[]).length){const none=document.createElement("p");none.textContent="لا توجد تحويلات مسجلة.";card.appendChild(none);}
+      (item.deposits||[]).forEach(deposit=>{
+        const line=document.createElement("p");line.textContent=
+          recoveryText(deposit.amount)+" "+recoveryText(deposit.currency)+
+          " | رقم العملية: "+recoveryText(deposit.transfer_reference)+
+          " | الحالة: "+recoveryText(deposit.status)+" | "+recoveryDate(deposit.created_at);
+        card.appendChild(line);
+      });
+      const choose=document.createElement("button");choose.type="button";choose.className="full";
+      choose.textContent="اختيار هذا الحساب";choose.onclick=()=>selectRecoveryCustomer(item);
+      card.appendChild(choose);results.appendChild(card);
+    });
+  }catch(error){message.textContent="تعذر البحث: "+error.message;}
+  finally{button.disabled=false;}
+}
+async function sendRecoveryReset(){
+  const message=document.getElementById("recoverySendMessage");
+  const button=document.getElementById("recoverySendButton");
+  const notes=document.getElementById("recoveryVerificationNotes").value.trim();
+  const facts=Array.from(document.querySelectorAll('input[name="recoveryFact"]:checked')).map(input=>input.value);
+  if(!selectedRecoveryCustomerId){message.textContent="اختر حساباً أولاً.";return;}
+  if(facts.length<2){message.textContent="اختر حقيقتين مستقلتين على الأقل بعد مطابقتهما.";return;}
+  if(notes.length<30){message.textContent="اكتب ملاحظات تحقق واضحة (30 حرفاً على الأقل).";return;}
+  if(!confirm("هل تحققت فعلياً من ملكية الحساب بمطابقة حقيقتين مستقلتين؟ سيتم إرسال رابط إعادة التعيين إلى البريد المسجل."))return;
+  button.disabled=true;message.textContent="جاري إرسال الرابط وتسجيل العملية...";
+  try{
+    const result=await callAdminApi("POST",{
+      action:"recovery_send_reset",target_user_id:selectedRecoveryCustomerId,
+      verified_facts:facts,verification_notes:notes
+    });
+    message.textContent=result.message||"تم إرسال رابط الاستعادة.";
+    await loadAdminPanel();
+  }catch(error){message.textContent="تعذر إرسال الرابط: "+error.message;}
+  finally{button.disabled=false;}
+}
+
 async function loadAdminPanel(){
   const container=document.getElementById("adminRequests");
   const message=document.getElementById("adminMessage");
@@ -872,6 +1001,7 @@ async function loadAdminPanel(){
     }
     renderFinance(result.finance||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
+    renderRecoveryAudit(result.recovery_audit||[]);
   }catch(error){
     container.textContent="تعذر تحميل لوحة الإدارة: "+error.message;
     document.getElementById("financeSummary").textContent="تعذر تحميل الحسابات المالية.";
