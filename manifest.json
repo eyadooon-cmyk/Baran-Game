@@ -1,0 +1,12 @@
+{
+  "name": "Baran Game",
+  "short_name": "Baran Game",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#09080d",
+  "theme_color": "#09080d",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": []
+}
