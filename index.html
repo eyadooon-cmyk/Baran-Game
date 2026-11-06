@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#09080d">
 <title>BARAN GAME</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{--green:#8b6ba8;--bg:#09080d;--panel:#17131b;--line:#40334b;--muted:#b9a9c9}
 *{box-sizing:border-box}
@@ -87,6 +90,50 @@ footer{text-align:center;padding:25px;color:#839487}
 .drawer-divider{height:1px;background:#40334b;margin:14px 3px}
 .drawer-link.logout{color:#ffb4b4;border-color:#63345c;background:#251322}
 @media(max-width:500px){.grid{grid-template-columns:1fr}nav button{padding:10px;font-size:12px}.item img{height:175px}.store-toolbar{padding:9px 12px}}
+
+
+/* تحسين الخطوط والكتابة: عربي واضح وهوية BARAN GAME أنيقة */
+body,button,input,textarea,select,.drawer-link,.small,p,h2,label{
+  font-family:"Cairo",Tahoma,Arial,sans-serif;
+}
+body{color:#eee9f2}
+header .logo,.toolbar-brand,.drawer-title,.auth-logo,.lock-card .logo{
+  font-family:"Orbitron","Cairo",sans-serif;
+  letter-spacing:1.5px;
+  font-weight:800;
+}
+header .logo{
+  color:#eee9f2;
+  text-shadow:0 2px 10px #0009;
+  animation:none;
+}
+header .logo-mark{
+  color:#c9b9d7;
+  border-color:#9d88ad;
+  box-shadow:0 4px 15px #0007;
+}
+header p{
+  color:#e6deed;
+  font-weight:600;
+  text-shadow:0 2px 6px #000;
+}
+header .header-tag{
+  color:#cbbbd8;
+  letter-spacing:1.4px;
+}
+h2,.item strong,.product-card strong,.finance-card strong,.auth-logo{
+  color:#c2b1d1;
+  text-shadow:none;
+  font-weight:800;
+}
+.hero h2{color:#d2c4df;font-size:clamp(22px,4vw,28px)}
+.toolbar-brand{color:#eee9f2;text-shadow:none;font-size:16px}
+.toolbar-brand span{color:#bca8ce}
+.drawer-title{color:#c2b1d1;text-shadow:none}
+.auth-logo{font-size:25px;letter-spacing:1.8px}
+input,textarea,select{font-family:"Cairo",Tahoma,Arial,sans-serif}
+input::placeholder,textarea::placeholder{color:#9d91a8;opacity:1}
+button{font-weight:700}
 
 </style>
 </head>
