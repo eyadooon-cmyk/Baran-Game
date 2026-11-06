@@ -103,6 +103,14 @@ function renderOpsOrders(orders){
     const fulfillment=order.fulfillment;
     if(fulfillment){
       card.append(opsNode("div","ops-muted","المورد: "+opsText((latestBaranOperations.suppliers||[]).find(s=>s.id===fulfillment.supplier_id)?.name)+" | حالة المورد: "+opsText(fulfillment.supplier_status)));
+      if(fulfillment.supplier_total_cost!==null&&fulfillment.supplier_total_cost!==undefined){
+        const costCurrency=fulfillment.supplier_cost_currency||"USD";
+        card.append(opsNode("div","ops-muted","تكلفة المورد الفعلية: "+opsMoney(fulfillment.supplier_total_cost,costCurrency)));
+        const costUsd=costCurrency==="USD"?Number(fulfillment.supplier_total_cost):Number(fulfillment.supplier_total_cost)/Number(fulfillment.supplier_cost_exchange_rate||0);
+        if(Number.isFinite(costUsd)&&Number(fulfillment.supplier_cost_exchange_rate)>0&&order.total_price_usd!==null){
+          card.append(opsNode("div","ops-muted","الربح الإجمالي التقديري: "+opsMoney(Number(order.total_price_usd)-costUsd,"USD")+" (قبل المصاريف الأخرى)"));
+        }
+      }
       if(fulfillment.internal_notes)card.append(opsNode("div","ops-muted","ملاحظة داخلية: "+fulfillment.internal_notes));
     }
     const row=opsNode("div","ops-actions");
@@ -138,9 +146,19 @@ function renderOpsOrders(orders){
     internalNotes.maxLength=2000;internalNotes.rows=2;
     internalNotes.placeholder="ملاحظات داخلية لا تظهر للزبون";
     internalNotes.value=fulfillment?.internal_notes||"";
+    const supplierUnitCost=document.createElement("input");
+    supplierUnitCost.id="opsFulfillmentCost_"+order.id;
+    supplierUnitCost.type="number";supplierUnitCost.min="0";supplierUnitCost.step="0.0001";
+    supplierUnitCost.placeholder="تكلفة الوحدة الفعلية لدى المورد (اختياري)";
+    supplierUnitCost.value=fulfillment?.supplier_unit_cost??"";
+    const supplierCostCurrency=document.createElement("select");
+    supplierCostCurrency.id="opsFulfillmentCostCurrency_"+order.id;
+    opsOption(supplierCostCurrency,"USD","تكلفة المورد بالدولار");
+    opsOption(supplierCostCurrency,"SYP","تكلفة المورد بالليرة");
+    supplierCostCurrency.value=fulfillment?.supplier_cost_currency||"USD";
     const fulfillmentSave=opsNode("button","","حفظ متابعة المورد");
     fulfillmentSave.type="button";fulfillmentSave.onclick=()=>opsSaveFulfillment(order.id);
-    supplierPanel.append(supplierSelect,supplierReference,supplierStatus,internalNotes,fulfillmentSave);
+    supplierPanel.append(supplierSelect,supplierReference,supplierStatus,supplierUnitCost,supplierCostCurrency,internalNotes,fulfillmentSave);
     card.appendChild(supplierPanel);
     box.appendChild(card);
   });
@@ -369,9 +387,17 @@ async function opsSaveFulfillment(orderId){
   const reference=document.getElementById("opsFulfillmentRef_"+orderId).value.trim();
   const status=document.getElementById("opsFulfillmentStatus_"+orderId).value;
   const notes=document.getElementById("opsFulfillmentNotes_"+orderId).value.trim();
+  const costInput=document.getElementById("opsFulfillmentCost_"+orderId).value;
+  const cost=costInput===""?null:Number(costInput);
+  const costCurrency=document.getElementById("opsFulfillmentCostCurrency_"+orderId).value;
+  if(cost!==null&&(!Number.isFinite(cost)||cost<0)){
+    document.getElementById("adminMessage").textContent="أدخل تكلفة مورد صحيحة أو اتركها فارغة.";
+    return;
+  }
   try{
     await callAdminApi("POST",{action:"order_fulfillment_update",order_id:orderId,
-      supplier_id:supplier,supplier_reference:reference,supplier_status:status,internal_notes:notes});
+      supplier_id:supplier,supplier_reference:reference,supplier_status:status,internal_notes:notes,
+      supplier_unit_cost:cost,supplier_cost_currency:costCurrency});
     document.getElementById("adminMessage").textContent="تم حفظ متابعة المورد (معلومات داخلية).";
     await loadAdminPanel();
   }catch(error){document.getElementById("adminMessage").textContent="تعذر حفظ متابعة المورد: "+error.message;}
