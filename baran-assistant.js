@@ -3,17 +3,16 @@
 let baranAssistantHistory = [];
 let baranAssistantBusy = false;
 
-function toggleBaranAssistant(force) {
-  const panel = document.getElementById("aiAssistantPanel");
-  const fab = document.getElementById("aiAssistantFab");
-  if (!panel || !fab) return;
-  const shouldOpen = typeof force === "boolean" ? force : panel.classList.contains("hidden");
-  panel.classList.toggle("hidden", !shouldOpen);
-  fab.setAttribute("aria-expanded", shouldOpen ? "true" : "false");
-  if (shouldOpen) {
-    const input = document.getElementById("aiAssistantInput");
-    if (input) setTimeout(() => input.focus(), 50);
-  }
+function openBaranSupportAssistant() {
+  if (!currentUser) return;
+  if (typeof showSection === "function") showSection("support", null);
+  const input = document.getElementById("aiAssistantInput");
+  if (input) setTimeout(() => input.focus(), 120);
+}
+
+// Compatibility alias for any older button references.
+function toggleBaranAssistant() {
+  openBaranSupportAssistant();
 }
 
 function appendBaranAssistantMessage(text, role = "bot", isError = false) {
