@@ -163,6 +163,24 @@ input,textarea,select{font-family:"Cairo",Tahoma,Arial,sans-serif}
 input::placeholder,textarea::placeholder{color:#9d91a8;opacity:1}
 button{font-weight:700}
 
+
+/* لوحة العمليات الجديدة — أسود وبنفسجي */
+.ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.ops-card{padding:14px;background:#201a29;border:1px solid #57436a;border-radius:13px;line-height:1.8;min-width:0}
+.ops-card strong{display:block;color:#cbb8dd;font-size:18px;overflow-wrap:anywhere}
+.ops-card .ops-value{font-size:23px;font-weight:900;color:#d7c4e8}
+.ops-list{display:grid;gap:10px;margin:12px 0}
+.ops-item{padding:13px;background:#17121e;border:1px solid #493b55;border-radius:12px;line-height:1.8;overflow-wrap:anywhere}
+.ops-item strong{color:#d4c1e4}
+.ops-item select,.ops-item input,.ops-form input,.ops-form select,.ops-form textarea{margin:7px 0}
+.ops-form{padding:14px;margin:12px 0;background:#17121e;border:1px solid #493b55;border-radius:13px}
+.ops-form label{display:block;margin-top:9px;color:#c4b4d1;font-size:13px}
+.ops-muted{font-size:12px;color:#b9a9c9}
+.ops-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ops-actions button{flex:1;min-width:115px}
+.ops-pill{display:inline-block;padding:3px 9px;margin:3px;border-radius:20px;background:#30243a;color:#e7d8f4;font-size:12px}
+@media(min-width:700px){.ops-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -426,6 +444,68 @@ button{font-weight:700}
 
     <section id="admin" class="hidden">
       <h2>لوحة الإدارة 🔐</h2>
+      <h3>نظرة عامة على المتجر</h3>
+      <div id="opsStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
+      <hr style="border-color:#40334b;margin:24px 0">
+      <h2>إدارة المستخدمين 👥</h2>
+      <p class="small">عرض آخر الحسابات المسجلة ومعلومات التواصل الأساسية.</p>
+      <div id="opsCustomers" class="ops-list">جاري تحميل المستخدمين...</div>
+      <hr style="border-color:#40334b;margin:24px 0">
+      <h2>متابعة الطلبات 📦</h2>
+      <p class="small">تابع حالة كل طلب، بيانات الزبون واللاعب، وسجّل رسالة حالة تظهر للزبون.</p>
+      <div id="opsOrders" class="ops-list">جاري تحميل الطلبات...</div>
+      <hr style="border-color:#40334b;margin:24px 0">
+      <h2>إدارة الموردين 🤝</h2>
+      <div class="ops-form">
+        <label for="opsSupplierName">اسم المورد</label>
+        <input id="opsSupplierName" maxlength="120" placeholder="اسم المورد أو الشركة">
+        <label for="opsSupplierContact">اسم جهة التواصل</label>
+        <input id="opsSupplierContact" maxlength="120" placeholder="اسم المسؤول">
+        <label for="opsSupplierPhone">رقم التواصل</label>
+        <input id="opsSupplierPhone" maxlength="40" placeholder="رقم الهاتف">
+        <label for="opsSupplierEmail">البريد الإلكتروني</label>
+        <input id="opsSupplierEmail" type="email" maxlength="254" placeholder="supplier@example.com">
+        <label for="opsSupplierNotes">ملاحظات</label>
+        <textarea id="opsSupplierNotes" rows="2" maxlength="2000" placeholder="ملاحظات عن المورد وشروط التعامل"></textarea>
+        <button class="full" type="button" onclick="opsSaveSupplier()">حفظ المورد</button>
+        <div id="opsSupplierMessage" class="ops-muted" role="status"></div>
+      </div>
+      <div id="opsSuppliers" class="ops-list">لا يوجد موردون مسجلون.</div>
+      <h3>ربط منتج بسعر المورد</h3>
+      <div class="ops-form">
+        <label for="opsSupplierSelect">المورد</label>
+        <select id="opsSupplierSelect"><option value="">اختر المورد</option></select>
+        <label for="opsProductSelect">المنتج</label>
+        <select id="opsProductSelect"><option value="">اختر المنتج</option></select>
+        <label for="opsSupplierSku">رمز المنتج لدى المورد (اختياري)</label>
+        <input id="opsSupplierSku" maxlength="120" placeholder="Supplier SKU">
+        <label for="opsUnitCost">تكلفة شراء الوحدة</label>
+        <input id="opsUnitCost" type="number" min="0" step="0.01" placeholder="تكلفة الشراء">
+        <label for="opsCostCurrency">عملة التكلفة</label>
+        <select id="opsCostCurrency"><option value="USD">دولار USD</option><option value="SYP">ليرة سورية SYP</option></select>
+        <label for="opsLeadTime">مدة التوريد بالساعات (اختياري)</label>
+        <input id="opsLeadTime" type="number" min="0" step="1" placeholder="مثلاً 2">
+        <label><input id="opsPreferredSupplier" type="checkbox"> المورد المفضل لهذا المنتج</label>
+        <label for="opsSupplierProductNotes">ملاحظات داخلية</label>
+        <textarea id="opsSupplierProductNotes" rows="2" maxlength="1000" placeholder="تفاصيل سعر الجملة أو الاتفاق"></textarea>
+        <button class="full" type="button" onclick="opsSaveSupplierProduct()">حفظ سعر المورد</button>
+        <div id="opsSupplierProductMessage" class="ops-muted" role="status"></div>
+      </div>
+      <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
+      <hr style="border-color:#40334b;margin:24px 0">
+      <h2>نقاط الولاء 🎁</h2>
+      <p class="small">يمكن إضافة نقاط أو خصمها يدوياً مع تسجيل سبب العملية في سجل التدقيق.</p>
+      <div class="ops-form">
+        <label for="opsLoyaltyCustomer">الزبون</label>
+        <select id="opsLoyaltyCustomer"><option value="">اختر الزبون</option></select>
+        <label for="opsPointsDelta">عدد النقاط (الإضافة موجبة والخصم سالب)</label>
+        <input id="opsPointsDelta" type="number" step="1" placeholder="مثلاً 50 أو -20">
+        <label for="opsPointsReason">سبب التعديل</label>
+        <input id="opsPointsReason" maxlength="300" placeholder="مكافأة أو تصحيح رصيد">
+        <button class="full" type="button" onclick="opsAdjustLoyalty()">حفظ تعديل النقاط</button>
+        <div id="opsLoyaltyMessage" class="ops-muted" role="status"></div>
+      </div>
+      <div id="opsLoyaltyCustomers" class="ops-list">لا توجد أرصدة نقاط بعد.</div>
       <button class="full secondary" type="button" onclick="window.location.href='./manage-products.html'">إدارة المنتجات وسعر الصرف 💱</button>
       <p class="small">راجع إشعار التحويل في شام كاش أولاً. الموافقة تضيف الرصيد مرة واحدة فقط، والرفض لا يغيّر الرصيد.</p>
       <div id="adminNotifications" class="notification-box">جاري تحميل تنبيهات الإدارة...</div>
@@ -588,6 +668,7 @@ button{font-weight:700}
 <script src="./profile-settings.js"></script>
 <script src="./community.js"></script>
 <script src="./baran-assistant.js"></script>
+<script src="./admin-operations.js"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
@@ -1156,6 +1237,7 @@ async function loadAdminPanel(){
       container.appendChild(card);
     });
     }
+    if(typeof renderOperationsDashboard==="function")renderOperationsDashboard(result);
     if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
