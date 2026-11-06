@@ -651,6 +651,13 @@ button{font-weight:700}
       <hr style="border-color:#40334b;margin:24px 0">
       <h2>الحسابات المالية 💰</h2>
       <p class="small">سجّل رأس المال والمصاريف اليدوية، وتُضاف مبيعات الطلبات المكتملة وتكاليف المورد تلقائياً مرة واحدة بعد تسجيل تكلفة المورد. تُعرض حسابات الدولار والليرة كلٌ على حدة، ولا تدخل أرصدة الزبائن ضمن أرباح المتجر. لا يمكن إكمال الطلب قبل تسجيل تكلفة المورد وسعر الصرف.</p>
+      <section id="baranFinancialSupportPanel" class="deposit-card" aria-label="تذاكر الشؤون المالية" style="margin:16px 0;padding:16px;border:1px solid #b58a42">
+        <h2>💰 تذاكر الشؤون المالية</h2>
+        <p class="small">كل تذاكر الزبائن المتعلقة بالحوالات وشام كاش والإيداع والسحب والمحفظة والأرصدة والاسترداد. هذه التذاكر تحتاج مراجعتك؛ لا يتم تأكيد حوالة أو تعديل رصيد تلقائياً.</p>
+        <div id="baranFinancialSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل التذاكر المالية...</div></div>
+        <div class="ops-actions"><button class="secondary" type="button" onclick="loadAdminPanel()">🔄 تحديث التذاكر المالية</button></div>
+        <div id="baranFinancialSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
+      </section>
       <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
       <h3 id="financeReportHeading" style="margin-top:22px;color:#c2b1d1">تقرير أرباح المنتجات</h3>
       <p class="small">اختر الشهر والسنة لعرض المبيعات وتكلفة المورد والربح الإجمالي لكل منتج، مع فصل الدولار عن الليرة السورية.</p>
@@ -1310,12 +1317,57 @@ async function sendRecoveryReset(){
   finally{button.disabled=false;}
 }
 
+function isBaranFinancialSupportTicket(item,ticket){
+  const text=[item&&item.reason,ticket&&ticket.subject,ticket&&ticket.message].filter(Boolean).join(" ");
+  return /(مالي|حوالة|شام\\s*كاش|رصيد|إيداع|ايداع|سحب|استرداد|دفع|تحويل|محفظة|مبلغ|عملية مالية)/iu.test(text);
+}
+function renderBaranFinancialSupportQueue(rows,feedbackRows){
+  const stats=document.getElementById("baranFinancialSupportStats");
+  const box=document.getElementById("baranFinancialSupportQueue");
+  if(!stats||!box)return;
+  const feedbackById=new Map((feedbackRows||[]).map(item=>[item.id,item]));
+  const queue=(Array.isArray(rows)?rows:[]).filter(item=>{
+    const ticket=feedbackById.get(item.feedback_id)||{};
+    return isBaranFinancialSupportTicket(item,ticket);
+  });
+  const pending=queue.filter(item=>item.state==="needs_admin").length;
+  const waiting=queue.filter(item=>["queued","processing"].includes(item.state)).length;
+  stats.replaceChildren();
+  [["تحتاج مراجعتك",pending],["بانتظار التصنيف",waiting],["إجمالي التذاكر المالية",queue.length]].forEach(([label,value])=>{
+    const card=document.createElement("div");card.className="ops-card";
+    const title=document.createElement("span");title.textContent=label;
+    const number=document.createElement("strong");number.className="ops-value";number.textContent=String(value);
+    card.append(title,number);stats.appendChild(card);
+  });
+  box.replaceChildren();
+  if(!queue.length){
+    const empty=document.createElement("div");empty.className="ops-item";
+    empty.textContent="ما في تذاكر مالية محوّلة حالياً. التذاكر المالية الجديدة بتظهر هون بعد معالجتها.";
+    box.appendChild(empty);return;
+  }
+  queue.forEach(item=>{
+    const ticket=feedbackById.get(item.feedback_id)||{};
+    const card=document.createElement("article");card.className="ops-item";
+    const heading=document.createElement("strong");
+    heading.textContent=(item.ticket_code||ticket.ticket_code||"تذكرة مالية")+" — "+({needs_admin:"تحتاج تدخلك",queued:"بانتظار المعالجة",processing:"قيد المعالجة",sent:"رد آلي أُرسل",failed:"فشلت المعالجة"}[item.state]||item.state);
+    const meta=document.createElement("p");meta.className="ops-muted";
+    meta.textContent="الموضوع: "+(ticket.subject||"غير محدد")+" | التاريخ: "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"—");
+    card.append(heading,meta);
+    if(ticket.message){const message=document.createElement("p");message.textContent="رسالة الزبون: "+ticket.message;card.appendChild(message);}
+    if(ticket.customer_email){const customer=document.createElement("p");customer.className="ops-muted";customer.textContent="الزبون: "+ticket.customer_email;card.appendChild(customer);}
+    if(item.reason){const reason=document.createElement("p");reason.textContent="سبب التحويل: "+item.reason;card.appendChild(reason);}
+    if(item.state==="needs_admin"){const warning=document.createElement("p");warning.className="ops-muted";warning.textContent="⚠️ راجع تفاصيل التذكرة من قسم آراء العملاء والدعم، ولا تؤكد أي حوالة أو تعدّل رصيداً قبل التحقق اليدوي.";card.appendChild(warning);}
+    const footer=document.createElement("p");footer.className="ops-muted";footer.textContent="عدد المحاولات: "+Number(item.attempts||0);card.appendChild(footer);
+    box.appendChild(card);
+  });
+}
+
 function renderBaranAutoSupportQueue(rows,feedbackRows){
   const stats=document.getElementById("baranAutoSupportStats");
   const box=document.getElementById("baranAutoSupportQueue");
   if(!stats||!box)return;
-  const queue=Array.isArray(rows)?rows:[];
   const feedbackById=new Map((feedbackRows||[]).map(item=>[item.id,item]));
+  const queue=(Array.isArray(rows)?rows:[]).filter(item=>!isBaranFinancialSupportTicket(item,feedbackById.get(item.feedback_id)||{}));
   const counts={
     sent:queue.filter(x=>x.state==="sent").length,
     needs_admin:queue.filter(x=>x.state==="needs_admin").length,
@@ -1443,6 +1495,7 @@ async function loadAdminPanel(){
     renderFinance(result.finance||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
     renderBaranAutoSupportQueue(result.auto_support_queue||[],result.feedback||[]);
+    renderBaranFinancialSupportQueue(result.auto_support_queue||[],result.feedback||[]);
     renderRecoveryAudit(result.recovery_audit||[]);
   }catch(error){
     container.textContent="تعذر تحميل لوحة الإدارة: "+error.message;
