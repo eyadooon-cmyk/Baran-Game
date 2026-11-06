@@ -189,3 +189,71 @@ async function opsAdjustLoyalty(){
     await loadAdminPanel();
   }catch(error){message.textContent="تعذر تعديل النقاط: "+error.message;}
 }
+
+
+async function loadMyOrders(){
+  const box=document.getElementById("customerOrdersList");if(!box||!currentUser)return;
+  box.textContent="جاري تحميل طلباتك...";
+  const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار المورد",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
+  try{
+    const [{data:orders,error},{data:events,error:eventError}]=await Promise.all([
+      sb.from("orders").select("id,product_code,player_id,quantity,status,created_at,total_price_usd,total_price_syp")
+        .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50),
+      sb.from("order_status_events").select("id,order_id,new_status,customer_message,created_at")
+        .order("created_at",{ascending:false}).limit(200)
+    ]);
+    if(error)throw error;if(eventError)throw eventError;
+    box.replaceChildren();
+    if(!orders?.length){box.textContent="ما عندك طلبات مسجلة حالياً.";return;}
+    orders.forEach(order=>{
+      const card=opsNode("div","ops-item");
+      card.append(opsNode("strong","","طلب "+order.id.slice(0,8)));
+      card.append(opsNode("div","","المنتج: "+opsText(order.product_code)+" | الكمية: "+order.quantity));
+      card.append(opsNode("div","","معرّف اللاعب: "+opsText(order.player_id)));
+      card.append(opsNode("div","","الحالة الحالية: "+(labels[order.status]||order.status)));
+      card.append(opsNode("div","ops-muted","تاريخ الطلب: "+opsDate(order.created_at)));
+      if(order.total_price_usd!==null)card.append(opsNode("div","ops-muted","الإجمالي: "+opsMoney(order.total_price_usd,"USD")+" | "+opsMoney(order.total_price_syp,"SYP")));
+      const history=(events||[]).filter(e=>e.order_id===order.id);
+      if(history.length){
+        card.append(opsNode("strong","","تحديثات الطلب"));
+        history.forEach(e=>{
+          const line=opsNode("div","ops-muted",(labels[e.new_status]||e.new_status)+" — "+opsDate(e.created_at));
+          if(e.customer_message)line.textContent+=" | "+e.customer_message;
+          card.appendChild(line);
+        });
+      }else card.append(opsNode("div","ops-muted","لم تُسجل تحديثات إضافية لهذا الطلب بعد."));
+      box.appendChild(card);
+    });
+  }catch(error){box.textContent="تعذر تحميل الطلبات: "+error.message;}
+}
+async function loadMyRewards(){
+  const balanceBox=document.getElementById("customerLoyaltyBalance");
+  const historyBox=document.getElementById("customerLoyaltyHistory");
+  if(!balanceBox||!historyBox||!currentUser)return;
+  balanceBox.textContent="جاري تحميل رصيد النقاط...";
+  try{
+    const [{data:account,error},{data:history,error:historyError}]=await Promise.all([
+      sb.from("customer_loyalty").select("points_balance,lifetime_earned,updated_at").eq("user_id",currentUser.id).maybeSingle(),
+      sb.from("loyalty_transactions").select("points,transaction_type,description,created_at")
+        .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50)
+    ]);
+    if(error)throw error;if(historyError)throw historyError;
+    balanceBox.replaceChildren();
+    balanceBox.append(opsNode("div","ops-muted","رصيد نقاطك الحالي"),
+      opsNode("div","ops-value",Number(account?.points_balance||0).toLocaleString("en-US")+" نقطة"),
+      opsNode("div","ops-muted","إجمالي النقاط المكتسبة: "+Number(account?.lifetime_earned||0).toLocaleString("en-US")));
+    historyBox.replaceChildren();
+    if(!history?.length){historyBox.textContent="لا توجد حركات نقاط مسجلة حتى الآن.";return;}
+    history.forEach(item=>{
+      const card=opsNode("div","ops-item");
+      const sign=item.transaction_type==="redeem"?"−":"+";
+      card.append(opsNode("strong","",sign+Number(item.points).toLocaleString("en-US")+" نقطة"));
+      card.append(opsNode("div","",item.description));
+      card.append(opsNode("div","ops-muted",opsDate(item.created_at)));
+      historyBox.appendChild(card);
+    });
+  }catch(error){
+    balanceBox.textContent="تعذر تحميل النقاط: "+error.message;
+    historyBox.replaceChildren();
+  }
+}
