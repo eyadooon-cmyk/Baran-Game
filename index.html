@@ -515,6 +515,16 @@ button{font-weight:700}
 
     <section id="admin" class="hidden">
       <h2>لوحة الإدارة 🔐</h2>
+      <section class="deposit-card" aria-label="إرسال إعلان عام للزبائن">
+        <h2>📢 إرسال إعلان لجميع الزبائن</h2>
+        <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
+        <label for="baranAnnouncementTitle">عنوان الإعلان</label>
+        <input id="baranAnnouncementTitle" maxlength="100" placeholder="مثلاً: عودة الخدمة للعمل">
+        <label for="baranAnnouncementBody">نص الإعلان</label>
+        <textarea id="baranAnnouncementBody" rows="3" maxlength="500" placeholder="اكتب تفاصيل التحديث للزبائن..."></textarea>
+        <button id="baranAnnouncementSend" class="full" type="button" onclick="sendBaranAnnouncement()">إرسال الإعلان للزبائن</button>
+        <div id="baranAnnouncementStatus" class="small" role="status" aria-live="polite"></div>
+      </section>
       <section id="baranFinancialSupportPanel" class="deposit-card" style="display:block!important;visibility:visible!important;position:relative!important;margin:16px 0;padding:16px;border:2px solid #b58a42" aria-label="تذاكر الشؤون المالية">
         <h2>💰 تذاكر الشؤون المالية</h2>
         <p class="small">كل تذاكر الزبائن المتعلقة بالحوالات وشام كاش والإيداع والسحب والمحفظة والأرصدة والاسترداد. هذه التذاكر تحتاج مراجعتك؛ لا يتم تأكيد حوالة أو تعديل رصيد تلقائياً.</p>
@@ -1180,6 +1190,34 @@ async function loadWallet(){
   }
 }
 
+
+
+async function sendBaranAnnouncement(){
+  const title=document.getElementById("baranAnnouncementTitle");
+  const body=document.getElementById("baranAnnouncementBody");
+  const button=document.getElementById("baranAnnouncementSend");
+  const status=document.getElementById("baranAnnouncementStatus");
+  const notificationTitle=title?.value.trim()||"";
+  const notificationBody=body?.value.trim()||"";
+  if(notificationTitle.length<3||notificationBody.length<5){
+    if(status)status.textContent="اكتب عنواناً من 3 أحرف على الأقل ونصاً من 5 أحرف على الأقل.";
+    return;
+  }
+  if(!confirm("تأكيد إرسال هذا الإعلان إلى جميع حسابات الزبائن؟ سيصل فوراً داخل المتجر، وإلى الهواتف التي فعّلت الإشعارات."))return;
+  if(button)button.disabled=true;
+  if(status)status.textContent="جاري إرسال الإعلان...";
+  try{
+    const result=await callAdminApi("POST",{
+      action:"broadcast_announcement",
+      notification_title:notificationTitle,
+      notification_body:notificationBody
+    });
+    if(status)status.textContent="تم إرسال الإعلان داخل المتجر إلى "+Number(result.sent_to||0).toLocaleString("ar")+" حساب. إشعارات الهاتف ستصل للأجهزة المفعّلة بعد إكمال إعداد الإرسال.";
+    title.value="";body.value="";
+  }catch(error){
+    if(status)status.textContent="تعذر إرسال الإعلان: "+error.message;
+  }finally{if(button)button.disabled=false;}
+}
 
 async function callAdminApi(method="GET",payload=null){
   const {data:{session},error:sessionError}=await sb.auth.getSession();
