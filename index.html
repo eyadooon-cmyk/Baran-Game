@@ -1449,7 +1449,7 @@ async function findWalletTransferRecipient(){
   selectedWalletTransferRecipient=null;
   submit.disabled=true;
   panel.classList.add("hidden");
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
     message.textContent="أدخل البريد الإلكتروني الصحيح للمستلم.";
     return;
   }
@@ -1764,7 +1764,7 @@ async function sendRecoveryReset(){
 
 function isBaranFinancialSupportTicket(item,ticket){
   const text=[item&&item.reason,ticket&&ticket.subject,ticket&&ticket.message].filter(Boolean).join(" ");
-  return /(مالي|حوالة|شام\\s*كاش|رصيد|إيداع|ايداع|سحب|استرداد|دفع|تحويل|محفظة|مبلغ|عملية مالية)/iu.test(text);
+  return /(مالي|حوالة|شام\s*كاش|رصيد|إيداع|ايداع|سحب|استرداد|دفع|تحويل|محفظة|مبلغ|عملية مالية)/iu.test(text);
 }
 function renderBaranFinancialSupportQueue(rows,feedbackRows){
   const stats=document.getElementById("baranFinancialSupportStats");
