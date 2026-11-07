@@ -284,6 +284,37 @@ section,.auth-card{border-color:#49345f}
 .admin-drawer-count b{font-size:11px}
 .drawer-link #adminDrawerOrdersCount.hidden,.drawer-link #adminDrawerSupportCount.hidden{display:none!important}
 @media(max-width:380px){.admin-drawer-counts{gap:3px}.admin-drawer-count{font-size:9px;padding:3px 5px}}
+
+/* Wallet redesign — premium royal purple */
+.wallet-page{position:relative;overflow:hidden;padding:clamp(15px,3vw,25px)!important;background:linear-gradient(145deg,#17111f 0%,#100d16 58%,#1b1325 100%)!important;border-color:#5c4274!important}
+.wallet-hero{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;min-height:148px;padding:22px 20px;margin:-2px -2px 18px;border:1px solid #604779;border-radius:18px;overflow:hidden;background:linear-gradient(110deg,#241832 0%,#17111f 60%,#21152d 100%);box-shadow:inset 0 1px #ffffff0b,0 12px 28px #0005}
+.wallet-hero:after{content:"";position:absolute;inset:auto 0 0;height:2px;background:linear-gradient(90deg,transparent,#b88bdd,#8e5cb8,transparent);opacity:.8}
+.wallet-watermark{position:absolute;z-index:-1;inset:-20% -3% auto auto;width:min(100%,760px);height:190%;object-fit:contain;object-position:center;opacity:.22;pointer-events:none;filter:drop-shadow(0 0 18px #a56bd633)}
+.wallet-hero-content{position:relative;z-index:1}
+.wallet-eyebrow{display:inline-block;color:#c9a9e5;font:700 10px/1.4 Orbitron,Cairo,sans-serif;letter-spacing:1.7px}
+.wallet-hero h2{margin:8px 0 3px;color:#f0e7f7!important;font-size:clamp(22px,4vw,29px);letter-spacing:.1px}
+.wallet-hero p{margin:0;color:#c5b3d2;font-size:13px}
+.wallet-hero-mark{font-size:32px;color:#d5b7ee;opacity:.7;text-shadow:0 0 18px #a56bd6;align-self:flex-start}
+.wallet-balances{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:0 0 13px}
+.wallet-balance-card{position:relative;isolation:isolate;min-width:0;min-height:164px;padding:16px 15px;border:1px solid #604779;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,#2b2038,#1a1422 70%,#17111e);box-shadow:0 8px 22px #0005,inset 0 1px #ffffff0a}
+.wallet-balance-card:after{content:"";position:absolute;z-index:-1;inset:auto -15% -60% 25%;height:130px;border-radius:50%;background:#a56bd6;filter:blur(55px);opacity:.13}
+.wallet-syp{background:linear-gradient(145deg,#292039,#191421 70%,#17111e)}
+.wallet-card-top{display:flex;align-items:center;gap:9px;margin-bottom:20px}
+.wallet-currency-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;flex:0 0 38px;border:1px solid #a77acb88;border-radius:12px;background:#a56bd626;color:#e1c8f5;font-size:19px;font-weight:900;box-shadow:inset 0 0 14px #a56bd622}
+.wallet-syp .wallet-currency-icon{font-size:12px}
+.wallet-currency-label{color:#c6b2d7;font-size:11px;font-weight:700;line-height:1.5}
+.wallet-balance-caption{color:#b8a7c5;font-size:12px;margin-bottom:4px}
+.wallet-amount{position:relative;z-index:1;color:#f0e6f8!important;font-size:clamp(22px,4.5vw,30px);font-weight:900;line-height:1.4;overflow-wrap:anywhere;text-shadow:0 2px 15px #a56bd633}
+.wallet-card-watermark{position:absolute;z-index:-1;left:10px;bottom:-30px;color:#c9a5e8;font-size:116px;font-weight:900;line-height:1;opacity:.075;transform:rotate(-12deg);pointer-events:none}
+.wallet-arabic-mark{font-family:Cairo,sans-serif;font-size:76px;bottom:-7px;left:5px}
+.wallet-refresh-button{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:47px;margin:5px 0 20px;border:1px solid #8d63ad;border-radius:13px;background:linear-gradient(110deg,#382448,#24182f);color:#f0e5f8;font-weight:800;box-shadow:0 6px 18px #0004;transition:transform .18s,border-color .18s}
+.wallet-refresh-button:active{transform:scale(.99)}
+.wallet-refresh-button span{font-size:22px;color:#d5b2ef;line-height:1}
+.wallet-page .deposit-card{margin-top:16px;border-color:#5a426e;background:linear-gradient(145deg,#17121e,#110d17)}
+.wallet-page>h2{margin-top:24px}
+@media(max-width:520px){.wallet-hero{min-height:132px;padding:17px 15px}.wallet-watermark{width:125%;right:-18%;opacity:.19}.wallet-balances{gap:9px}.wallet-balance-card{min-height:151px;padding:13px 11px}.wallet-card-top{gap:7px;margin-bottom:18px}.wallet-currency-icon{width:33px;height:33px;flex-basis:33px}.wallet-currency-label{font-size:10px}.wallet-amount{font-size:clamp(19px,5vw,25px)}.wallet-card-watermark{font-size:92px}.wallet-arabic-mark{font-size:61px}}
+@media(max-width:350px){.wallet-balances{grid-template-columns:1fr}.wallet-balance-card{min-height:138px}}
+
 </style>
 </head>
 <body>
@@ -520,13 +551,38 @@ section,.auth-card{border-color:#49345f}
       <p class="small">ملاحظة: سنحمّل فئات سيريتل وMTN مباشرة من كتالوج المورّد، ولن نستخدم فئات أو أسعاراً تقديرية.</p>
     </section>
 
-    <section id="wallet" class="hidden">
-      <h2>محفظتي 💳</h2>
-      <p>رصيد الدولار</p>
-      <div class="balance" id="usd">0.00 $</div>
-      <p>رصيد الليرة السورية</p>
-      <div class="balance" id="syp">0 ل.س</div>
-      <button class="full secondary" onclick="loadWallet()">تحديث الرصيد</button>
+    <section id="wallet" class="hidden wallet-page">
+      <div class="wallet-hero">
+        <img class="wallet-watermark" src="./assets/wallet-currency-watermark.svg" alt="" aria-hidden="true">
+        <div class="wallet-hero-content">
+          <span class="wallet-eyebrow">BARAN GAME · WALLET</span>
+          <h2>محفظتك الرقمية</h2>
+          <p>أرصدتك بعملتين، بواجهة أوضح وتجربة أسهل.</p>
+        </div>
+        <span class="wallet-hero-mark" aria-hidden="true">✦</span>
+      </div>
+
+      <div class="wallet-balances" aria-label="أرصدة المحفظة">
+        <article class="wallet-balance-card wallet-usd">
+          <div class="wallet-card-top">
+            <span class="wallet-currency-icon" aria-hidden="true">$</span>
+            <span class="wallet-currency-label">USD · الدولار الأمريكي</span>
+          </div>
+          <div class="wallet-balance-caption">رصيدك بالدولار</div>
+          <div class="balance wallet-amount" id="usd">0.00 $</div>
+          <span class="wallet-card-watermark" aria-hidden="true">$</span>
+        </article>
+        <article class="wallet-balance-card wallet-syp">
+          <div class="wallet-card-top">
+            <span class="wallet-currency-icon">ل.س</span>
+            <span class="wallet-currency-label">SYP · الليرة السورية</span>
+          </div>
+          <div class="wallet-balance-caption">رصيدك بالليرة</div>
+          <div class="balance wallet-amount" id="syp">0 ل.س</div>
+          <span class="wallet-card-watermark wallet-arabic-mark" aria-hidden="true">ل.س</span>
+        </article>
+      </div>
+      <button class="wallet-refresh-button" type="button" onclick="loadWallet()"><span aria-hidden="true">↻</span> تحديث الأرصدة</button>
 
       <div class="deposit-card">
         <h2>شحن المحفظة عبر شام كاش</h2>
