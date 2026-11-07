@@ -111,6 +111,15 @@ footer{text-align:center;padding:25px;color:#a99ab5}
 .side-drawer.open{transform:translateX(0)}
 .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:8px 4px 17px;margin-bottom:12px;border-bottom:1px solid var(--line)}
 .drawer-title{font-size:20px;font-weight:900;color:var(--green);text-shadow:0 0 10px #8b6ba855}
+.drawer-profile-card{display:flex;align-items:center;gap:12px;width:100%;margin:2px 0 16px;padding:13px;text-align:right;background:linear-gradient(125deg,#30243a,#17121e 80%);color:#eee8f4;border:1px solid #80649a;border-radius:15px;box-shadow:0 5px 18px #0005}
+.drawer-profile-card:active,.drawer-profile-card:hover{background:#30243a;border-color:#c5b4d6}
+.drawer-profile-avatar{width:58px;height:58px;flex:0 0 58px;padding:3px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#d7c4e8,#57436a);box-shadow:0 0 15px #8b6ba855;overflow:hidden}
+.drawer-profile-avatar img,.drawer-profile-avatar>span{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.drawer-profile-avatar>span{display:flex;align-items:center;justify-content:center;background:#17121e;color:#d7c4e8;font-size:24px;font-weight:900}
+.drawer-profile-details{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.drawer-profile-details strong{font-size:15px;overflow-wrap:anywhere;color:#fff}
+.drawer-profile-details>span{font-size:11px;color:#c4b4d1;overflow-wrap:anywhere}
+.drawer-profile-details small{font-size:11px;color:#d7c4e8}
 .drawer-close{width:38px;height:36px;padding:4px;background:#241d2a;color:white;border:1px solid #493b55;font-size:22px}
 .drawer-link{display:flex;align-items:center;gap:12px;width:100%;margin:7px 0;padding:13px 14px;text-align:right;background:#1c1721;color:#eee8f4;border:1px solid #40334b;border-radius:11px;font-size:15px}
 .drawer-link:active,.drawer-link:hover{background:#30243a;border-color:var(--green);color:#d2c2e2}
@@ -328,6 +337,17 @@ button{font-weight:700}
       <div class="drawer-title">BARAN GAME</div>
       <button class="drawer-close" type="button" onclick="closeSideMenu()" aria-label="إغلاق القائمة">×</button>
     </div>
+    <button class="drawer-profile-card" type="button" onclick="navigateDrawer('account')" aria-label="فتح حسابي">
+      <span class="drawer-profile-avatar">
+        <img id="drawerAccountAvatar" class="hidden" alt="الصورة الشخصية">
+        <span id="drawerAccountAvatarFallback">B</span>
+      </span>
+      <span class="drawer-profile-details">
+        <strong id="drawerAccountName">مستخدم Baran Game</strong>
+        <span id="drawerAccountEmail" dir="ltr"></span>
+        <small>عرض الحساب الشخصي ←</small>
+      </span>
+    </button>
     <button class="drawer-link" onclick="navigateDrawer('home')"><span class="drawer-icon">🏠</span>الرئيسية</button>
     <button class="drawer-link" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span>الألعاب</button>
     <button class="drawer-link" onclick="navigateDrawer('services')"><span class="drawer-icon">🤖</span>الخدمات الرقمية</button>
@@ -337,7 +357,6 @@ button{font-weight:700}
     <button class="drawer-link" onclick="navigateDrawer('rewards')"><span class="drawer-icon">🎁</span>المكافآت ودعوة الأصدقاء</button>
     <button class="drawer-link" onclick="navigateDrawer('support')"><span class="drawer-icon">⭐</span>التقييمات والاقتراحات والدعم</button>
     <button class="drawer-link" onclick="navigateDrawer('settings')"><span class="drawer-icon">⚙️</span>الإعدادات</button>
-    <button class="drawer-link" onclick="navigateDrawer('account')"><span class="drawer-icon">👤</span>حسابي</button>
     <button id="adminDrawerButton" class="drawer-link hidden" onclick="navigateDrawer('admin')"><span class="drawer-icon">🛠️</span>لوحة الإدارة</button>
     <div class="drawer-divider"></div>
     <a class="drawer-link" href="./terms.html" style="text-decoration:none"><span class="drawer-icon">📜</span>شروط الاستخدام</a>
@@ -936,17 +955,24 @@ function updateBaranAccountIdentity(user){
   const nameEl=document.getElementById("accountDisplayName");
   const emailEl=document.getElementById("accountDisplayEmail");
   const providerEl=document.getElementById("accountProviderLabel");
-  const avatar=document.getElementById("accountAvatar");
-  const fallback=document.getElementById("accountAvatarFallback");
   if(nameEl)nameEl.textContent=name;
   if(emailEl)emailEl.textContent=email;
   if(providerEl)providerEl.textContent=identity?.provider==="google"?"تم تسجيل الدخول باستخدام Google":"حساب مسجل بالبريد الإلكتروني";
-  if(avatar&&fallback){
+
+  const drawerName=document.getElementById("drawerAccountName");
+  const drawerEmail=document.getElementById("drawerAccountEmail");
+  if(drawerName)drawerName.textContent=name;
+  if(drawerEmail)drawerEmail.textContent=email;
+
+  [["accountAvatar","accountAvatarFallback"],["drawerAccountAvatar","drawerAccountAvatarFallback"]].forEach(([imageId,fallbackId])=>{
+    const avatar=document.getElementById(imageId);
+    const fallback=document.getElementById(fallbackId);
+    if(!avatar||!fallback)return;
     avatar.onload=()=>{avatar.classList.remove("hidden");fallback.classList.add("hidden");};
     avatar.onerror=()=>{avatar.removeAttribute("src");avatar.classList.add("hidden");fallback.classList.remove("hidden");};
     if(typeof avatarUrl==="string"&&/^https:\/\//i.test(avatarUrl)){avatar.src=avatarUrl;}
     else{avatar.removeAttribute("src");avatar.classList.add("hidden");fallback.classList.remove("hidden");}
-  }
+  });
 }
 
 function showApp(user){
