@@ -694,6 +694,26 @@ section,.auth-card{border-color:#49345f}
         <div id="ownerFundingHistory" class="small">جاري تحميل الطلبات...</div>
       </div>
 
+      <div class="deposit-card hidden" id="ownerUsdSalePanel">
+        <h2>شحن دولار لزبون مقابل حوالة شام كاش</h2>
+        <p>اكتب بريد الزبون وتحقق من الحساب، ثم أدخل مبلغ الدولار ورقم الحوالة وأرفق الإشعار. بعد تأكيد وصول الدولار من لوحة الإدارة، يخصم النظام المقابل بالليرة من محفظتك ويضيف الدولار إلى محفظة الزبون.</p>
+        <label for="ownerUsdSaleEmail">البريد الإلكتروني للزبون</label>
+        <div class="wallet-transfer-search">
+          <input id="ownerUsdSaleEmail" type="email" maxlength="254" autocomplete="off" placeholder="بريد حساب الزبون">
+          <button id="ownerUsdSaleFindButton" type="button" onclick="findOwnerUsdSaleRecipient()">تحقق</button>
+        </div>
+        <div id="ownerUsdSaleRecipient" class="wallet-transfer-recipient hidden" role="status"></div>
+        <label for="ownerUsdSaleAmount">المبلغ الذي دفعه الزبون بالدولار</label>
+        <input id="ownerUsdSaleAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="مثلاً 10.00">
+        <label for="ownerUsdSaleReference">رقم عملية شام كاش</label>
+        <input id="ownerUsdSaleReference" type="text" maxlength="120" placeholder="رقم الحوالة كما يظهر بالإشعار">
+        <label for="ownerUsdSaleReceipt">صورة إشعار الحوالة (إلزامية)</label>
+        <input id="ownerUsdSaleReceipt" type="file" accept="image/jpeg,image/png,image/webp">
+        <p class="small">JPG أو PNG أو WEBP، بحد أقصى 5 ميغابايت. لا توافق إلا بعد التحقق من وصول المبلغ فعلياً.</p>
+        <button id="ownerUsdSaleSubmitButton" class="full" type="button" onclick="submitOwnerUsdSaleRequest()" disabled>إرسال طلب شحن الدولار للزبون</button>
+        <p id="ownerUsdSaleMessage" class="small" role="status" aria-live="polite"></p>
+      </div>
+
       <div class="deposit-card" id="customerDepositPanel">
         <h2>شحن المحفظة عبر شام كاش</h2>
         <p>حوّل المبلغ إلى معرّف محفظة الاستلام التالي، ثم أرسل طلب الشحن مع رقم العملية.</p>
@@ -899,6 +919,8 @@ section,.auth-card{border-color:#49345f}
       <div id="adminRequests">جاري تحميل الطلبات...</div>
       <h3 style="margin-top:18px">طلبات شحن محفظة المالك</h3>
       <div id="adminOwnerFundingRequests">جاري تحميل طلبات المالك...</div>
+      <h3 style="margin-top:18px">طلبات شحن الدولار للزبائن مقابل حوالة شام كاش</h3>
+      <div id="adminOwnerUsdSaleRequests">جاري تحميل طلبات شحن الدولار...</div>
 
       <hr style="border-color:#40334b;margin:24px 0">
       <h2>استعادة حساب الزبون 🔐</h2>
@@ -1372,6 +1394,83 @@ async function copyOwnerFundingReceiver(){
   const message=document.getElementById("ownerFundingMessage");
   try{await navigator.clipboard.writeText("bf37143ce15dd68389c21285e71818d1");message.textContent="تم نسخ معرّف الاستلام.";}
   catch(error){message.textContent="تعذر النسخ تلقائياً؛ اضغط مطولاً على المعرّف وانسخه.";}
+}
+
+let selectedOwnerUsdSaleRecipient=null;
+
+function clearOwnerUsdSaleRecipient(){
+  selectedOwnerUsdSaleRecipient=null;
+  document.getElementById("ownerUsdSaleRecipient")?.classList.add("hidden");
+  document.getElementById("ownerUsdSaleSubmitButton").disabled=true;
+}
+
+async function findOwnerUsdSaleRecipient(){
+  const email=document.getElementById("ownerUsdSaleEmail").value.trim().toLowerCase();
+  const button=document.getElementById("ownerUsdSaleFindButton");
+  const panel=document.getElementById("ownerUsdSaleRecipient");
+  const message=document.getElementById("ownerUsdSaleMessage");
+  const submit=document.getElementById("ownerUsdSaleSubmitButton");
+  selectedOwnerUsdSaleRecipient=null;submit.disabled=true;panel.classList.add("hidden");
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){message.textContent="أدخل البريد الإلكتروني الصحيح للزبون.";return;}
+  button.disabled=true;message.textContent="جاري التحقق من حساب الزبون...";
+  try{
+    const {data,error}=await sb.rpc("baran_find_transfer_recipient",{p_email:email});
+    if(error)throw error;
+    const recipient=Array.isArray(data)?data[0]:null;
+    if(!recipient){message.textContent="لم نجد حساباً بهذا البريد.";return;}
+    selectedOwnerUsdSaleRecipient={id:recipient.user_id,name:recipient.display_name,email};
+    panel.replaceChildren();
+    const title=document.createElement("strong");title.textContent="الزبون المحدد: "+(recipient.display_name||"مستخدم Baran Game");
+    const mail=document.createElement("div");mail.className="small";mail.textContent=email;
+    panel.append(title,mail);panel.classList.remove("hidden");submit.disabled=false;
+    message.textContent="تأكد من الاسم والبريد قبل إرسال طلب الشحن.";
+  }catch(error){message.textContent=error.message||"تعذر التحقق من حساب الزبون.";}
+  finally{button.disabled=false;}
+}
+
+async function submitOwnerUsdSaleRequest(){
+  const button=document.getElementById("ownerUsdSaleSubmitButton");
+  const message=document.getElementById("ownerUsdSaleMessage");
+  const amount=Number(document.getElementById("ownerUsdSaleAmount").value);
+  const reference=document.getElementById("ownerUsdSaleReference").value.trim();
+  const input=document.getElementById("ownerUsdSaleReceipt");
+  const receipt=input.files?.[0];
+  if(!currentUser||currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){message.textContent="هذه الميزة متاحة لمالك المتجر فقط.";return;}
+  if(!selectedOwnerUsdSaleRecipient||document.getElementById("ownerUsdSaleEmail").value.trim().toLowerCase()!==selectedOwnerUsdSaleRecipient.email){
+    clearOwnerUsdSaleRecipient();message.textContent="تحقق من حساب الزبون أولاً.";return;
+  }
+  if(!Number.isFinite(amount)||amount<=0||amount>1000000000000||Math.round(amount*100)!==amount*100){
+    message.textContent="أدخل مبلغاً بالدولار حتى منزلتين عشريتين.";return;
+  }
+  if(reference.length<3||reference.length>120){message.textContent="أدخل رقم حوالة صحيحاً.";return;}
+  if(!receipt){message.textContent="أرفق صورة إشعار الحوالة أولاً.";return;}
+  if(!["image/jpeg","image/png","image/webp"].includes(receipt.type)||receipt.size>5*1024*1024){
+    message.textContent="الصورة يجب أن تكون JPG أو PNG أو WEBP وألا تتجاوز 5 ميغابايت.";return;
+  }
+  if(!confirm("إرسال طلب إضافة "+amount.toFixed(2)+" $ إلى محفظة "+selectedOwnerUsdSaleRecipient.name+"؟ لن يصل الرصيد إلا بعد تأكيدك وصول حوالة شام كاش، وسيُخصم المقابل بالليرة من محفظتك."))return;
+  button.disabled=true;message.textContent="جاري رفع الإثبات وإرسال الطلب...";
+  let uploadedPath=null;
+  try{
+    const extension=receipt.type==="image/jpeg"?"jpg":receipt.type==="image/png"?"png":"webp";
+    uploadedPath=currentUser.id+"/"+crypto.randomUUID()+"."+extension;
+    const {error:uploadError}=await sb.storage.from("shamcash-receipts").upload(uploadedPath,receipt,{contentType:receipt.type,cacheControl:"3600",upsert:false});
+    if(uploadError)throw uploadError;
+    const {data,error}=await sb.rpc("baran_submit_owner_usd_sale_request",{
+      p_recipient_id:selectedOwnerUsdSaleRecipient.id,p_amount_usd:amount,
+      p_transfer_reference:reference,p_receipt_path:uploadedPath
+    });
+    if(error)throw error;
+    if(!data?.success)throw new Error("لم يؤكد الخادم استلام الطلب.");
+    document.getElementById("ownerUsdSaleAmount").value="";
+    document.getElementById("ownerUsdSaleReference").value="";
+    input.value="";
+    message.textContent="تم إرسال طلب شحن الدولار للزبون للمراجعة. لم يُخصم أو يُضف أي رصيد بعد.";
+    clearOwnerUsdSaleRecipient();
+    await loadAdminPanel();
+  }catch(error){
+    if(uploadedPath){try{await sb.storage.from("shamcash-receipts").remove([uploadedPath]);}catch(cleanupError){}}
+    message.textContent=error.message||"تعذر إرسال الطلب.";
+  }finally{button.disabled=!selectedOwnerUsdSaleRecipient;}
 }
 
 async function submitOwnerFundingRequest(){
@@ -1912,7 +2011,7 @@ async function checkAdminAccess(){
     await callAdminApi("POST",{action:"admin_check"});
     if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
-    if(currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){if(walletAdminTransfers)walletAdminTransfers.classList.remove("hidden");document.getElementById("ownerWalletFundingPanel")?.classList.remove("hidden");document.getElementById("customerDepositPanel")?.classList.add("hidden");loadWalletExchangeSettings();loadWalletExchangeHistory();loadOwnerFundingHistory();}
+    if(currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){if(walletAdminTransfers)walletAdminTransfers.classList.remove("hidden");document.getElementById("ownerWalletFundingPanel")?.classList.remove("hidden");document.getElementById("ownerUsdSalePanel")?.classList.remove("hidden");document.getElementById("customerDepositPanel")?.classList.add("hidden");loadWalletExchangeSettings();loadWalletExchangeHistory();loadOwnerFundingHistory();}
     return true;
   }catch(error){
     console.error("Baran Game admin access check failed:",error.message);
@@ -2138,11 +2237,13 @@ function renderAdminDepositRequestList(container,requests,isOwner=false){
   if(!requests.length){container.textContent=isOwner?"لا توجد طلبات شحن للمالك حتى الآن.":"لا توجد طلبات شحن للزبائن حالياً.";return;}
   requests.forEach(item=>{
     const card=document.createElement("div");card.className="admin-request";
-    const title=document.createElement("strong");title.textContent=(isOwner?"طلب شحن محفظة المالك ":"طلب شحن زبون ")+item.id;
+    const isOwnerSale=item.request_source==="owner_usd_sale";
+    const title=document.createElement("strong");title.textContent=(isOwnerSale?"بيع رصيد دولار للزبون ":isOwner?"طلب شحن محفظة المالك ":"طلب شحن زبون ")+item.id;
     const details=document.createElement("p");
-    details.textContent=(isOwner?"النوع: شحن محفظة المالك":"الزبون: "+(item.customer_email||item.user_id))+
+    details.textContent=(isOwnerSale?"الزبون المستلم: "+(item.recipient_email||item.recipient_id||"—"):isOwner?"النوع: شحن محفظة المالك":"الزبون: "+(item.customer_email||item.user_id))+
       " | المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
       " | رقم العملية: "+item.transfer_reference+
+      (isOwnerSale?" | سيُخصم المقابل بالليرة من محفظة المالك عند الموافقة":"")+
       " | الحالة: "+({pending:"قيد المراجعة",approved:"مقبول",rejected:"مرفوض"}[item.status]||item.status)+
       " | التاريخ: "+new Date(item.created_at).toLocaleString("ar");
     card.append(title,details);
@@ -2184,6 +2285,8 @@ async function loadAdminPanel(){
     const requests=result.requests||[];
     renderAdminDepositRequestList(container,requests.filter(x=>x.request_source!=="owner_wallet"));
     if(ownerContainer)renderAdminDepositRequestList(ownerContainer,requests.filter(x=>x.request_source==="owner_wallet"),true);
+    const saleContainer=document.getElementById("adminOwnerUsdSaleRequests");
+    if(saleContainer)renderAdminDepositRequestList(saleContainer,requests.filter(x=>x.request_source==="owner_usd_sale"),false);
     if(typeof renderOperationsDashboard==="function")renderOperationsDashboard(result);
     if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
