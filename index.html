@@ -674,7 +674,27 @@ section,.auth-card{border-color:#49345f}
 
       </div>
 
-      <div class="deposit-card">
+      <div class="deposit-card hidden" id="ownerWalletFundingPanel">
+        <h2>شحن محفظة المالك — طلب مستقل</h2>
+        <p>حوّل إلى معرّف الاستلام، ثم أرسل رقم العملية وصورة الإثبات. لن يُضاف أي رصيد قبل مراجعة الطلب والتأكد من وصول الحوالة.</p>
+        <div class="deposit-id" dir="ltr">bf37143ce15dd68389c21285e71818d1</div>
+        <button class="full" type="button" onclick="copyOwnerFundingReceiver()">نسخ معرّف الاستلام</button>
+        <label for="ownerFundingCurrency">عملة الشحن</label>
+        <select id="ownerFundingCurrency"><option value="USD">دولار أمريكي (USD)</option><option value="SYP">ليرة سورية (SYP)</option></select>
+        <label for="ownerFundingAmount">المبلغ المحوّل</label>
+        <input id="ownerFundingAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
+        <label for="ownerFundingReference">رقم العملية / مرجع التحويل</label>
+        <input id="ownerFundingReference" type="text" maxlength="120" placeholder="رقم عملية شام كاش">
+        <label for="ownerFundingReceipt">صورة إشعار التحويل (إلزامية)</label>
+        <input id="ownerFundingReceipt" type="file" accept="image/jpeg,image/png,image/webp">
+        <p class="small">JPG أو PNG أو WEBP، بحد أقصى 5 ميغابايت.</p>
+        <button id="ownerFundingSubmitButton" class="full" type="button" onclick="submitOwnerFundingRequest()">إرسال طلب شحن المالك</button>
+        <p id="ownerFundingMessage" class="small" role="status" aria-live="polite"></p>
+        <h3>طلبات شحن محفظة المالك السابقة</h3>
+        <div id="ownerFundingHistory" class="small">جاري تحميل الطلبات...</div>
+      </div>
+
+      <div class="deposit-card" id="customerDepositPanel">
         <h2>شحن المحفظة عبر شام كاش</h2>
         <p>حوّل المبلغ إلى معرّف محفظة الاستلام التالي، ثم أرسل طلب الشحن مع رقم العملية.</p>
         <div class="deposit-id" dir="ltr" id="shamCashReceiver">bf37143ce15dd68389c21285e71818d1</div>
@@ -1345,6 +1365,77 @@ async function copyShamCashReceiver(){
   }
 }
 
+async function copyOwnerFundingReceiver(){
+  const message=document.getElementById("ownerFundingMessage");
+  try{await navigator.clipboard.writeText("bf37143ce15dd68389c21285e71818d1");message.textContent="تم نسخ معرّف الاستلام.";}
+  catch(error){message.textContent="تعذر النسخ تلقائياً؛ اضغط مطولاً على المعرّف وانسخه.";}
+}
+
+async function submitOwnerFundingRequest(){
+  const button=document.getElementById("ownerFundingSubmitButton");
+  const message=document.getElementById("ownerFundingMessage");
+  const amount=Number(document.getElementById("ownerFundingAmount").value);
+  const currency=document.getElementById("ownerFundingCurrency").value;
+  const reference=document.getElementById("ownerFundingReference").value.trim();
+  const input=document.getElementById("ownerFundingReceipt");
+  const receipt=input.files?.[0];
+  if(!Number.isFinite(amount)||amount<=0||(currency==="SYP"&&!Number.isInteger(amount))||
+     (currency==="USD"&&Math.round(amount*100)!==amount*100)){
+    message.textContent="أدخل مبلغاً صحيحاً: الليرة دون كسور والدولار حتى منزلتين.";return;
+  }
+  if(reference.length<3||reference.length>120){message.textContent="أدخل رقم عملية صحيحاً.";return;}
+  if(!receipt){message.textContent="أرفق صورة إثبات التحويل أولاً.";return;}
+  if(!["image/jpeg","image/png","image/webp"].includes(receipt.type)||receipt.size>5*1024*1024){
+    message.textContent="الصورة يجب أن تكون JPG أو PNG أو WEBP وألا تتجاوز 5 ميغابايت.";return;
+  }
+  if(!confirm("تأكيد إرسال طلب شحن محفظة المالك بقيمة "+amount.toLocaleString("en-US")+" "+currency+"؟ لن يضاف الرصيد إلا بعد المراجعة."))return;
+  button.disabled=true;message.textContent="جاري رفع الإثبات وإرسال طلب الشحن...";
+  let uploadedPath=null;
+  try{
+    const {data:{user},error:userError}=await sb.auth.getUser();
+    if(userError||!user||user.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7")throw new Error("هذه الخدمة متاحة لحساب مالك المتجر فقط.");
+    const extension=receipt.type==="image/jpeg"?"jpg":receipt.type==="image/png"?"png":"webp";
+    uploadedPath=user.id+"/"+crypto.randomUUID()+"."+extension;
+    const {error:uploadError}=await sb.storage.from("shamcash-receipts").upload(uploadedPath,receipt,{contentType:receipt.type,cacheControl:"3600",upsert:false});
+    if(uploadError)throw uploadError;
+    const {data,error}=await sb.rpc("baran_submit_owner_funding_request",{
+      p_amount:amount,p_currency:currency,p_transfer_reference:reference,p_receipt_path:uploadedPath
+    });
+    if(error)throw error;
+    if(!data?.success)throw new Error("لم يؤكد الخادم استلام الطلب.");
+    document.getElementById("ownerFundingAmount").value="";
+    document.getElementById("ownerFundingReference").value="";
+    input.value="";
+    message.textContent="تم إرسال طلب شحن المالك للمراجعة. لم يُضف أي رصيد بعد.";
+    await loadOwnerFundingHistory();
+  }catch(error){
+    if(uploadedPath){try{await sb.storage.from("shamcash-receipts").remove([uploadedPath]);}catch(cleanupError){}}
+    message.textContent=error.message||"تعذر إرسال الطلب.";
+  }finally{button.disabled=false;}
+}
+
+async function loadOwnerFundingHistory(){
+  const box=document.getElementById("ownerFundingHistory");
+  if(!box||!currentUser||currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7")return;
+  try{
+    const {data,error}=await sb.from("deposit_requests")
+      .select("id,amount,currency,transfer_reference,status,created_at")
+      .eq("user_id",currentUser.id).eq("request_source","owner_wallet")
+      .order("created_at",{ascending:false}).limit(20);
+    if(error)throw error;
+    box.replaceChildren();
+    if(!data?.length){box.textContent="لا توجد طلبات شحن للمالك حتى الآن.";return;}
+    const labels={pending:"قيد المراجعة",approved:"تمت الموافقة وإضافة الرصيد",rejected:"مرفوض"};
+    data.forEach(item=>{
+      const row=document.createElement("div");row.className="deposit-row";
+      row.textContent=Number(item.amount).toLocaleString("en-US")+" "+item.currency+
+        " | رقم العملية: "+item.transfer_reference+" | "+(labels[item.status]||item.status)+
+        " | "+new Date(item.created_at).toLocaleString("ar");
+      box.appendChild(row);
+    });
+  }catch(error){box.textContent="تعذر تحميل طلبات شحن المالك.";}
+}
+
 async function submitDepositRequest(){
   if(!currentUser) return;
   const amount=Number(document.getElementById("depositAmount").value);
@@ -1425,8 +1516,9 @@ async function loadDepositRequests(){
     const {data:{user},error:userError}=await sb.auth.getUser();
     if(userError||!user) throw new Error("انتهت الجلسة.");
     const {data,error}=await sb.from("deposit_requests")
-      .select("id,amount,currency,transfer_reference,receipt_path,status,created_at")
+      .select("id,amount,currency,transfer_reference,receipt_path,status,created_at,request_source")
       .eq("user_id",user.id)
+      .eq("request_source","customer")
       .order("created_at",{ascending:false})
       .limit(15);
     if(error) throw error;
@@ -1817,7 +1909,7 @@ async function checkAdminAccess(){
     await callAdminApi("POST",{action:"admin_check"});
     if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
-    if(walletAdminTransfers&&currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){walletAdminTransfers.classList.remove("hidden");loadWalletExchangeSettings();loadWalletExchangeHistory();}
+    if(currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){if(walletAdminTransfers)walletAdminTransfers.classList.remove("hidden");document.getElementById("ownerWalletFundingPanel")?.classList.remove("hidden");document.getElementById("customerDepositPanel")?.classList.add("hidden");loadWalletExchangeSettings();loadWalletExchangeHistory();loadOwnerFundingHistory();}
     return true;
   }catch(error){
     console.error("Baran Game admin access check failed:",error.message);
