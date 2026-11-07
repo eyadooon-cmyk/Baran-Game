@@ -13,6 +13,9 @@ async function loadProfileDetails(){
     if(error)throw error;
     nameInput.value=data?.full_name||currentUser.user_metadata?.full_name||"";
     phoneInput.value=data?.phone||"";
+    if(typeof updateBaranAccountIdentity==="function"){
+      updateBaranAccountIdentity({...currentUser,user_metadata:{...(currentUser.user_metadata||{}),full_name:nameInput.value||currentUser.user_metadata?.full_name}});
+    }
     message.textContent="يمكنك تعديل الاسم ورقم الهاتف وحفظهما.";
     document.getElementById("newAccountEmail").value=currentUser.email||"";
   }catch(error){
@@ -47,6 +50,7 @@ async function saveProfileDetails(){
     const {error:metadataError}=await sb.auth.updateUser({data:{full_name:fullName}});
     if(metadataError)console.warn("Profile metadata sync skipped",metadataError.message);
     document.getElementById("accountInfo").textContent=currentUser.email||"";
+    if(typeof updateBaranAccountIdentity==="function")updateBaranAccountIdentity({...currentUser,user_metadata:{...(currentUser.user_metadata||{}),full_name:fullName}});
     message.textContent="تم حفظ بيانات الحساب بنجاح.";
   }catch(error){
     message.textContent="تعذر حفظ البيانات: "+error.message;
