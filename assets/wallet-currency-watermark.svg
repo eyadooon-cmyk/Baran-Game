@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" fill="none">
+<defs>
+ <linearGradient id="g" x1="90" y1="40" x2="790" y2="320" gradientUnits="userSpaceOnUse"><stop stop-color="#D8B8F5"/><stop offset=".48" stop-color="#A56BD6"/><stop offset="1" stop-color="#6B438D"/></linearGradient>
+ <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#CDA9EA" stop-opacity=".24"/><stop offset="1" stop-color="#8E5CB8" stop-opacity=".04"/></linearGradient>
+</defs>
+<g stroke="url(#g)" stroke-width="3" opacity=".78">
+ <circle cx="255" cy="174" r="112" fill="url(#glass)"/><circle cx="255" cy="174" r="91" stroke-dasharray="5 12"/>
+ <circle cx="645" cy="174" r="112" fill="url(#glass)"/><circle cx="645" cy="174" r="91" stroke-dasharray="5 12"/>
+ <path d="M355 174h190" stroke-width="2" stroke-dasharray="7 10" opacity=".5"/>
+ <path d="M385 126c28-38 101-38 130 0M385 222c28 38 101 38 130 0" opacity=".42"/>
+</g>
+<g fill="#DCC4F0" font-family="Arial,sans-serif" font-weight="700" text-anchor="middle">
+ <text x="255" y="204" font-size="92" opacity=".72">$</text>
+ <text x="645" y="196" font-size="66" opacity=".78">ل.س</text>
+</g>
+<g stroke="#CBA9E8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".35">
+ <path d="M397 68h106a25 25 0 0 1 25 25v18H372V93a25 25 0 0 1 25-25Z"/>
+ <path d="M372 249h156v19a25 25 0 0 1-25 25H397a25 25 0 0 1-25-25v-19Z"/>
+</g>
+</svg>
