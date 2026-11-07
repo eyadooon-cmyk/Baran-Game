@@ -1895,14 +1895,25 @@ async function enableBaranPushNotifications(){
     const registration=await navigator.serviceWorker.register("./service-worker.js",{scope:"./"});
     await navigator.serviceWorker.ready;
     let subscription=await registration.pushManager.getSubscription();
-    if(!subscription){
-      subscription=await registration.pushManager.subscribe({
-        userVisibleOnly:true,
-        applicationServerKey:baranUrlBase64ToUint8Array(BARAN_VAPID_PUBLIC_KEY)
-      });
-    }
     const {data:{session},error:sessionError}=await sb.auth.getSession();
     if(sessionError||!session?.access_token)throw new Error("انتهت جلسة الدخول. سجّل الدخول مجدداً.");
+    // Renew any existing browser subscription so it is created with the current VAPID public key.
+    if(subscription){
+      const removeResponse=await fetch(SUPABASE_URL+"/functions/v1/baran-push-register",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token},
+        body:JSON.stringify({action:"remove",endpoint:subscription.endpoint})
+      });
+      const removeResult=await removeResponse.json().catch(()=>({}));
+      if(!removeResponse.ok||removeResult.success!==true)throw new Error(removeResult.error||"تعذر تجهيز الاشتراك القديم للتجديد.");
+      const unsubscribed=await subscription.unsubscribe();
+      if(!unsubscribed)throw new Error("تعذر إلغاء الاشتراك القديم. أعد المحاولة.");
+      subscription=null;
+    }
+    subscription=await registration.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:baranUrlBase64ToUint8Array(BARAN_VAPID_PUBLIC_KEY)
+    });
     const response=await fetch(SUPABASE_URL+"/functions/v1/baran-push-register",{
       method:"POST",
       headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token},
