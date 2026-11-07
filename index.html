@@ -895,7 +895,10 @@ section,.auth-card{border-color:#49345f}
       <div id="adminNotifications" class="notification-box">جاري تحميل تنبيهات الإدارة...</div>
       <button class="full secondary" onclick="loadAdminPanel()">تحديث طلبات الإيداع</button>
       <div id="adminMessage" class="small" role="status"></div>
+      <h3>طلبات شحن الزبائن</h3>
       <div id="adminRequests">جاري تحميل الطلبات...</div>
+      <h3 style="margin-top:18px">طلبات شحن محفظة المالك</h3>
+      <div id="adminOwnerFundingRequests">جاري تحميل طلبات المالك...</div>
 
       <hr style="border-color:#40334b;margin:24px 0">
       <h2>استعادة حساب الزبون 🔐</h2>
@@ -2129,6 +2132,39 @@ function renderBaranAutoSupportQueue(rows,feedbackRows){
   });
 }
 
+function renderAdminDepositRequestList(container,requests,isOwner=false){
+  if(!container)return;
+  container.replaceChildren();
+  if(!requests.length){container.textContent=isOwner?"لا توجد طلبات شحن للمالك حتى الآن.":"لا توجد طلبات شحن للزبائن حالياً.";return;}
+  requests.forEach(item=>{
+    const card=document.createElement("div");card.className="admin-request";
+    const title=document.createElement("strong");title.textContent=(isOwner?"طلب شحن محفظة المالك ":"طلب شحن زبون ")+item.id;
+    const details=document.createElement("p");
+    details.textContent=(isOwner?"النوع: شحن محفظة المالك":"الزبون: "+(item.customer_email||item.user_id))+
+      " | المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
+      " | رقم العملية: "+item.transfer_reference+
+      " | الحالة: "+({pending:"قيد المراجعة",approved:"مقبول",rejected:"مرفوض"}[item.status]||item.status)+
+      " | التاريخ: "+new Date(item.created_at).toLocaleString("ar");
+    card.append(title,details);
+    if(item.receipt_url){
+      const link=document.createElement("a");link.href=item.receipt_url;link.target="_blank";
+      link.rel="noopener noreferrer";link.textContent="فتح صورة إثبات التحويل";link.className="small";card.appendChild(link);
+    }else{
+      const noReceipt=document.createElement("p");noReceipt.className="small";
+      noReceipt.textContent="لا توجد صورة مرفقة لهذا الطلب.";card.appendChild(noReceipt);
+    }
+    if(item.status==="pending"){
+      const actions=document.createElement("div");actions.className="admin-actions";
+      const approve=document.createElement("button");approve.textContent="تأكيد وصول الحوالة والموافقة";
+      approve.onclick=()=>reviewDeposit(item.id,"approved");
+      const reject=document.createElement("button");reject.textContent="رفض الطلب";reject.className="secondary";
+      reject.onclick=()=>reviewDeposit(item.id,"rejected");
+      actions.append(approve,reject);card.appendChild(actions);
+    }
+    container.appendChild(card);
+  });
+}
+
 async function loadAdminPanel(){
   if(!baranAdminNotificationPoll){
     baranAdminNotificationPoll=setInterval(()=>{
@@ -2139,58 +2175,15 @@ async function loadAdminPanel(){
   const container=document.getElementById("adminRequests");
   const message=document.getElementById("adminMessage");
   if(!currentUser) return;
-  container.textContent="جاري تحميل طلبات الشحن...";
+  container.textContent="جاري تحميل طلبات شحن الزبائن...";
+  const ownerContainer=document.getElementById("adminOwnerFundingRequests");
+  if(ownerContainer)ownerContainer.textContent="جاري تحميل طلبات شحن المالك...";
   message.textContent="";
   try{
     const result=await callAdminApi("GET");
-    container.replaceChildren();
     const requests=result.requests||[];
-    if(requests.length===0){
-      container.textContent="لا توجد طلبات شحن حتى الآن.";
-    } else {
-    container.replaceChildren();
-    requests.forEach(item=>{
-      const card=document.createElement("div");
-      card.className="admin-request";
-      const title=document.createElement("strong");
-      title.textContent=(item.request_source==="owner_wallet"?"طلب شحن محفظة المالك ":"طلب شحن زبون ")+item.id;
-      const details=document.createElement("p");
-      details.textContent=(item.request_source==="owner_wallet"?"النوع: شحن محفظة المالك":"الزبون: "+(item.customer_email||item.user_id))+
-        " | المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
-        " | رقم العملية: "+item.transfer_reference+
-        " | الحالة: "+({pending:"قيد المراجعة",approved:"مقبول",rejected:"مرفوض"}[item.status]||item.status)+
-        " | التاريخ: "+new Date(item.created_at).toLocaleString("ar");
-      card.append(title,details);
-      if(item.receipt_url){
-        const receiptLink=document.createElement("a");
-        receiptLink.href=item.receipt_url;
-        receiptLink.target="_blank";
-        receiptLink.rel="noopener noreferrer";
-        receiptLink.textContent="فتح صورة إشعار شام كاش";
-        receiptLink.className="small";
-        card.appendChild(receiptLink);
-      }else{
-        const noReceipt=document.createElement("p");
-        noReceipt.className="small";
-        noReceipt.textContent="لا توجد صورة مرفقة لهذا الطلب.";
-        card.appendChild(noReceipt);
-      }
-      if(item.status==="pending"){
-        const actions=document.createElement("div");
-        actions.className="admin-actions";
-        const approve=document.createElement("button");
-        approve.textContent="تأكيد التحويل والموافقة";
-        approve.onclick=()=>reviewDeposit(item.id,"approved");
-        const reject=document.createElement("button");
-        reject.textContent="رفض الطلب";
-        reject.className="secondary";
-        reject.onclick=()=>reviewDeposit(item.id,"rejected");
-        actions.append(approve,reject);
-        card.appendChild(actions);
-      }
-      container.appendChild(card);
-    });
-    }
+    renderAdminDepositRequestList(container,requests.filter(x=>x.request_source!=="owner_wallet"));
+    if(ownerContainer)renderAdminDepositRequestList(ownerContainer,requests.filter(x=>x.request_source==="owner_wallet"),true);
     if(typeof renderOperationsDashboard==="function")renderOperationsDashboard(result);
     if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
