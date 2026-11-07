@@ -103,9 +103,23 @@ async function loadOpsMonitor(){
   }
 }
 
+function updateAdminDrawerBadges(stats){
+  const ordersBadge=document.getElementById("adminDrawerOrdersCount");
+  const supportBadge=document.getElementById("adminDrawerSupportCount");
+  const update=(badge,value)=>{
+    if(!badge)return;
+    const count=Math.max(0,Number(value)||0);
+    const number=badge.querySelector("b");
+    if(number)number.textContent=count>99?"99+":String(count);
+    badge.classList.toggle("hidden",count===0);
+  };
+  update(ordersBadge,stats?.pending_orders);
+  update(supportBadge,stats?.unread_support_tickets);
+}
 function renderOperationsDashboard(data){
   latestBaranOperations=data||{};
   const stats=data.stats||{};
+  updateAdminDrawerBadges(stats);
   void loadOpsMonitor();
   const statBox=document.getElementById("opsStats");
   if(statBox){
