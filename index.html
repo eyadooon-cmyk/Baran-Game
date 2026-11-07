@@ -606,6 +606,7 @@ section,.auth-card{border-color:#49345f}
       </div>
       <button class="wallet-refresh-button" type="button" onclick="loadWallet()"><span aria-hidden="true">↻</span> تحديث الأرصدة</button>
 
+      <div id="walletAdminTransfers" class="hidden">
       <div class="wallet-transfer-panel">
         <div class="wallet-transfer-heading">
           <span class="wallet-transfer-icon">⇄</span>
@@ -632,6 +633,8 @@ section,.auth-card{border-color:#49345f}
       <div class="wallet-transfer-history">
         <h2>سجل التحويلات الداخلية</h2>
         <div id="walletTransferHistory" class="small">جاري تحميل سجل التحويلات...</div>
+      </div>
+
       </div>
 
       <div class="deposit-card">
@@ -1650,15 +1653,20 @@ async function callAdminApi(method="GET",payload=null){
 async function checkAdminAccess(){
   const navButton=document.getElementById("adminNavButton");
   const drawerButton=document.getElementById("adminDrawerButton");
+  const walletAdminTransfers=document.getElementById("walletAdminTransfers");
   if(navButton)navButton.classList.add("hidden");
   if(drawerButton)drawerButton.classList.add("hidden");
-  if(!currentUser) return;
+  if(walletAdminTransfers)walletAdminTransfers.classList.add("hidden");
+  if(!currentUser)return false;
   try{
     await callAdminApi("POST",{action:"admin_check"});
     if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
+    if(walletAdminTransfers)walletAdminTransfers.classList.remove("hidden");
+    return true;
   }catch(error){
     console.error("Baran Game admin access check failed:",error.message);
+    return false;
   }
 }
 
