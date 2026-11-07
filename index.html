@@ -2153,9 +2153,9 @@ async function loadAdminPanel(){
       const card=document.createElement("div");
       card.className="admin-request";
       const title=document.createElement("strong");
-      title.textContent="طلب "+item.id;
+      title.textContent=(item.request_source==="owner_wallet"?"طلب شحن محفظة المالك ":"طلب شحن زبون ")+item.id;
       const details=document.createElement("p");
-      details.textContent="الزبون: "+(item.customer_email||item.user_id)+
+      details.textContent=(item.request_source==="owner_wallet"?"النوع: شحن محفظة المالك":"الزبون: "+(item.customer_email||item.user_id))+
         " | المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
         " | رقم العملية: "+item.transfer_reference+
         " | الحالة: "+({pending:"قيد المراجعة",approved:"مقبول",rejected:"مرفوض"}[item.status]||item.status)+
