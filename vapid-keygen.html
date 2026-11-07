@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Baran Game – VAPID Key Generator</title>
+<style>
+body{margin:0;background:#09080d;color:#eee;font-family:Tahoma,Arial;padding:22px;line-height:1.8}
+main{max-width:650px;margin:25px auto;background:#17131b;border:1px solid #8b6ba8;border-radius:16px;padding:20px}
+h2{color:#c5b4d6}button{background:#8b6ba8;color:#09080d;border:0;border-radius:9px;padding:12px 16px;font-weight:bold;margin:8px 0}
+pre{direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;background:#09080d;border:1px solid #40334b;border-radius:9px;padding:12px;user-select:all}
+.note{background:#241d2a;padding:12px;border-radius:9px;color:#f3dffb}
+</style>
+<main>
+<h2>توليد مفاتيح إشعارات Baran Game</h2>
+<p class="note">توليد المفاتيح يتم داخل متصفحك فقط. لا يتم إرسال المفتاح الخاص إلى أي خادم أو حفظه في الموقع. لا تشارك المفتاح الخاص مع أي شخص.</p>
+<button id="generate">توليد زوج مفاتيح جديد</button>
+<p>المفتاح العام (ضعه في الموقع وSupabase):</p><pre id="pub">لم يتم التوليد بعد</pre><button id="copyPub" disabled>نسخ المفتاح العام</button>
+<p>المفتاح الخاص (ضعه مباشرة في Supabase Secrets فقط):</p><pre id="priv">لم يتم التوليد بعد</pre><button id="copyPriv" disabled>نسخ المفتاح الخاص</button>
+<p id="status"></p>
+</main>
+<script>
+const enc = b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+let publicKey='', privateKey='';
+document.getElementById('generate').onclick=async()=>{
+ try{
+  document.getElementById('status').textContent='جارٍ التوليد...';
+  const pair=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
+  const jwk=await crypto.subtle.exportKey('jwk',pair.publicKey);
+  const priv=await crypto.subtle.exportKey('jwk',pair.privateKey);
+  publicKey=enc(Uint8Array.from([4,...Uint8Array.from(atob(jwk.x.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)),...Uint8Array.from(atob(jwk.y.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0))]));
+  privateKey=priv.d;
+  document.getElementById('pub').textContent=publicKey;
+  document.getElementById('priv').textContent=privateKey;
+  document.getElementById('copyPub').disabled=false;
+  document.getElementById('copyPriv').disabled=false;
+  document.getElementById('status').textContent='تم التوليد محلياً. احتفظ بالمفتاح الخاص بسرية تامة.';
+ }catch(e){document.getElementById('status').textContent='تعذر التوليد: '+e.message+' — افتح الصفحة عبر HTTPS بمتصفح حديث.'}
+};
+document.getElementById('copyPub').onclick=()=>navigator.clipboard.writeText(publicKey);
+document.getElementById('copyPriv').onclick=()=>navigator.clipboard.writeText(privateKey);
+</script></html>
