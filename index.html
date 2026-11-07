@@ -278,6 +278,12 @@ section,.auth-card{border-color:#49345f}
 .drawer-profile-card:active,.drawer-profile-card:hover{background:#39264b;border-color:#d0a6f2}
 @media(prefers-reduced-motion:reduce){.drawer-link{transition:none}}
 
+.admin-drawer-counts{margin-right:auto;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.admin-drawer-count{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap;background:#5b3b76;color:#f6eaff;border:1px solid #a978d0}
+.admin-drawer-count.support{background:#792d49;border-color:#d66a91;color:#fff0f5}
+.admin-drawer-count b{font-size:11px}
+.drawer-link #adminDrawerOrdersCount.hidden,.drawer-link #adminDrawerSupportCount.hidden{display:none!important}
+@media(max-width:380px){.admin-drawer-counts{gap:3px}.admin-drawer-count{font-size:9px;padding:3px 5px}}
 </style>
 </head>
 <body>
@@ -403,7 +409,7 @@ section,.auth-card{border-color:#49345f}
     <div class="drawer-section-label">المساعدة والحساب</div>
     <button class="drawer-link" data-section="support" onclick="navigateDrawer('support')"><span class="drawer-icon">◉</span>التقييمات والاقتراحات والدعم</button>
     <button class="drawer-link" data-section="settings" onclick="navigateDrawer('settings')"><span class="drawer-icon">⚙</span>الإعدادات</button>
-    <button id="adminDrawerButton" class="drawer-link hidden" data-section="admin" onclick="navigateDrawer('admin')"><span class="drawer-icon">⌘</span>لوحة الإدارة</button>
+    <button id="adminDrawerButton" class="drawer-link hidden" data-section="admin" onclick="navigateDrawer('admin')"><span class="drawer-icon">⌘</span><span>لوحة الإدارة</span><span class="admin-drawer-counts"><span id="adminDrawerOrdersCount" class="admin-drawer-count orders hidden">طلبات <b>0</b></span><span id="adminDrawerSupportCount" class="admin-drawer-count support hidden">دعم <b>0</b></span></span></button>
     <div class="drawer-divider"></div>
     <a class="drawer-link" href="./terms.html" style="text-decoration:none"><span class="drawer-icon">▤</span>شروط الاستخدام</a>
     <a class="drawer-link" href="./privacy.html" style="text-decoration:none"><span class="drawer-icon">◇</span>سياسة الخصوصية</a>
@@ -899,9 +905,9 @@ section,.auth-card{border-color:#49345f}
 <script src="./products.js"></script>
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
-<script src="./community.js?v=20261106-3"></script>
+<script src="./community.js?v=20261107-2"></script>
 <script src="./baran-assistant.js"></script>
-<script src="./admin-operations.js?v=20261106-2"></script>
+<script src="./admin-operations.js?v=20261107-3"></script>
 <script src="./admin-assistant.js?v=20261106-3"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
