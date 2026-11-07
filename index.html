@@ -237,6 +237,7 @@ button{font-weight:700}
     <input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
     <input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password">
     <button id="loginButton" class="full" onclick="signIn()">تسجيل الدخول</button>
+    <button id="googleLoginButton" class="full secondary" type="button" onclick="signInWithGoogle()">متابعة باستخدام Google</button>
     <button id="signupButton" class="full secondary" onclick="openSignupScreen()">إنشاء حساب جديد</button>
     <button id="forgotPasswordButton" class="full secondary" type="button" onclick="sendPasswordReset()">نسيت كلمة المرور؟</button>
     <p class="small" style="text-align:center;margin:12px 0 4px">باستخدام المتجر، يمكنك الاطلاع على <a href="./terms.html" style="color:#c5b4d6">شروط الاستخدام</a> و<a href="./privacy.html" style="color:#c5b4d6">سياسة الخصوصية</a>.</p>
@@ -965,6 +966,22 @@ async function signUp(){
   }catch(error){note.textContent="تعذر إنشاء الحساب: "+(error.message||"حدث خطأ غير معروف.");}
   finally{button.disabled=false;}
 }
+async function signInWithGoogle(){
+  const button=document.getElementById("googleLoginButton");
+  if(button)button.disabled=true;
+  say("جاري تحويلك إلى Google...");
+  try{
+    const {error}=await sb.auth.signInWithOAuth({
+      provider:"google",
+      options:{redirectTo:"https://eyadooon-cmyk.github.io/Baran-Game/"}
+    });
+    if(error)throw error;
+  }catch(error){
+    say("تعذر تسجيل الدخول عبر Google: "+error.message);
+    if(button)button.disabled=false;
+  }
+}
+
 async function signIn(){
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
