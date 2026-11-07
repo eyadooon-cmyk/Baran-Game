@@ -1044,7 +1044,7 @@ async function unregisterBaranPushNotifications(){
   }catch(error){console.warn("تعذر إزالة اشتراك الإشعارات من هذا الجهاز:",error);}
 }
 async function signOut(){
-  await unregisterBaranPushNotifications();
+  // Keep this device subscription available for other accounts on the same phone.
   await sb.auth.signOut({scope:"local"});
   currentUser=null;
   showLogin("تم تسجيل الخروج بنجاح.");
@@ -1897,23 +1897,14 @@ async function enableBaranPushNotifications(){
     let subscription=await registration.pushManager.getSubscription();
     const {data:{session},error:sessionError}=await sb.auth.getSession();
     if(sessionError||!session?.access_token)throw new Error("انتهت جلسة الدخول. سجّل الدخول مجدداً.");
-    // Renew any existing browser subscription so it is created with the current VAPID public key.
-    if(subscription){
-      const removeResponse=await fetch(SUPABASE_URL+"/functions/v1/baran-push-register",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token},
-        body:JSON.stringify({action:"remove",endpoint:subscription.endpoint})
+    // Reuse the same browser subscription and link it to the currently signed-in account.
+    // This lets one phone receive notifications for both customer and admin accounts.
+    if(!subscription){
+      subscription=await registration.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:baranUrlBase64ToUint8Array(BARAN_VAPID_PUBLIC_KEY)
       });
-      const removeResult=await removeResponse.json().catch(()=>({}));
-      if(!removeResponse.ok||removeResult.success!==true)throw new Error(removeResult.error||"تعذر تجهيز الاشتراك القديم للتجديد.");
-      const unsubscribed=await subscription.unsubscribe();
-      if(!unsubscribed)throw new Error("تعذر إلغاء الاشتراك القديم. أعد المحاولة.");
-      subscription=null;
     }
-    subscription=await registration.pushManager.subscribe({
-      userVisibleOnly:true,
-      applicationServerKey:baranUrlBase64ToUint8Array(BARAN_VAPID_PUBLIC_KEY)
-    });
     const response=await fetch(SUPABASE_URL+"/functions/v1/baran-push-register",{
       method:"POST",
       headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token},
@@ -1980,8 +1971,8 @@ async function disableBaranPushNotifications(){
     });
     const result=await response.json().catch(()=>({}));
     if(!response.ok||result.success!==true)throw new Error(result.error||"تعذر إزالة اشتراك الإشعارات من الخادم.");
-    await subscription.unsubscribe();
-    if(message)message.textContent="تم إيقاف إشعارات Baran Game على هذا الجهاز.";
+    // Keep the browser subscription active for any other account linked to this device.
+    if(message)message.textContent="تم إيقاف إشعارات هذا الحساب على الجهاز. تبقى حساباتك الأخرى فعالة.";
   }catch(error){
     if(message)message.textContent=error.message||"تعذر إيقاف الإشعارات.";
   }finally{
