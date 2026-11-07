@@ -613,7 +613,7 @@ section,.auth-card{border-color:#49345f}
         </div>
         <label for="walletTransferEmail">البريد الإلكتروني لحساب المستلم</label>
         <div class="wallet-transfer-search">
-          <input id="walletTransferEmail" type="email" autocomplete="off" maxlength="254" placeholder="example@email.com">
+          <input id="walletTransferEmail" type="email" autocomplete="off" maxlength="254" placeholder="example@email.com" oninput="clearWalletTransferRecipient()">
           <button id="walletTransferFindButton" type="button" onclick="findWalletTransferRecipient()">تحقق</button>
         </div>
         <div id="walletTransferRecipient" class="wallet-transfer-recipient hidden" role="status"></div>
@@ -1430,6 +1430,16 @@ let selectedWalletTransferRecipient=null;
 let pendingWalletTransferRequestId=null;
 let pendingWalletTransferFingerprint=null;
 
+function clearWalletTransferRecipient(){
+  selectedWalletTransferRecipient=null;
+  const panel=document.getElementById("walletTransferRecipient");
+  const submit=document.getElementById("walletTransferSubmitButton");
+  if(panel)panel.classList.add("hidden");
+  if(submit)submit.disabled=true;
+  const message=document.getElementById("walletTransferMessage");
+  if(message)message.textContent="تغيّر البريد الإلكتروني؛ تحقق من المستلم مرة أخرى.";
+}
+
 async function findWalletTransferRecipient(){
   const email=document.getElementById("walletTransferEmail").value.trim().toLowerCase();
   const button=document.getElementById("walletTransferFindButton");
@@ -1467,6 +1477,7 @@ async function submitWalletTransfer(){
   const message=document.getElementById("walletTransferMessage");
   if(!currentUser){message.textContent="سجّل الدخول أولاً.";return;}
   if(!selectedWalletTransferRecipient){message.textContent="تحقق من حساب المستلم أولاً.";return;}
+  if(document.getElementById("walletTransferEmail").value.trim().toLowerCase()!==selectedWalletTransferRecipient.email){clearWalletTransferRecipient();message.textContent="تحقق من البريد الإلكتروني للمستلم مرة أخرى.";return;}
   const amount=Number(document.getElementById("walletTransferAmount").value);
   const currency=document.getElementById("walletTransferCurrency").value;
   const note=document.getElementById("walletTransferNote").value.trim();
