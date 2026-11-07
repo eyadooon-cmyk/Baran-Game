@@ -318,6 +318,13 @@ function renderAdminFeedback(items){
     card.append(title,body);
     if(item.order_id){const order=document.createElement("div");order.className="small";order.textContent="رقم الطلب المرتبط: "+item.order_id;card.appendChild(order);}
     if(item.admin_reply){const previous=document.createElement("p");previous.className="small";previous.textContent="آخر رد محفوظ: "+item.admin_reply;card.appendChild(previous);}
+    if(item.feedback_type==="support"&&!item.admin_read_at){
+      const readButton=document.createElement("button");
+      readButton.type="button";readButton.className="full secondary";
+      readButton.textContent="✓ تحديد التذكرة كمقروءة";
+      readButton.onclick=()=>markAdminFeedbackRead(item.id,readButton);
+      card.appendChild(readButton);
+    }
     const replyLabel=document.createElement("label");replyLabel.textContent="الرد الذي سيصل للزبون كإشعار داخل المتجر";card.appendChild(replyLabel);
     const reply=document.createElement("textarea");reply.rows=3;reply.maxLength=2000;reply.placeholder="اكتب رداً واضحاً للزبون";reply.value=item.admin_reply||"";card.appendChild(reply);
     const statusLabel=document.createElement("label");statusLabel.textContent="حالة التذكرة";card.appendChild(statusLabel);
@@ -342,16 +349,30 @@ function renderAdminFeedback(items){
       card.appendChild(analyze);
     }
     const save=document.createElement("button");save.type="button";save.className="full";save.textContent="حفظ الرد والحالة وإشعار الزبون";
-    save.onclick=()=>saveAdminFeedback(item.id,status.value,reply.value,save);
+    save.onclick=()=>saveAdminFeedback(item.id,status.value,reply.value,save,item.feedback_type);
     card.appendChild(save);box.appendChild(card);
   });
 }
 
-async function saveAdminFeedback(id,status,reply,button){
+async function markAdminFeedbackRead(id,button){
+  if(button)button.disabled=true;
+  try{
+    await callAdminApi("POST",{action:"feedback_mark_read",feedback_id:id});
+    await loadAdminPanel();
+  }catch(error){
+    if(button)button.disabled=false;
+    alert("تعذر تحديد التذكرة كمقروءة: "+error.message);
+  }
+}
+async function saveAdminFeedback(id,status,reply,button,feedbackType){
   if(!confirm("تأكيد حفظ الرد وتحديث حالة الرسالة؟"))return;
   button.disabled=true;
   try{
     await callAdminApi("POST",{action:"feedback_update",feedback_id:id,feedback_status:status,admin_reply:reply});
+    if(feedbackType==="support"){
+      try{await callAdminApi("POST",{action:"feedback_mark_read",feedback_id:id});}
+      catch(readError){console.warn("تم حفظ رد الدعم لكن تعذر تحديث علامة القراءة:",readError);}
+    }
     await loadAdminPanel();
   }catch(error){
     alert("تعذر تحديث الرسالة: "+error.message);
