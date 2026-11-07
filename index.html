@@ -2283,7 +2283,7 @@ async function loadAdminPanel(){
   try{
     const result=await callAdminApi("GET");
     const requests=result.requests||[];
-    renderAdminDepositRequestList(container,requests.filter(x=>x.request_source!=="owner_wallet"));
+    renderAdminDepositRequestList(container,requests.filter(x=>x.request_source!=="owner_wallet"&&x.request_source!=="owner_usd_sale"));
     if(ownerContainer)renderAdminDepositRequestList(ownerContainer,requests.filter(x=>x.request_source==="owner_wallet"),true);
     const saleContainer=document.getElementById("adminOwnerUsdSaleRequests");
     if(saleContainer)renderAdminDepositRequestList(saleContainer,requests.filter(x=>x.request_source==="owner_usd_sale"),false);
