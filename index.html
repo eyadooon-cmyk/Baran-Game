@@ -238,23 +238,44 @@ button{font-weight:700}
 .order-timeline-content p{margin:4px 0 0;line-height:1.65;color:#e0d6e8}
 
 
-/* قائمة جانبية احترافية: أسود وأخضر */
-:root{--green:#31d17c;--line:#263b31;--muted:#a9b9b0}
-.drawer-title{color:#42e28b!important;text-shadow:0 0 14px #31d17c44!important}
-.drawer-profile-card{background:linear-gradient(125deg,#142b20,#101713 82%);border-color:#286b48}
-.drawer-profile-avatar{background:linear-gradient(145deg,#7cf0ad,#17683e);box-shadow:0 0 16px #31d17c33}
-.drawer-profile-avatar>span{background:#101713;color:#7cf0ad}
-.drawer-profile-details small{color:#70e9a2}
-.drawer-section-label{padding:7px 12px 3px;color:#7cae91;font-size:11px;font-weight:800;letter-spacing:.5px}
-.drawer-group-divider{height:1px;margin:12px 5px;background:linear-gradient(90deg,transparent,#315a42,transparent)}
-.drawer-link{background:#121b16;border-color:#263b31;color:#e8f3ec;transition:background .18s,border-color .18s,transform .18s}
-.drawer-link .drawer-icon{color:#70e9a2;font-weight:800}
-.drawer-link:active,.drawer-link:hover{background:#1b3023;border-color:#35c978;color:#fff}
-.drawer-link.active{background:linear-gradient(100deg,#1b3b29,#14251b);border-color:#31d17c;color:#fff;box-shadow:inset -3px 0 #31d17c,0 0 14px #31d17c12}
-.drawer-link.active .drawer-icon{color:#52ee98}
-.drawer-link.logout{color:#ffb8b8;border-color:#633b3b;background:#241516}
-.drawer-link.logout .drawer-icon{color:#ff9999}
-.drawer-divider{background:#315a42}
+/* الهوية الملكية الجديدة — أسود وموف ملكي */
+:root{
+  --green:#a56bd6;
+  --bg:#09070e;
+  --panel:#17121f;
+  --line:#49345f;
+  --muted:#c0aecf;
+}
+body{background:var(--bg)}
+button{background:var(--green);color:#fff}
+nav button.active{background:linear-gradient(135deg,#b982e8,#8850bd);color:#fff;box-shadow:0 0 16px #a56bd644}
+h2,.item strong,.product-card strong,.finance-card strong,.auth-logo{color:#d2b4ee}
+.drawer-title{color:#c18bed!important;text-shadow:0 0 14px #a56bd655!important}
+.drawer-profile-card{background:linear-gradient(125deg,#30203f,#17121f 82%);border-color:#8055a0}
+.drawer-profile-avatar{background:linear-gradient(145deg,#e0c1ff,#70409b);box-shadow:0 0 16px #a56bd644}
+.drawer-profile-avatar>span{background:#17121f;color:#d8b4f4}
+.drawer-profile-details small{color:#d2a8f4}
+.drawer-section-label{padding:7px 12px 3px;color:#b995d5;font-size:11px;font-weight:800;letter-spacing:.5px}
+.drawer-group-divider{height:1px;margin:12px 5px;background:linear-gradient(90deg,transparent,#76518f,transparent)}
+.drawer-link{background:#1b1522;border-color:#49345f;color:#f1eaf7;transition:background .18s,border-color .18s,transform .18s}
+.drawer-link .drawer-icon{color:#c18bed;font-weight:800}
+.drawer-link:active,.drawer-link:hover{background:#30203f;border-color:#b27cdb;color:#fff}
+.drawer-link.active{background:linear-gradient(100deg,#39234d,#241831);border-color:#b27cdb;color:#fff;box-shadow:inset -3px 0 #c18bed,0 0 14px #a56bd622}
+.drawer-link.active .drawer-icon{color:#e0bdff}
+.drawer-link.logout{color:#ffb8c2;border-color:#633b4c;background:#28151e}
+.drawer-link.logout .drawer-icon{color:#ff9eaf}
+.drawer-divider{background:#76518f}
+section,.auth-card{border-color:#49345f}
+.deposit-card,.finance-entry,.product-card,.ops-item,.ops-form{border-color:#57406e}
+.account-identity-card{background:linear-gradient(125deg,#30203f,#17121f 75%);border-color:#8055a0}
+.notification-box,.notification-panel{border-color:#8055a0}
+.notification-item.unread{border-color:#b27cdb;box-shadow:inset -3px 0 #b27cdb}
+.notification-target-highlight{outline-color:#d5aaff!important;box-shadow:0 0 0 5px #a56bd633!important}
+.toolbar-brand span{color:#c18bed}
+.menu-toggle{background:#30203f;color:#d8b4f4;border-color:#8055a0}
+.notification-bell{background:#241831;border-color:#8055a0}
+.side-drawer{background:linear-gradient(160deg,#21172d,#09070e 75%);border-left-color:#8055a0}
+.drawer-profile-card:active,.drawer-profile-card:hover{background:#39264b;border-color:#d0a6f2}
 @media(prefers-reduced-motion:reduce){.drawer-link{transition:none}}
 
 </style>
