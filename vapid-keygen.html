@@ -23,10 +23,10 @@ let publicKey='', privateKey='';
 document.getElementById('generate').onclick=async()=>{
  try{
   document.getElementById('status').textContent='جارٍ التوليد...';
-  const pair=await crypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveBits']);
-  const jwk=await crypto.subtle.exportKey('jwk',pair.publicKey);
+  const pair=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+  const rawPublic=await crypto.subtle.exportKey('raw',pair.publicKey);
   const priv=await crypto.subtle.exportKey('jwk',pair.privateKey);
-  publicKey=enc(Uint8Array.from([4,...Uint8Array.from(atob(jwk.x.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)),...Uint8Array.from(atob(jwk.y.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0))]));
+  publicKey=enc(rawPublic);
   privateKey=priv.d;
   document.getElementById('pub').textContent=publicKey;
   document.getElementById('priv').textContent=privateKey;
