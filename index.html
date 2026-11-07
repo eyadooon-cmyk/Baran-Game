@@ -704,7 +704,8 @@ section,.auth-card{border-color:#49345f}
         </div>
         <div id="ownerUsdSaleRecipient" class="wallet-transfer-recipient hidden" role="status"></div>
         <label for="ownerUsdSaleAmount">المبلغ الذي دفعه الزبون بالدولار</label>
-        <input id="ownerUsdSaleAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="مثلاً 10.00">
+        <input id="ownerUsdSaleAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="مثلاً 10.00" oninput="previewOwnerUsdSaleDebit()">
+        <div id="ownerUsdSalePreview" class="wallet-transfer-recipient" role="status">أدخل المبلغ لعرض المقابل التقريبي بالليرة حسب سعر محفظتك الحالي.</div>
         <label for="ownerUsdSaleReference">رقم عملية شام كاش</label>
         <input id="ownerUsdSaleReference" type="text" maxlength="120" placeholder="رقم الحوالة كما يظهر بالإشعار">
         <label for="ownerUsdSaleReceipt">صورة إشعار الحوالة (إلزامية)</label>
@@ -1394,6 +1395,19 @@ async function copyOwnerFundingReceiver(){
   const message=document.getElementById("ownerFundingMessage");
   try{await navigator.clipboard.writeText("bf37143ce15dd68389c21285e71818d1");message.textContent="تم نسخ معرّف الاستلام.";}
   catch(error){message.textContent="تعذر النسخ تلقائياً؛ اضغط مطولاً على المعرّف وانسخه.";}
+}
+
+function previewOwnerUsdSaleDebit(){
+  const box=document.getElementById("ownerUsdSalePreview");
+  const amount=Number(document.getElementById("ownerUsdSaleAmount")?.value||0);
+  const rate=Number(walletExchangeRates?.syp_to_usd_rate||0);
+  if(!box)return;
+  if(!Number.isFinite(amount)||amount<=0||!Number.isFinite(rate)||rate<=0){
+    box.textContent="أدخل المبلغ لعرض المقابل التقريبي بالليرة حسب سعر محفظتك الحالي.";
+    return;
+  }
+  const debit=Math.round(amount*rate);
+  box.textContent="التقدير: "+amount.toFixed(2)+" $ = "+debit.toLocaleString("en-US")+" ل.س، على سعر "+rate.toLocaleString("en-US")+" ل.س لكل دولار. يُثبّت هذا السعر عند إرسال الطلب ويُستخدم عند الموافقة.";
 }
 
 let selectedOwnerUsdSaleRecipient=null;
