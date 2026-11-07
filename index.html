@@ -315,6 +315,28 @@ section,.auth-card{border-color:#49345f}
 @media(max-width:520px){.wallet-hero{min-height:132px;padding:17px 15px}.wallet-watermark{width:125%;right:-18%;opacity:.19}.wallet-balances{gap:9px}.wallet-balance-card{min-height:151px;padding:13px 11px}.wallet-card-top{gap:7px;margin-bottom:18px}.wallet-currency-icon{width:33px;height:33px;flex-basis:33px}.wallet-currency-label{font-size:10px}.wallet-amount{font-size:clamp(19px,5vw,25px)}.wallet-card-watermark{font-size:92px}.wallet-arabic-mark{font-size:61px}}
 @media(max-width:350px){.wallet-balances{grid-template-columns:1fr}.wallet-balance-card{min-height:138px}}
 
+
+/* تحويلات المحافظ الداخلية */
+.wallet-transfer-panel,.wallet-transfer-history{margin:18px 0;padding:18px;background:linear-gradient(145deg,#1b1522,#100d15);border:1px solid #665078;border-radius:17px;box-shadow:0 10px 25px #0004}
+.wallet-transfer-heading{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.wallet-transfer-heading h2{margin:0 0 4px}
+.wallet-transfer-heading p{margin:0}
+.wallet-transfer-icon{width:48px;height:48px;display:grid;place-items:center;flex:0 0 48px;border-radius:15px;background:#30243a;color:#d2c4df;font-size:27px;border:1px solid #80649a}
+.wallet-transfer-panel label{display:block;margin-top:12px;color:#c7b8d4;font-size:13px}
+.wallet-transfer-panel input,.wallet-transfer-panel select{margin:6px 0 0}
+.wallet-transfer-search{display:flex;align-items:center;gap:8px}
+.wallet-transfer-search input{flex:1;min-width:0}
+.wallet-transfer-search button{white-space:nowrap;margin-top:6px}
+.wallet-transfer-recipient{padding:12px;margin:10px 0;background:#201a29;border:1px solid #80649a;border-radius:11px;color:#e9def2;line-height:1.8}
+.wallet-transfer-recipient strong{color:#d2c4df}
+.wallet-transfer-panel button:disabled{opacity:.45;cursor:not-allowed}
+.wallet-transfer-history h2{margin-bottom:12px}
+.wallet-transfer-row{padding:12px;margin:9px 0;background:#1a1520;border:1px solid #493b55;border-radius:11px;line-height:1.8}
+.wallet-transfer-row strong{color:#d2c4df}
+.wallet-transfer-row.sent{border-right:3px solid #c18b8b}
+.wallet-transfer-row.received{border-right:3px solid #8eae9b}
+@media(max-width:480px){.wallet-transfer-search{align-items:stretch}.wallet-transfer-search button{padding:10px}.wallet-transfer-panel,.wallet-transfer-history{padding:14px}}
+
 </style>
 </head>
 <body>
@@ -583,6 +605,34 @@ section,.auth-card{border-color:#49345f}
         </article>
       </div>
       <button class="wallet-refresh-button" type="button" onclick="loadWallet()"><span aria-hidden="true">↻</span> تحديث الأرصدة</button>
+
+      <div class="wallet-transfer-panel">
+        <div class="wallet-transfer-heading">
+          <span class="wallet-transfer-icon">⇄</span>
+          <div><h2>تحويل رصيد لمستخدم</h2><p class="small">حوّل من محفظتك مباشرة إلى محفظة مستخدم آخر، بالدولار أو الليرة السورية.</p></div>
+        </div>
+        <label for="walletTransferEmail">البريد الإلكتروني لحساب المستلم</label>
+        <div class="wallet-transfer-search">
+          <input id="walletTransferEmail" type="email" autocomplete="off" maxlength="254" placeholder="example@email.com">
+          <button id="walletTransferFindButton" type="button" onclick="findWalletTransferRecipient()">تحقق</button>
+        </div>
+        <div id="walletTransferRecipient" class="wallet-transfer-recipient hidden" role="status"></div>
+        <label for="walletTransferCurrency">عملة التحويل</label>
+        <select id="walletTransferCurrency">
+          <option value="USD">دولار أمريكي (USD)</option>
+          <option value="SYP">ليرة سورية (SYP)</option>
+        </select>
+        <label for="walletTransferAmount">المبلغ</label>
+        <input id="walletTransferAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="أدخل المبلغ">
+        <label for="walletTransferNote">ملاحظة (اختياري)</label>
+        <input id="walletTransferNote" type="text" maxlength="120" placeholder="مثلاً: هدية">
+        <button id="walletTransferSubmitButton" class="full" type="button" onclick="submitWalletTransfer()" disabled>تحويل الرصيد</button>
+        <p id="walletTransferMessage" class="small" role="status" aria-live="polite">ابحث عن المستلم أولاً، ثم راجع الاسم قبل تأكيد التحويل.</p>
+      </div>
+      <div class="wallet-transfer-history">
+        <h2>سجل التحويلات الداخلية</h2>
+        <div id="walletTransferHistory" class="small">جاري تحميل سجل التحويلات...</div>
+      </div>
 
       <div class="deposit-card">
         <h2>شحن المحفظة عبر شام كاش</h2>
@@ -1313,7 +1363,7 @@ async function submitDepositRequest(){
     document.getElementById("depositReference").value="";
     receiptInput.value="";
     message.textContent="تم إرسال طلبك وصورة الإشعار للمراجعة. لن يُضاف الرصيد قبل التأكد من وصول التحويل.";
-    await loadDepositRequests();
+    await Promise.all([loadDepositRequests(),loadWalletTransferHistory()]);
   }catch(error){
     if(uploadedPath){
       try{await sb.storage.from("shamcash-receipts").remove([uploadedPath]);}catch(cleanupError){}
@@ -1372,6 +1422,116 @@ async function loadDepositRequests(){
     }
   }catch(error){
     container.textContent="تعذر تحميل الطلبات: "+error.message;
+  }
+}
+
+
+let selectedWalletTransferRecipient=null;
+let pendingWalletTransferRequestId=null;
+let pendingWalletTransferFingerprint=null;
+
+async function findWalletTransferRecipient(){
+  const email=document.getElementById("walletTransferEmail").value.trim().toLowerCase();
+  const button=document.getElementById("walletTransferFindButton");
+  const panel=document.getElementById("walletTransferRecipient");
+  const message=document.getElementById("walletTransferMessage");
+  const submit=document.getElementById("walletTransferSubmitButton");
+  selectedWalletTransferRecipient=null;
+  submit.disabled=true;
+  panel.classList.add("hidden");
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
+    message.textContent="أدخل البريد الإلكتروني الصحيح للمستلم.";
+    return;
+  }
+  button.disabled=true;message.textContent="جاري التحقق من الحساب...";
+  try{
+    const {data,error}=await sb.rpc("baran_find_transfer_recipient",{p_email:email});
+    if(error)throw error;
+    const recipient=Array.isArray(data)?data[0]:null;
+    if(!recipient){message.textContent="لم نجد حساباً بهذا البريد. تأكد من البريد وأن الحساب ليس حسابك.";return;}
+    selectedWalletTransferRecipient={id:recipient.user_id,name:recipient.display_name,email};
+    panel.replaceChildren();
+    const label=document.createElement("span");label.textContent="المستلم المحدد: ";
+    const name=document.createElement("strong");name.textContent=recipient.display_name||"مستخدم Baran Game";
+    const mail=document.createElement("div");mail.className="small";mail.textContent=email;
+    panel.append(label,name,mail);panel.classList.remove("hidden");
+    submit.disabled=false;
+    message.textContent="تأكد من اسم المستلم والبريد قبل التحويل.";
+  }catch(error){
+    message.textContent=error.message||"تعذر التحقق من حساب المستلم.";
+  }finally{button.disabled=false;}
+}
+
+async function submitWalletTransfer(){
+  const submit=document.getElementById("walletTransferSubmitButton");
+  const message=document.getElementById("walletTransferMessage");
+  if(!currentUser){message.textContent="سجّل الدخول أولاً.";return;}
+  if(!selectedWalletTransferRecipient){message.textContent="تحقق من حساب المستلم أولاً.";return;}
+  const amount=Number(document.getElementById("walletTransferAmount").value);
+  const currency=document.getElementById("walletTransferCurrency").value;
+  const note=document.getElementById("walletTransferNote").value.trim();
+  if(!Number.isFinite(amount)||amount<=0||amount>1000000000000||
+     (currency==="SYP"&&!Number.isInteger(amount))||
+     (currency==="USD"&&Math.round(amount*100)!==amount*100)){
+    message.textContent=currency==="SYP"?"أدخل مبلغاً صحيحاً بالليرة دون كسور.":"أدخل مبلغاً صحيحاً بالدولار حتى منزلتين عشريتين.";
+    return;
+  }
+  if(note.length>120){message.textContent="الملاحظة طويلة جداً.";return;}
+  const fingerprint=[selectedWalletTransferRecipient.id,amount,currency,note].join("|");
+  if(!pendingWalletTransferRequestId||pendingWalletTransferFingerprint!==fingerprint){
+    pendingWalletTransferRequestId=crypto.randomUUID();
+    pendingWalletTransferFingerprint=fingerprint;
+  }
+  const amountLabel=currency==="USD"?amount.toFixed(2)+" $":amount.toLocaleString("en-US")+" ل.س";
+  if(!confirm("تأكيد تحويل "+amountLabel+" إلى "+selectedWalletTransferRecipient.name+" ("+selectedWalletTransferRecipient.email+")؟ سيتم خصم المبلغ فوراً من محفظتك."))return;
+  submit.disabled=true;message.textContent="جاري تنفيذ التحويل بأمان...";
+  try{
+    const {data,error}=await sb.rpc("baran_transfer_wallet",{
+      p_request_id:pendingWalletTransferRequestId,
+      p_recipient_id:selectedWalletTransferRecipient.id,
+      p_amount:amount,
+      p_currency:currency,
+      p_note:note||null
+    });
+    if(error)throw error;
+    if(!data?.success)throw new Error("لم يتم تأكيد التحويل من الخادم.");
+    pendingWalletTransferRequestId=null;pendingWalletTransferFingerprint=null;
+    document.getElementById("walletTransferAmount").value="";
+    document.getElementById("walletTransferNote").value="";
+    message.textContent="تم التحويل بنجاح. وصل الرصيد إلى محفظة المستلم، وسيصله إشعار.";
+    await Promise.all([loadWallet(),loadWalletTransferHistory()]);
+  }catch(error){
+    message.textContent=error.message||"تعذر تنفيذ التحويل. يمكنك إعادة المحاولة بأمان دون تكرار العملية.";
+  }finally{submit.disabled=!selectedWalletTransferRecipient;}
+}
+
+async function loadWalletTransferHistory(){
+  const box=document.getElementById("walletTransferHistory");
+  if(!currentUser||!box)return;
+  try{
+    const {data,error}=await sb.from("wallet_transfers")
+      .select("id,sender_id,recipient_id,amount,currency,note,created_at")
+      .or("sender_id.eq."+currentUser.id+",recipient_id.eq."+currentUser.id)
+      .order("created_at",{ascending:false}).limit(30);
+    if(error)throw error;
+    box.replaceChildren();
+    if(!data?.length){box.textContent="لا توجد تحويلات داخلية حتى الآن.";return;}
+    data.forEach(item=>{
+      const sent=item.sender_id===currentUser.id;
+      const row=document.createElement("article");row.className="wallet-transfer-row "+(sent?"sent":"received");
+      const title=document.createElement("strong");
+      title.textContent=sent?"تحويل صادر":"حوالة واردة";
+      const value=document.createElement("div");
+      value.textContent=(item.currency==="USD"?Number(item.amount).toFixed(2)+" $":Number(item.amount).toLocaleString("en-US")+" ل.س");
+      const note=document.createElement("div");note.className="small";
+      note.textContent=item.note||"بدون ملاحظة";
+      const date=document.createElement("time");date.className="small";
+      date.dateTime=item.created_at;date.textContent=new Date(item.created_at).toLocaleString("ar");
+      row.append(title,value,note,date);box.appendChild(row);
+    });
+  }catch(error){
+    box.textContent="تعذر تحميل سجل التحويلات حالياً.";
+    console.error("wallet transfer history:",error);
   }
 }
 
