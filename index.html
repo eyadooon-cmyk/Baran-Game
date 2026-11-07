@@ -237,6 +237,26 @@ button{font-weight:700}
 .order-timeline-content time{display:block;font-size:12px;margin:2px 0 4px}
 .order-timeline-content p{margin:4px 0 0;line-height:1.65;color:#e0d6e8}
 
+
+/* قائمة جانبية احترافية: أسود وأخضر */
+:root{--green:#31d17c;--line:#263b31;--muted:#a9b9b0}
+.drawer-title{color:#42e28b!important;text-shadow:0 0 14px #31d17c44!important}
+.drawer-profile-card{background:linear-gradient(125deg,#142b20,#101713 82%);border-color:#286b48}
+.drawer-profile-avatar{background:linear-gradient(145deg,#7cf0ad,#17683e);box-shadow:0 0 16px #31d17c33}
+.drawer-profile-avatar>span{background:#101713;color:#7cf0ad}
+.drawer-profile-details small{color:#70e9a2}
+.drawer-section-label{padding:7px 12px 3px;color:#7cae91;font-size:11px;font-weight:800;letter-spacing:.5px}
+.drawer-group-divider{height:1px;margin:12px 5px;background:linear-gradient(90deg,transparent,#315a42,transparent)}
+.drawer-link{background:#121b16;border-color:#263b31;color:#e8f3ec;transition:background .18s,border-color .18s,transform .18s}
+.drawer-link .drawer-icon{color:#70e9a2;font-weight:800}
+.drawer-link:active,.drawer-link:hover{background:#1b3023;border-color:#35c978;color:#fff}
+.drawer-link.active{background:linear-gradient(100deg,#1b3b29,#14251b);border-color:#31d17c;color:#fff;box-shadow:inset -3px 0 #31d17c,0 0 14px #31d17c12}
+.drawer-link.active .drawer-icon{color:#52ee98}
+.drawer-link.logout{color:#ffb8b8;border-color:#633b3b;background:#241516}
+.drawer-link.logout .drawer-icon{color:#ff9999}
+.drawer-divider{background:#315a42}
+@media(prefers-reduced-motion:reduce){.drawer-link{transition:none}}
+
 </style>
 </head>
 <body>
@@ -348,20 +368,25 @@ button{font-weight:700}
         <small>عرض الحساب الشخصي ←</small>
       </span>
     </button>
-    <button class="drawer-link" onclick="navigateDrawer('home')"><span class="drawer-icon">🏠</span>الرئيسية</button>
-    <button class="drawer-link" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span>الألعاب</button>
-    <button class="drawer-link" onclick="navigateDrawer('services')"><span class="drawer-icon">🤖</span>الخدمات الرقمية</button>
-    <button class="drawer-link" onclick="navigateDrawer('mobileTopup')"><span class="drawer-icon">📱</span>شحن رصيد الجوال</button>
-    <button class="drawer-link" onclick="navigateDrawer('wallet')"><span class="drawer-icon">💳</span>محفظتي</button>
-    <button class="drawer-link" onclick="navigateDrawer('orders')"><span class="drawer-icon">📦</span>طلباتي</button>
-    <button class="drawer-link" onclick="navigateDrawer('rewards')"><span class="drawer-icon">🎁</span>المكافآت ودعوة الأصدقاء</button>
-    <button class="drawer-link" onclick="navigateDrawer('support')"><span class="drawer-icon">⭐</span>التقييمات والاقتراحات والدعم</button>
-    <button class="drawer-link" onclick="navigateDrawer('settings')"><span class="drawer-icon">⚙️</span>الإعدادات</button>
-    <button id="adminDrawerButton" class="drawer-link hidden" onclick="navigateDrawer('admin')"><span class="drawer-icon">🛠️</span>لوحة الإدارة</button>
+    <div class="drawer-section-label">المتجر</div>
+    <button class="drawer-link" data-section="home" onclick="navigateDrawer('home')"><span class="drawer-icon">⌂</span>الرئيسية</button>
+    <button class="drawer-link" data-section="games" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span>الألعاب</button>
+    <button class="drawer-link" data-section="services" onclick="navigateDrawer('services')"><span class="drawer-icon">✦</span>الخدمات الرقمية</button>
+    <button class="drawer-link" data-section="mobileTopup" onclick="navigateDrawer('mobileTopup')"><span class="drawer-icon">▣</span>شحن رصيد الجوال</button>
+    <div class="drawer-group-divider"></div>
+    <div class="drawer-section-label">حسابي ومشترياتي</div>
+    <button class="drawer-link" data-section="wallet" onclick="navigateDrawer('wallet')"><span class="drawer-icon">▤</span>محفظتي</button>
+    <button class="drawer-link" data-section="orders" onclick="navigateDrawer('orders')"><span class="drawer-icon">▣</span>طلباتي</button>
+    <button class="drawer-link" data-section="rewards" onclick="navigateDrawer('rewards')"><span class="drawer-icon">🎁</span>المكافآت ودعوة الأصدقاء</button>
+    <div class="drawer-group-divider"></div>
+    <div class="drawer-section-label">المساعدة والحساب</div>
+    <button class="drawer-link" data-section="support" onclick="navigateDrawer('support')"><span class="drawer-icon">◉</span>التقييمات والاقتراحات والدعم</button>
+    <button class="drawer-link" data-section="settings" onclick="navigateDrawer('settings')"><span class="drawer-icon">⚙</span>الإعدادات</button>
+    <button id="adminDrawerButton" class="drawer-link hidden" data-section="admin" onclick="navigateDrawer('admin')"><span class="drawer-icon">⌘</span>لوحة الإدارة</button>
     <div class="drawer-divider"></div>
-    <a class="drawer-link" href="./terms.html" style="text-decoration:none"><span class="drawer-icon">📜</span>شروط الاستخدام</a>
-    <a class="drawer-link" href="./privacy.html" style="text-decoration:none"><span class="drawer-icon">🔒</span>سياسة الخصوصية</a>
-    <button class="drawer-link logout" onclick="closeSideMenu();signOut()"><span class="drawer-icon">🚪</span>تسجيل الخروج</button>
+    <a class="drawer-link" href="./terms.html" style="text-decoration:none"><span class="drawer-icon">▤</span>شروط الاستخدام</a>
+    <a class="drawer-link" href="./privacy.html" style="text-decoration:none"><span class="drawer-icon">◇</span>سياسة الخصوصية</a>
+    <button class="drawer-link logout" onclick="closeSideMenu();signOut()"><span class="drawer-icon">↪</span>تسجيل الخروج</button>
   </aside>
 
   <main>
@@ -903,6 +928,12 @@ function showSection(id,button){
   target.classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
+  document.querySelectorAll("#sideDrawer .drawer-link[data-section]").forEach(link=>{
+    const active=link.dataset.section===id;
+    link.classList.toggle("active",active);
+    if(active)link.setAttribute("aria-current","page");
+    else link.removeAttribute("aria-current");
+  });
   const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",admin:"لوحة الإدارة"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
@@ -937,9 +968,7 @@ function closeSideMenu(){
   if(toggle)toggle.setAttribute("aria-expanded","false");
 }
 function navigateDrawer(id){
-  const legacyButtons={home:0,games:1,services:2,wallet:3,account:4,support:5,admin:6};
-  const oldButton=document.querySelectorAll("nav button")[legacyButtons[id]];
-  showSection(id,oldButton||null);
+  showSection(id,null);
   if(id==="admin")loadAdminPanel();
 }
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeSideMenu()});
