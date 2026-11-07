@@ -1662,7 +1662,7 @@ async function checkAdminAccess(){
     await callAdminApi("POST",{action:"admin_check"});
     if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
-    if(walletAdminTransfers)walletAdminTransfers.classList.remove("hidden");
+    if(walletAdminTransfers&&currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7")walletAdminTransfers.classList.remove("hidden");
     return true;
   }catch(error){
     console.error("Baran Game admin access check failed:",error.message);
