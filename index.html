@@ -607,6 +607,43 @@ section,.auth-card{border-color:#49345f}
       <button class="wallet-refresh-button" type="button" onclick="loadWallet()"><span aria-hidden="true">↻</span> تحديث الأرصدة</button>
 
       <div id="walletAdminTransfers" class="hidden">
+      <div class="wallet-transfer-panel" id="walletExchangeAdminPanel">
+        <div class="wallet-transfer-heading">
+          <span class="wallet-transfer-icon">⇄</span>
+          <div><h2>تحويل العملات — محفظة المالك</h2><p class="small">سعران مستقلان عن أسعار المنتجات، ويمكن تعديلهما حسب حركة السوق.</p></div>
+        </div>
+        <div class="finance-grid">
+          <div class="finance-card">
+            <strong>من الليرة إلى الدولار</strong>
+            <label for="walletRateSypToUsd">كم ليرة سورية مقابل 1 دولار؟</label>
+            <input id="walletRateSypToUsd" type="number" min="0.0001" step="0.0001" inputmode="decimal" placeholder="مثلاً 14500">
+          </div>
+          <div class="finance-card">
+            <strong>من الدولار إلى الليرة</strong>
+            <label for="walletRateUsdToSyp">كم ليرة تستلم مقابل 1 دولار؟</label>
+            <input id="walletRateUsdToSyp" type="number" min="0.0001" step="0.0001" inputmode="decimal" placeholder="مثلاً 14300">
+          </div>
+        </div>
+        <button type="button" class="full" id="walletSaveRatesButton" onclick="saveWalletExchangeRates()">حفظ سعري الصرف</button>
+        <p id="walletExchangeRatesMessage" class="small" role="status" aria-live="polite">جاري تحميل أسعار صرف محفظتك...</p>
+        <div class="wallet-transfer-history">
+          <h2>تبديل العملة بين أرصدتك</h2>
+          <label for="walletExchangeSourceCurrency">العملة التي تريد خصمها</label>
+          <select id="walletExchangeSourceCurrency" onchange="previewWalletExchange()">
+            <option value="SYP">الليرة السورية ← إلى دولار</option>
+            <option value="USD">الدولار ← إلى ليرة سورية</option>
+          </select>
+          <label for="walletExchangeSourceAmount">المبلغ المراد تحويله</label>
+          <input id="walletExchangeSourceAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="أدخل المبلغ" oninput="previewWalletExchange()">
+          <div class="wallet-transfer-recipient" id="walletExchangePreview" role="status">أدخل المبلغ لعرض الناتج حسب سعر الصرف الحالي.</div>
+          <button type="button" class="full" id="walletExchangeSubmitButton" onclick="submitWalletExchange()">تأكيد تبديل العملة</button>
+          <p id="walletExchangeMessage" class="small" role="status" aria-live="polite">لن يتم أي تبديل قبل تأكيدك.</p>
+        </div>
+        <div class="wallet-transfer-history">
+          <h2>سجل تبديل العملات</h2>
+          <div id="walletExchangeHistory" class="small">جاري تحميل السجل...</div>
+        </div>
+      </div>
       <div class="wallet-transfer-panel">
         <div class="wallet-transfer-heading">
           <span class="wallet-transfer-icon">⇄</span>
@@ -1519,6 +1556,124 @@ async function submitWalletTransfer(){
   }finally{submit.disabled=!selectedWalletTransferRecipient;}
 }
 
+let walletExchangeRates={syp_to_usd_rate:14400,usd_to_syp_rate:14400};
+let pendingWalletExchangeRequestId=null;
+let pendingWalletExchangeFingerprint=null;
+
+function walletExchangeFormat(value,currency){
+  const n=Number(value);
+  return currency==="USD"?n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" $":n.toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س";
+}
+
+async function loadWalletExchangeSettings(){
+  const message=document.getElementById("walletExchangeRatesMessage");
+  try{
+    const {data,error}=await sb.rpc("baran_get_wallet_exchange_settings");
+    if(error)throw error;
+    const row=Array.isArray(data)?data[0]:data;
+    if(!row)throw new Error("لم تصل أسعار الصرف من الخادم.");
+    walletExchangeRates={syp_to_usd_rate:Number(row.syp_to_usd_rate),usd_to_syp_rate:Number(row.usd_to_syp_rate)};
+    document.getElementById("walletRateSypToUsd").value=walletExchangeRates.syp_to_usd_rate;
+    document.getElementById("walletRateUsdToSyp").value=walletExchangeRates.usd_to_syp_rate;
+    message.textContent="آخر تحديث: "+(row.updated_at?new Date(row.updated_at).toLocaleString("ar"):"—")+". سعر المنتجات مستقل تماماً.";
+    previewWalletExchange();
+  }catch(error){message.textContent=error.message||"تعذر تحميل أسعار الصرف.";}
+}
+
+async function saveWalletExchangeRates(){
+  const button=document.getElementById("walletSaveRatesButton");
+  const message=document.getElementById("walletExchangeRatesMessage");
+  const sypRate=Number(document.getElementById("walletRateSypToUsd").value);
+  const usdRate=Number(document.getElementById("walletRateUsdToSyp").value);
+  if(!Number.isFinite(sypRate)||!Number.isFinite(usdRate)||sypRate<=0||usdRate<=0){
+    message.textContent="أدخل سعري صرف صحيحين وأكبر من الصفر.";return;
+  }
+  if(!confirm("تأكيد حفظ سعري الصرف الجديدين لمحفظة المالك؟ لن تتغير أسعار المنتجات."))return;
+  button.disabled=true;message.textContent="جاري حفظ الأسعار...";
+  try{
+    const {data,error}=await sb.rpc("baran_update_wallet_exchange_rates",{
+      p_syp_to_usd_rate:sypRate,p_usd_to_syp_rate:usdRate
+    });
+    if(error)throw error;
+    if(!data?.success)throw new Error("لم يؤكد الخادم حفظ الأسعار.");
+    await loadWalletExchangeSettings();
+    message.textContent="تم حفظ سعري الصرف بنجاح. أسعار المنتجات لم تتغير.";
+  }catch(error){message.textContent=error.message||"تعذر حفظ أسعار الصرف.";}
+  finally{button.disabled=false;}
+}
+
+function previewWalletExchange(){
+  const amount=Number(document.getElementById("walletExchangeSourceAmount")?.value||0);
+  const currency=document.getElementById("walletExchangeSourceCurrency")?.value||"SYP";
+  const box=document.getElementById("walletExchangePreview");
+  if(!box)return;
+  if(!Number.isFinite(amount)||amount<=0){box.textContent="أدخل المبلغ لعرض الناتج حسب سعر الصرف الحالي.";return;}
+  if(currency==="SYP"){
+    if(!Number.isInteger(amount)){box.textContent="مبلغ الليرة يجب أن يكون دون كسور.";return;}
+    const result=Math.round((amount/walletExchangeRates.syp_to_usd_rate)*100)/100;
+    box.textContent="سيتم خصم "+walletExchangeFormat(amount,"SYP")+" وإضافة "+walletExchangeFormat(result,"USD")+" إلى محفظتك. السعر: 1$ = "+walletExchangeRates.syp_to_usd_rate.toLocaleString("en-US")+" ل.س.";
+  }else{
+    if(Math.round(amount*100)!==amount*100){box.textContent="مبلغ الدولار يجب ألا يتجاوز منزلتين عشريتين.";return;}
+    const result=Math.round(amount*walletExchangeRates.usd_to_syp_rate);
+    box.textContent="سيتم خصم "+walletExchangeFormat(amount,"USD")+" وإضافة "+walletExchangeFormat(result,"SYP")+" إلى محفظتك. السعر: 1$ = "+walletExchangeRates.usd_to_syp_rate.toLocaleString("en-US")+" ل.س.";
+  }
+}
+
+async function submitWalletExchange(){
+  const button=document.getElementById("walletExchangeSubmitButton");
+  const message=document.getElementById("walletExchangeMessage");
+  const amount=Number(document.getElementById("walletExchangeSourceAmount").value);
+  const currency=document.getElementById("walletExchangeSourceCurrency").value;
+  const fingerprint=[currency,amount].join("|");
+  if(!Number.isFinite(amount)||amount<=0||(currency==="SYP"&&!Number.isInteger(amount))||
+     (currency==="USD"&&Math.round(amount*100)!==amount*100)){
+    message.textContent=currency==="SYP"?"أدخل مبلغ ليرة صحيحاً دون كسور.":"أدخل مبلغ دولار صحيحاً حتى منزلتين عشريتين.";return;
+  }
+  if(!pendingWalletExchangeRequestId||pendingWalletExchangeFingerprint!==fingerprint){
+    pendingWalletExchangeRequestId=crypto.randomUUID();
+    pendingWalletExchangeFingerprint=fingerprint;
+  }
+  const target=currency==="SYP"?"USD":"SYP";
+  if(!confirm("تأكيد تبديل "+walletExchangeFormat(amount,currency)+" إلى "+target+"؟ سيتم الخصم والإضافة فوراً حسب السعر المعروض."))return;
+  button.disabled=true;message.textContent="جاري تنفيذ التبديل بأمان...";
+  try{
+    const {data,error}=await sb.rpc("baran_exchange_wallet_currency",{
+      p_request_id:pendingWalletExchangeRequestId,p_source_currency:currency,p_source_amount:amount
+    });
+    if(error)throw error;
+    if(!data?.success)throw new Error("لم يؤكد الخادم تنفيذ تبديل العملة.");
+    pendingWalletExchangeRequestId=null;pendingWalletExchangeFingerprint=null;
+    document.getElementById("walletExchangeSourceAmount").value="";
+    message.textContent="تم التبديل بنجاح: أضيف "+walletExchangeFormat(data.target_amount,data.target_currency)+" إلى محفظتك.";
+    await Promise.all([loadWallet(),loadWalletExchangeHistory()]);
+    previewWalletExchange();
+  }catch(error){message.textContent=error.message||"تعذر تنفيذ التبديل. يمكنك إعادة المحاولة بأمان.";}
+  finally{button.disabled=false;}
+}
+
+async function loadWalletExchangeHistory(){
+  const box=document.getElementById("walletExchangeHistory");
+  if(!box||!currentUser)return;
+  try{
+    const {data,error}=await sb.from("wallet_exchange_transactions")
+      .select("id,source_currency,target_currency,source_amount,target_amount,rate_syp_per_usd,created_at")
+      .eq("owner_id",currentUser.id).order("created_at",{ascending:false}).limit(30);
+    if(error)throw error;
+    box.replaceChildren();
+    if(!data?.length){box.textContent="لا توجد عمليات تبديل حتى الآن.";return;}
+    data.forEach(item=>{
+      const row=document.createElement("article");row.className="wallet-transfer-row";
+      const title=document.createElement("strong");
+      title.textContent=walletExchangeFormat(item.source_amount,item.source_currency)+" ← "+walletExchangeFormat(item.target_amount,item.target_currency);
+      const rate=document.createElement("div");rate.className="small";
+      rate.textContent="سعر العملية: 1$ = "+Number(item.rate_syp_per_usd).toLocaleString("en-US")+" ل.س";
+      const date=document.createElement("time");date.className="small";date.dateTime=item.created_at;
+      date.textContent=new Date(item.created_at).toLocaleString("ar");
+      row.append(title,rate,date);box.appendChild(row);
+    });
+  }catch(error){box.textContent="تعذر تحميل سجل تبديل العملات.";}
+}
+
 async function loadWalletTransferHistory(){
   const box=document.getElementById("walletTransferHistory");
   if(!currentUser||!box)return;
@@ -1662,7 +1817,7 @@ async function checkAdminAccess(){
     await callAdminApi("POST",{action:"admin_check"});
     if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
-    if(walletAdminTransfers&&currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7")walletAdminTransfers.classList.remove("hidden");
+    if(walletAdminTransfers&&currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){walletAdminTransfers.classList.remove("hidden");loadWalletExchangeSettings();loadWalletExchangeHistory();}
     return true;
   }catch(error){
     console.error("Baran Game admin access check failed:",error.message);
