@@ -1869,7 +1869,7 @@ function stopBaranNotificationPolling(){
 }
 
 
-const BARAN_VAPID_PUBLIC_KEY="BB70Rrm9VCdEsFOE8hOP3Dk9LThyI1ueUpYUPMEoZW2qiQdmH9NPOcKtrx3J6-1ywts0mhrOnjYioKoZKEFkNFM";
+const BARAN_VAPID_PUBLIC_KEY="BAtxGc6U7PqhXRtXZYbvN88hiQtIqzmNb41r90DzdO8kL7WZMvZv9ofDfK9c8R4GFL7-Vpvpjb-AqyBd_cRZlE0";
 function baranUrlBase64ToUint8Array(value){
   const padding="=".repeat((4-value.length%4)%4);
   const raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));
