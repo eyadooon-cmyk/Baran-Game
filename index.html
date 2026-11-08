@@ -1073,8 +1073,8 @@ section,.auth-card{border-color:#49345f}
           <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
         </span>
       </div>
-      </section>
-<section id="shamCashPayment" class="hidden shamcash-payment-section">
+      
+      <div id="shamCashPayment" class="hidden shamcash-payment-section">
 <div class="payment-methods-hero shamcash-page-hero"><span class="wallet-eyebrow">BARAN GAME · SECURE TOP-UP</span><h2>شحن المحفظة عبر شام كاش</h2><p>أكمل بيانات التحويل وأرسل الإثبات من نفس الصفحة.</p></div>
 <div id="shamCashDepositDetails" class="shamcash-deposit-details">
         <button class="payment-back-button" type="button" onclick="hideShamCashDeposit()">← العودة إلى طرق الدفع</button>
@@ -1111,8 +1111,8 @@ section,.auth-card{border-color:#49345f}
               <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
       <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
       </div>
-</section>
-
+</div>
+      </section>
 <section id="settings" class="hidden">
       <h2>الإعدادات ⚙️</h2>
       <p class="small">تحكّم بإشعارات Baran Game على هذا الجهاز.</p>
@@ -1715,14 +1715,18 @@ function showSection(id,button){
 
 function showShamCashDeposit(){
   const card=document.querySelector(".shamcash-method");
+  const panel=document.getElementById("shamCashPayment");
   if(card)card.setAttribute("aria-expanded","true");
-  showSection("shamCashPayment",null);
+  if(panel)panel.classList.remove("hidden");
   if(typeof loadDepositRequests==="function")loadDepositRequests();
+  if(panel)panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function hideShamCashDeposit(){
   const card=document.querySelector(".shamcash-method");
+  const panel=document.getElementById("shamCashPayment");
   if(card)card.setAttribute("aria-expanded","false");
-  showSection("paymentMethods",null);
+  if(panel)panel.classList.add("hidden");
+  if(card)card.scrollIntoView({behavior:"smooth",block:"center"});
 }
 
 function toggleSideMenu(){
