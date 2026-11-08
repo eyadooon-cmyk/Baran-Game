@@ -358,6 +358,20 @@ section,.auth-card{border-color:#49345f}
 .admin-subpanel>section{margin:12px 0}
 @media(max-width:360px){.admin-hub-grid{grid-template-columns:1fr}.admin-hub-card{min-height:120px}}
 @media(min-width:700px){.admin-hub-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* بحث موحّد في متجر Baran Game */
+.store-search{padding:14px;margin:14px 0 18px;background:linear-gradient(145deg,#241a30,#15111b);border:1px solid #76518f;border-radius:15px}
+.store-search label{display:block;color:#e2c8f7;font-weight:800;margin-bottom:9px}
+.store-search-row{display:flex;align-items:center;gap:8px}
+.store-search-row>span{font-size:19px}
+.store-search-row input{flex:1;min-width:0;margin:0;background:#100d15;border:1px solid #624879;color:#fff}
+.store-search-row button{width:auto;white-space:nowrap;margin:0;padding:11px 13px}
+.store-search-results{display:grid;gap:8px;margin-top:10px}
+.store-search-result{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:12px;text-align:right;background:#1d1725;color:#f2eafa;border:1px solid #59416d;border-radius:11px}
+.store-search-result strong{display:block;color:#e2c8f7}
+.store-search-result small{display:block;color:#bba9ca;margin-top:3px}
+.store-search-empty{padding:10px;color:#c6b6d3;font-size:13px}
+@media(max-width:380px){.store-search-row{flex-wrap:wrap}.store-search-row input{min-width:65%}.store-search-row button{flex:1}}
 </style>
 </head>
 <body>
@@ -492,6 +506,15 @@ section,.auth-card{border-color:#49345f}
 
   <main>
     <section id="home">
+      <div class="store-search" role="search">
+        <label for="storeSearchInput">ابحث عن لعبة أو خدمة أو بطاقة رقمية</label>
+        <div class="store-search-row">
+          <span aria-hidden="true">🔎</span>
+          <input id="storeSearchInput" type="search" placeholder="مثلاً PUBG أو ChatGPT أو VPN..." autocomplete="off" oninput="searchStore(this.value)">
+          <button type="button" class="secondary" onclick="clearStoreSearch()">مسح</button>
+        </div>
+        <div id="storeSearchResults" class="store-search-results" aria-live="polite"></div>
+      </div>
       <div class="hero">
         <h2>عالمك الرقمي يبدأ من هنا</h2>
         <p>شحن ألعاب واشتراكات وخدمات رقمية بمكان واحد.</p>
@@ -1246,6 +1269,72 @@ function closeAdminPanel(){
   if(hub)hub.classList.remove("hidden");
   window.scrollTo({top:0,behavior:"smooth"});
 }
+
+const BARAN_SEARCH_SECTIONS=["home","games","services","mobileTopup"];
+function normalizeStoreSearch(value){
+  return String(value||"").toLocaleLowerCase("ar").normalize("NFKC").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").trim();
+}
+function searchStore(value){
+  const query=normalizeStoreSearch(value);
+  const output=document.getElementById("storeSearchResults");
+  if(!output)return;
+  output.replaceChildren();
+  if(!query){output.classList.remove("active");return;}
+  const terms=query.split(/\s+/).filter(Boolean);
+  const matches=[];
+  BARAN_SEARCH_SECTIONS.forEach(sectionId=>{
+    const section=document.getElementById(sectionId);
+    if(!section)return;
+    section.querySelectorAll(".item,.product-card").forEach(card=>{
+      const text=normalizeStoreSearch(card.innerText||card.textContent||"");
+      if(terms.every(term=>text.includes(term))){
+        const title=(card.querySelector("strong")?.textContent||"منتج من المتجر").trim();
+        const description=(card.innerText||card.textContent||"").replace(title,"").trim().replace(/\s+/g," ").slice(0,110);
+        matches.push({sectionId,card,title,description});
+      }
+    });
+  });
+  output.classList.add("active");
+  if(!matches.length){
+    const empty=document.createElement("div");
+    empty.className="store-search-empty";
+    empty.textContent="ما لقينا نتائج مطابقة. جرّب اسماً آخر أو كلمة أقصر.";
+    output.appendChild(empty);
+    return;
+  }
+  const heading=document.createElement("div");
+  heading.className="small";
+  heading.textContent="نتائج البحث: "+matches.length;
+  output.appendChild(heading);
+  matches.slice(0,20).forEach(match=>{
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="store-search-result";
+    const info=document.createElement("span");
+    const strong=document.createElement("strong");
+    strong.textContent=match.title;
+    const small=document.createElement("small");
+    small.textContent=match.description||"افتح القسم لمشاهدة التفاصيل";
+    info.append(strong,small);
+    const action=document.createElement("span");
+    action.textContent="فتح ←";
+    button.append(info,action);
+    button.addEventListener("click",()=>{
+      const navButton=[...document.querySelectorAll("nav button")].find(b=>b.getAttribute("onclick")?.includes("'"+match.sectionId+"'"));
+      showSection(match.sectionId,navButton||null);
+      clearStoreSearch();
+      requestAnimationFrame(()=>match.card.scrollIntoView({behavior:"smooth",block:"center"}));
+    });
+    output.appendChild(button);
+  });
+}
+function clearStoreSearch(){
+  const input=document.getElementById("storeSearchInput");
+  if(input)input.value="";
+  const output=document.getElementById("storeSearchResults");
+  if(output){output.replaceChildren();output.classList.remove("active");}
+}
+
 function showSection(id,button){
   if(!currentUser) return;
   const target=document.getElementById(id);
