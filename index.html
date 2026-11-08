@@ -1411,7 +1411,7 @@ async function loadBaranMemberCode(){
 async function copyBaranMemberCode(){
   const code=document.getElementById("accountMemberCode")?.textContent?.trim();
   const message=document.getElementById("memberCodeMessage");
-  if(!code||!/^BG-\\d{6,}$/.test(code)){if(message)message.textContent="رقم العضوية غير جاهز للنسخ.";return;}
+  if(!code||!/^BG-[0-9]{6,}$/.test(code)){if(message)message.textContent="رقم العضوية غير جاهز للنسخ.";return;}
   try{
     await navigator.clipboard.writeText(code);
     if(message)message.textContent="تم نسخ رقم العضوية.";
