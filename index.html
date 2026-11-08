@@ -409,6 +409,61 @@ section,.auth-card{border-color:#49345f}
 #adminFeedback .ops-item textarea,#adminFeedback .ops-item select{width:100%;box-sizing:border-box;min-width:0}
 @media(min-width:700px){.support-filters{grid-template-columns:1.2fr 1fr;gap:10px}.support-tabs{position:static}}
 @media(max-width:360px){.support-tab{font-size:11px;padding:9px 5px}.support-section{padding:10px!important}.support-section-head h2{font-size:16px}}
+
+/* مركز الحسابات المالية — تصميم احترافي متجاوب */
+[data-admin-panel="finance"]{padding:clamp(10px,2.5vw,22px)!important;background:linear-gradient(180deg,#17121f,#100d15 48%,#17121f)!important;border-color:#49345f!important}
+.finance-admin-head{margin-bottom:14px}
+.finance-admin-head h2{margin:0;color:#e5d4f5}
+.finance-hero{display:flex;align-items:center;gap:15px;padding:20px;margin:10px 0 18px;border:1px solid #79549a;border-radius:18px;background:radial-gradient(circle at 12% 20%,#70409b55,transparent 36%),linear-gradient(125deg,#30203f,#191321 72%);box-shadow:0 12px 28px #0005}
+.finance-hero-icon{display:grid;place-items:center;flex:0 0 58px;width:58px;height:58px;border-radius:17px;background:#a56bd622;border:1px solid #a56bd688;font-size:29px}
+.finance-eyebrow,.finance-kicker{display:block;color:#b995d5;font-size:10px;font-weight:900;letter-spacing:1.4px}
+.finance-hero h2{margin:4px 0;color:#f1e8fa;font-size:clamp(20px,4vw,27px)}
+.finance-hero p{margin:0;color:#c9b9d7;font-size:13px}
+.finance-section{margin:14px 0;padding:16px;border:1px solid #49345f;border-radius:17px;background:linear-gradient(145deg,#1d1726,#15111b);box-shadow:0 7px 20px #0003}
+.finance-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.finance-section-heading h3{margin:3px 0;color:#e5d4f5;font-size:18px}
+.finance-section-heading .small{margin:2px 0;line-height:1.6}
+.finance-section-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border:1px solid #67477f;border-radius:13px;background:#2b2038;font-size:20px}
+.finance-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
+.finance-grid .finance-card{padding:15px;border:1px solid #6a4b82;border-radius:15px;background:linear-gradient(155deg,#2a2035,#1b1623 70%);min-width:0}
+.finance-card strong{display:block;padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid #6a4b8255;color:#e0c8f5!important;font-size:17px}
+.finance-card div{padding:5px 0;color:#d1c5dc;font-size:13px;line-height:1.65;overflow-wrap:anywhere}
+.finance-card div:nth-child(6),.finance-card div:nth-child(13){margin-top:9px;padding:7px 9px;border-radius:8px;background:#a56bd61a;color:#d8b5f2;font-weight:800}
+.finance-card div:nth-child(6){border-right:3px solid #a56bd6}
+.finance-card div:nth-child(13){border-right:3px solid #8d70bc}
+.finance-card div:nth-child(7),.finance-card div:nth-child(8),.finance-card div:nth-child(9),.finance-card div:nth-child(10),.finance-card div:nth-child(11),.finance-card div:nth-child(14),.finance-card div:nth-child(15),.finance-card div:nth-child(16),.finance-card div:nth-child(17),.finance-card div:nth-child(18){display:flex;justify-content:space-between;gap:8px}
+.finance-filter-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;padding:12px;border:1px solid #49345f;border-radius:12px;background:#130f19}
+.finance-filter-row label{grid-column:1/-1;color:#cbb8dd;font-size:13px}
+.finance-filter-row input{margin:0;min-width:0}
+.finance-filter-row button{white-space:nowrap;padding:12px}
+.finance-report-list{margin-top:12px}
+.finance-report-list .ops-item,.finance-ledger .finance-entry{padding:13px;border:1px solid #49345f;border-radius:12px;background:#17121e}
+.finance-report-list .ops-item strong,.finance-ledger .finance-entry strong{display:block;color:#e0c8f5;margin-bottom:5px}
+.finance-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px;border:1px solid #49345f;border-radius:13px;background:#130f19}
+.finance-field{min-width:0}
+.finance-field label{display:block;margin:0 0 5px;color:#cbb8dd;font-size:13px}
+.finance-field input,.finance-field select{margin:0;min-width:0}
+.finance-field-wide{grid-column:1/-1}
+.finance-sale-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;border:1px dashed #76518f;border-radius:12px;background:#1b1424}
+.finance-save-button{margin-top:13px;padding:14px;background:linear-gradient(110deg,#a56bd6,#70409b);color:white;box-shadow:0 6px 16px #70409b44}
+.finance-message{min-height:22px;margin-top:8px}
+.finance-ledger{display:grid;gap:9px}
+.finance-ledger .finance-entry{margin:0;line-height:1.8}
+.finance-ledger .finance-entry .small{margin-top:6px;color:#aa9ab8}
+@media(max-width:560px){
+ [data-admin-panel="finance"]{padding:10px!important}
+ .finance-hero{padding:15px;gap:11px}
+ .finance-hero-icon{width:48px;height:48px;flex-basis:48px;font-size:24px}
+ .finance-section{padding:12px}
+ .finance-grid{grid-template-columns:1fr}
+ .finance-form-grid{grid-template-columns:1fr}
+ .finance-field-wide{grid-column:auto}
+ .finance-sale-grid{grid-template-columns:1fr}
+ .finance-filter-row{grid-template-columns:1fr}
+ .finance-filter-row label{grid-column:auto}
+ .finance-filter-row button{width:100%}
+}
+
 </style>
 </head>
 <body>
@@ -1144,55 +1199,41 @@ section,.auth-card{border-color:#49345f}
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="finance">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الحسابات المالية</h2></div>
-        <hr style="border-color:#40334b;margin:24px 0">
-      <h2>الحسابات المالية 💰</h2>
-      <p class="small">سجّل رأس المال والمصاريف اليدوية، وتُضاف مبيعات الطلبات المكتملة وتكاليف المورد تلقائياً مرة واحدة بعد تسجيل تكلفة المورد. تُعرض حسابات الدولار والليرة كلٌ على حدة، ولا تدخل أرصدة الزبائن ضمن أرباح المتجر. لا يمكن إكمال الطلب قبل تسجيل تكلفة المورد وسعر الصرف.</p>
-
-      <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
-      <h3 id="financeReportHeading" style="margin-top:22px;color:#c2b1d1">تقرير أرباح المنتجات</h3>
-      <p class="small">اختر الشهر والسنة لعرض المبيعات وتكلفة المورد والربح الإجمالي لكل منتج، مع فصل الدولار عن الليرة السورية.</p>
-      <div class="deposit-card finance-form" style="margin:12px 0">
-        <label for="financeReportPeriod">الشهر والسنة</label>
-        <input id="financeReportPeriod" type="month" aria-label="اختر شهر وسنة التقرير" onchange="loadAdminPanel()">
-        <button class="secondary full" type="button" onclick="loadAdminPanel()">عرض التقرير المحدد</button>
-      </div>
-      <div id="financeProductReport" class="ops-list">جاري تحميل تقرير المنتجات...</div>
-
-      <div class="deposit-card finance-form">
-        <h2>إضافة حركة مالية</h2>
-        <label for="financeType">نوع الحركة</label>
-        <select id="financeType" onchange="updateFinanceForm()">
-          <option value="capital">إضافة رأس مال</option>
-          <option value="sale">تسجيل بيع منتج</option>
-          <option value="expense">تسجيل مصروف</option>
-        </select>
-        <label for="financeTitle">الوصف</label>
-        <input id="financeTitle" type="text" maxlength="160" placeholder="مثلاً: رأس مال بداية المتجر أو فاتورة إنترنت">
-        <div id="financeSaleFields" class="hidden">
-          <label for="financeProductName">اسم المنتج</label>
-          <input id="financeProductName" type="text" maxlength="160" placeholder="اسم المنتج أو الاشتراك">
-          <label for="financeQuantity">الكمية المباعة</label>
-          <input id="financeQuantity" type="number" min="1" step="1" value="1">
-          <label for="financeUnitSalePrice">سعر بيع القطعة الواحدة</label>
-          <input id="financeUnitSalePrice" type="number" min="0.01" step="0.01" placeholder="سعر البيع">
-          <label for="financeUnitCostPrice">تكلفة شراء القطعة الواحدة</label>
-          <input id="financeUnitCostPrice" type="number" min="0" step="0.01" placeholder="تكلفة الشراء">
+        <div class="admin-subpanel-head finance-admin-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الحسابات المالية</h2></div>
+        <div class="finance-hero">
+          <div class="finance-hero-icon">📊</div>
+          <div><span class="finance-eyebrow">BARAN GAME · FINANCE CENTER</span><h2>مركز الحسابات المالية</h2><p>متابعة رأس المال والمبيعات والتكاليف والأرباح بوضوح، مع فصل كامل بين الدولار والليرة السورية.</p></div>
         </div>
-        <div id="financeAmountField">
-          <label id="financeAmountLabel" for="financeAmount">مبلغ رأس المال</label>
-          <input id="financeAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
-        </div>
-        <label for="financeCurrency">العملة</label>
-        <select id="financeCurrency">
-          <option value="USD">دولار أمريكي (USD)</option>
-          <option value="SYP">ليرة سورية (SYP)</option>
-        </select>
-        <button id="financeSubmitButton" class="full" type="button" onclick="submitFinanceEntry()">حفظ الحركة المالية</button>
-        <div id="financeMessage" class="small" role="status"></div>
-      </div>
-      <h2 style="margin-top:22px">آخر الحركات المالية</h2>
-      <div id="financeEntries">لا توجد حركات مالية بعد.</div>
+        <section class="finance-section finance-overview">
+          <div class="finance-section-heading"><div><span class="finance-kicker">OVERVIEW</span><h3>ملخص الحسابات</h3><p class="small">الأرقام المسجلة في النظام، دون احتساب أرصدة الزبائن ضمن أموال المتجر.</p></div><span class="finance-section-icon">💼</span></div>
+          <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
+        </section>
+        <section class="finance-section">
+          <div class="finance-section-heading"><div><span class="finance-kicker">PRODUCT PERFORMANCE</span><h3 id="financeReportHeading">تقرير أرباح المنتجات</h3><p class="small">قارن المبيعات وتكلفة المورد والربح الإجمالي لكل منتج خلال الشهر المحدد.</p></div><span class="finance-section-icon">📈</span></div>
+          <div class="finance-filter-row"><label for="financeReportPeriod">فترة التقرير</label><input id="financeReportPeriod" type="month" aria-label="اختر شهر وسنة التقرير" onchange="loadAdminPanel()"><button class="secondary" type="button" onclick="loadAdminPanel()">تحديث التقرير</button></div>
+          <div id="financeProductReport" class="ops-list finance-report-list">جاري تحميل تقرير المنتجات...</div>
+        </section>
+        <section class="finance-section finance-entry-section">
+          <div class="finance-section-heading"><div><span class="finance-kicker">NEW TRANSACTION</span><h3>تسجيل حركة مالية</h3><p class="small">أضف رأس مال أو مصروفاً يدوياً، أو سجّل بيعاً عند الحاجة.</p></div><span class="finance-section-icon">✍️</span></div>
+          <div class="finance-form finance-form-grid">
+            <div class="finance-field"><label for="financeType">نوع الحركة</label><select id="financeType" onchange="updateFinanceForm()"><option value="capital">إضافة رأس مال</option><option value="sale">تسجيل بيع منتج</option><option value="expense">تسجيل مصروف</option></select></div>
+            <div class="finance-field"><label for="financeCurrency">العملة</label><select id="financeCurrency"><option value="USD">دولار أمريكي (USD)</option><option value="SYP">ليرة سورية (SYP)</option></select></div>
+            <div class="finance-field finance-field-wide"><label for="financeTitle">وصف الحركة</label><input id="financeTitle" type="text" maxlength="160" placeholder="مثلاً: رأس مال بداية المتجر أو فاتورة إنترنت"></div>
+            <div id="financeSaleFields" class="hidden finance-field-wide finance-sale-grid">
+              <div class="finance-field"><label for="financeProductName">اسم المنتج</label><input id="financeProductName" type="text" maxlength="160" placeholder="اسم المنتج أو الاشتراك"></div>
+              <div class="finance-field"><label for="financeQuantity">الكمية المباعة</label><input id="financeQuantity" type="number" min="1" step="1" value="1"></div>
+              <div class="finance-field"><label for="financeUnitSalePrice">سعر بيع القطعة الواحدة</label><input id="financeUnitSalePrice" type="number" min="0.01" step="0.01" placeholder="سعر البيع"></div>
+              <div class="finance-field"><label for="financeUnitCostPrice">تكلفة شراء القطعة الواحدة</label><input id="financeUnitCostPrice" type="number" min="0" step="0.01" placeholder="تكلفة الشراء"></div>
+            </div>
+            <div id="financeAmountField" class="finance-field finance-field-wide"><label id="financeAmountLabel" for="financeAmount">مبلغ رأس المال</label><input id="financeAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ"></div>
+          </div>
+          <button id="financeSubmitButton" class="full finance-save-button" type="button" onclick="submitFinanceEntry()">＋ حفظ الحركة المالية</button>
+          <div id="financeMessage" class="small finance-message" role="status" aria-live="polite"></div>
+        </section>
+        <section class="finance-section">
+          <div class="finance-section-heading"><div><span class="finance-kicker">TRANSACTION HISTORY</span><h3>سجل الحركات المالية</h3><p class="small">أحدث العمليات المسجلة مع تفاصيل كل حركة وتاريخها.</p></div><span class="finance-section-icon">🧾</span></div>
+          <div id="financeEntries" class="finance-ledger">لا توجد حركات مالية بعد.</div>
+        </section>
     
       </div>
 
