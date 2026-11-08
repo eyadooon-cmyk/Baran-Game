@@ -2009,6 +2009,15 @@ async function copyBaranMemberCode(){
   }
 }
 
+function maskBaranEmail(email){
+  const value=String(email||"");
+  const at=value.lastIndexOf("@");
+  if(at<1||at===value.length-1)return "";
+  const local=value.slice(0,at);
+  const domain=value.slice(at+1);
+  return local.slice(0,Math.min(2,local.length))+"***@"+domain;
+}
+
 function updateBaranAccountIdentity(user){
   if(!user)return;
   const metadata=user.user_metadata||{};
@@ -2021,13 +2030,13 @@ function updateBaranAccountIdentity(user){
   const emailEl=document.getElementById("accountDisplayEmail");
   const providerEl=document.getElementById("accountProviderLabel");
   if(nameEl)nameEl.textContent=name;
-  if(emailEl)emailEl.textContent=email;
+  if(emailEl)emailEl.textContent=maskBaranEmail(email);
   if(providerEl)providerEl.textContent=identity?.provider==="google"?"تم تسجيل الدخول باستخدام Google":"حساب مسجل بالبريد الإلكتروني";
 
   const drawerName=document.getElementById("drawerAccountName");
   const drawerEmail=document.getElementById("drawerAccountEmail");
   if(drawerName)drawerName.textContent=name;
-  if(drawerEmail)drawerEmail.textContent=email;
+  if(drawerEmail)drawerEmail.textContent=maskBaranEmail(email);
 
   [["accountAvatar","accountAvatarFallback"],["drawerAccountAvatar","drawerAccountAvatarFallback"]].forEach(([imageId,fallbackId])=>{
     const avatar=document.getElementById(imageId);
@@ -2069,7 +2078,7 @@ function showApp(user){
   document.getElementById("lockScreen").classList.add("hidden");
   document.getElementById("appShell").classList.remove("hidden");
   const assistantFab=document.getElementById("aiAssistantFab");if(assistantFab)assistantFab.classList.remove("hidden");
-  document.getElementById("accountInfo").textContent=user.email||"";
+  document.getElementById("accountInfo").textContent=maskBaranEmail(user.email);
   if(typeof loadProfileDetails==="function")loadProfileDetails();
   loadBaranMemberCode();
   showSection("home",document.querySelector("nav button"));
