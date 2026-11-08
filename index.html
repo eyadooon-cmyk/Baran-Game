@@ -983,33 +983,6 @@ section,.auth-card{border-color:#49345f}
           <div id="walletExchangeHistory" class="small">جاري تحميل السجل...</div>
         </div>
       </div>
-      <div class="wallet-transfer-panel">
-        <div class="wallet-transfer-heading">
-          <span class="wallet-transfer-icon">⇄</span>
-          <div><h2>تحويل رصيد لمستخدم</h2><p class="small">حوّل من محفظتك مباشرة إلى محفظة مستخدم آخر، بالدولار أو الليرة السورية.</p></div>
-        </div>
-        <label for="walletTransferEmail">البريد الإلكتروني لحساب المستلم</label>
-        <div class="wallet-transfer-search">
-          <input id="walletTransferEmail" type="email" autocomplete="off" maxlength="254" placeholder="example@email.com" oninput="clearWalletTransferRecipient()">
-          <button id="walletTransferFindButton" type="button" onclick="findWalletTransferRecipient()">تحقق</button>
-        </div>
-        <div id="walletTransferRecipient" class="wallet-transfer-recipient hidden" role="status"></div>
-        <label for="walletTransferCurrency">عملة التحويل</label>
-        <select id="walletTransferCurrency">
-          <option value="USD">دولار أمريكي (USD)</option>
-          <option value="SYP">ليرة سورية (SYP)</option>
-        </select>
-        <label for="walletTransferAmount">المبلغ</label>
-        <input id="walletTransferAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="أدخل المبلغ">
-        <label for="walletTransferNote">ملاحظة (اختياري)</label>
-        <input id="walletTransferNote" type="text" maxlength="120" placeholder="مثلاً: هدية">
-        <button id="walletTransferSubmitButton" class="full" type="button" onclick="submitWalletTransfer()" disabled>تحويل الرصيد</button>
-        <p id="walletTransferMessage" class="small" role="status" aria-live="polite">ابحث عن المستلم أولاً، ثم راجع الاسم قبل تأكيد التحويل.</p>
-      </div>
-      <div class="wallet-transfer-history">
-        <h2>سجل التحويلات الداخلية</h2>
-        <div id="walletTransferHistory" class="small">جاري تحميل سجل التحويلات...</div>
-      </div>
 
       </div>
 
@@ -1740,7 +1713,6 @@ function showSection(id,button){
   if(!target) return;
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
   target.classList.remove("hidden");
-  if(id==="wallet"&&typeof prepareWalletLayout==="function")prepareWalletLayout();
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
   document.querySelectorAll("#sideDrawer .drawer-link[data-section]").forEach(link=>{
@@ -2322,96 +2294,6 @@ async function loadDepositRequests(){
 }
 
 
-let selectedWalletTransferRecipient=null;
-let pendingWalletTransferRequestId=null;
-let pendingWalletTransferFingerprint=null;
-
-function clearWalletTransferRecipient(){
-  selectedWalletTransferRecipient=null;
-  const panel=document.getElementById("walletTransferRecipient");
-  const submit=document.getElementById("walletTransferSubmitButton");
-  if(panel)panel.classList.add("hidden");
-  if(submit)submit.disabled=true;
-  const message=document.getElementById("walletTransferMessage");
-  if(message)message.textContent="تغيّر البريد الإلكتروني؛ تحقق من المستلم مرة أخرى.";
-}
-
-async function findWalletTransferRecipient(){
-  const email=document.getElementById("walletTransferEmail").value.trim().toLowerCase();
-  const button=document.getElementById("walletTransferFindButton");
-  const panel=document.getElementById("walletTransferRecipient");
-  const message=document.getElementById("walletTransferMessage");
-  const submit=document.getElementById("walletTransferSubmitButton");
-  selectedWalletTransferRecipient=null;
-  submit.disabled=true;
-  panel.classList.add("hidden");
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    message.textContent="أدخل البريد الإلكتروني الصحيح للمستلم.";
-    return;
-  }
-  button.disabled=true;message.textContent="جاري التحقق من الحساب...";
-  try{
-    const {data,error}=await sb.rpc("baran_find_transfer_recipient",{p_email:email});
-    if(error)throw error;
-    const recipient=Array.isArray(data)?data[0]:null;
-    if(!recipient){message.textContent="لم نجد حساباً بهذا البريد. تأكد من البريد وأن الحساب ليس حسابك.";return;}
-    selectedWalletTransferRecipient={id:recipient.user_id,name:recipient.display_name,email};
-    panel.replaceChildren();
-    const label=document.createElement("span");label.textContent="المستلم المحدد: ";
-    const name=document.createElement("strong");name.textContent=recipient.display_name||"مستخدم Baran Game";
-    const mail=document.createElement("div");mail.className="small";mail.textContent=email;
-    panel.append(label,name,mail);panel.classList.remove("hidden");
-    submit.disabled=false;
-    message.textContent="تأكد من اسم المستلم والبريد قبل التحويل.";
-  }catch(error){
-    message.textContent=error.message||"تعذر التحقق من حساب المستلم.";
-  }finally{button.disabled=false;}
-}
-
-async function submitWalletTransfer(){
-  const submit=document.getElementById("walletTransferSubmitButton");
-  const message=document.getElementById("walletTransferMessage");
-  if(!currentUser){message.textContent="سجّل الدخول أولاً.";return;}
-  if(!selectedWalletTransferRecipient){message.textContent="تحقق من حساب المستلم أولاً.";return;}
-  if(document.getElementById("walletTransferEmail").value.trim().toLowerCase()!==selectedWalletTransferRecipient.email){clearWalletTransferRecipient();message.textContent="تحقق من البريد الإلكتروني للمستلم مرة أخرى.";return;}
-  const amount=Number(document.getElementById("walletTransferAmount").value);
-  const currency=document.getElementById("walletTransferCurrency").value;
-  const note=document.getElementById("walletTransferNote").value.trim();
-  if(!Number.isFinite(amount)||amount<=0||amount>1000000000000||
-     (currency==="SYP"&&!Number.isInteger(amount))||
-     (currency==="USD"&&Math.round(amount*100)!==amount*100)){
-    message.textContent=currency==="SYP"?"أدخل مبلغاً صحيحاً بالليرة دون كسور.":"أدخل مبلغاً صحيحاً بالدولار حتى منزلتين عشريتين.";
-    return;
-  }
-  if(note.length>120){message.textContent="الملاحظة طويلة جداً.";return;}
-  const fingerprint=[selectedWalletTransferRecipient.id,amount,currency,note].join("|");
-  if(!pendingWalletTransferRequestId||pendingWalletTransferFingerprint!==fingerprint){
-    pendingWalletTransferRequestId=crypto.randomUUID();
-    pendingWalletTransferFingerprint=fingerprint;
-  }
-  const amountLabel=currency==="USD"?amount.toFixed(2)+" $":amount.toLocaleString("en-US")+" ل.س";
-  if(!confirm("تأكيد تحويل "+amountLabel+" إلى "+selectedWalletTransferRecipient.name+" ("+selectedWalletTransferRecipient.email+")؟ سيتم خصم المبلغ فوراً من محفظتك."))return;
-  submit.disabled=true;message.textContent="جاري تنفيذ التحويل بأمان...";
-  try{
-    const {data,error}=await sb.rpc("baran_transfer_wallet",{
-      p_request_id:pendingWalletTransferRequestId,
-      p_recipient_id:selectedWalletTransferRecipient.id,
-      p_amount:amount,
-      p_currency:currency,
-      p_note:note||null
-    });
-    if(error)throw error;
-    if(!data?.success)throw new Error("لم يتم تأكيد التحويل من الخادم.");
-    pendingWalletTransferRequestId=null;pendingWalletTransferFingerprint=null;
-    document.getElementById("walletTransferAmount").value="";
-    document.getElementById("walletTransferNote").value="";
-    message.textContent="تم التحويل بنجاح. وصل الرصيد إلى محفظة المستلم، وسيصله إشعار.";
-    await Promise.all([loadWallet(),loadWalletTransferHistory()]);
-  }catch(error){
-    message.textContent=error.message||"تعذر تنفيذ التحويل. يمكنك إعادة المحاولة بأمان دون تكرار العملية.";
-  }finally{submit.disabled=!selectedWalletTransferRecipient;}
-}
-
 let walletExchangeRates={syp_to_usd_rate:14400,usd_to_syp_rate:14400};
 let pendingWalletExchangeRequestId=null;
 let pendingWalletExchangeFingerprint=null;
@@ -2530,36 +2412,6 @@ async function loadWalletExchangeHistory(){
   }catch(error){box.textContent="تعذر تحميل سجل تبديل العملات.";}
 }
 
-async function loadWalletTransferHistory(){
-  const box=document.getElementById("walletTransferHistory");
-  if(!currentUser||!box)return;
-  try{
-    const {data,error}=await sb.from("wallet_transfers")
-      .select("id,sender_id,recipient_id,amount,currency,note,created_at")
-      .or("sender_id.eq."+currentUser.id+",recipient_id.eq."+currentUser.id)
-      .order("created_at",{ascending:false}).limit(30);
-    if(error)throw error;
-    box.replaceChildren();
-    if(!data?.length){box.textContent="لا توجد تحويلات داخلية حتى الآن.";return;}
-    data.forEach(item=>{
-      const sent=item.sender_id===currentUser.id;
-      const row=document.createElement("article");row.className="wallet-transfer-row "+(sent?"sent":"received");
-      const title=document.createElement("strong");
-      title.textContent=sent?"تحويل صادر":"حوالة واردة";
-      const value=document.createElement("div");
-      value.textContent=(item.currency==="USD"?Number(item.amount).toFixed(2)+" $":Number(item.amount).toLocaleString("en-US")+" ل.س");
-      const note=document.createElement("div");note.className="small";
-      note.textContent=item.note||"بدون ملاحظة";
-      const date=document.createElement("time");date.className="small";
-      date.dateTime=item.created_at;date.textContent=new Date(item.created_at).toLocaleString("ar");
-      row.append(title,value,note,date);box.appendChild(row);
-    });
-  }catch(error){
-    box.textContent="تعذر تحميل سجل التحويلات حالياً.";
-    console.error("wallet transfer history:",error);
-  }
-}
-
 async function loadWallet(){
   if(!currentUser) return;
 
@@ -2661,19 +2513,7 @@ async function callAdminApi(method="GET",payload=null){
   return result;
 }
 
-function prepareWalletLayout(){
-  const wallet=document.getElementById("wallet");
-  const ownerTools=document.getElementById("walletAdminTransfers");
-  if(!wallet||!ownerTools)return;
-  const ownerFunding=document.getElementById("ownerWalletFundingPanel");
-  const customerTransfer=ownerTools.querySelector(".wallet-transfer-panel:not(#walletExchangeAdminPanel)");
-  const customerHistory=document.getElementById("walletTransferHistory")?.closest(".wallet-transfer-history");
-  if(customerTransfer&&customerTransfer.parentElement===ownerTools)wallet.insertBefore(customerTransfer,ownerFunding||null);
-  if(customerHistory&&customerHistory.parentElement===ownerTools)wallet.insertBefore(customerHistory,ownerFunding||null);
-}
-
 function moveOwnerWalletToolsToAdmin(){
-  prepareWalletLayout();
   const mount=document.getElementById("ownerWalletFinanceMount");
   const ownerTools=document.getElementById("walletAdminTransfers");
   if(!mount||!ownerTools)return;
