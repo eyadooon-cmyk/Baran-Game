@@ -464,6 +464,107 @@ section,.auth-card{border-color:#49345f}
  .finance-filter-row button{width:100%}
 }
 
+
+/* Wallet workspace — refined hierarchy and mobile-first forms */
+.wallet-page{isolation:isolate}
+.wallet-page>.wallet-hero{margin-bottom:16px}
+.wallet-balances{align-items:stretch}
+.wallet-balance-card{display:flex;flex-direction:column;justify-content:flex-start;min-height:174px}
+.wallet-balance-caption{margin-top:auto}
+.wallet-refresh-button{margin:4px 0 22px;letter-spacing:.1px}
+.wallet-page #walletAdminTransfers{display:grid;gap:14px;margin-top:10px}
+.wallet-page #walletAdminTransfers>.wallet-transfer-panel,
+.wallet-page #walletAdminTransfers>.wallet-transfer-history{margin:0}
+.wallet-page .wallet-transfer-panel,
+.wallet-page .wallet-transfer-history,
+.wallet-page #ownerWalletFundingPanel,
+.wallet-page #ownerUsdSalePanel,
+.wallet-page #customerDepositPanel{position:relative;min-width:0;padding:17px;margin:15px 0;border:1px solid #604779;border-radius:17px;background:linear-gradient(150deg,#21182b,#14101a 75%);box-shadow:0 8px 22px #0004}
+.wallet-page .wallet-transfer-heading{padding-bottom:13px;margin-bottom:13px;border-bottom:1px solid #60477966}
+.wallet-page .wallet-transfer-heading h2{font-size:17px;line-height:1.5;color:#eadcf5}
+.wallet-page .wallet-transfer-heading p{font-size:12px;line-height:1.7;color:#bfaecc}
+.wallet-page .wallet-transfer-icon{background:linear-gradient(145deg,#49305f,#24182f);border-color:#936ab2;color:#e6cafa;box-shadow:0 5px 14px #0004}
+.wallet-page .wallet-transfer-panel label,
+.wallet-page #ownerWalletFundingPanel label,
+.wallet-page #ownerUsdSalePanel label,
+.wallet-page #customerDepositPanel label{display:block;margin:13px 0 6px;color:#d0bfdf;font-size:13px;font-weight:700}
+.wallet-page .wallet-transfer-panel input,
+.wallet-page .wallet-transfer-panel select,
+.wallet-page #ownerWalletFundingPanel input,
+.wallet-page #ownerWalletFundingPanel select,
+.wallet-page #ownerUsdSalePanel input,
+.wallet-page #ownerUsdSalePanel select,
+.wallet-page #customerDepositPanel input,
+.wallet-page #customerDepositPanel select{width:100%;min-width:0;min-height:46px;margin:0;padding:11px 12px;border:1px solid #59416d;border-radius:11px;background:#100d16;color:#f5edf9}
+.wallet-page input[type=file]{padding:9px;font-size:12px}
+.wallet-page .wallet-transfer-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.wallet-page .wallet-transfer-search button{min-width:82px;margin:0;border-radius:11px}
+.wallet-page .wallet-transfer-recipient{margin:12px 0;padding:13px;border-color:#76518f;background:linear-gradient(120deg,#2a2035,#191421);font-size:13px;overflow-wrap:anywhere}
+.wallet-page .wallet-transfer-panel button.full,
+.wallet-page #ownerWalletFundingPanel button.full,
+.wallet-page #ownerUsdSalePanel button.full,
+.wallet-page #customerDepositPanel button.full{min-height:47px;margin-top:14px;border-radius:12px;background:linear-gradient(110deg,#965fc1,#63398b);color:#fff;box-shadow:0 6px 16px #0004}
+.wallet-page .wallet-transfer-panel button:disabled{filter:grayscale(.5);opacity:.5}
+.wallet-page .wallet-transfer-history{padding:15px}
+.wallet-page .wallet-transfer-history h2,
+.wallet-page #ownerWalletFundingPanel h2,
+.wallet-page #ownerUsdSalePanel h2,
+.wallet-page #customerDepositPanel h2{display:flex;align-items:center;gap:9px;margin:0 0 8px;color:#eadcf5;font-size:17px}
+.wallet-page .wallet-transfer-history h2:before{content:"↔";display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#392747;color:#d8b5f2;font-size:17px}
+.wallet-page #ownerWalletFundingPanel>p,
+.wallet-page #ownerUsdSalePanel>p,
+.wallet-page #customerDepositPanel>p{color:#c1b2cd;font-size:12px;line-height:1.8}
+.wallet-page .deposit-id{margin:12px 0;padding:13px;border:1px dashed #9870b6;border-radius:11px;background:#100c16;color:#e5cafa;font-size:13px;letter-spacing:.4px;overflow-wrap:anywhere}
+.wallet-page #depositHistory,
+.wallet-page #ownerFundingHistory,
+.wallet-page #walletExchangeHistory,
+.wallet-page #walletTransferHistory{display:grid;gap:8px;margin-top:10px}
+.wallet-page #depositHistory>div,
+.wallet-page #ownerFundingHistory>div,
+.wallet-page #walletExchangeHistory>div,
+.wallet-page #walletTransferHistory>div{padding:11px;border:1px solid #49345f;border-radius:11px;background:#17121f;line-height:1.7;overflow-wrap:anywhere}
+.wallet-page>h2{padding:12px 14px;margin:22px 0 10px!important;border-right:3px solid #a56bd6;border-radius:8px;background:#21182b;color:#eadcf5!important;font-size:17px}
+.wallet-page #walletAdminTransfers .finance-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.wallet-page #walletAdminTransfers .finance-card{background:#1a1422;border-color:#59416d}
+.wallet-page #walletAdminTransfers .finance-card strong{font-size:14px}
+.wallet-page #walletAdminTransfers .finance-card label{font-size:12px}
+.wallet-page #walletAdminTransfers .finance-card input{width:100%;min-width:0}
+.wallet-page #walletExchangePreview,
+.wallet-page #ownerUsdSalePreview{border-right:3px solid #a56bd6}
+.wallet-page #walletExchangeRatesMessage,
+.wallet-page #walletExchangeMessage,
+.wallet-page #walletTransferMessage,
+.wallet-page #ownerFundingMessage,
+.wallet-page #ownerUsdSaleMessage,
+.wallet-page #depositMessage{display:block;min-height:22px;margin-top:9px;padding:7px 9px;border-radius:8px;background:#ffffff08;line-height:1.7}
+@media(max-width:520px){
+ .wallet-page{padding:12px!important}
+ .wallet-page .wallet-hero{margin-left:0;margin-right:0}
+ .wallet-page .wallet-balance-card{min-height:150px}
+ .wallet-page .wallet-transfer-panel,
+ .wallet-page .wallet-transfer-history,
+ .wallet-page #ownerWalletFundingPanel,
+ .wallet-page #ownerUsdSalePanel,
+ .wallet-page #customerDepositPanel{padding:13px;margin:12px 0}
+ .wallet-page .wallet-transfer-heading{align-items:flex-start;gap:10px}
+ .wallet-page .wallet-transfer-icon{width:42px;height:42px;flex-basis:42px;font-size:23px}
+ .wallet-page .wallet-transfer-heading h2{font-size:15px}
+ .wallet-page #walletAdminTransfers .finance-grid{grid-template-columns:1fr}
+ .wallet-page .wallet-transfer-search{grid-template-columns:minmax(0,1fr) 78px}
+ .wallet-page .wallet-transfer-search button{padding:10px 8px}
+ .wallet-page #walletExchangeSubmitButton,
+ .wallet-page #walletTransferSubmitButton,
+ .wallet-page #ownerFundingSubmitButton,
+ .wallet-page #ownerUsdSaleSubmitButton,
+ .wallet-page #depositSubmitButton{width:100%}
+}
+@media(max-width:350px){
+ .wallet-page .wallet-balances{grid-template-columns:1fr}
+ .wallet-page .wallet-balance-card{min-height:135px}
+ .wallet-page .wallet-transfer-search{grid-template-columns:1fr}
+ .wallet-page .wallet-transfer-search button{width:100%}
+}
+
 </style>
 </head>
 <body>
