@@ -1677,13 +1677,6 @@ function showSection(id,button){
   if(!currentUser) return;
   const target=document.getElementById(id);
   if(!target) return;
-  // عند فتح طرق الدفع نبدأ دائماً بعرض الوسائل، ولا نفتح نموذج شام كاش تلقائياً.
-  if(id==="paymentMethods"){
-    const details=document.getElementById("shamCashDepositDetails");
-    const shamCashCard=document.querySelector(".shamcash-method");
-    if(details)details.classList.add("hidden");
-    if(shamCashCard)shamCashCard.classList.remove("hidden");
-  }
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
   target.classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
