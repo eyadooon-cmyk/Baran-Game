@@ -358,6 +358,18 @@ section,.auth-card{border-color:#49345f}
 .admin-subpanel-head h2{margin:0;font-size:19px}
 .admin-back{width:auto;flex:0 0 auto;padding:10px 13px}
 .admin-subpanel>section{margin:12px 0}
+.security-intro{margin:0 0 14px;color:#c9b9d7;line-height:1.7}
+.security-tabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0 18px}
+.security-tab{min-height:48px;padding:10px 8px;border:1px solid #5c4471;border-radius:12px;background:#1b1422;color:#d9c8e8;font-weight:700;font-size:13px}
+.security-tab.active{background:linear-gradient(135deg,#74449a,#43265d);border-color:#c18bed;color:#fff;box-shadow:0 5px 15px #0004}
+.security-view{padding:13px;background:#0e0b13;border:1px solid #44334f;border-radius:14px}
+.security-section-title{display:flex;align-items:center;gap:11px;margin:4px 0 12px}
+.security-section-title>span{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#281b35;font-size:21px}
+.security-section-title h3{margin:0 0 4px;font-size:15px;color:#f0e5fa}
+.security-section-title p{margin:0;color:#ad9dbb;font-size:12px;line-height:1.6}
+.security-note{padding:11px;margin:10px 0 12px;border:1px solid #725a36;border-radius:10px;background:#211a10;color:#ead6ae;font-size:12px;line-height:1.7}
+.security-divider{height:1px;background:#40334b;margin:18px 0}
+@media(max-width:360px){.security-tabs{grid-template-columns:1fr}.security-tab{min-height:42px}}
 @media(max-width:360px){.admin-hub-grid{grid-template-columns:1fr}.admin-hub-card{min-height:120px}}
 @media(min-width:700px){.admin-hub-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
@@ -1034,25 +1046,32 @@ section,.auth-card{border-color:#49345f}
 
       <div class="admin-subpanel hidden" data-admin-panel="security">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الأمان والإيداعات</h2></div>
-        <hr style="border-color:#40334b;margin:24px 0">
-      <h2>سجل أمان وعمليات الإدارة 🛡️</h2>
-      <p class="small">سجل داخلي لعمليات تحديث الطلبات والموردين ونقاط الولاء.</p>
-      <div id="opsAuditLog" class="ops-list">جاري تحميل سجل العمليات...</div>
-      <button class="full secondary" type="button" onclick="window.location.href='./manage-products.html'">إدارة المنتجات وسعر الصرف 💱</button>
-      <p class="small">راجع إشعار التحويل في شام كاش أولاً. الموافقة تضيف الرصيد مرة واحدة فقط، والرفض لا يغيّر الرصيد.</p>
-      <h2>تنبيهات الإدارة 🔔</h2>
-      <p class="small">تنبيهات فورية عند وصول طلب جديد أو إيداع أو تذكرة دعم.</p>
-      <div id="adminNotifications" class="notification-box">جاري تحميل تنبيهات الإدارة...</div>
-      <button class="full secondary" onclick="loadAdminPanel()">تحديث طلبات الإيداع</button>
-      <div id="adminMessage" class="small" role="status"></div>
-      <h3>طلبات شحن الزبائن</h3>
-      <div id="adminRequests">جاري تحميل الطلبات...</div>
-      <h3 style="margin-top:18px">طلبات شحن محفظة المالك</h3>
-      <div id="adminOwnerFundingRequests">جاري تحميل طلبات المالك...</div>
-      <h3 style="margin-top:18px">طلبات شحن الدولار للزبائن مقابل حوالة شام كاش</h3>
-      <div id="adminOwnerUsdSaleRequests">جاري تحميل طلبات شحن الدولار...</div>
-
-      
+        <p class="small security-intro">إدارة طلبات شحن المحافظ ومراجعة سجل العمليات والتنبيهات من مكان واحد.</p>
+        <div class="security-tabs" role="tablist" aria-label="أقسام الأمان والإيداعات">
+          <button type="button" class="security-tab active" id="securityDepositsTab" role="tab" aria-selected="true" onclick="switchSecurityDepositTab('deposits')">💳 طلبات الإيداع</button>
+          <button type="button" class="security-tab" id="securityLogTab" role="tab" aria-selected="false" onclick="switchSecurityDepositTab('security')">🛡️ سجل الأمان والتنبيهات</button>
+        </div>
+        <section id="securityDepositsView" class="security-view" role="tabpanel" aria-labelledby="securityDepositsTab">
+          <div class="security-section-title"><span>💳</span><div><h3>طلبات شحن الزبائن</h3><p>راجع بيانات التحويل وإثبات شام كاش قبل اتخاذ القرار.</p></div></div>
+          <div class="security-note">الموافقة تضيف الرصيد مرة واحدة فقط. لا توافق قبل مطابقة الحوالة فعلياً في شام كاش.</div>
+          <button class="full secondary" type="button" onclick="loadAdminPanel()">↻ تحديث طلبات الإيداع</button>
+          <div id="adminMessage" class="small" role="status"></div>
+          <div id="adminRequests">جاري تحميل الطلبات...</div>
+          <div class="security-divider"></div>
+          <div class="security-section-title"><span>👑</span><div><h3>شحن محفظة المالك</h3><p>طلبات تمويل محفظة الإدارة.</p></div></div>
+          <div id="adminOwnerFundingRequests">جاري تحميل طلبات المالك...</div>
+          <div class="security-divider"></div>
+          <div class="security-section-title"><span>💵</span><div><h3>شحن الدولار للزبائن</h3><p>مقابل حوالة شام كاش.</p></div></div>
+          <div id="adminOwnerUsdSaleRequests">جاري تحميل طلبات شحن الدولار...</div>
+        </section>
+        <section id="securityAuditView" class="security-view hidden" role="tabpanel" aria-labelledby="securityLogTab">
+          <div class="security-section-title"><span>🛡️</span><div><h3>سجل أمان وعمليات الإدارة</h3><p>مراجعة تغييرات الطلبات والموردين ونقاط الولاء.</p></div></div>
+          <div id="opsAuditLog" class="ops-list">جاري تحميل سجل العمليات...</div>
+          <button class="full secondary" type="button" onclick="window.location.href='./manage-products.html'">⚙️ إدارة المنتجات وسعر الصرف</button>
+          <div class="security-divider"></div>
+          <div class="security-section-title"><span>🔔</span><div><h3>تنبيهات الإدارة</h3><p>تنبيهات وصول طلب جديد أو إيداع أو تذكرة دعم.</p></div></div>
+          <div id="adminNotifications" class="notification-box">جاري تحميل تنبيهات الإدارة...</div>
+        </section>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="recovery">
@@ -1303,6 +1322,21 @@ function showLogin(text){
   if(text) say(text);
 }
 
+
+function switchSecurityDepositTab(tab){
+  const deposits=tab==="deposits";
+  const depositsView=document.getElementById("securityDepositsView");
+  const securityView=document.getElementById("securityAuditView");
+  const depositsButton=document.getElementById("securityDepositsTab");
+  const securityButton=document.getElementById("securityLogTab");
+  if(!depositsView||!securityView||!depositsButton||!securityButton)return;
+  depositsView.classList.toggle("hidden",!deposits);
+  securityView.classList.toggle("hidden",deposits);
+  depositsButton.classList.toggle("active",deposits);
+  securityButton.classList.toggle("active",!deposits);
+  depositsButton.setAttribute("aria-selected",String(deposits));
+  securityButton.setAttribute("aria-selected",String(!deposits));
+}
 
 function showAdminPanel(id){
   const admin=document.getElementById("admin");
