@@ -2654,7 +2654,7 @@ async function checkAdminAccess(){
     await callAdminApi("POST",{action:"admin_check"});
     if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
-    if(currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){if(walletAdminTransfers)walletAdminTransfers.classList.remove("hidden");document.getElementById("ownerWalletFundingPanel")?.classList.remove("hidden");document.getElementById("ownerUsdSalePanel")?.classList.remove("hidden");document.getElementById("customerDepositPanel")?.classList.add("hidden");loadWalletExchangeSettings();loadWalletExchangeHistory();loadOwnerFundingHistory();}
+    if(currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){if(walletAdminTransfers)walletAdminTransfers.classList.remove("hidden");document.getElementById("ownerWalletFundingPanel")?.classList.remove("hidden");document.getElementById("ownerUsdSalePanel")?.classList.remove("hidden");/* Customer deposit form remains visible for the owner on the payment screen. */loadWalletExchangeSettings();loadWalletExchangeHistory();loadOwnerFundingHistory();}
     return true;
   }catch(error){
     console.error("Baran Game admin access check failed:",error.message);
