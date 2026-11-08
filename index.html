@@ -634,6 +634,17 @@ section,.auth-card{border-color:#49345f}
 .shamcash-card-shell .shamcash-payment-section{margin:0;padding:12px;border:0;background:transparent}
 .shamcash-card-shell #shamCashPayment{margin:0;padding:0 12px 14px;border:0;border-radius:0;background:transparent;box-shadow:none}
 .shamcash-card-shell #shamCashPayment .deposit-card{padding:14px;border-radius:13px}
+/* Sham Cash opens as an in-page detail screen, not an expanded payment card */
+.shamcash-detail-top{padding:4px 0 18px;margin-bottom:16px;border-bottom:1px solid #493756}
+.shamcash-back-button{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;margin:0 0 16px;background:#30243a;color:#eee8f4;border:1px solid #665078;border-radius:11px}
+.shamcash-detail-brand{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid #70518a;border-radius:15px;background:linear-gradient(120deg,#2b2038,#191421)}
+.shamcash-detail-brand .payment-method-logo-wrap{width:58px;height:58px;flex-basis:58px}
+.shamcash-detail-brand>div{display:flex;flex-direction:column;gap:4px}
+.shamcash-detail-brand strong{font-size:18px;color:#fff}
+.shamcash-detail-brand small{font-size:12px;color:#c9b8d7}
+#shamCashPayment{padding:0;border:0;background:transparent}
+#shamCashPayment .shamcash-deposit-details>.deposit-card{margin:0;padding:17px;border:1px solid #665078;border-radius:15px;background:#17121e}
+
 </style>
 </head>
 <body>
@@ -1047,80 +1058,88 @@ section,.auth-card{border-color:#49345f}
     </section>
 
     <section id="paymentMethods" class="hidden payment-methods-page">
-      <div class="payment-methods-hero">
-        <span class="wallet-eyebrow">BARAN GAME · PAYMENTS</span>
-        <h2>طرق الدفع</h2>
-        <p>اختر وسيلة الدفع المناسبة لشحن محفظتك.</p>
+      <div id="paymentMethodsList">
+        <div class="payment-methods-hero">
+          <span class="wallet-eyebrow">BARAN GAME · PAYMENTS</span>
+          <h2>طرق الدفع</h2>
+          <p>اختر وسيلة الدفع المناسبة لشحن محفظتك.</p>
+        </div>
+        <div class="payment-methods-caption"><span aria-hidden="true">🔒</span><span>شام كاش متاحة حالياً، وباقي الوسائل ستُفعّل قريباً</span></div>
+        <div class="shamcash-card-shell">
+          <button class="payment-method-card shamcash-method" type="button" aria-controls="shamCashPayment" aria-expanded="false" onclick="showShamCashDeposit()">
+            <span class="payment-method-logo-wrap">
+              <img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&ssl=1" alt="شعار شام كاش" loading="lazy">
+            </span>
+            <span class="payment-method-info">
+              <strong>شام كاش</strong>
+              <small>تحويل رصيدك إلى محفظة Baran Game</small>
+              <em><span class="payment-method-status">متاحة الآن</span> · اضغط لعرض تفاصيل الدفع وإرسال طلب الشحن</em>
+            </span>
+            <span class="payment-method-arrow" aria-hidden="true">‹</span>
+          </button>
+        </div>
+        <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
+          <span class="payment-method-logo-wrap"><span style="font-size:27px;font-weight:900;color:#d84b62">S</span></span>
+          <span class="payment-method-info">
+            <strong>سيريتل كاش</strong>
+            <small>الدفع من محفظة سيريتل كاش</small>
+            <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
+          </span>
+        </div>
+        <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
+          <span class="payment-method-logo-wrap"><span style="font-size:23px;font-weight:900;color:#f0a52b">MTN</span></span>
+          <span class="payment-method-info">
+            <strong>MTN كاش</strong>
+            <small>الدفع من محفظة MTN كاش</small>
+            <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
+          </span>
+        </div>
       </div>
-      <div class="payment-methods-caption"><span aria-hidden="true">🔒</span><span>شام كاش متاحة حالياً، وباقي الوسائل ستُفعّل قريباً</span></div>
-      <div class="shamcash-card-shell">
-<button class="payment-method-card shamcash-method" type="button" aria-controls="shamCashPayment" aria-expanded="false" onclick="showShamCashDeposit()">
-        <span class="payment-method-logo-wrap">
-          <img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&ssl=1" alt="شعار شام كاش" loading="lazy">
-        </span>
-        <span class="payment-method-info">
-          <strong>شام كاش</strong>
-          <small>تحويل رصيدك إلى محفظة Baran Game</small>
-          <em><span class="payment-method-status">متاحة الآن</span> · اضغط لعرض تفاصيل الدفع وإرسال طلب الشحن</em>
-        </span>
-        <span class="payment-method-arrow" aria-hidden="true">‹</span>
-      </button>
+
       <div id="shamCashPayment" class="hidden shamcash-payment-section">
-<div id="shamCashDepositDetails" class="shamcash-deposit-details">
-              <div class="deposit-card" id="customerDepositPanel">
-        <div class="shamcash-payment-heading">
-          <span class="wallet-eyebrow">SHAM CASH · WALLET TOP-UP</span>
-          <h2>الدفع عبر شام كاش</h2>
-          <p>أكمل التحويل من تطبيق شام كاش، ثم ارجع لهون وأرسل إثبات التحويل حتى نراجع طلبك ونضيف الرصيد بعد التأكد من وصول الحوالة.</p>
+        <div class="shamcash-detail-top">
+          <button class="shamcash-back-button" type="button" onclick="hideShamCashDeposit()">‹ رجوع إلى طرق الدفع</button>
+          <div class="shamcash-detail-brand">
+            <span class="payment-method-logo-wrap"><img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&ssl=1" alt="شعار شام كاش"></span>
+            <div><strong>شام كاش</strong><small>تفاصيل شحن محفظة Baran Game</small></div>
+          </div>
         </div>
-        <div class="shamcash-payment-steps">
-          <div><b>1</b><span>انسخ معرّف الاستلام وحوّل المبلغ من تطبيق شام كاش.</span></div>
-          <div><b>2</b><span>أدخل العملة والمبلغ ورقم العملية.</span></div>
-          <div><b>3</b><span>أرفق صورة الإشعار واضغط إرسال الطلب.</span></div>
+        <div id="shamCashDepositDetails" class="shamcash-deposit-details">
+          <div class="deposit-card" id="customerDepositPanel">
+            <div class="shamcash-payment-heading">
+              <span class="wallet-eyebrow">SHAM CASH · WALLET TOP-UP</span>
+              <h2>شحن المحفظة عبر شام كاش</h2>
+              <p>حوّل المبلغ من تطبيق شام كاش إلى معرّف الاستلام، ثم أدخل بيانات التحويل وأرسل الإيصال للمراجعة.</p>
+            </div>
+            <div class="shamcash-payment-steps">
+              <div><b>1</b><span>انسخ معرّف الاستلام وحوّل المبلغ من تطبيق شام كاش.</span></div>
+              <div><b>2</b><span>أدخل العملة والمبلغ ورقم العملية.</span></div>
+              <div><b>3</b><span>أرفق صورة الإشعار واضغط إرسال الطلب.</span></div>
+            </div>
+            <label class="shamcash-field-label">معرّف محفظة الاستلام</label>
+            <div class="deposit-id" dir="ltr" id="shamCashReceiver">bf37143ce15dd68389c21285e71818d1</div>
+            <button class="full" type="button" onclick="copyShamCashReceiver()">نسخ معرّف الاستلام</button>
+            <label for="depositCurrency">عملة التحويل</label>
+            <select id="depositCurrency">
+              <option value="USD">دولار أمريكي (USD)</option>
+              <option value="SYP">ليرة سورية (SYP)</option>
+            </select>
+            <label for="depositAmount">المبلغ المحوّل</label>
+            <input id="depositAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
+            <label for="depositReference">رقم العملية / مرجع التحويل</label>
+            <input id="depositReference" type="text" maxlength="120" placeholder="أدخل رقم العملية الظاهر بإشعار شام كاش">
+            <label for="depositReceipt">صورة إشعار التحويل (إلزامية)</label>
+            <input id="depositReceipt" type="file" accept="image/jpeg,image/png,image/webp">
+            <p class="small">الصيغ المقبولة: JPG أو PNG أو WEBP، والحد الأقصى 5 ميغابايت. اخفِ أي بيانات لا نحتاجها قبل الإرسال.</p>
+            <button id="depositSubmitButton" class="full" type="button" onclick="submitDepositRequest()">أتممت التحويل — تأكيد وإرسال طلب الشحن</button>
+            <p class="small shamcash-payment-note">مهم: إرسال الطلب لا يعني إضافة الرصيد فوراً. صورة الإشعار للمراجعة فقط، وسيُضاف الرصيد بعد التحقق من وصول الحوالة فعلياً.</p>
+            <div id="depositMessage" class="small" role="status"></div>
+          </div>
+          <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
+          <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
         </div>
-        <label class="shamcash-field-label">معرّف محفظة الاستلام</label>
-        <div class="deposit-id" dir="ltr" id="shamCashReceiver">bf37143ce15dd68389c21285e71818d1</div>
-        <button class="full" type="button" onclick="copyShamCashReceiver()">نسخ معرّف الاستلام</button>
-        <label for="depositCurrency">عملة التحويل</label>
-        <select id="depositCurrency">
-          <option value="USD">دولار أمريكي (USD)</option>
-          <option value="SYP">ليرة سورية (SYP)</option>
-        </select>
-        <label for="depositAmount">المبلغ المحوّل</label>
-        <input id="depositAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
-        <label for="depositReference">رقم العملية / مرجع التحويل</label>
-        <input id="depositReference" type="text" maxlength="120" placeholder="أدخل رقم العملية الظاهر بإشعار شام كاش">
-        <label for="depositReceipt">صورة إشعار التحويل (إلزامية)</label>
-        <input id="depositReceipt" type="file" accept="image/jpeg,image/png,image/webp">
-        <p class="small">الصيغ المقبولة: JPG أو PNG أو WEBP، والحد الأقصى 5 ميغابايت. اخفِ أي بيانات لا نحتاجها قبل الإرسال.</p>
-        <button id="depositSubmitButton" class="full" type="button" onclick="submitDepositRequest()">أتممت التحويل — تأكيد وإرسال طلب الشحن</button>
-        <p class="small shamcash-payment-note">مهم: إرسال الطلب لا يعني إضافة الرصيد فوراً. صورة الإشعار للمراجعة فقط، وسيُضاف الرصيد بعد التحقق من وصول الحوالة فعلياً.</p>
-        <div id="depositMessage" class="small" role="status"></div>
       </div>
-              <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
-      <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
-      </div>
-</div>
-      </div>
-      <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
-        <span class="payment-method-logo-wrap"><span style="font-size:27px;font-weight:900;color:#d84b62">S</span></span>
-        <span class="payment-method-info">
-          <strong>سيريتل كاش</strong>
-          <small>الدفع من محفظة سيريتل كاش</small>
-          <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
-        </span>
-      </div>
-      <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
-        <span class="payment-method-logo-wrap"><span style="font-size:23px;font-weight:900;color:#f0a52b">MTN</span></span>
-        <span class="payment-method-info">
-          <strong>MTN كاش</strong>
-          <small>الدفع من محفظة MTN كاش</small>
-          <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
-        </span>
-      </div>
-      
-      
-      </section>
+    </section>
 <section id="settings" class="hidden">
       <h2>الإعدادات ⚙️</h2>
       <p class="small">تحكّم بإشعارات Baran Game على هذا الجهاز.</p>
@@ -1722,20 +1741,24 @@ function showSection(id,button){
 }
 
 function showShamCashDeposit(){
+  const list=document.getElementById("paymentMethodsList");
   const card=document.querySelector(".shamcash-method");
   const panel=document.getElementById("shamCashPayment");
-  if(!card||!panel)return;
+  if(!list||!card||!panel)return;
+  list.classList.add("hidden");
   panel.classList.remove("hidden");
   card.setAttribute("aria-expanded","true");
   if(typeof loadDepositRequests==="function")loadDepositRequests();
-  requestAnimationFrame(()=>panel.scrollIntoView({behavior:"smooth",block:"nearest"}));
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 function hideShamCashDeposit(){
+  const list=document.getElementById("paymentMethodsList");
   const card=document.querySelector(".shamcash-method");
   const panel=document.getElementById("shamCashPayment");
-  if(card)card.setAttribute("aria-expanded","false");
   if(panel)panel.classList.add("hidden");
-  if(card)card.scrollIntoView({behavior:"smooth",block:"center"});
+  if(list)list.classList.remove("hidden");
+  if(card)card.setAttribute("aria-expanded","false");
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function toggleSideMenu(){
