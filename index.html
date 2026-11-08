@@ -374,6 +374,29 @@ section,.auth-card{border-color:#49345f}
 .store-search-result small{display:block;color:#bba9ca;margin-top:3px}
 .store-search-empty{padding:10px;color:#c6b6d3;font-size:13px}
 @media(max-width:380px){.store-search-row{flex-wrap:wrap}.store-search-row input{min-width:65%}.store-search-row button{flex:1}}
+
+/* Support workspace — clear mobile-first tabs and separated panels */
+.support-workspace{margin:14px 0}
+.support-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:6px;margin:0 0 14px;background:#0d0a12;border:1px solid #49345f;border-radius:15px;position:sticky;top:8px;z-index:5}
+.support-tab{min-width:0;min-height:48px;padding:10px 8px;border:1px solid #59416d;border-radius:11px;background:#1b1424;color:#d8c5e8;font-size:13px;font-weight:800;line-height:1.45}
+.support-tab.active{background:linear-gradient(135deg,#75469a,#43265d);border-color:#c49be2;color:#fff;box-shadow:0 4px 14px #0005}
+.support-view{min-width:0}
+.support-section{margin:0!important;padding:14px!important;border:1px solid #604779!important;border-radius:16px!important;background:linear-gradient(155deg,#1b1423,#100d15)!important}
+.support-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid #49345f}
+.support-section-head h2{margin:0 0 4px;font-size:18px;color:#eadcf5}
+.support-section-head .small{margin:0;line-height:1.7}
+.support-refresh{width:auto;min-width:88px;flex:0 0 auto}
+.support-filters{display:grid;grid-template-columns:1fr;gap:0}
+.support-filters .ops-form{margin:6px 0;padding:12px}
+.support-filters input,.support-filters select{width:100%;min-width:0;box-sizing:border-box}
+#baranAutoSupportStats .ops-card{background:#21182c;border-color:#604779}
+#baranAutoSupportQueue .ops-item,#adminFeedback .ops-item{padding:15px;border-radius:14px;border-color:#59446b;background:linear-gradient(145deg,#1c1625,#14101a);box-shadow:0 5px 14px #0002}
+#baranAutoSupportQueue .ops-item strong,#adminFeedback .ops-item>strong{display:block;font-size:14px;line-height:1.7;color:#ead8fa}
+#baranAutoSupportQueue .ops-item p,#adminFeedback .ops-item p{margin:8px 0;line-height:1.8}
+#adminFeedback .ops-item button{width:100%;min-height:42px;margin-top:8px}
+#adminFeedback .ops-item textarea,#adminFeedback .ops-item select{width:100%;box-sizing:border-box;min-width:0}
+@media(min-width:700px){.support-filters{grid-template-columns:1.2fr 1fr;gap:10px}.support-tabs{position:static}}
+@media(max-width:360px){.support-tab{font-size:11px;padding:9px 5px}.support-section{padding:10px!important}.support-section-head h2{font-size:16px}}
 </style>
 </head>
 <body>
@@ -1069,36 +1092,34 @@ section,.auth-card{border-color:#49345f}
 
       <div class="admin-subpanel hidden" data-admin-panel="support">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الدعم والردود الآلية</h2></div>
-        <section id="baranAutoSupportPanel" class="deposit-card" aria-label="متابعة الردود الآلية" style="margin:16px 0;padding:16px;border:1px solid #8b6ba8">
-        <h2>🤖 متابعة الردود الآلية وتذاكر الإدارة</h2>
-        <p class="small">سجل مباشر لحالة كل تذكرة دعم: الردود التي أرسلها المساعد، والحالات التي حوّلها إليك مع السبب، وأي محاولة فاشلة. هذا القسم للمتابعة فقط ولا ينفذ أي إجراء مالي.</p>
-        <div id="baranAutoSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
-        <div class="ops-actions"><button class="secondary" type="button" onclick="loadAdminPanel()">🔄 تحديث سجل الردود</button></div>
-        <div id="baranAutoSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
-      </section>
-
-      <h2>💬 رسائل الزبائن والتذاكر</h2>
-      <p class="small">ابحث برقم التذكرة أو الموضوع أو نص الرسالة، ثم افتح البطاقة واكتب الرد وحدد الحالة. الرد لا يُرسل إلا بعد ضغطك على زر الحفظ.</p>
-      <div class="ops-form" style="margin:12px 0">
-        <label for="adminFeedbackSearch">بحث في الرسائل والتذاكر</label>
-        <input id="adminFeedbackSearch" type="search" maxlength="160" placeholder="مثلاً BG-2026 أو كلمة من الرسالة..." oninput="filterAdminFeedback()">
-        <label for="adminFeedbackTypeFilter">نوع الرسالة</label>
-        <select id="adminFeedbackTypeFilter" onchange="filterAdminFeedback()">
-          <option value="all">كل الرسائل</option>
-          <option value="support">تذاكر الدعم فقط</option>
-          <option value="review">التقييمات والاقتراحات</option>
-        </select>
-        <label for="adminFeedbackStatusFilter">الحالة</label>
-        <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()">
-          <option value="all">كل الحالات</option>
-          <option value="pending">بانتظار الرد</option>
-          <option value="in_progress">قيد المتابعة</option>
-          <option value="completed">مكتملة</option>
-          <option value="rejected">مغلقة/مرفوضة</option>
-          <option value="approved">تقييم معتمد</option>
-        </select>
-      </div>
-      <div id="adminFeedback" class="ops-list">جاري تحميل الرسائل...</div>
+        <div class="support-workspace">
+          <div class="support-tabs" role="tablist" aria-label="أقسام الدعم">
+            <button type="button" class="support-tab active" id="supportTabAuto" role="tab" aria-selected="true" onclick="switchSupportTab('auto')">🤖 الردود الآلية</button>
+            <button type="button" class="support-tab" id="supportTabTickets" role="tab" aria-selected="false" onclick="switchSupportTab('tickets')">💬 رسائل الزبائن والتذاكر</button>
+          </div>
+          <div id="supportAutoView" class="support-view">
+            <section id="baranAutoSupportPanel" class="deposit-card support-section" aria-label="متابعة الردود الآلية">
+              <div class="support-section-head"><div><h2>🤖 مركز متابعة المساعد</h2><p class="small">تابع الردود التي أرسلها المساعد، والتذاكر التي تحتاج تدخلك، وأسباب التحويل.</p></div><button class="secondary support-refresh" type="button" onclick="loadAdminPanel()">🔄 تحديث</button></div>
+              <div id="baranAutoSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
+              <div id="baranAutoSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
+            </section>
+          </div>
+          <div id="supportTicketsView" class="support-view hidden">
+            <section class="deposit-card support-section" aria-label="رسائل الزبائن والتذاكر">
+              <div class="support-section-head"><div><h2>💬 صندوق رسائل الزبائن</h2><p class="small">ابحث عن التذكرة، راجع الرسالة، ثم اكتب الرد وحدد الحالة. لا يُرسل الرد قبل الضغط على حفظ.</p></div><button class="secondary support-refresh" type="button" onclick="loadAdminPanel()">🔄 تحديث</button></div>
+              <div class="support-filters">
+                <div class="ops-form"><label for="adminFeedbackSearch">🔎 البحث في الرسائل</label><input id="adminFeedbackSearch" type="search" maxlength="160" placeholder="رقم التذكرة أو كلمة من الرسالة..." oninput="filterAdminFeedback()"></div>
+                <div class="ops-form">
+                  <label for="adminFeedbackTypeFilter">نوع الرسالة</label>
+                  <select id="adminFeedbackTypeFilter" onchange="filterAdminFeedback()"><option value="all">كل الرسائل</option><option value="support">تذاكر الدعم فقط</option><option value="review">التقييمات والاقتراحات</option></select>
+                  <label for="adminFeedbackStatusFilter">حالة التذكرة</label>
+                  <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()"><option value="all">كل الحالات</option><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المتابعة</option><option value="completed">مكتملة</option><option value="rejected">مغلقة/مرفوضة</option><option value="approved">تقييم معتمد</option></select>
+                </div>
+              </div>
+              <div id="adminFeedback" class="ops-list">جاري تحميل الرسائل...</div>
+            </section>
+          </div>
+        </div>
 
       
       </div>
@@ -2437,6 +2458,21 @@ function renderBaranFinancialSupportQueue(rows,feedbackRows){
     const footer=document.createElement("p");footer.className="ops-muted";footer.textContent="عدد المحاولات: "+Number(item.attempts||0);card.appendChild(footer);
     box.appendChild(card);
   });
+}
+
+function switchSupportTab(tab){
+  const auto=tab!=="tickets";
+  const autoView=document.getElementById("supportAutoView");
+  const ticketsView=document.getElementById("supportTicketsView");
+  const autoButton=document.getElementById("supportTabAuto");
+  const ticketsButton=document.getElementById("supportTabTickets");
+  if(!autoView||!ticketsView||!autoButton||!ticketsButton)return;
+  autoView.classList.toggle("hidden",!auto);
+  ticketsView.classList.toggle("hidden",auto);
+  autoButton.classList.toggle("active",auto);
+  ticketsButton.classList.toggle("active",!auto);
+  autoButton.setAttribute("aria-selected",String(auto));
+  ticketsButton.setAttribute("aria-selected",String(!auto));
 }
 
 let baranAdminFeedbackRows=[];
