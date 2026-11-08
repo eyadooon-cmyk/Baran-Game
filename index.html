@@ -645,6 +645,184 @@ section,.auth-card{border-color:#49345f}
 #shamCashPayment{padding:0;border:0;background:transparent}
 #shamCashPayment .shamcash-deposit-details>.deposit-card{margin:0;padding:17px;border:1px solid #665078;border-radius:15px;background:#17121e}
 
+
+/* BARAN GAME — visual refresh v1 (CSS only; business logic unchanged) */
+:root{
+  --green:#a879d2;
+  --bg:#08070d;
+  --panel:#15111c;
+  --line:#493657;
+  --muted:#b9a9c9;
+  --baran-purple:#9b68c7;
+  --baran-purple-light:#d8c1ed;
+  --baran-gold:#e4c47a;
+}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(ellipse at 50% -12%,rgba(111,65,150,.22),transparent 42%),
+    linear-gradient(180deg,#0a0810 0%,#09070d 48%,#08070c 100%);
+  color:#f5effa;
+}
+header{
+  min-height:285px;
+  padding:48px 16px 38px;
+  background:
+    linear-gradient(105deg,rgba(8,7,13,.96),rgba(24,15,34,.76) 52%,rgba(8,7,13,.93)),
+    url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=85") center 42%/cover no-repeat;
+  border-bottom:1px solid #9b68c7;
+  box-shadow:0 16px 42px #0009,0 1px 18px #9b68c722;
+}
+header .logo{color:#f6efff;text-shadow:0 0 14px #a879d2aa,0 0 34px #7b45a588}
+header .logo-mark{
+  border:1px solid #c6a6e2;
+  background:linear-gradient(145deg,#39264a,#100b17);
+  color:#e5d2f5;
+  box-shadow:0 0 22px #9b68c755,inset 0 0 14px #9b68c722;
+}
+header .header-tag{
+  border-color:#a879d288;
+  background:#130d1dcc;
+  color:#e0c9f2;
+  box-shadow:0 4px 18px #0005;
+}
+.store-toolbar{
+  background:rgba(13,10,18,.94);
+  border-bottom:1px solid #493657;
+  backdrop-filter:blur(14px);
+}
+.toolbar-brand span{color:#c39ae3}
+.menu-toggle,.notification-bell{
+  background:linear-gradient(145deg,#30203e,#1a1223);
+  border-color:#76538f;
+  color:#e2c9f4;
+}
+nav{background:#0e0a14;border-color:#493657}
+nav button{background:#21182b;color:#e9dff1}
+nav button.active{
+  background:linear-gradient(135deg,#c49ae2,#8051a5);
+  color:#140d1b;
+  box-shadow:0 4px 14px #9b68c744;
+}
+section,.auth-card{
+  background:linear-gradient(155deg,rgba(27,20,36,.98),rgba(17,13,23,.98));
+  border:1px solid #493657;
+  border-radius:19px;
+  box-shadow:0 10px 28px #0005,inset 0 1px #ffffff08;
+}
+h2{color:#d2b6e9}
+.hero{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 90% 5%,#9b68c733,transparent 38%),
+    linear-gradient(125deg,#30203f,#17111f 68%,#100c16);
+  border:1px solid #76538f;
+  box-shadow:0 12px 30px #0006;
+}
+.hero:after{
+  content:"";
+  position:absolute;
+  left:-45px;bottom:-85px;
+  width:190px;height:190px;
+  border:1px solid #c49ae233;border-radius:50%;
+  box-shadow:0 0 0 18px #c49ae20a,0 0 0 38px #c49ae207;
+  pointer-events:none;
+}
+.item,.product-card,.deposit-card,.finance-card,.ops-card{
+  background:linear-gradient(155deg,#241a30,#17121e 76%);
+  border-color:#59416d;
+  box-shadow:0 8px 22px #0004;
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.item:hover,.product-card:hover{
+  transform:translateY(-3px);
+  border-color:#a879d2;
+  box-shadow:0 12px 26px #0007,0 0 18px #9b68c722;
+}
+.item img{
+  background:#100b16;
+  border-bottom:1px solid #59416d;
+}
+.item-content{padding:16px}
+.item strong,.product-card strong{color:#e0c9f2}
+.product-prices{color:#d3b6ea}
+button{
+  background:linear-gradient(135deg,#c49ae2,#8b5bb0);
+  color:#160e1d;
+  box-shadow:0 4px 12px #0004;
+  transition:filter .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+button:hover{filter:brightness(1.09);box-shadow:0 6px 17px #9b68c744}
+button:active{transform:scale(.98)}
+button.secondary{
+  background:linear-gradient(135deg,#382747,#251a31);
+  color:#f1e7f8;
+  border:1px solid #684d7d;
+}
+input,textarea,select{
+  background:#0c0911;
+  border:1px solid #493657;
+  color:#f5effa;
+  border-radius:12px;
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+input:focus,textarea:focus,select:focus{
+  outline:none;
+  border-color:#b487d6;
+  box-shadow:0 0 0 3px #9b68c72b;
+}
+.balance,.ops-card .ops-value,.finance-card strong{
+  color:var(--baran-gold);
+  text-shadow:0 0 15px #e4c47a22;
+}
+.finance-card,.ops-card{
+  border-radius:15px;
+  background:linear-gradient(145deg,#241b2c,#17121d);
+}
+.finance-card strong{font-size:20px}
+.finance-entry,.ops-item,.admin-request,.deposit-row{
+  background:#17111e;
+  border-color:#493657;
+  border-radius:13px;
+}
+.deposit-id{color:#e4c47a;border-color:#9b7a3f;background:#100d12}
+.deposit-status{color:#e4c47a}
+.drawer-backdrop{backdrop-filter:blur(3px)}
+.side-drawer{
+  background:linear-gradient(160deg,#21172c,#0a080e 78%);
+  border-left-color:#76538f;
+}
+.drawer-profile-card{
+  background:linear-gradient(125deg,#3b2850,#19111f 82%);
+  border-color:#8d68a8;
+}
+.drawer-link{
+  background:#1c1524;
+  border-color:#493657;
+}
+.drawer-link:hover,.drawer-link:active{
+  background:#30203f;
+  border-color:#a879d2;
+}
+.notification-panel,.ai-assistant-panel{
+  border-color:#8055a0;
+  box-shadow:0 18px 55px #000b,0 0 24px #9b68c722;
+}
+footer{color:#9f91aa}
+#message{color:#d7b9ec}
+@media(max-width:500px){
+  header{min-height:260px;padding:38px 14px 30px}
+  main{padding:11px}
+  section,.auth-card{padding:15px;border-radius:16px}
+  .hero{padding:20px}
+  .finance-grid,.ops-grid{gap:9px}
+  .finance-card,.ops-card{padding:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>
