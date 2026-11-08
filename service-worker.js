@@ -12,17 +12,24 @@ self.addEventListener("push",event=>{
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
-  // Resolve relative notification URLs from this app's GitHub Pages scope,
-  // not from the domain root (which would produce a GitHub Pages 404).
+  // Resolve relative notification URLs from this app's GitHub Pages scope.
   const target=new URL(event.notification.data?.url||"./",self.registration.scope).href;
-  event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{
+  event.waitUntil((async()=>{
+    const list=await clients.matchAll({type:"window",includeUncontrolled:true});
     for(const client of list){
-      if(client.url.startsWith(self.registration.scope)){
-        return client.navigate(target).then(()=>client.focus());
+      if(!client.url.startsWith(self.registration.scope))continue;
+      try{
+        const navigated=await client.navigate(target);
+        if(navigated){
+          await navigated.focus();
+          return;
+        }
+      }catch(_){
+        // Fall back to opening a fresh app window below.
       }
     }
-    return clients.openWindow(target);
-  }));
+    await clients.openWindow(target);
+  })());
 });
 self.addEventListener("install",event=>{self.skipWaiting();});
 self.addEventListener("activate",event=>{event.waitUntil(self.clients.claim());});
