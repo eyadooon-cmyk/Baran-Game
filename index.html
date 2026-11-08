@@ -823,6 +823,14 @@ footer{color:#9f91aa}
   *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
 
+
+/* First-time customer welcome */
+.baran-welcome-overlay{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(7,5,13,.88);backdrop-filter:blur(12px)}
+.baran-welcome-card{width:min(440px,100%);overflow:hidden;border:1px solid #a56bd6;border-radius:24px;background:radial-gradient(ellipse at 50% 0%,#57258a 0%,#211331 48%,#100c18 100%);box-shadow:0 24px 80px #000b,0 0 35px #8b42c655;color:#fff;text-align:center}
+.baran-welcome-art{height:150px;display:flex;align-items:center;justify-content:center;position:relative;background:radial-gradient(circle at 50% 55%,#a855f755,transparent 45%),linear-gradient(135deg,#251039,#120d1c)}
+.baran-welcome-orb{width:104px;height:104px;border-radius:30px;display:grid;place-items:center;font-size:56px;background:linear-gradient(145deg,#a855f7,#4c1d95);box-shadow:0 0 38px #a855f799, inset 0 1px 1px #ffffff66;transform:rotate(-7deg)}
+.baran-welcome-content{padding:24px 22px 22px}.baran-welcome-content h2{margin:0 0 9px;font-size:25px;color:#f3e8ff}.baran-welcome-content p{margin:0 auto 20px;max-width:330px;line-height:1.9;color:#ddd0eb;font-size:14px}.baran-welcome-content button{width:100%;border:0;border-radius:14px;padding:14px 18px;background:linear-gradient(100deg,#9333ea,#6d28d9);color:#fff;font-weight:900;font-size:16px;box-shadow:0 8px 24px #7e22ce55}.baran-welcome-content small{display:block;margin-top:14px;color:#b99bd2;font-size:11px}
+@media(prefers-reduced-motion:no-preference){.baran-welcome-card{animation:baranWelcomeIn .35s ease-out}@keyframes baranWelcomeIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}}
 </style>
 </head>
 <body>
@@ -1733,6 +1741,18 @@ footer{color:#9f91aa}
 
 <footer>© 2026 Baran Game<br><a href="./terms.html" style="color:#c5b4d6;margin:0 8px">شروط الاستخدام</a> | <a href="./privacy.html" style="color:#c5b4d6;margin:0 8px">سياسة الخصوصية</a></footer>
 
+<div id="baranFirstWelcome" class="baran-welcome-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="baranWelcomeTitle">
+  <div class="baran-welcome-card" dir="rtl">
+    <div class="baran-welcome-art" aria-hidden="true"><div class="baran-welcome-orb">🎮</div></div>
+    <div class="baran-welcome-content">
+      <h2 id="baranWelcomeTitle">أهلاً بك في BARAN GAME</h2>
+      <p id="baranWelcomeMessage">نورت متجرنا! كل ألعابك واشتراكاتك وخدماتك الرقمية بمكان واحد. جهّز حالك وابدأ رحلتك معنا.</p>
+      <button type="button" onclick="closeBaranFirstWelcome()">ابدأ التسوق الآن</button>
+      <small>كل ما تحبّه… بمكان واحد ✨</small>
+    </div>
+  </div>
+</div>
+
 <script src="./products.js"></script>
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
@@ -2020,9 +2040,29 @@ function updateBaranAccountIdentity(user){
   });
 }
 
+function closeBaranFirstWelcome(){
+  const overlay=document.getElementById("baranFirstWelcome");
+  if(overlay)overlay.classList.add("hidden");
+}
+
+async function showBaranFirstWelcome(user){
+  if(!user||user.user_metadata?.baran_welcome_pending!==true)return;
+  const overlay=document.getElementById("baranFirstWelcome");
+  if(!overlay)return;
+  const name=user.user_metadata?.full_name||user.user_metadata?.name||user.email?.split("@")[0];
+  const message=document.getElementById("baranWelcomeMessage");
+  if(message&&name)message.textContent="أهلاً "+name+"، نورت BARAN GAME! كل ألعابك واشتراكاتك وخدماتك الرقمية بمكان واحد. ابدأ رحلتك معنا.";
+  overlay.classList.remove("hidden");
+  try{
+    const metadata={...(user.user_metadata||{}),baran_welcome_pending:false};
+    await sb.auth.updateUser({data:metadata});
+  }catch(error){console.warn("تعذر حفظ حالة الترحيب الأول:",error);}
+}
+
 function showApp(user){
   currentUser=user;
   updateBaranAccountIdentity(user);
+  showBaranFirstWelcome(user);
   passwordRecoveryActive=false;
   document.getElementById("passwordRecoveryScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.add("hidden");
@@ -2070,7 +2110,7 @@ async function signUp(){
   button.disabled=true;
   try{
     const redirect=window.location.origin+window.location.pathname;
-    const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect}});
+    const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{baran_welcome_pending:true}}});
     if(error)throw error;
     if(data.session&&data.user)showApp(data.user);
     else note.textContent="تم إنشاء الحساب بنجاح. افتح بريدك واضغط رابط تأكيد الحساب، ثم ارجع وسجّل الدخول.";
