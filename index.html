@@ -599,6 +599,34 @@ section,.auth-card{border-color:#49345f}
 .shamcash-field-label{display:block;margin:12px 0 7px;color:#e7d7f3;font-weight:800}
 .shamcash-payment-note{padding:11px 12px;border:1px solid #765b3b;border-radius:11px;background:#392b1d;color:#f0d7b5!important;line-height:1.8}
 #depositSubmitButton{min-height:48px;font-weight:900;white-space:normal;line-height:1.5}
+
+/* Wallet experience polish — mobile-first, inspired by modern digital wallets */
+.wallet-actions{margin:5px 0 14px}
+.wallet-payment-entry{position:relative;justify-content:flex-start;gap:13px;min-height:76px;padding:12px 15px;text-align:right;border:1px solid #a27ac0;background:linear-gradient(110deg,#49305f 0%,#2b1d39 58%,#21172c 100%);box-shadow:0 10px 24px #0005,inset 0 1px #ffffff14}
+.wallet-action-icon{display:grid;place-items:center;width:43px;height:43px;flex:0 0 43px;border:1px solid #c7a5e4;border-radius:14px;background:#d5b2ef1c;color:#ead9f7;font-size:27px}
+.wallet-action-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+.wallet-action-copy strong{color:#fff;font-size:15px}
+.wallet-action-copy small{color:#d2c1df;font-size:11px;font-weight:500}
+.wallet-action-arrow{font-size:28px;color:#e2c8f7;line-height:1}
+.wallet-assurance-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 20px}
+.wallet-assurance-strip>div{display:flex;min-width:0;flex-direction:column;align-items:center;gap:3px;padding:12px 5px;border:1px solid #493756;border-radius:13px;background:linear-gradient(145deg,#211a2a,#17121e);text-align:center}
+.wallet-assurance-strip>div>span{display:grid;place-items:center;width:27px;height:27px;margin-bottom:2px;border-radius:9px;background:#a56bd622;color:#d7b8ee;font-size:16px}
+.wallet-assurance-strip strong{color:#e9def2;font-size:11px}
+.wallet-assurance-strip small{color:#ad9dbb;font-size:9px;line-height:1.5}
+.shamcash-payment-section{background:linear-gradient(145deg,#17111f,#100d16 70%,#1b1325);border-color:#5c4274}
+.shamcash-page-hero{margin-bottom:15px}
+.shamcash-payment-section .shamcash-deposit-details{display:block}
+.shamcash-payment-section .deposit-card{margin-top:0;padding:clamp(14px,3vw,22px);border-color:#71558a;background:linear-gradient(145deg,#1d1725,#120e18);box-shadow:0 12px 28px #0004}
+.shamcash-payment-section .payment-back-button{display:inline-flex;align-items:center;gap:7px;margin:0 0 14px;padding:9px 13px;border:1px solid #59436c;background:#241b2e;color:#e7d8f4;border-radius:11px}
+.shamcash-payment-section .shamcash-payment-heading h2{margin:7px 0;color:#f0e7f7}
+.shamcash-payment-section .shamcash-payment-heading p{color:#c5b3d2;font-size:13px}
+.shamcash-payment-section .shamcash-payment-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0 18px}
+.shamcash-payment-section .shamcash-payment-steps>div{display:flex;flex-direction:column;gap:7px;padding:11px 9px;border:1px solid #493756;border-radius:12px;background:#211a2a;color:#d8c9e4;font-size:11px;line-height:1.65}
+.shamcash-payment-section .shamcash-payment-steps b{display:grid;place-items:center;width:25px;height:25px;border-radius:9px;background:#654780;color:#fff;font-size:12px}
+.shamcash-payment-section .deposit-id{background:#0d0a12;border-color:#a77acb;color:#e6d1f5;font-size:14px;letter-spacing:.4px}
+.shamcash-payment-section #depositSubmitButton{min-height:50px;background:linear-gradient(110deg,#a77acb,#79509b);color:#160f1d;box-shadow:0 7px 18px #0005}
+.shamcash-payment-section .shamcash-payment-note{padding:11px 12px;border:1px solid #665078;border-radius:11px;background:#211a2a;color:#d7c4e8;line-height:1.8}
+@media(max-width:430px){.wallet-assurance-strip{gap:6px}.wallet-assurance-strip>div{padding:10px 3px}.wallet-assurance-strip small{font-size:8px}.shamcash-payment-section .shamcash-payment-steps{gap:6px}.shamcash-payment-section .shamcash-payment-steps>div{padding:9px 7px;font-size:10px}}
 </style>
 </head>
 <body>
@@ -886,7 +914,18 @@ section,.auth-card{border-color:#49345f}
           <span class="wallet-card-watermark wallet-arabic-mark" aria-hidden="true">ل.س</span>
         </article>
       </div>
-      <button class="wallet-refresh-button wallet-payment-entry" type="button" onclick="showSection('paymentMethods',null)"><span aria-hidden="true">＋</span> شحن المحفظة · طرق الدفع</button>
+      <div class="wallet-actions">
+<button class="wallet-refresh-button wallet-payment-entry" type="button" onclick="showSection('paymentMethods',null)">
+<span class="wallet-action-icon" aria-hidden="true">＋</span>
+<span class="wallet-action-copy"><strong>شحن المحفظة</strong><small>اختر طريقة الدفع وأرسل طلب الشحن بسهولة</small></span>
+<span class="wallet-action-arrow" aria-hidden="true">‹</span>
+</button>
+</div>
+<div class="wallet-assurance-strip">
+<div><span aria-hidden="true">◈</span><strong>عملتان</strong><small>دولار وليرة سورية</small></div>
+<div><span aria-hidden="true">✓</span><strong>مراجعة آمنة</strong><small>قبل إضافة الرصيد</small></div>
+<div><span aria-hidden="true">⌁</span><strong>شفافية</strong><small>حالة طلبك واضحة</small></div>
+</div>
 
       <div id="walletAdminTransfers" class="hidden">
       <div class="wallet-transfer-panel" id="walletExchangeAdminPanel">
@@ -1652,7 +1691,7 @@ function showSection(id,button){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",admin:"لوحة الإدارة"};
+  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",admin:"لوحة الإدارة"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
@@ -1663,18 +1702,15 @@ function showSection(id,button){
 }
 
 function showShamCashDeposit(){
-  const details=document.getElementById("shamCashDepositDetails");
-  if(details)details.classList.remove("hidden");
   const card=document.querySelector(".shamcash-method");
-  if(card){card.classList.add("hidden");card.setAttribute("aria-expanded","true");}
-  window.scrollTo({top:0,behavior:"smooth"});
+  if(card)card.setAttribute("aria-expanded","true");
+  showSection("shamCashPayment",null);
+  if(typeof loadDepositRequests==="function")loadDepositRequests();
 }
 function hideShamCashDeposit(){
-  const details=document.getElementById("shamCashDepositDetails");
-  if(details)details.classList.add("hidden");
   const card=document.querySelector(".shamcash-method");
-  if(card){card.classList.remove("hidden");card.setAttribute("aria-expanded","false");}
-  window.scrollTo({top:0,behavior:"smooth"});
+  if(card)card.setAttribute("aria-expanded","false");
+  showSection("paymentMethods",null);
 }
 
 function toggleSideMenu(){
