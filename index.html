@@ -565,6 +565,26 @@ section,.auth-card{border-color:#49345f}
  .wallet-page .wallet-transfer-search button{width:100%}
 }
 
+
+/* Payment methods — dedicated wallet top-up flow */
+.payment-methods-page{padding:clamp(15px,3vw,24px)!important;background:linear-gradient(145deg,#17111f,#100d16 65%,#21152d)!important;border:1px solid #5c4274!important}
+.payment-methods-hero{padding:20px 18px;margin-bottom:16px;border:1px solid #604779;border-radius:17px;background:linear-gradient(110deg,#2b1d3b,#17111f 72%);text-align:right}
+.payment-methods-hero h2{margin:8px 0 5px;color:#f2e8fb!important;font-size:24px}
+.payment-methods-hero p{margin:0;color:#c7b5d5;font-size:13px}
+.payment-method-card{width:100%;display:flex;align-items:center;gap:14px;padding:15px;border:1px solid #70518a;border-radius:17px;background:linear-gradient(120deg,#2b2038,#191421);color:#f5edfb;text-align:right;cursor:pointer;box-shadow:0 9px 22px #0004;transition:transform .18s,border-color .18s}
+.payment-method-card:active{transform:scale(.985)}
+.payment-method-logo-wrap{width:76px;height:76px;flex:0 0 76px;display:grid;place-items:center;border-radius:16px;background:#fff;padding:7px;overflow:hidden}
+.payment-method-logo-wrap img{width:100%;height:100%;object-fit:contain}
+.payment-method-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
+.payment-method-info strong{font-size:17px;color:#fff}
+.payment-method-info small{font-size:12px;color:#c9b8d7}
+.payment-method-info em{font-style:normal;font-size:11px;font-weight:800;color:#d4b1f0;margin-top:3px}
+.payment-method-arrow{font-size:30px;color:#d7b6ef}
+.shamcash-deposit-details{margin-top:17px}
+.payment-back-button{width:100%;margin-bottom:13px;padding:11px 14px;border:1px solid #654a7e;border-radius:12px;background:#241a30;color:#e9d7f7;font-weight:800}
+#customerDepositPanel{margin-top:0}
+#shamCashDepositDetails .deposit-card{border-color:#654a7e;background:linear-gradient(145deg,#241a30,#17121e)}
+@media(max-width:420px){.payment-method-card{gap:10px;padding:12px}.payment-method-logo-wrap{width:64px;height:64px;flex-basis:64px}.payment-method-info strong{font-size:15px}}
 </style>
 </head>
 <body>
@@ -852,7 +872,7 @@ section,.auth-card{border-color:#49345f}
           <span class="wallet-card-watermark wallet-arabic-mark" aria-hidden="true">ل.س</span>
         </article>
       </div>
-      <button class="wallet-refresh-button" type="button" onclick="loadWallet()"><span aria-hidden="true">↻</span> تحديث الأرصدة</button>
+      <button class="wallet-refresh-button wallet-payment-entry" type="button" onclick="showSection('paymentMethods',null)"><span aria-hidden="true">＋</span> شحن المحفظة · طرق الدفع</button>
 
       <div id="walletAdminTransfers" class="hidden">
       <div class="wallet-transfer-panel" id="walletExchangeAdminPanel">
@@ -963,7 +983,29 @@ section,.auth-card{border-color:#49345f}
         <p id="ownerUsdSaleMessage" class="small" role="status" aria-live="polite"></p>
       </div>
 
-      <div class="deposit-card" id="customerDepositPanel">
+
+    </section>
+
+    <section id="paymentMethods" class="hidden payment-methods-page">
+      <div class="payment-methods-hero">
+        <span class="wallet-eyebrow">BARAN GAME · PAYMENTS</span>
+        <h2>طرق الدفع</h2>
+        <p>اختر طريقة الدفع المناسبة لشحن رصيد محفظتك.</p>
+      </div>
+      <button class="payment-method-card shamcash-method" type="button" onclick="showShamCashDeposit()">
+        <span class="payment-method-logo-wrap">
+          <img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&ssl=1" alt="شعار شام كاش" loading="lazy">
+        </span>
+        <span class="payment-method-info">
+          <strong>شام كاش</strong>
+          <small>شحن المحفظة عبر حوالة شام كاش</small>
+          <em>اضغط للمتابعة ←</em>
+        </span>
+        <span class="payment-method-arrow" aria-hidden="true">‹</span>
+      </button>
+      <div id="shamCashDepositDetails" class="hidden shamcash-deposit-details">
+        <button class="payment-back-button" type="button" onclick="hideShamCashDeposit()">← العودة إلى طرق الدفع</button>
+              <div class="deposit-card" id="customerDepositPanel">
         <h2>شحن المحفظة عبر شام كاش</h2>
         <p>حوّل المبلغ إلى معرّف محفظة الاستلام التالي، ثم أرسل طلب الشحن مع رقم العملية.</p>
         <div class="deposit-id" dir="ltr" id="shamCashReceiver">bf37143ce15dd68389c21285e71818d1</div>
@@ -984,9 +1026,9 @@ section,.auth-card{border-color:#49345f}
         <p class="small">تنبيه: الصورة دليل للمراجعة فقط وليست تأكيداً للدفع. لن يُضاف الرصيد إلا بعد التحقق من وصول الحوالة.</p>
         <div id="depositMessage" class="small" role="status"></div>
       </div>
-
-      <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
+              <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
       <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
+      </div>
     </section>
 
     <section id="settings" class="hidden">
@@ -1579,13 +1621,28 @@ function showSection(id,button){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",admin:"لوحة الإدارة"};
+  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",admin:"لوحة الإدارة"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
   if(id==="settings"&&typeof refreshBaranPushSettingsStatus==="function")refreshBaranPushSettingsStatus();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function showShamCashDeposit(){
+  const details=document.getElementById("shamCashDepositDetails");
+  if(details)details.classList.remove("hidden");
+  const card=document.querySelector(".shamcash-method");
+  if(card)card.classList.add("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function hideShamCashDeposit(){
+  const details=document.getElementById("shamCashDepositDetails");
+  if(details)details.classList.add("hidden");
+  const card=document.querySelector(".shamcash-method");
+  if(card)card.classList.remove("hidden");
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
