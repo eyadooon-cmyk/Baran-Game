@@ -2496,8 +2496,27 @@ function filterAdminFeedback(){
     save.onclick=()=>saveAdminFeedback(item.id,reply.value,statusSelect.value,save);
     const note=document.createElement("p");note.className="ops-muted";note.textContent="لن يتغير شيء قبل الضغط على حفظ. حفظ رد جديد على تذكرة الدعم ينشئ إشعاراً للزبون.";
     card.append(replyLabel,reply,statusLabel,statusSelect,save,note);
+    if(item.feedback_type==="support"){
+      const remove=document.createElement("button");
+      remove.type="button";remove.className="full";remove.textContent="🗑️ حذف التذكرة والرد الآلي";
+      remove.style.cssText="margin-top:8px;background:#8f2638;color:#fff;border:1px solid #d65b70";
+      remove.onclick=()=>deleteAdminSupportTicket(item.id,remove);
+      card.appendChild(remove);
+    }
     box.appendChild(card);
   });
+}
+async function deleteAdminSupportTicket(id,button){
+  if(!id||!button)return;
+  if(!window.confirm("تأكيد حذف تذكرة الدعم نهائياً؟ سيتم حذف سجل الرد الآلي المرتبط بها أيضاً، ولا يمكن التراجع."))return;
+  button.disabled=true;button.textContent="جاري الحذف...";
+  try{
+    await callAdminApi("POST",{action:"support_ticket_delete",feedback_id:id});
+    await loadAdminPanel();
+  }catch(error){
+    button.disabled=false;button.textContent="🗑️ حذف التذكرة والرد الآلي";
+    window.alert("تعذر الحذف: "+error.message);
+  }
 }
 async function saveAdminFeedback(id,reply,status,button){
   const card=button?.closest(".ops-item");
