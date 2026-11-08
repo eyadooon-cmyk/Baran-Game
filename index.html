@@ -831,6 +831,19 @@ footer{color:#9f91aa}
 .baran-welcome-orb{width:104px;height:104px;border-radius:30px;display:grid;place-items:center;font-size:56px;background:linear-gradient(145deg,#a855f7,#4c1d95);box-shadow:0 0 38px #a855f799, inset 0 1px 1px #ffffff66;transform:rotate(-7deg)}
 .baran-welcome-content{padding:24px 22px 22px}.baran-welcome-content h2{margin:0 0 9px;font-size:25px;color:#f3e8ff}.baran-welcome-content p{margin:0 auto 20px;max-width:330px;line-height:1.9;color:#ddd0eb;font-size:14px}.baran-welcome-content button{width:100%;border:0;border-radius:14px;padding:14px 18px;background:linear-gradient(100deg,#9333ea,#6d28d9);color:#fff;font-weight:900;font-size:16px;box-shadow:0 8px 24px #7e22ce55}.baran-welcome-content small{display:block;margin-top:14px;color:#b99bd2;font-size:11px}
 @media(prefers-reduced-motion:no-preference){.baran-welcome-card{animation:baranWelcomeIn .35s ease-out}@keyframes baranWelcomeIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}}
+
+.learning-hero{padding:20px;background:linear-gradient(130deg,#30213e,#17121e 72%);border:1px solid #80649a;border-radius:16px;margin-bottom:16px}
+.learning-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:14px 0}
+.learning-card{padding:14px;background:#201a29;border:1px solid #57436a;border-radius:13px}
+.learning-card strong{display:block;color:#d7c4e8;margin-bottom:6px}
+.learning-card p{color:#c4b4d1;font-size:13px}
+.learning-video-wrap{width:100%;aspect-ratio:16/9;background:#08060b;border:1px solid #665078;border-radius:13px;overflow:hidden;margin:12px 0}
+.learning-video-wrap iframe{width:100%;height:100%;border:0}
+.learning-guide{padding:13px;margin:9px 0;background:#17121e;border:1px solid #493b55;border-radius:12px;line-height:1.9}
+.learning-guide summary{color:#d7c4e8;font-weight:800;cursor:pointer}
+.learning-guide ol{padding-right:22px}
+.learning-note{padding:11px;border-right:3px solid #b99ad2;background:#241b2d;border-radius:9px;color:#e5d9ef;font-size:13px;line-height:1.8}
+@media(max-width:500px){.learning-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -958,6 +971,7 @@ footer{color:#9f91aa}
     <button class="drawer-link" data-section="games" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span>الألعاب</button>
     <button class="drawer-link" data-section="services" onclick="navigateDrawer('services')"><span class="drawer-icon">✦</span>الخدمات الرقمية</button>
     <button class="drawer-link" data-section="mobileTopup" onclick="navigateDrawer('mobileTopup')"><span class="drawer-icon">▣</span>شحن رصيد الجوال</button>
+    <button class="drawer-link" data-section="learning" onclick="navigateDrawer('learning')"><span class="drawer-icon">🎓</span>مركز التعلم</button>
     <div class="drawer-group-divider"></div>
     <div class="drawer-section-label">حسابي ومشترياتي</div>
     <button class="drawer-link" data-section="wallet" onclick="navigateDrawer('wallet')"><span class="drawer-icon">▤</span>محفظتي</button>
@@ -1678,6 +1692,30 @@ footer{color:#9f91aa}
       <button class="full secondary" onclick="showSection('account',document.querySelectorAll('nav button')[4])">العودة إلى حسابي</button>
     </section>
 
+    <section id="learning" class="hidden">
+      <div class="learning-hero">
+        <h2>🎓 مركز التعلم — BARAN GAME</h2>
+        <p>تعلم استخدام المتجر خطوة بخطوة. شرح شام كاش من YouTube، وباقي الشروحات نجهزها خصيصاً لطريقة عمل BARAN GAME.</p>
+      </div>
+      <h3>💸 الدفع عبر شام كاش</h3>
+      <p class="small">شرح عام لطريقة التحويل بين حسابين في شام كاش. قد تختلف بعض الأزرار حسب إصدار التطبيق.</p>
+      <div class="learning-video-wrap">
+        <iframe src="https://www.youtube-nocookie.com/embed/kl1s_e-xaHA?rel=0" title="شرح التحويل بين حسابين في شام كاش" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      <p class="small">الفيديو من قناة شام الهوى على YouTube، وليس فيديو رسمياً من شام كاش. اتبع بيانات التحويل والمبلغ الظاهرين داخل BARAN GAME، وتأكد من اسم المستلم قبل التأكيد.</p>
+      <div class="learning-note">🔐 لا تشارك كلمة مرور شام كاش أو رمز PIN أو رمز التحقق مع أي شخص.</div>
+      <h3>📘 شروحات BARAN GAME الخاصة</h3>
+      <p class="small">أدلة أولية داخل التطبيق؛ نضيف إليها فيديوهات مصوّرة خاصة بواجهتنا عند تجهيزها.</p>
+      <div class="learning-grid">
+        <article class="learning-card"><strong>👤 إنشاء الحساب والدخول</strong><p>التسجيل بالبريد أو المتابعة بحساب Google.</p><details class="learning-guide"><summary>افتح الشرح</summary><ol><li>افتح BARAN GAME واضغط إنشاء حساب جديد، أو اختر المتابعة بحساب Google.</li><li>إذا سجلت بالبريد، أكمل تأكيد البريد إن طُلب منك.</li><li>بعد الدخول افتح «حسابي» لمراجعة بياناتك.</li></ol></details></article>
+        <article class="learning-card"><strong>💳 شحن المحفظة</strong><p>إرسال حوالة شام كاش ورفع طلب الإيداع.</p><details class="learning-guide"><summary>افتح الشرح</summary><ol><li>افتح المحفظة واختر شحن الرصيد ثم شام كاش.</li><li>راجع المبلغ وبيانات محفظة المتجر الظاهرة داخل التطبيق.</li><li>حوّل من شام كاش واحتفظ بإيصال العملية.</li><li>ارجع إلى BARAN GAME وأرسل طلب الإيداع وأرفق الإيصال إذا طلب التطبيق.</li><li>انتظر تحقق الإدارة من وصول الحوالة واعتمادها؛ لا يُضاف الرصيد قبل ذلك.</li></ol></details></article>
+        <article class="learning-card"><strong>🎮 شراء لعبة أو خدمة</strong><p>اختيار المنتج ومراجعة تفاصيل الطلب.</p><details class="learning-guide"><summary>افتح الشرح</summary><ol><li>افتح قسم الألعاب أو الخدمات الرقمية.</li><li>اختر المنتج المتاح واقرأ الوصف والسعر والعملة.</li><li>أدخل البيانات المطلوبة لتنفيذ الخدمة فقط.</li><li>راجع تفاصيل الطلب قبل الإرسال، ثم تابع حالته من «طلباتي».</li></ol></details></article>
+        <article class="learning-card"><strong>📦 متابعة الطلبات</strong><p>معرفة حالة الطلب والتحديثات.</p><details class="learning-guide"><summary>افتح الشرح</summary><ol><li>افتح القائمة الجانبية ثم «طلباتي».</li><li>راجع حالة كل طلب وآخر تحديث.</li><li>احتفظ برقم الطلب إذا احتجت التواصل مع الدعم.</li></ol></details></article>
+        <article class="learning-card"><strong>🛟 الدعم الفني</strong><p>التواصل مع مساعد باران.</p><details class="learning-guide"><summary>افتح الشرح</summary><ol><li>افتح قسم الدعم الفني.</li><li>اكتب المشكلة بوضوح وأرفق رقم الطلب إن وجد.</li><li>إذا احتاجت الحالة مراجعة الإدارة، قد تُحوّل إلى تذكرة.</li><li>لا ترسل كلمات المرور أو رموز التحقق.</li></ol></details></article>
+        <article class="learning-card"><strong>🔐 حماية الحساب</strong><p>نصائح لحماية حسابك ومحفظتك.</p><details class="learning-guide"><summary>افتح الشرح</summary><ol><li>استخدم كلمة مرور قوية وفريدة.</li><li>لا تشارك OTP أو PIN أو بيانات شام كاش.</li><li>تأكد من اسم المستلم والمبلغ قبل التحويل.</li><li>سجّل الخروج إذا استخدمت جهازاً ليس ملكك.</li></ol></details></article>
+      </div>
+    </section>
+
     <section id="support" class="hidden">
       <h2>🛟 الدعم الفني ومساعد باران</h2>
       <p class="small">مساعد باران متاح للرد الفوري على استفساراتك ومحاولة حل المشكلة. لا ترسل كلمات مرور أو رموز تحقق أو بيانات دفع سرية.</p>
@@ -1919,7 +1957,7 @@ function showSection(id,button){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",admin:"لوحة الإدارة"};
+  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
