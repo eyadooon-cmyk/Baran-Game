@@ -3261,7 +3261,7 @@ function renderFinance(finance){
   entriesBox.replaceChildren();
   const entries=finance.entries||[];
   if(!entries.length){entriesBox.textContent="لا توجد حركات مالية بعد.";return;}
-  const labels={capital:"رأس مال",sale:"بيع",expense:"مصروف"};
+  const labels={capital:"رأس مال",sale:"بيع",expense:"مصروف",deposit:"حوالة واردة"};
   entries.forEach(item=>{
     const row=document.createElement("div");
     row.className="finance-entry";
@@ -3273,6 +3273,8 @@ function renderFinance(finance){
         " | إجمالي البيع: "+financeMoney(item.amount,item.currency)+
         " | تكلفة الشراء: "+financeMoney(item.cost_amount,item.currency)+
         (item.order_id?" | طلب تلقائي #"+item.order_id.slice(0,8):"")
+      : item.entry_type==="deposit"
+      ? "حوالة شام كاش واردة، يقابلها رصيد مستحق للزبون (ليست مبيعاً ولا ربحاً): "+financeMoney(item.amount,item.currency)
       : "المبلغ: "+financeMoney(item.amount,item.currency);
     const date=document.createElement("div");
     date.className="small";
