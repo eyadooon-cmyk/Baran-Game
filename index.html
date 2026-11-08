@@ -338,6 +338,26 @@ section,.auth-card{border-color:#49345f}
 .wallet-transfer-row.received{border-right:3px solid #8eae9b}
 @media(max-width:480px){.wallet-transfer-search{align-items:stretch}.wallet-transfer-search button{padding:10px}.wallet-transfer-panel,.wallet-transfer-history{padding:14px}}
 
+
+/* لوحة إدارة مقسّمة لأقسام مستقلة ومناسبة للموبايل */
+.admin-hub{margin:14px 0}
+.admin-hub-intro{padding:15px;margin:12px 0;background:linear-gradient(135deg,#281b36,#15101c);border:1px solid #76518f;border-radius:14px}
+.admin-hub-intro strong{display:block;color:#e2c8f7;font-size:19px}
+.admin-hub-intro p{margin:6px 0 0}
+.admin-hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.admin-hub-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:145px;padding:15px;text-align:right;background:linear-gradient(150deg,#251b30,#15111b);color:#f2eafa;border:1px solid #604779;border-radius:15px;box-shadow:0 7px 18px #0004}
+.admin-hub-card:active{transform:scale(.985);border-color:#c18bed}
+.admin-hub-icon{font-size:25px}
+.admin-hub-card strong{font-size:15px;color:#e3cef4}
+.admin-hub-card small{font-size:11px;line-height:1.6;color:#bba9ca;font-weight:500}
+.admin-hub-open{margin-top:auto;color:#d3a9f0;font-size:12px;font-weight:800}
+.admin-subpanel{margin:14px 0;padding:14px;background:#120e18;border:1px solid #624879;border-radius:16px}
+.admin-subpanel-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid #49345f}
+.admin-subpanel-head h2{margin:0;font-size:19px}
+.admin-back{width:auto;flex:0 0 auto;padding:10px 13px}
+.admin-subpanel>section{margin:12px 0}
+@media(max-width:360px){.admin-hub-grid{grid-template-columns:1fr}.admin-hub-card{min-height:120px}}
+@media(min-width:700px){.admin-hub-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -799,7 +819,25 @@ section,.auth-card{border-color:#49345f}
 
     <section id="admin" class="hidden">
       <h2>لوحة الإدارة 🔐</h2>
-      <section class="deposit-card" aria-label="إرسال إعلان عام للزبائن">
+      <div id="adminHub" class="admin-hub">
+        <div class="admin-hub-intro"><strong>مركز إدارة Baran Game</strong><p class="small">اختر القسم الذي تريد العمل عليه. كل قسم يفتح وحده حتى تبقى الشاشة مرتبة وواضحة على الهاتف.</p></div>
+        <div class="admin-hub-grid">
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المساعد الذكي، المراقبة والإعلانات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>التذاكر المالية</strong><small>الحالات المالية التي تحتاج مراجعتك.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>إدارة المستخدمين</strong><small>عرض حسابات المستخدمين ومعلوماتهم.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والأسعار</strong><small>إدارة الموردين وربط المنتجات والتكاليف.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('loyalty')"><span class="admin-hub-icon">🎁</span><strong>نقاط الولاء</strong><small>إضافة النقاط أو خصمها مع تسجيل السبب.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('security')"><span class="admin-hub-icon">🛡️</span><strong>الأمان والإيداعات</strong><small>سجل الإدارة والتنبيهات وطلبات الشحن.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>التحقق من ملكية الحساب قبل الاستعادة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>الدعم والردود الآلية</strong><small>التذاكر والردود الآلية وآراء العملاء.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>الحسابات المالية</strong><small>الأرباح ورأس المال والمصاريف والحركات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+        </div>
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="overview">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الرئيسية والإحصائيات</h2></div>
+        <section class="deposit-card" aria-label="إرسال إعلان عام للزبائن">
         <h2>📢 إرسال إعلان لجميع الزبائن</h2>
         <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
         <label for="baranAnnouncementTitle">عنوان الإعلان</label>
@@ -809,14 +847,6 @@ section,.auth-card{border-color:#49345f}
         <button id="baranAnnouncementSend" class="full" type="button" onclick="sendBaranAnnouncement()">إرسال الإعلان للزبائن</button>
         <div id="baranAnnouncementStatus" class="small" role="status" aria-live="polite"></div>
       </section>
-      <section id="baranFinancialSupportPanel" class="deposit-card" style="display:block!important;visibility:visible!important;position:relative!important;margin:16px 0;padding:16px;border:2px solid #b58a42" aria-label="تذاكر الشؤون المالية">
-        <h2>💰 تذاكر الشؤون المالية</h2>
-        <p class="small">كل تذاكر الزبائن المتعلقة بالحوالات وشام كاش والإيداع والسحب والمحفظة والأرصدة والاسترداد. هذه التذاكر تحتاج مراجعتك؛ لا يتم تأكيد حوالة أو تعديل رصيد تلقائياً.</p>
-        <div id="baranFinancialSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل التذاكر المالية...</div></div>
-        <div class="ops-actions"><button class="secondary" type="button" onclick="loadAdminPanel()">🔄 تحديث التذاكر المالية</button></div>
-        <div id="baranFinancialSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
-      </section>
-
       <section id="baranAdminAssistant" class="deposit-card" aria-label="مساعد الإدارة الذكي" style="display:block!important;visibility:visible!important;position:relative!important;order:-1;margin:16px 0;padding:16px;border:1px solid #8b6ba8">
         <h2>🧠 مساعد إدارة Baran Game</h2>
         <p class="small">مساعد إداري وتقني متصل ببيانات المتجر الحقيقية: الأرباح، الطلبات، الموردون، الإيداعات، تذاكر الدعم، وفحص الحالة التشغيلية.</p>
@@ -846,15 +876,43 @@ section,.auth-card{border-color:#49345f}
       <div id="opsStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
 
 
-      <hr style="border-color:#40334b;margin:24px 0">
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="financial-support">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>التذاكر المالية</h2></div>
+        <section id="baranFinancialSupportPanel" class="deposit-card" style="display:block!important;visibility:visible!important;position:relative!important;margin:16px 0;padding:16px;border:2px solid #b58a42" aria-label="تذاكر الشؤون المالية">
+        <h2>💰 تذاكر الشؤون المالية</h2>
+        <p class="small">كل تذاكر الزبائن المتعلقة بالحوالات وشام كاش والإيداع والسحب والمحفظة والأرصدة والاسترداد. هذه التذاكر تحتاج مراجعتك؛ لا يتم تأكيد حوالة أو تعديل رصيد تلقائياً.</p>
+        <div id="baranFinancialSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل التذاكر المالية...</div></div>
+        <div class="ops-actions"><button class="secondary" type="button" onclick="loadAdminPanel()">🔄 تحديث التذاكر المالية</button></div>
+        <div id="baranFinancialSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
+      </section>
+
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="users">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>إدارة المستخدمين</h2></div>
+        <hr style="border-color:#40334b;margin:24px 0">
       <h2>إدارة المستخدمين 👥</h2>
       <p class="small">عرض آخر الحسابات المسجلة ومعلومات التواصل الأساسية.</p>
       <div id="opsCustomers" class="ops-list">جاري تحميل المستخدمين...</div>
-      <hr style="border-color:#40334b;margin:24px 0">
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="orders">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>متابعة الطلبات</h2></div>
+        <hr style="border-color:#40334b;margin:24px 0">
       <h2>متابعة الطلبات 📦</h2>
       <p class="small">تابع حالة كل طلب، بيانات الزبون واللاعب، وسجّل رسالة حالة تظهر للزبون.</p>
       <div id="opsOrders" class="ops-list">جاري تحميل الطلبات...</div>
-      <hr style="border-color:#40334b;margin:24px 0">
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="suppliers">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
+        <hr style="border-color:#40334b;margin:24px 0">
       <h2>إدارة الموردين 🤝</h2>
       <div class="ops-form">
         <label for="opsSupplierName">اسم المورد</label>
@@ -892,7 +950,12 @@ section,.auth-card{border-color:#49345f}
         <div id="opsSupplierProductMessage" class="ops-muted" role="status"></div>
       </div>
       <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
-      <hr style="border-color:#40334b;margin:24px 0">
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="loyalty">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>نقاط الولاء</h2></div>
+        <hr style="border-color:#40334b;margin:24px 0">
       <h2>نقاط الولاء 🎁</h2>
       <p class="small">يمكن إضافة نقاط أو خصمها يدوياً مع تسجيل سبب العملية في سجل التدقيق.</p>
       <div class="ops-form">
@@ -906,7 +969,12 @@ section,.auth-card{border-color:#49345f}
         <div id="opsLoyaltyMessage" class="ops-muted" role="status"></div>
       </div>
       <div id="opsLoyaltyCustomers" class="ops-list">لا توجد أرصدة نقاط بعد.</div>
-      <hr style="border-color:#40334b;margin:24px 0">
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="security">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الأمان والإيداعات</h2></div>
+        <hr style="border-color:#40334b;margin:24px 0">
       <h2>سجل أمان وعمليات الإدارة 🛡️</h2>
       <p class="small">سجل داخلي لعمليات تحديث الطلبات والموردين ونقاط الولاء.</p>
       <div id="opsAuditLog" class="ops-list">جاري تحميل سجل العمليات...</div>
@@ -924,7 +992,12 @@ section,.auth-card{border-color:#49345f}
       <h3 style="margin-top:18px">طلبات شحن الدولار للزبائن مقابل حوالة شام كاش</h3>
       <div id="adminOwnerUsdSaleRequests">جاري تحميل طلبات شحن الدولار...</div>
 
-      <hr style="border-color:#40334b;margin:24px 0">
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="recovery">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>استعادة الحسابات</h2></div>
+        <hr style="border-color:#40334b;margin:24px 0">
       <h2>استعادة حساب الزبون 🔐</h2>
       <p class="small">ابحث بالاسم أو رقم الهاتف أو البريد المسجل. راجع تفاصيل طلباته وتحويلاته مع الزبون قبل إرسال رابط الاستعادة. رقم الهاتف وحده غير كافٍ لإثبات الملكية.</p>
       <div class="deposit-card">
@@ -954,7 +1027,12 @@ section,.auth-card{border-color:#49345f}
 
       <hr style="border-color:#40334b;margin:24px 0">
       <hr style="border-color:#40334b;margin:24px 0">
-      <section id="baranAutoSupportPanel" class="deposit-card" aria-label="متابعة الردود الآلية" style="margin:16px 0;padding:16px;border:1px solid #8b6ba8">
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="support">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الدعم والردود الآلية</h2></div>
+        <section id="baranAutoSupportPanel" class="deposit-card" aria-label="متابعة الردود الآلية" style="margin:16px 0;padding:16px;border:1px solid #8b6ba8">
         <h2>🤖 متابعة الردود الآلية وتذاكر الإدارة</h2>
         <p class="small">سجل مباشر لحالة كل تذكرة دعم: الردود التي أرسلها المساعد، والحالات التي حوّلها إليك مع السبب، وأي محاولة فاشلة. هذا القسم للمتابعة فقط ولا ينفذ أي إجراء مالي.</p>
         <div id="baranAutoSupportStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
@@ -966,7 +1044,12 @@ section,.auth-card{border-color:#49345f}
       <p class="small">راجع الرسائل، واكتب رداً، وحدد حالة كل طلب.</p>
       <div id="adminFeedback">جاري تحميل الرسائل...</div>
 
-      <hr style="border-color:#40334b;margin:24px 0">
+      
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="finance">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الحسابات المالية</h2></div>
+        <hr style="border-color:#40334b;margin:24px 0">
       <h2>الحسابات المالية 💰</h2>
       <p class="small">سجّل رأس المال والمصاريف اليدوية، وتُضاف مبيعات الطلبات المكتملة وتكاليف المورد تلقائياً مرة واحدة بعد تسجيل تكلفة المورد. تُعرض حسابات الدولار والليرة كلٌ على حدة، ولا تدخل أرصدة الزبائن ضمن أرباح المتجر. لا يمكن إكمال الطلب قبل تسجيل تكلفة المورد وسعر الصرف.</p>
 
@@ -1014,6 +1097,9 @@ section,.auth-card{border-color:#49345f}
       </div>
       <h2 style="margin-top:22px">آخر الحركات المالية</h2>
       <div id="financeEntries">لا توجد حركات مالية بعد.</div>
+    
+      </div>
+
     </section>
 
     <section id="orders" class="hidden">
@@ -1140,6 +1226,26 @@ function showLogin(text){
   if(text) say(text);
 }
 
+
+function showAdminPanel(id){
+  const admin=document.getElementById("admin");
+  if(!admin||!currentUser)return;
+  const hub=document.getElementById("adminHub");
+  if(hub)hub.classList.add("hidden");
+  admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!==id));
+  if(id==="overview"||id==="financial-support"||id==="users"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"){
+    if(typeof loadAdminPanel==="function")loadAdminPanel();
+  }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function closeAdminPanel(){
+  const admin=document.getElementById("admin");
+  if(!admin)return;
+  admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.add("hidden"));
+  const hub=document.getElementById("adminHub");
+  if(hub)hub.classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 function showSection(id,button){
   if(!currentUser) return;
   const target=document.getElementById(id);
