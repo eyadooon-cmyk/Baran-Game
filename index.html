@@ -627,6 +627,13 @@ section,.auth-card{border-color:#49345f}
 .shamcash-payment-section #depositSubmitButton{min-height:50px;background:linear-gradient(110deg,#a77acb,#79509b);color:#160f1d;box-shadow:0 7px 18px #0005}
 .shamcash-payment-section .shamcash-payment-note{padding:11px 12px;border:1px solid #665078;border-radius:11px;background:#211a2a;color:#d7c4e8;line-height:1.8}
 @media(max-width:430px){.wallet-assurance-strip{gap:6px}.wallet-assurance-strip>div{padding:10px 3px}.wallet-assurance-strip small{font-size:8px}.shamcash-payment-section .shamcash-payment-steps{gap:6px}.shamcash-payment-section .shamcash-payment-steps>div{padding:9px 7px;font-size:10px}}
+.shamcash-card-shell{margin:0 0 12px;border:1px solid #70518a;border-radius:17px;overflow:hidden;background:linear-gradient(145deg,#21182b,#17111f);box-shadow:0 9px 22px #0004}
+.shamcash-card-shell .shamcash-method{border:0;border-radius:0;box-shadow:none;margin:0}
+.shamcash-card-shell .shamcash-method[aria-expanded="true"]{border-radius:0;border-bottom:1px solid #59436c;background:linear-gradient(120deg,#352447,#21182b)}
+.shamcash-card-shell .shamcash-payment-section,.shamcash-card-shell .shamcash-payment-section .deposit-card{border-radius:0}
+.shamcash-card-shell .shamcash-payment-section{margin:0;padding:12px;border:0;background:transparent}
+.shamcash-card-shell #shamCashPayment{margin:0;padding:0 12px 14px;border:0;border-radius:0;background:transparent;box-shadow:none}
+.shamcash-card-shell #shamCashPayment .deposit-card{padding:14px;border-radius:13px}
 </style>
 </head>
 <body>
@@ -1046,7 +1053,8 @@ section,.auth-card{border-color:#49345f}
         <p>اختر وسيلة الدفع المناسبة لشحن محفظتك.</p>
       </div>
       <div class="payment-methods-caption"><span aria-hidden="true">🔒</span><span>شام كاش متاحة حالياً، وباقي الوسائل ستُفعّل قريباً</span></div>
-      <button class="payment-method-card shamcash-method" type="button" aria-controls="shamCashPayment" aria-expanded="false" onclick="showShamCashDeposit()">
+      <div class="shamcash-card-shell">
+<button class="payment-method-card shamcash-method" type="button" aria-controls="shamCashPayment" aria-expanded="false" onclick="showShamCashDeposit()">
         <span class="payment-method-logo-wrap">
           <img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&ssl=1" alt="شعار شام كاش" loading="lazy">
         </span>
@@ -1093,6 +1101,7 @@ section,.auth-card{border-color:#49345f}
       <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
       </div>
 </div>
+      </div>
       <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
         <span class="payment-method-logo-wrap"><span style="font-size:27px;font-weight:900;color:#d84b62">S</span></span>
         <span class="payment-method-info">
