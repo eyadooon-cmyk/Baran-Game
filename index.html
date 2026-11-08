@@ -1043,21 +1043,24 @@ section,.auth-card{border-color:#49345f}
       <div class="payment-methods-hero">
         <span class="wallet-eyebrow">BARAN GAME · PAYMENTS</span>
         <h2>طرق الدفع</h2>
-        <p>اختر وسيلة الدفع أولاً، ثم افتحها لتقديم طلب شحن محفظتك.</p>
+        <p>اختر وسيلة الدفع المناسبة لشحن محفظتك.</p>
       </div>
       <div class="payment-methods-caption"><span aria-hidden="true">🔒</span><span>اختر طريقة الدفع التي تريد استخدامها</span></div>
-      <button class="payment-method-card shamcash-method" type="button" aria-controls="shamCashDepositDetails" aria-expanded="false" onclick="showShamCashDeposit()">
+      <button class="payment-method-card shamcash-method" type="button" aria-controls="shamCashPayment" aria-expanded="false" onclick="showShamCashDeposit()">
         <span class="payment-method-logo-wrap">
           <img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&ssl=1" alt="شعار شام كاش" loading="lazy">
         </span>
         <span class="payment-method-info">
           <strong>شام كاش</strong>
           <small>تحويل رصيدك إلى محفظة Baran Game</small>
-          <em><span class="payment-method-status">متاحة</span> · اضغط لاختيار شام كاش وطلب الشحن</em>
+          <em><span class="payment-method-status">متاحة</span> · اضغط للانتقال إلى صفحة الدفع والشحن</em>
         </span>
         <span class="payment-method-arrow" aria-hidden="true">‹</span>
       </button>
-      <div id="shamCashDepositDetails" class="hidden shamcash-deposit-details">
+      </section>
+<section id="shamCashPayment" class="hidden shamcash-payment-section">
+<div class="payment-methods-hero shamcash-page-hero"><span class="wallet-eyebrow">BARAN GAME · SECURE TOP-UP</span><h2>شحن المحفظة عبر شام كاش</h2><p>أكمل بيانات التحويل وأرسل الإثبات من نفس الصفحة.</p></div>
+<div id="shamCashDepositDetails" class="shamcash-deposit-details">
         <button class="payment-back-button" type="button" onclick="hideShamCashDeposit()">← العودة إلى طرق الدفع</button>
               <div class="deposit-card" id="customerDepositPanel">
         <div class="shamcash-payment-heading">
@@ -1092,9 +1095,9 @@ section,.auth-card{border-color:#49345f}
               <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
       <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
       </div>
-    </section>
+</section>
 
-    <section id="settings" class="hidden">
+<section id="settings" class="hidden">
       <h2>الإعدادات ⚙️</h2>
       <p class="small">تحكّم بإشعارات Baran Game على هذا الجهاز.</p>
       <div class="deposit-card">
