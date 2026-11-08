@@ -1077,9 +1077,28 @@ section,.auth-card{border-color:#49345f}
         <div id="baranAutoSupportQueue" class="ops-list">جاري تحميل التذاكر...</div>
       </section>
 
-      <h2>آراء العملاء والاقتراحات والدعم 💬</h2>
-      <p class="small">راجع الرسائل، واكتب رداً، وحدد حالة كل طلب.</p>
-      <div id="adminFeedback">جاري تحميل الرسائل...</div>
+      <h2>💬 رسائل الزبائن والتذاكر</h2>
+      <p class="small">ابحث برقم التذكرة أو الموضوع أو نص الرسالة، ثم افتح البطاقة واكتب الرد وحدد الحالة. الرد لا يُرسل إلا بعد ضغطك على زر الحفظ.</p>
+      <div class="ops-form" style="margin:12px 0">
+        <label for="adminFeedbackSearch">بحث في الرسائل والتذاكر</label>
+        <input id="adminFeedbackSearch" type="search" maxlength="160" placeholder="مثلاً BG-2026 أو كلمة من الرسالة..." oninput="filterAdminFeedback()">
+        <label for="adminFeedbackTypeFilter">نوع الرسالة</label>
+        <select id="adminFeedbackTypeFilter" onchange="filterAdminFeedback()">
+          <option value="all">كل الرسائل</option>
+          <option value="support">تذاكر الدعم فقط</option>
+          <option value="review">التقييمات والاقتراحات</option>
+        </select>
+        <label for="adminFeedbackStatusFilter">الحالة</label>
+        <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()">
+          <option value="all">كل الحالات</option>
+          <option value="pending">بانتظار الرد</option>
+          <option value="in_progress">قيد المتابعة</option>
+          <option value="completed">مكتملة</option>
+          <option value="rejected">مغلقة/مرفوضة</option>
+          <option value="approved">تقييم معتمد</option>
+        </select>
+      </div>
+      <div id="adminFeedback" class="ops-list">جاري تحميل الرسائل...</div>
 
       
       </div>
@@ -2418,6 +2437,83 @@ function renderBaranFinancialSupportQueue(rows,feedbackRows){
     const footer=document.createElement("p");footer.className="ops-muted";footer.textContent="عدد المحاولات: "+Number(item.attempts||0);card.appendChild(footer);
     box.appendChild(card);
   });
+}
+
+let baranAdminFeedbackRows=[];
+function renderAdminFeedback(rows){
+  baranAdminFeedbackRows=Array.isArray(rows)?rows:[];
+  filterAdminFeedback();
+}
+function filterAdminFeedback(){
+  const box=document.getElementById("adminFeedback");
+  if(!box)return;
+  const query=String(document.getElementById("adminFeedbackSearch")?.value||"").trim().toLocaleLowerCase("ar");
+  const type=document.getElementById("adminFeedbackTypeFilter")?.value||"all";
+  const status=document.getElementById("adminFeedbackStatusFilter")?.value||"all";
+  const rows=baranAdminFeedbackRows.filter(item=>{
+    if(type!=="all"&&item.feedback_type!==type)return false;
+    if(status!=="all"&&item.status!==status)return false;
+    const haystack=[item.ticket_code,item.subject,item.message,item.customer_email,item.admin_reply].filter(Boolean).join(" ").toLocaleLowerCase("ar");
+    return !query||haystack.includes(query);
+  });
+  box.replaceChildren();
+  if(!rows.length){
+    const empty=document.createElement("div");empty.className="ops-item";
+    empty.textContent=baranAdminFeedbackRows.length?"ما في رسائل مطابقة للبحث أو الفلتر المحدد.":"ما وصلتنا رسائل أو تذاكر بعد.";
+    box.appendChild(empty);return;
+  }
+  rows.forEach(item=>{
+    const card=document.createElement("article");card.className="ops-item";
+    card.dataset.feedbackId=item.id;
+    const heading=document.createElement("strong");
+    heading.textContent=(item.ticket_code||"رسالة بدون رقم")+" — "+(item.feedback_type==="review"?"تقييم/اقتراح":"تذكرة دعم");
+    const meta=document.createElement("p");meta.className="ops-muted";
+    const statuses={pending:"بانتظار الرد",in_progress:"قيد المتابعة",completed:"مكتملة",rejected:"مغلقة/مرفوضة",approved:"تقييم معتمد"};
+    meta.textContent="الحالة: "+(statuses[item.status]||item.status||"غير محددة")+" | "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"—");
+    card.append(heading,meta);
+    if(item.subject){const subject=document.createElement("p");subject.textContent="الموضوع: "+item.subject;card.appendChild(subject);}
+    const message=document.createElement("p");message.textContent="رسالة الزبون: "+(item.message||"—");card.appendChild(message);
+    if(item.customer_email){const customer=document.createElement("p");customer.className="ops-muted";customer.textContent="البريد: "+item.customer_email;card.appendChild(customer);}
+    if(item.rating!==null&&item.rating!==undefined){const rating=document.createElement("p");rating.textContent="التقييم: "+item.rating+"/5";card.appendChild(rating);}
+    if(item.order_id){const order=document.createElement("p");order.className="ops-muted";order.textContent="رقم الطلب المرتبط: "+item.order_id;card.appendChild(order);}
+    if(item.feedback_type==="support"&&isBaranFinancialSupportTicket({},item)){
+      const warning=document.createElement("p");warning.className="ops-muted";
+      warning.textContent="⚠️ تذكرة مالية: تحقّق يدوياً من سجل شام كاش والإيداع قبل كتابة أي تأكيد. لا تعتمد حوالة أو تعدّل رصيداً من هنا.";
+      card.appendChild(warning);
+    }
+    const replyLabel=document.createElement("label");replyLabel.textContent="رد الإدارة";
+    const reply=document.createElement("textarea");reply.rows=3;reply.maxLength=2000;reply.value=item.admin_reply||"";
+    reply.placeholder="اكتب ردك للزبون هنا...";
+    const statusLabel=document.createElement("label");statusLabel.textContent="تحديث الحالة";
+    const statusSelect=document.createElement("select");
+    const options=item.feedback_type==="review"
+      ? [["approved","اعتماد التقييم"],["rejected","رفض التقييم"]]
+      : [["pending","بانتظار الرد"],["in_progress","قيد المتابعة"],["completed","مكتملة"],["rejected","إغلاق التذكرة"]];
+    options.forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;statusSelect.appendChild(option);});
+    statusSelect.value=options.some(option=>option[0]===item.status)?item.status:options[0][0];
+    const save=document.createElement("button");save.type="button";save.className="full";
+    save.textContent="💾 حفظ الرد والحالة";
+    save.onclick=()=>saveAdminFeedback(item.id,reply.value,statusSelect.value,save);
+    const note=document.createElement("p");note.className="ops-muted";note.textContent="لن يتغير شيء قبل الضغط على حفظ. حفظ رد جديد على تذكرة الدعم ينشئ إشعاراً للزبون.";
+    card.append(replyLabel,reply,statusLabel,statusSelect,save,note);
+    box.appendChild(card);
+  });
+}
+async function saveAdminFeedback(id,reply,status,button){
+  const card=button?.closest(".ops-item");
+  const original=button?.textContent||"حفظ الرد والحالة";
+  if(!id||!button)return;
+  button.disabled=true;button.textContent="جاري الحفظ...";
+  try{
+    await callAdminApi("POST",{action:"feedback_update",feedback_id:id,feedback_status:status,admin_reply:reply});
+    const message=card?.querySelector(".ops-muted:last-child");
+    if(message)message.textContent="✅ تم حفظ الرد والحالة.";
+    await loadAdminPanel();
+  }catch(error){
+    const message=card?.querySelector(".ops-muted:last-child");
+    if(message)message.textContent="تعذر الحفظ: "+error.message;
+    button.disabled=false;button.textContent=original;
+  }
 }
 
 function renderBaranAutoSupportQueue(rows,feedbackRows){
