@@ -585,6 +585,17 @@ section,.auth-card{border-color:#49345f}
 #customerDepositPanel{margin-top:0}
 #shamCashDepositDetails .deposit-card{border-color:#654a7e;background:linear-gradient(145deg,#241a30,#17121e)}
 @media(max-width:420px){.payment-method-card{gap:10px;padding:12px}.payment-method-logo-wrap{width:64px;height:64px;flex-basis:64px}.payment-method-info strong{font-size:15px}}
+
+/* Sham Cash payment form flow */
+.shamcash-payment-heading{margin-bottom:14px}
+.shamcash-payment-heading h2{margin:7px 0;color:#f4eafd}
+.shamcash-payment-heading p{color:#cbbbd8;font-size:13px;line-height:1.8;margin:0}
+.shamcash-payment-steps{display:grid;gap:9px;margin:15px 0 18px}
+.shamcash-payment-steps>div{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #5d456f;border-radius:12px;background:#21182b;color:#e6d8ef;font-size:12px;line-height:1.7}
+.shamcash-payment-steps b{display:grid;place-items:center;flex:0 0 27px;height:27px;border-radius:9px;background:#69458a;color:#fff;font-size:13px}
+.shamcash-field-label{display:block;margin:12px 0 7px;color:#e7d7f3;font-weight:800}
+.shamcash-payment-note{padding:11px 12px;border:1px solid #765b3b;border-radius:11px;background:#392b1d;color:#f0d7b5!important;line-height:1.8}
+#depositSubmitButton{min-height:48px;font-weight:900;white-space:normal;line-height:1.5}
 </style>
 </head>
 <body>
@@ -1006,8 +1017,17 @@ section,.auth-card{border-color:#49345f}
       <div id="shamCashDepositDetails" class="hidden shamcash-deposit-details">
         <button class="payment-back-button" type="button" onclick="hideShamCashDeposit()">← العودة إلى طرق الدفع</button>
               <div class="deposit-card" id="customerDepositPanel">
-        <h2>شحن المحفظة عبر شام كاش</h2>
-        <p>حوّل المبلغ إلى معرّف محفظة الاستلام التالي، ثم أرسل طلب الشحن مع رقم العملية.</p>
+        <div class="shamcash-payment-heading">
+          <span class="wallet-eyebrow">SHAM CASH · WALLET TOP-UP</span>
+          <h2>الدفع عبر شام كاش</h2>
+          <p>أكمل التحويل من تطبيق شام كاش، ثم ارجع لهون وأرسل إثبات التحويل حتى نراجع طلبك ونضيف الرصيد بعد التأكد من وصول الحوالة.</p>
+        </div>
+        <div class="shamcash-payment-steps">
+          <div><b>1</b><span>انسخ معرّف الاستلام وحوّل المبلغ من تطبيق شام كاش.</span></div>
+          <div><b>2</b><span>أدخل العملة والمبلغ ورقم العملية.</span></div>
+          <div><b>3</b><span>أرفق صورة الإشعار واضغط إرسال الطلب.</span></div>
+        </div>
+        <label class="shamcash-field-label">معرّف محفظة الاستلام</label>
         <div class="deposit-id" dir="ltr" id="shamCashReceiver">bf37143ce15dd68389c21285e71818d1</div>
         <button class="full" type="button" onclick="copyShamCashReceiver()">نسخ معرّف الاستلام</button>
         <label for="depositCurrency">عملة التحويل</label>
@@ -1022,8 +1042,8 @@ section,.auth-card{border-color:#49345f}
         <label for="depositReceipt">صورة إشعار التحويل (إلزامية)</label>
         <input id="depositReceipt" type="file" accept="image/jpeg,image/png,image/webp">
         <p class="small">الصيغ المقبولة: JPG أو PNG أو WEBP، والحد الأقصى 5 ميغابايت. اخفِ أي بيانات لا نحتاجها قبل الإرسال.</p>
-        <button id="depositSubmitButton" class="full" type="button" onclick="submitDepositRequest()">إرسال طلب الشحن</button>
-        <p class="small">تنبيه: الصورة دليل للمراجعة فقط وليست تأكيداً للدفع. لن يُضاف الرصيد إلا بعد التحقق من وصول الحوالة.</p>
+        <button id="depositSubmitButton" class="full" type="button" onclick="submitDepositRequest()">أتممت التحويل — تأكيد وإرسال طلب الشحن</button>
+        <p class="small shamcash-payment-note">مهم: إرسال الطلب لا يعني إضافة الرصيد فوراً. صورة الإشعار للمراجعة فقط، وسيُضاف الرصيد بعد التحقق من وصول الحوالة فعلياً.</p>
         <div id="depositMessage" class="small" role="status"></div>
       </div>
               <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
