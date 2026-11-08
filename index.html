@@ -571,6 +571,7 @@ section,.auth-card{border-color:#49345f}
 .payment-methods-hero{padding:20px 18px;margin-bottom:16px;border:1px solid #604779;border-radius:17px;background:linear-gradient(110deg,#2b1d3b,#17111f 72%);text-align:right}
 .payment-methods-hero h2{margin:8px 0 5px;color:#f2e8fb!important;font-size:24px}
 .payment-methods-hero p{margin:0;color:#c7b5d5;font-size:13px}
+.payment-methods-caption{display:flex;align-items:center;gap:8px;margin:0 2px 10px;color:#bfaecc;font-size:12px}
 .payment-method-card{width:100%;display:flex;align-items:center;gap:14px;padding:15px;border:1px solid #70518a;border-radius:17px;background:linear-gradient(120deg,#2b2038,#191421);color:#f5edfb;text-align:right;cursor:pointer;box-shadow:0 9px 22px #0004;transition:transform .18s,border-color .18s}
 .payment-method-card:active{transform:scale(.985)}
 .payment-method-logo-wrap{width:76px;height:76px;flex:0 0 76px;display:grid;place-items:center;border-radius:16px;background:#fff;padding:7px;overflow:hidden}
@@ -578,7 +579,9 @@ section,.auth-card{border-color:#49345f}
 .payment-method-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
 .payment-method-info strong{font-size:17px;color:#fff}
 .payment-method-info small{font-size:12px;color:#c9b8d7}
-.payment-method-info em{font-style:normal;font-size:11px;font-weight:800;color:#d4b1f0;margin-top:3px}
+.payment-method-info em{font-style:normal;font-size:11px;font-weight:800;color:#d4b1f0;margin-top:3px;line-height:1.8}
+.payment-method-status{display:inline-block;padding:2px 8px;border:1px solid #765b91;border-radius:20px;background:#3a2949;color:#eadcf5;font-size:10px}
+.payment-method-card:hover{border-color:#b48bd2;box-shadow:0 10px 26px #0006}
 .payment-method-arrow{font-size:30px;color:#d7b6ef}
 .shamcash-deposit-details{margin-top:17px}
 .payment-back-button{width:100%;margin-bottom:13px;padding:11px 14px;border:1px solid #654a7e;border-radius:12px;background:#241a30;color:#e9d7f7;font-weight:800}
@@ -1001,16 +1004,17 @@ section,.auth-card{border-color:#49345f}
       <div class="payment-methods-hero">
         <span class="wallet-eyebrow">BARAN GAME · PAYMENTS</span>
         <h2>طرق الدفع</h2>
-        <p>اختر طريقة الدفع المناسبة لشحن رصيد محفظتك.</p>
+        <p>اختر وسيلة الدفع أولاً، ثم افتحها لتقديم طلب شحن محفظتك.</p>
       </div>
-      <button class="payment-method-card shamcash-method" type="button" onclick="showShamCashDeposit()">
+      <div class="payment-methods-caption"><span aria-hidden="true">🔒</span><span>اختر طريقة الدفع التي تريد استخدامها</span></div>
+      <button class="payment-method-card shamcash-method" type="button" aria-controls="shamCashDepositDetails" aria-expanded="false" onclick="showShamCashDeposit()">
         <span class="payment-method-logo-wrap">
           <img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&ssl=1" alt="شعار شام كاش" loading="lazy">
         </span>
         <span class="payment-method-info">
           <strong>شام كاش</strong>
-          <small>شحن المحفظة عبر حوالة شام كاش</small>
-          <em>اضغط للمتابعة ←</em>
+          <small>تحويل رصيدك إلى محفظة Baran Game</small>
+          <em><span class="payment-method-status">متاحة</span> · اضغط لاختيار شام كاش وطلب الشحن</em>
         </span>
         <span class="payment-method-arrow" aria-hidden="true">‹</span>
       </button>
@@ -1631,6 +1635,13 @@ function showSection(id,button){
   if(!currentUser) return;
   const target=document.getElementById(id);
   if(!target) return;
+  // عند فتح طرق الدفع نبدأ دائماً بعرض الوسائل، ولا نفتح نموذج شام كاش تلقائياً.
+  if(id==="paymentMethods"){
+    const details=document.getElementById("shamCashDepositDetails");
+    const shamCashCard=document.querySelector(".shamcash-method");
+    if(details)details.classList.add("hidden");
+    if(shamCashCard)shamCashCard.classList.remove("hidden");
+  }
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
   target.classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
@@ -1655,14 +1666,14 @@ function showShamCashDeposit(){
   const details=document.getElementById("shamCashDepositDetails");
   if(details)details.classList.remove("hidden");
   const card=document.querySelector(".shamcash-method");
-  if(card)card.classList.add("hidden");
+  if(card){card.classList.add("hidden");card.setAttribute("aria-expanded","true");}
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function hideShamCashDeposit(){
   const details=document.getElementById("shamCashDepositDetails");
   if(details)details.classList.add("hidden");
   const card=document.querySelector(".shamcash-method");
-  if(card)card.classList.remove("hidden");
+  if(card){card.classList.remove("hidden");card.setAttribute("aria-expanded","false");}
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
