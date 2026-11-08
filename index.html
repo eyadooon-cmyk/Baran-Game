@@ -3614,7 +3614,15 @@ async function restoreSession(){
         return;
       }
       currentUser=verified.user;
-      await prepareLock();
+      const googleIdentity =
+        verified.user.app_metadata?.provider === "google" ||
+        (verified.user.app_metadata?.providers || []).includes("google") ||
+        (verified.user.identities || []).some(identity => identity.provider === "google");
+      if(googleIdentity){
+        showApp(verified.user);
+      }else{
+        await prepareLock();
+      }
       await openBaranPushNotificationFromUrl();
     }else{
       showLogin("سجّل الدخول للبدء باستخدام المتجر.");
