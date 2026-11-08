@@ -2448,7 +2448,7 @@ async function submitDepositRequest(){
     document.getElementById("depositReference").value="";
     receiptInput.value="";
     message.textContent="تم إرسال طلبك وصورة الإشعار للمراجعة. لن يُضاف الرصيد قبل التأكد من وصول التحويل.";
-    await Promise.all([loadDepositRequests(),loadWalletTransferHistory()]);
+    await loadDepositRequests();
   }catch(error){
     if(uploadedPath){
       try{await sb.storage.from("shamcash-receipts").remove([uploadedPath]);}catch(cleanupError){}
