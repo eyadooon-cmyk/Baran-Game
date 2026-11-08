@@ -1057,23 +1057,6 @@ section,.auth-card{border-color:#49345f}
         </span>
         <span class="payment-method-arrow" aria-hidden="true">‹</span>
       </button>
-      <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
-        <span class="payment-method-logo-wrap"><span style="font-size:27px;font-weight:900;color:#d84b62">S</span></span>
-        <span class="payment-method-info">
-          <strong>سيريتل كاش</strong>
-          <small>الدفع من محفظة سيريتل كاش</small>
-          <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
-        </span>
-      </div>
-      <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
-        <span class="payment-method-logo-wrap"><span style="font-size:23px;font-weight:900;color:#f0a52b">MTN</span></span>
-        <span class="payment-method-info">
-          <strong>MTN كاش</strong>
-          <small>الدفع من محفظة MTN كاش</small>
-          <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
-        </span>
-      </div>
-      
       <div id="shamCashPayment" class="hidden shamcash-payment-section">
 <div id="shamCashDepositDetails" class="shamcash-deposit-details">
               <div class="deposit-card" id="customerDepositPanel">
@@ -1110,6 +1093,24 @@ section,.auth-card{border-color:#49345f}
       <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
       </div>
 </div>
+      <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
+        <span class="payment-method-logo-wrap"><span style="font-size:27px;font-weight:900;color:#d84b62">S</span></span>
+        <span class="payment-method-info">
+          <strong>سيريتل كاش</strong>
+          <small>الدفع من محفظة سيريتل كاش</small>
+          <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
+        </span>
+      </div>
+      <div class="payment-method-card upcoming-payment-method" aria-disabled="true">
+        <span class="payment-method-logo-wrap"><span style="font-size:23px;font-weight:900;color:#f0a52b">MTN</span></span>
+        <span class="payment-method-info">
+          <strong>MTN كاش</strong>
+          <small>الدفع من محفظة MTN كاش</small>
+          <em><span class="payment-method-status">قريباً</span> · سيتم تفعيلها بعد استكمال الربط</em>
+        </span>
+      </div>
+      
+      
       </section>
 <section id="settings" class="hidden">
       <h2>الإعدادات ⚙️</h2>
@@ -1714,10 +1715,11 @@ function showSection(id,button){
 function showShamCashDeposit(){
   const card=document.querySelector(".shamcash-method");
   const panel=document.getElementById("shamCashPayment");
-  if(card)card.setAttribute("aria-expanded","true");
-  if(panel)panel.classList.remove("hidden");
+  if(!card||!panel)return;
+  panel.classList.remove("hidden");
+  card.setAttribute("aria-expanded","true");
   if(typeof loadDepositRequests==="function")loadDepositRequests();
-  if(panel)panel.scrollIntoView({behavior:"smooth",block:"start"});
+  requestAnimationFrame(()=>panel.scrollIntoView({behavior:"smooth",block:"nearest"}));
 }
 function hideShamCashDeposit(){
   const card=document.querySelector(".shamcash-method");
