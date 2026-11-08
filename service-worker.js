@@ -12,10 +12,12 @@ self.addEventListener("push",event=>{
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
-  const target=new URL(event.notification.data?.url||"./",self.location.origin).href;
+  // Resolve relative notification URLs from this app's GitHub Pages scope,
+  // not from the domain root (which would produce a GitHub Pages 404).
+  const target=new URL(event.notification.data?.url||"./",self.registration.scope).href;
   event.waitUntil(clients.matchAll({type:"window",includeUncontrolled:true}).then(list=>{
     for(const client of list){
-      if(client.url.startsWith(self.location.origin)){
+      if(client.url.startsWith(self.registration.scope)){
         return client.navigate(target).then(()=>client.focus());
       }
     }
