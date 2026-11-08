@@ -220,6 +220,7 @@ button{font-weight:700}
 .account-identity-details>span{font-size:13px;color:#c4b4d1;overflow-wrap:anywhere}
 .account-identity-details .account-provider-label{display:inline-flex;align-self:flex-start;padding:3px 9px;border:1px solid #665078;border-radius:20px;background:#211a2b;color:#d7c4e8;font-size:11px}
 @media(max-width:380px){.account-identity-card{padding:12px;gap:11px}.account-avatar-wrap{width:58px;height:58px;flex-basis:58px}}
+.account-member-code{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;padding:8px 10px;background:#100c16;border:1px dashed #80649a;border-radius:10px}.account-member-code>span:first-child{font-size:12px;color:#b9a9c9}.account-member-code strong{font-family:monospace;font-size:15px;letter-spacing:1px;color:#d7c4e8}.account-member-code button{padding:6px 10px;font-size:12px}.account-member-code .small{width:100%;font-size:11px}
 
 /* تتبع الطلبات */
 .customer-order-card{border:1px solid #51405f}
@@ -803,7 +804,7 @@ section,.auth-card{border-color:#49345f}
       <h2>حسابي</h2>
       <div class="account-identity-card">
         <div class="account-avatar-wrap"><img id="accountAvatar" class="account-avatar hidden" alt="الصورة الشخصية"><div id="accountAvatarFallback" class="account-avatar-fallback">B</div></div>
-        <div class="account-identity-details"><strong id="accountDisplayName">مستخدم Baran Game</strong><span id="accountDisplayEmail" dir="ltr"></span><span id="accountProviderLabel" class="account-provider-label">حساب Baran Game</span></div>
+        <div class="account-identity-details"><strong id="accountDisplayName">مستخدم Baran Game</strong><span id="accountDisplayEmail" dir="ltr"></span><span id="accountProviderLabel" class="account-provider-label">حساب Baran Game</span><div class="account-member-code"><span>رقم العضوية</span><strong id="accountMemberCode" dir="ltr">جاري التحميل...</strong><button type="button" class="secondary" onclick="copyBaranMemberCode()">نسخ المعرّف</button><span id="memberCodeMessage" class="small" role="status"></span></div></div>
       </div>
       <p id="accountInfo" class="small"></p>
       <button class="full secondary" onclick="showSection('rewards',null)">النقاط والمكافآت 🎁</button>
@@ -919,7 +920,8 @@ section,.auth-card{border-color:#49345f}
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>إدارة المستخدمين</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
       <h2>إدارة المستخدمين 👥</h2>
-      <p class="small">عرض آخر الحسابات المسجلة ومعلومات التواصل الأساسية.</p>
+      <p class="small">ابحث عن الزبون برقم العضوية أو الاسم أو الهاتف أو البريد الإلكتروني.</p>
+      <input id="opsCustomerSearch" type="search" maxlength="120" placeholder="ابحث برقم العضوية BG-000001 أو الاسم أو الهاتف..." oninput="filterBaranCustomerDirectory()">
       <div id="opsCustomers" class="ops-list">جاري تحميل المستخدمين...</div>
       
       </div>
@@ -1388,6 +1390,36 @@ function navigateDrawer(id){
 }
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeSideMenu()});
 
+async function loadBaranMemberCode(){
+  const codeEl=document.getElementById("accountMemberCode");
+  const messageEl=document.getElementById("memberCodeMessage");
+  if(!currentUser||!codeEl)return;
+  codeEl.textContent="جاري التحميل...";
+  if(messageEl)messageEl.textContent="";
+  try{
+    const {data,error}=await sb.from("profiles").select("member_code").eq("id",currentUser.id).maybeSingle();
+    if(error)throw error;
+    if(!data?.member_code)throw new Error("رقم العضوية غير متوفر لهذا الحساب.");
+    codeEl.textContent=data.member_code;
+  }catch(error){
+    codeEl.textContent="غير متاح حالياً";
+    if(messageEl)messageEl.textContent="تعذر تحميل رقم العضوية. حدّث الصفحة وحاول مجدداً.";
+    console.warn("تعذر تحميل رقم عضوية Baran Game:",error);
+  }
+}
+
+async function copyBaranMemberCode(){
+  const code=document.getElementById("accountMemberCode")?.textContent?.trim();
+  const message=document.getElementById("memberCodeMessage");
+  if(!code||!/^BG-\\d{6,}$/.test(code)){if(message)message.textContent="رقم العضوية غير جاهز للنسخ.";return;}
+  try{
+    await navigator.clipboard.writeText(code);
+    if(message)message.textContent="تم نسخ رقم العضوية.";
+  }catch(error){
+    if(message)message.textContent="تعذر النسخ تلقائياً. اضغط مطولاً على رقم العضوية لنسخه.";
+  }
+}
+
 function updateBaranAccountIdentity(user){
   if(!user)return;
   const metadata=user.user_metadata||{};
@@ -1430,6 +1462,7 @@ function showApp(user){
   const assistantFab=document.getElementById("aiAssistantFab");if(assistantFab)assistantFab.classList.remove("hidden");
   document.getElementById("accountInfo").textContent=user.email||"";
   if(typeof loadProfileDetails==="function")loadProfileDetails();
+  loadBaranMemberCode();
   showSection("home",document.querySelector("nav button"));
   loadWallet();
   checkAdminAccess();
@@ -2476,6 +2509,29 @@ function renderAdminDepositRequestList(container,requests,isOwner=false){
   });
 }
 
+let baranCustomerDirectory=[];
+function renderBaranCustomerDirectory(customers){
+  baranCustomerDirectory=Array.isArray(customers)?customers:[];
+  filterBaranCustomerDirectory();
+}
+function filterBaranCustomerDirectory(){
+  const box=document.getElementById("opsCustomers");
+  const search=document.getElementById("opsCustomerSearch");
+  if(!box)return;
+  const query=(search?.value||"").trim().toLocaleLowerCase("ar");
+  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
+  box.replaceChildren();
+  if(!rows.length){box.textContent=query?"لا يوجد زبون يطابق البحث.":"لا توجد حسابات مسجلة بعد.";return;}
+  rows.forEach(item=>{
+    const card=document.createElement("div");card.className="ops-item";
+    const title=document.createElement("strong");title.textContent=item.full_name||"زبون بدون اسم";
+    const code=document.createElement("div");code.textContent="رقم العضوية: "+(item.member_code||"غير متوفر");
+    const email=document.createElement("div");email.textContent="البريد: "+(item.email||"غير متوفر");
+    const phone=document.createElement("div");phone.textContent="الهاتف: "+(item.phone||"غير مسجل");
+    card.append(title,code,email,phone);box.appendChild(card);
+  });
+}
+
 async function loadAdminPanel(){
   if(!baranAdminNotificationPoll){
     baranAdminNotificationPoll=setInterval(()=>{
@@ -2498,6 +2554,7 @@ async function loadAdminPanel(){
     const saleContainer=document.getElementById("adminOwnerUsdSaleRequests");
     if(saleContainer)renderAdminDepositRequestList(saleContainer,requests.filter(x=>x.request_source==="owner_usd_sale"),false);
     if(typeof renderOperationsDashboard==="function")renderOperationsDashboard(result);
+    renderBaranCustomerDirectory(result.customers||[]);
     if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
