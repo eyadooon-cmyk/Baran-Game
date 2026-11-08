@@ -1210,6 +1210,7 @@ section,.auth-card{border-color:#49345f}
           <button type="button" class="admin-hub-card" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>التحقق من ملكية الحساب قبل الاستعادة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
           <button type="button" class="admin-hub-card" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>الدعم والردود الآلية</strong><small>التذاكر والردود الآلية وآراء العملاء.</small><span class="admin-hub-open">فتح القسم ←</span></button>
           <button type="button" class="admin-hub-card" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>الحسابات المالية</strong><small>الأرباح ورأس المال والمصاريف والحركات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button id="ownerWalletFinanceCard" type="button" class="admin-hub-card hidden" onclick="showAdminPanel('wallet-finance')"><span class="admin-hub-icon">💳</span><strong>محفظة المالك</strong><small>أرصدة المالك وأسعار الصرف وطلبات الشحن والتحويلات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
         </div>
       </div>
 
@@ -1268,6 +1269,17 @@ section,.auth-card{border-color:#49345f}
       </section>
 
       
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="wallet-finance">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>محفظة المالك</h2></div>
+        <div class="finance-hero">
+          <div class="finance-hero-icon">💳</div>
+          <div><span class="finance-eyebrow">BARAN GAME · OWNER WALLET</span><h2>إدارة محفظة المالك</h2><p>إدارة أرصدة المالك والتحويل بين العملات ومراجعة طلبات التمويل وشحن أرصدة الزبائن. هذه الأدوات خاصة بمالك المتجر.</p></div>
+        </div>
+        <div id="ownerWalletFinanceMount" class="wallet-page">
+          <p class="small">جاري تجهيز أدوات محفظة المالك...</p>
+        </div>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="users">
@@ -1634,11 +1646,17 @@ function switchSecurityDepositTab(tab){
 function showAdminPanel(id){
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
+  if(id==="wallet-finance"&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7")return;
   const hub=document.getElementById("adminHub");
   if(hub)hub.classList.add("hidden");
   admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!==id));
   if(id==="overview"||id==="financial-support"||id==="users"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"){
     if(typeof loadAdminPanel==="function")loadAdminPanel();
+  }
+  if(id==="wallet-finance"){
+    if(typeof loadWalletExchangeSettings==="function")loadWalletExchangeSettings();
+    if(typeof loadWalletExchangeHistory==="function")loadWalletExchangeHistory();
+    if(typeof loadOwnerFundingHistory==="function")loadOwnerFundingHistory();
   }
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -1722,6 +1740,7 @@ function showSection(id,button){
   if(!target) return;
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
   target.classList.remove("hidden");
+  if(id==="wallet"&&typeof prepareWalletLayout==="function")prepareWalletLayout();
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
   document.querySelectorAll("#sideDrawer .drawer-link[data-section]").forEach(link=>{
@@ -2642,6 +2661,31 @@ async function callAdminApi(method="GET",payload=null){
   return result;
 }
 
+function prepareWalletLayout(){
+  const wallet=document.getElementById("wallet");
+  const ownerTools=document.getElementById("walletAdminTransfers");
+  if(!wallet||!ownerTools)return;
+  const ownerFunding=document.getElementById("ownerWalletFundingPanel");
+  const customerTransfer=ownerTools.querySelector(".wallet-transfer-panel:not(#walletExchangeAdminPanel)");
+  const customerHistory=document.getElementById("walletTransferHistory")?.closest(".wallet-transfer-history");
+  if(customerTransfer&&customerTransfer.parentElement===ownerTools)wallet.insertBefore(customerTransfer,ownerFunding||null);
+  if(customerHistory&&customerHistory.parentElement===ownerTools)wallet.insertBefore(customerHistory,ownerFunding||null);
+}
+
+function moveOwnerWalletToolsToAdmin(){
+  const mount=document.getElementById("ownerWalletFinanceMount");
+  const ownerTools=document.getElementById("walletAdminTransfers");
+  if(!mount||!ownerTools)return;
+  const exchange=document.getElementById("walletExchangeAdminPanel");
+  const funding=document.getElementById("ownerWalletFundingPanel");
+  const sale=document.getElementById("ownerUsdSalePanel");
+  if(exchange)mount.appendChild(exchange);
+  if(funding){funding.classList.remove("hidden");mount.appendChild(funding);}
+  if(sale){sale.classList.remove("hidden");mount.appendChild(sale);}
+  ownerTools.remove();
+  document.getElementById("ownerWalletFinanceCard")?.classList.remove("hidden");
+}
+
 async function checkAdminAccess(){
   const navButton=document.getElementById("adminNavButton");
   const drawerButton=document.getElementById("adminDrawerButton");
@@ -2654,7 +2698,7 @@ async function checkAdminAccess(){
     await callAdminApi("POST",{action:"admin_check"});
     if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
-    if(currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){if(walletAdminTransfers)walletAdminTransfers.classList.remove("hidden");document.getElementById("ownerWalletFundingPanel")?.classList.remove("hidden");document.getElementById("ownerUsdSalePanel")?.classList.remove("hidden");/* Customer deposit form remains visible for the owner on the payment screen. */loadWalletExchangeSettings();loadWalletExchangeHistory();loadOwnerFundingHistory();}
+    if(currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){moveOwnerWalletToolsToAdmin();/* Customer deposit form remains visible for the owner on the payment screen. */loadWalletExchangeSettings();loadWalletExchangeHistory();loadOwnerFundingHistory();}
     return true;
   }catch(error){
     console.error("Baran Game admin access check failed:",error.message);
