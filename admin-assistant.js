@@ -159,7 +159,7 @@
     panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid #8b6ab0;border-radius:14px;background:#171020";
     const heading = document.createElement("h3"); heading.textContent = "🛠️ تنفيذ المهام الإدارية الآمنة"; heading.style.margin = "0 0 6px";
     const note = document.createElement("p"); note.className = "small";
-    note.textContent = "اكتب التعديل المطلوب بلغة عادية. المساعد سيجهّز معاينة فقط؛ لن يُحفظ أي تغيير إلا بعد ضغطك على زر التأكيد.";
+    note.textContent = "الملاحظات الداخلية الآمنة تُنفّذ تلقائياً بعد التحقق وتُسجّل بالتدقيق. أي تغيير قد يؤثر على الزبون يحتاج موافقتك، والعمليات المالية محظورة على المساعد.";
     const input = document.createElement("textarea"); input.id = "baranSafeActionInput"; input.rows = 3; input.maxLength = 700;
     input.placeholder = "مثال: غيّر حالة طلب معلّق إلى قيد المعالجة، أو حدّث ملاحظة تنفيذ طلب";
     input.style.cssText = "width:100%;box-sizing:border-box;margin:8px 0;padding:11px;border-radius:9px;background:#0e0a13;color:#fff;border:1px solid #69527c";
@@ -185,6 +185,22 @@
       status.textContent = "عم حضّر اقتراحاً وأتحقق من حدود الصلاحيات…";
       try {
         const result = await callSafeAction({mode:"plan",command});
+        if (result.auto_execute === true) {
+          const p = result.proposal;
+          if (!p || !["fulfillment_note","supplier_product_note","supplier"].includes(p.target_type) ||
+              (p.target_type === "supplier" && (Object.keys(p.changes || {}).length !== 1 || !Object.prototype.hasOwnProperty.call(p.changes,"notes")))) {
+            throw new Error("رفضت الواجهة التنفيذ التلقائي لأن نوع المهمة لا يطابق قائمة المهام الداخلية المسموحة.");
+          }
+          preview.textContent = "مهمة داخلية آمنة: " + p.target_name + " (" + p.target_key + ")\n" +
+            "التغيير: " + JSON.stringify(p.changes,null,2) + "\n" +
+            "سيتم حفظ الملاحظة الداخلية فقط، مع سجل تدقيق، دون إشعار الزبون.";
+          preview.style.display = "block";
+          status.textContent = "تم التحقق من أنها مهمة داخلية فقط. جاري التنفيذ والتسجيل…";
+          const done = await callSafeAction({mode:"execute",confirm:true,proposal:p});
+          preview.textContent += "\n\nالنتيجة المسجلة:\n" + JSON.stringify(done.record || {},null,2);
+          status.textContent = done.warning || "✅ " + (done.message || "تم تنفيذ المهمة الداخلية وتسجيلها في سجل التدقيق.");
+          return;
+        }
         pendingSafeProposal = result.proposal; const p = result.proposal;
         preview.textContent = (p.target_type === "ticket" ? "تذكرة الدعم: " : p.target_type === "review" ? "تقييم الزبون: " : (p.target_type === "supplier" || p.target_type === "supplier_create") ? "المورد: " : p.target_type === "fulfillment_note" ? "ملاحظات تنفيذ الطلب: " : p.target_type === "supplier_product_note" ? "ملاحظات ربط المورد بالمنتج: " : p.target_type === "order_status" ? "حالة الطلب: " : (p.target_type === "announcement_create" || p.target_type === "announcement_publish") ? "إعلان المتجر: " : "المنتج: ") + p.target_name + " (" + p.target_key + ")\nسبب التعديل: " + p.reason +
           "\n\nالقيم الحالية:\n" + JSON.stringify(p.before,null,2) +
