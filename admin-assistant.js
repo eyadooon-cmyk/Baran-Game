@@ -52,7 +52,32 @@
       });
       let result = {};
       try { result = await response.json(); } catch (_) {}
-      if (!response.ok) throw new Error(result.error || "تعذر الوصول إلى مساعد الإدارة.");
+      if (!response.ok) {
+        // On the main AI rate limit, allow only audited internal-note fallback.
+        if (response.status === 429) {
+          try {
+            const fallback = await callSafeAction({ mode: "plan", command: clean });
+            const p = fallback?.proposal;
+            const allowed = fallback?.auto_execute === true && p &&
+              ["supplier", "fulfillment_note", "supplier_product_note"].includes(p.target_type) &&
+              (p.target_type !== "supplier" || (Object.keys(p.changes || {}).length === 1 && Object.prototype.hasOwnProperty.call(p.changes, "notes")));
+            if (allowed) {
+              const done = await callSafeAction({ mode: "execute", confirm: true, proposal: p });
+              if (pending) pending.remove();
+              const message = "⚠️ وصلنا للحد المؤقت للذكاء الاصطناعي، فاشتغلت بوضع الملاحظات الاحتياطي.\\n" +
+                (done.message || "تم تسجيل الملاحظة الداخلية مع سجل التدقيق.") +
+                "\\nما تم تغيير أي رصيد أو مبلغ أو بيانات ظاهرة للزبون.";
+              addMessage(message, "bot");
+              history.push({ role: "assistant", content: message });
+              history = history.slice(-10);
+              return;
+            }
+          } catch (fallbackError) {
+            throw new Error(fallbackError?.message || "الذكاء الاصطناعي وصل للحد المؤقت، وتعذر تنفيذ الملاحظة الاحتياطية.");
+          }
+        }
+        throw new Error(result.error || "تعذر الوصول إلى مساعد الإدارة.");
+      }
       if (!result.reply) throw new Error("وصل رد غير مكتمل من المساعد.");
       if (pending) pending.remove();
       addMessage((result.sent ? "✅ تم إرسال الرد إلى صاحب التذكرة " + result.ticket_code + " ووصل إشعار داخل المتجر.\\n\\n" : "") + result.reply, "bot");
