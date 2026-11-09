@@ -184,7 +184,7 @@
     panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid #8b6ab0;border-radius:14px;background:#171020";
     const heading = document.createElement("h3"); heading.textContent = "🛠️ تنفيذ المهام الإدارية الآمنة"; heading.style.margin = "0 0 6px";
     const note = document.createElement("p"); note.className = "small";
-    note.textContent = "احكي مع المساعد بطريقتك العادية، مثلاً: ضيف ملاحظة على مورد RTC MARKET إنو ناطرين تفعيل الـ API. أو سجّل إنو مشكلة تنفيذ الطلب لسا قيد المتابعة. الملاحظات الداخلية الواضحة ممكن تنحفظ تلقائياً بعد التحقق من السجل، مع سجل تدقيق. إذا ما عرف أي مورد أو طلب تقصد، رح يسألك. أي تغيير يؤثر على الزبون يحتاج موافقتك، والعمليات المالية محظورة."
+    note.textContent = "المساعد بيستخدم الذكاء الاصطناعي بشكل طبيعي طالما الخدمة والحد متاحين. إذا وصل OpenAI للحد المؤقت، بينتقل تلقائياً لوضع احتياطي للملاحظات الداخلية المحددة فقط، حتى من المحادثة الرئيسية. احكي بطريقتك: ضيف ملاحظة على مورد RTC MARKET إنو ناطرين تفعيل الـ API. إذا ما عرف السجل المقصود، بيطلب توضيحاً وما بيخمّن. التعديلات المؤثرة على الزبون تحتاج موافقتك، والعمليات المالية محظورة."
     const input = document.createElement("textarea"); input.id = "baranSafeActionInput"; input.rows = 3; input.maxLength = 700;
     input.placeholder = "اكتب طلبك بشكل طبيعي… مثال: ضيف ملاحظة على مورد RTC MARKET إنو ناطرين تفعيل الـ API";
     input.style.cssText = "width:100%;box-sizing:border-box;margin:8px 0;padding:11px;border-radius:9px;background:#0e0a13;color:#fff;border:1px solid #69527c";
