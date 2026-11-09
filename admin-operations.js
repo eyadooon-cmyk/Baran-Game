@@ -145,6 +145,7 @@ function renderOperationsDashboard(data){
   renderOpsCustomers(data.customers||[]);
   renderOpsOrders(data.orders||[]);
   renderOpsSuppliers(data.suppliers||[],data.supplier_products||[],data.products||[]);
+  renderOpsSupplierIntegration(data.supplier_integration||{},data.suppliers||[]);
   renderOpsLoyalty(data.customers||[],data.loyalty_customers||[]);
   renderOpsAuditLog(data.audit_log||[]);
   renderOpsNotifications(data.notifications||[]);
@@ -233,6 +234,23 @@ function renderOpsOrders(orders){
     fulfillmentSave.type="button";fulfillmentSave.onclick=()=>opsSaveFulfillment(order.id);
     supplierPanel.append(supplierSelect,supplierReference,supplierStatus,supplierUnitCost,supplierCostCurrency,internalNotes,fulfillmentSave);
     card.appendChild(supplierPanel);
+    if(fulfillment?.supplier_status==="failed" && fulfillment?.refund_status!=="completed"){
+      const refundButton=opsNode("button","secondary","إعادة رصيد الزبون بعد تأكيد الفشل");
+      refundButton.type="button";
+      refundButton.onclick=async()=>{
+        const reason=prompt("اكتب سبب فشل المورد بعد التأكد من أن العملية لم تنفذ:");
+        if(!reason||reason.trim().length<3)return;
+        if(!confirm("سيتم إعادة مبلغ الطلب إلى محفظة الزبون مرة واحدة فقط. هل تأكدت من فشل العملية لدى المورد؟"))return;
+        refundButton.disabled=true;
+        try{
+          const result=await callAdminApi("POST",{action:"supplier_order_refund",order_id:order.id,failure_reason:reason.trim()});
+          alert(result.refund?.already_refunded?"تم اكتشاف أن المبلغ مسترد سابقاً، ولم تتم إضافة رصيد جديد.":"تمت إعادة المبلغ إلى محفظة الزبون مرة واحدة.");
+          await loadAdminPanel();
+        }catch(error){alert("تعذر الاسترداد: "+error.message);refundButton.disabled=false;}
+      };
+      card.appendChild(refundButton);
+    }
+    if(fulfillment?.refund_status==="completed")card.appendChild(opsNode("div","ops-pill","تمت إعادة المبلغ للزبون"));
     box.appendChild(card);
   });
 }
@@ -269,6 +287,105 @@ function renderOpsSuppliers(suppliers,links,products){
     });
   }
 }
+function renderOpsSupplierIntegration(integration,suppliers){
+  const select=document.getElementById("opsApiSupplierSelect");
+  const statusBox=document.getElementById("opsApiStatus");
+  const eventsBox=document.getElementById("opsApiEvents");
+  const attemptsBox=document.getElementById("opsApiAttempts");
+  const configs=Array.isArray(integration.configs)?integration.configs:[];
+  if(select){
+    const old=select.value;select.replaceChildren();opsOption(select,"","اختر المورد");
+    suppliers.forEach(s=>opsOption(select,s.id,s.name));
+    if(old)select.value=old;
+    select.onchange=()=>{
+      const c=configs.find(x=>x.supplier_id===select.value);
+      const fields={opsApiAdapter:c?.adapter_key||"pending",opsApiBaseUrl:c?.api_base_url||"",
+        opsApiHealthPath:c?.health_path||"",opsApiBalancePath:c?.balance_path||"",
+        opsApiCreatePath:c?.create_order_path||"",opsApiStatusPath:c?.order_status_path||"",
+        opsApiSecretName:c?.auth_secret_name||"",opsApiHeaderName:c?.auth_header_name||"Authorization",
+        opsApiPrefix:c?.auth_prefix??"Bearer ",opsApiLowBalance:c?.low_balance_threshold??0,
+        opsApiCurrency:c?.balance_currency||"USD",opsApiEnabled:String(c?.integration_enabled===true)};
+      Object.entries(fields).forEach(([id,value])=>{
+        const el=document.getElementById(id);if(!el)return;
+        if(el.type==="checkbox")el.checked=value==="true";else el.value=value;
+      });
+    };
+  }
+  if(statusBox){
+    statusBox.replaceChildren();
+    if(!configs.length)statusBox.textContent="لا توجد إعدادات API محفوظة. أضف مورداً أولاً.";
+    configs.forEach(c=>{
+      const supplier=suppliers.find(s=>s.id===c.supplier_id);
+      const labels={not_configured:"غير مهيأ",pending_credentials:"بانتظار بيانات الاتصال",ready:"جاهز بعد التحقق",degraded:"يعمل مع تحذير",offline:"متوقف",disabled:"معطّل"};
+      const card=opsNode("article","ops-item");
+      card.append(opsNode("strong","",opsText(supplier?.name)+" — "+(labels[c.connection_status]||c.connection_status)));
+      card.append(opsNode("div","ops-muted","الموصل: "+c.adapter_key+" | التكامل: "+(c.integration_enabled?"قيد التجهيز":"غير مفعّل")));
+      card.append(opsNode("div","ops-muted","التنفيذ الحقيقي: "+(c.execution_enabled?"مفعّل":"متوقف للحماية")));
+      card.append(opsNode("div","ops-muted","آخر فحص رصيد: "+opsDate(c.last_balance_check_at)+" | الرصيد: "+(c.last_balance===null?"غير معروف":opsMoney(c.last_balance,c.balance_currency))));
+      if(c.last_error)card.append(opsNode("div","ops-muted","آخر خطأ: "+c.last_error));
+      statusBox.appendChild(card);
+    });
+  }
+  if(eventsBox){
+    eventsBox.replaceChildren();
+    const events=Array.isArray(integration.events)?integration.events:[];
+    if(!events.length)eventsBox.textContent="لا توجد أحداث اتصال مسجلة.";
+    events.forEach(e=>{
+      const card=opsNode("article","ops-item");
+      card.append(opsNode("strong","",e.event_type+" — "+e.message),
+        opsNode("div","ops-muted","الخطورة: "+e.severity+" | "+opsDate(e.created_at)));
+      if(e.details)card.append(opsNode("div","ops-muted",JSON.stringify(e.details)));
+      eventsBox.appendChild(card);
+    });
+  }
+  if(attemptsBox){
+    attemptsBox.replaceChildren();
+    const attempts=Array.isArray(integration.attempts)?integration.attempts:[];
+    if(!attempts.length)attemptsBox.textContent="لا توجد محاولات تنفيذ مسجلة.";
+    attempts.forEach(a=>{
+      const card=opsNode("article","ops-item");
+      card.append(opsNode("strong","","طلب "+String(a.order_id||"").slice(0,8)+" — "+a.attempt_status),
+        opsNode("div","ops-muted","المحاولة: "+a.attempt_number+" | رقم المورد: "+opsText(a.supplier_reference)),
+        opsNode("div","ops-muted",opsDate(a.created_at)));
+      if(a.error_message)card.append(opsNode("div","ops-muted",a.error_message));
+      attemptsBox.appendChild(card);
+    });
+  }
+}
+async function opsSaveSupplierApiConfig(){
+  const message=document.getElementById("opsApiMessage");
+  const supplierId=document.getElementById("opsApiSupplierSelect")?.value;
+  if(!supplierId){message.textContent="اختر المورد أولاً.";return;}
+  const value=id=>document.getElementById(id)?.value??"";
+  const payload={action:"supplier_api_config_save",supplier_id:supplierId,
+    adapter_key:value("opsApiAdapter"),api_base_url:value("opsApiBaseUrl").trim()||null,
+    health_path:value("opsApiHealthPath").trim()||null,balance_path:value("opsApiBalancePath").trim()||null,
+    create_order_path:value("opsApiCreatePath").trim()||null,order_status_path:value("opsApiStatusPath").trim()||null,
+    auth_secret_name:value("opsApiSecretName").trim()||null,auth_header_name:value("opsApiHeaderName").trim()||"Authorization",
+    auth_prefix:value("opsApiPrefix"),low_balance_threshold:Number(value("opsApiLowBalance")||0),
+    balance_currency:value("opsApiCurrency"),integration_enabled:document.getElementById("opsApiEnabled")?.checked===true};
+  message.textContent="جاري حفظ الإعدادات التحضيرية...";
+  try{
+    await callAdminApi("POST",payload);
+    message.textContent="تم حفظ الإعدادات. التنفيذ التلقائي ما زال متوقفاً، ولم يتم الاتصال بالمورد.";
+    await loadAdminPanel();
+    const select=document.getElementById("opsApiSupplierSelect");if(select)select.value=supplierId;
+  }catch(error){message.textContent="تعذر حفظ الإعدادات: "+error.message;}
+}
+async function opsSimulateSupplierApi(){
+  const message=document.getElementById("opsApiMessage");
+  const supplierId=document.getElementById("opsApiSupplierSelect")?.value;
+  if(!supplierId){message.textContent="اختر المورد أولاً.";return;}
+  message.textContent="جاري فحص الحقول محلياً دون إرسال أي طلب...";
+  try{
+    const result=await callAdminApi("POST",{action:"supplier_api_simulate",supplier_id:supplierId});
+    const s=result.simulation||{};
+    message.textContent=(s.message||"اكتمل الفحص المحلي.")+" "+(s.missing_fields?.length?"الحقول الناقصة: "+s.missing_fields.join("، "):"لا توجد حقول أساسية ناقصة.");
+    await loadAdminPanel();
+    const select=document.getElementById("opsApiSupplierSelect");if(select)select.value=supplierId;
+  }catch(error){message.textContent="تعذر الفحص المحلي: "+error.message;}
+}
+
 function renderOpsLoyalty(customers,loyaltyRows){
   const select=document.getElementById("opsLoyaltyCustomer");
   const box=document.getElementById("opsLoyaltyCustomers");
