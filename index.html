@@ -2511,7 +2511,7 @@ async function findOwnerUsdSaleRecipient(){
   if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){message.textContent="أدخل البريد الإلكتروني الصحيح للزبون.";return;}
   button.disabled=true;message.textContent="جاري التحقق من حساب الزبون...";
   try{
-    const {data,error}=await sb.rpc("baran_find_transfer_recipient",{p_email:email});
+    const {data,error}=await ownerWalletRpc("find_recipient",{p_email:email});
     if(error)throw error;
     const recipient=Array.isArray(data)?data[0]:null;
     if(!recipient){message.textContent="لم نجد حساباً بهذا البريد.";return;}
@@ -2552,7 +2552,7 @@ async function submitOwnerUsdSaleRequest(){
     uploadedPath=currentUser.id+"/"+crypto.randomUUID()+"."+extension;
     const {error:uploadError}=await sb.storage.from("shamcash-receipts").upload(uploadedPath,receipt,{contentType:receipt.type,cacheControl:"3600",upsert:false});
     if(uploadError)throw uploadError;
-    const {data,error}=await sb.rpc("baran_submit_owner_usd_sale_request",{
+    const {data,error}=await ownerWalletRpc("submit_usd_sale_request",{
       p_recipient_id:selectedOwnerUsdSaleRecipient.id,p_amount_usd:amount,
       p_transfer_reference:reference,p_receipt_path:uploadedPath
     });
@@ -2597,7 +2597,7 @@ async function submitOwnerFundingRequest(){
     uploadedPath=user.id+"/"+crypto.randomUUID()+"."+extension;
     const {error:uploadError}=await sb.storage.from("shamcash-receipts").upload(uploadedPath,receipt,{contentType:receipt.type,cacheControl:"3600",upsert:false});
     if(uploadError)throw uploadError;
-    const {data,error}=await sb.rpc("baran_submit_owner_funding_request",{
+    const {data,error}=await ownerWalletRpc("submit_funding_request",{
       p_amount:amount,p_currency:currency,p_transfer_reference:reference,p_receipt_path:uploadedPath
     });
     if(error)throw error;
@@ -2766,10 +2766,14 @@ function walletExchangeFormat(value,currency){
   return currency==="USD"?n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" $":n.toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س";
 }
 
+async function ownerWalletRpc(action,args={}) {
+  return await sb.functions.invoke("baran-owner-wallet",{body:{action,args}});
+}
+
 async function loadWalletExchangeSettings(){
   const message=document.getElementById("walletExchangeRatesMessage");
   try{
-    const {data,error}=await sb.rpc("baran_get_wallet_exchange_settings");
+    const {data,error}=await ownerWalletRpc("get_exchange_settings");
     if(error)throw error;
     const row=Array.isArray(data)?data[0]:data;
     if(!row)throw new Error("لم تصل أسعار الصرف من الخادم.");
@@ -2792,7 +2796,7 @@ async function saveWalletExchangeRates(){
   if(!confirm("تأكيد حفظ سعري الصرف الجديدين لمحفظة المالك؟ لن تتغير أسعار المنتجات."))return;
   button.disabled=true;message.textContent="جاري حفظ الأسعار...";
   try{
-    const {data,error}=await sb.rpc("baran_update_wallet_exchange_rates",{
+    const {data,error}=await ownerWalletRpc("update_exchange_rates",{
       p_syp_to_usd_rate:sypRate,p_usd_to_syp_rate:usdRate
     });
     if(error)throw error;
@@ -2838,7 +2842,7 @@ async function submitWalletExchange(){
   if(!confirm("تأكيد تبديل "+walletExchangeFormat(amount,currency)+" إلى "+target+"؟ سيتم الخصم والإضافة فوراً حسب السعر المعروض."))return;
   button.disabled=true;message.textContent="جاري تنفيذ التبديل بأمان...";
   try{
-    const {data,error}=await sb.rpc("baran_exchange_wallet_currency",{
+    const {data,error}=await ownerWalletRpc("exchange_currency",{
       p_request_id:pendingWalletExchangeRequestId,p_source_currency:currency,p_source_amount:amount
     });
     if(error)throw error;
