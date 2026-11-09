@@ -846,6 +846,34 @@ footer{color:#9f91aa}
 .learning-note{padding:11px;border-right:3px solid #b99ad2;background:#241b2d;border-radius:9px;color:#e5d9ef;font-size:13px;line-height:1.8}
 @media(max-width:500px){.learning-grid{grid-template-columns:1fr}}
 </style>
+<style>
+.customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+.customer-stat-card{display:flex;align-items:center;gap:10px;min-width:0;padding:13px;background:linear-gradient(145deg,#211a2b,#15111b);border:1px solid #493b55;border-radius:15px}
+.customer-stat-primary{border-color:#9b79b4;box-shadow:inset 0 0 0 1px #9b79b422}
+.customer-stat-icon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:13px;background:#332540;font-size:21px}
+.customer-stat-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.customer-stat-copy>span{font-size:11px;color:#b9a9c9;line-height:1.4}
+.customer-stat-copy strong{font-size:clamp(15px,2.5vw,20px);color:#e5d8ef;overflow-wrap:anywhere}
+.customer-directory-list{display:grid;gap:10px;margin:14px 0}
+.customer-directory-item{overflow:hidden;background:linear-gradient(145deg,#1c1723,#141019);border:1px solid #40334b;border-radius:15px;transition:border-color .2s,box-shadow .2s}
+.customer-directory-item.expanded{border-color:#9b79b4;box-shadow:0 8px 24px #0004}
+.customer-directory-toggle{width:100%;display:flex;align-items:center;gap:11px;padding:14px;background:transparent;color:#eee8f4;text-align:right;border-radius:0}
+.customer-directory-toggle:hover{background:#261d30}
+.customer-directory-avatar{width:43px;height:43px;flex:0 0 43px;display:grid;place-items:center;border-radius:13px;background:#30223b;border:1px solid #665078;font-size:20px}
+.customer-directory-identity{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;text-align:right}
+.customer-directory-identity strong{font-size:14px;color:#f1eaf7;overflow-wrap:anywhere}
+.customer-directory-identity small{font-size:11px;color:#b9a9c9}
+.customer-directory-balance{padding:5px 8px;border-radius:9px;background:#292033;color:#d7c4e8;font-size:12px;font-weight:800;white-space:nowrap}
+.customer-directory-chevron{font-size:22px;color:#c5b4d6;line-height:1}
+.customer-directory-details{padding:4px 14px 13px;border-top:1px solid #40334b;background:#110e16}
+.customer-detail-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #302638;font-size:12px}
+.customer-detail-row:last-child{border-bottom:0}
+.customer-detail-row>span{color:#b9a9c9;flex:0 0 auto}
+.customer-detail-row strong{color:#eee8f4;text-align:left;overflow-wrap:anywhere}
+.customer-directory-empty{padding:22px;text-align:center;color:#b9a9c9;background:#17121e;border:1px dashed #57436a;border-radius:14px}
+@media(max-width:520px){.customer-directory-stats{grid-template-columns:1fr}.customer-stat-card{padding:11px}.customer-stat-icon{width:39px;height:39px;flex-basis:39px}.customer-directory-toggle{gap:8px;padding:12px}.customer-directory-avatar{width:39px;height:39px;flex-basis:39px}.customer-directory-balance{font-size:11px;padding:5px 6px}.customer-detail-row{font-size:11px}}
+</style>
+
 </head>
 <body>
 
@@ -1463,7 +1491,7 @@ footer{color:#9f91aa}
       <p class="small">عرض أرصدة الزبائن الفعلية بالدولار والليرة السورية. هذا القسم للعرض والمتابعة فقط ولا يتيح تعديل الأرصدة.</p>
       <div class="finance-section" style="margin:12px 0;padding:14px">
         <div class="finance-section-heading"><div><span class="finance-kicker">CUSTOMER WALLETS</span><h3>أرصدة محافظ الزبائن</h3><p class="small">الأرصدة مأخوذة مباشرة من محافظ الحسابات المسجلة.</p></div><span class="finance-section-icon">👛</span></div>
-        <div id="customerWalletTotals" class="finance-grid"></div>
+        <div id="customerWalletTotals" class="customer-directory-stats"></div>
       </div>
       <input id="opsCustomerSearch" type="search" maxlength="120" placeholder="ابحث برقم العضوية BG-000001 أو الاسم أو الهاتف..." oninput="filterBaranCustomerDirectory()">
       <select id="opsCustomerSort" aria-label="ترتيب الزبائن" onchange="filterBaranCustomerDirectory()">
@@ -1472,7 +1500,7 @@ footer{color:#9f91aa}
         <option value="usd">الأعلى رصيداً بالدولار</option>
         <option value="syp">الأعلى رصيداً بالليرة</option>
       </select>
-      <div id="opsCustomers" class="ops-list">جاري تحميل المستخدمين...</div>
+      <div id="opsCustomers" class="customer-directory-list">جاري تحميل المستخدمين...</div>
       
       </div>
 
@@ -3186,15 +3214,17 @@ function renderBaranCustomerDirectory(customers){
     const sumUsd=baranCustomerDirectory.reduce((sum,item)=>sum+Number(item.balance_usd||0),0);
     const sumSyp=baranCustomerDirectory.reduce((sum,item)=>sum+Number(item.balance_syp||0),0);
     const cards=[
-      ["عدد حسابات الزبائن",baranCustomerDirectory.length.toLocaleString("en-US")],
-      ["إجمالي أرصدة الدولار",financeMoney(sumUsd,"USD")],
-      ["إجمالي أرصدة الليرة",financeMoney(sumSyp,"SYP")]
+      ["👥","عدد المستخدمين",baranCustomerDirectory.length.toLocaleString("en-US")],
+      ["💵","إجمالي أرصدة الدولار",financeMoney(sumUsd,"USD")],
+      ["💰","إجمالي أرصدة الليرة",financeMoney(sumSyp,"SYP")]
     ];
-    cards.forEach(([label,value])=>{
-      const card=document.createElement("div");card.className="finance-card";
-      const heading=document.createElement("strong");heading.textContent=label;
-      const amount=document.createElement("div");amount.textContent=value;
-      card.append(heading,amount);totals.appendChild(card);
+    cards.forEach(([icon,label,value],index)=>{
+      const card=document.createElement("div");card.className="customer-stat-card"+(index===0?" customer-stat-primary":"");
+      const symbol=document.createElement("span");symbol.className="customer-stat-icon";symbol.textContent=icon;
+      const copy=document.createElement("div");copy.className="customer-stat-copy";
+      const title=document.createElement("span");title.textContent=label;
+      const amount=document.createElement("strong");amount.textContent=value;
+      copy.append(title,amount);card.append(symbol,copy);totals.appendChild(card);
     });
   }
   filterBaranCustomerDirectory();
@@ -3214,19 +3244,46 @@ function filterBaranCustomerDirectory(){
     return new Date(b.created_at||0)-new Date(a.created_at||0);
   });
   box.replaceChildren();
-  if(!rows.length){box.textContent=query?"لا يوجد زبون يطابق البحث.":"لا توجد حسابات مسجلة بعد.";return;}
-  rows.forEach(item=>{
-    const card=document.createElement("div");card.className="ops-item";
-    const heading=document.createElement("div");
-    heading.style.display="flex";heading.style.flexWrap="wrap";heading.style.alignItems="center";heading.style.gap="6px 10px";
+  if(!rows.length){
+    const empty=document.createElement("div");empty.className="customer-directory-empty";
+    empty.textContent=query?"لا يوجد زبون يطابق البحث.":"لا توجد حسابات مسجلة بعد.";
+    box.appendChild(empty);return;
+  }
+  rows.forEach((item,index)=>{
+    const card=document.createElement("article");card.className="customer-directory-item";
+    const toggle=document.createElement("button");toggle.type="button";toggle.className="customer-directory-toggle";
+    toggle.setAttribute("aria-expanded","false");
+    const avatar=document.createElement("span");avatar.className="customer-directory-avatar";avatar.textContent="👤";
+    const identity=document.createElement("span");identity.className="customer-directory-identity";
     const title=document.createElement("strong");title.textContent=item.full_name||item.email||"زبون";
-    const balance=document.createElement("span");balance.className="small";balance.style.fontWeight="800";
-    balance.textContent="الرصيد: "+financeMoney(item.balance_usd,"USD")+" | "+financeMoney(item.balance_syp,"SYP");
-    heading.append(title,balance);
-    const code=document.createElement("div");code.textContent="رقم العضوية: "+(item.member_code||"غير متوفر");
-    const email=document.createElement("div");email.textContent="البريد: "+(item.email||"غير متوفر");
-    const phone=document.createElement("div");phone.textContent="الهاتف: "+(item.phone||"غير مسجل");
-    card.append(heading,code,email,phone);box.appendChild(card);
+    const subtitle=document.createElement("small");subtitle.textContent=item.member_code||"عضو في BARAN GAME";
+    identity.append(title,subtitle);
+    const balance=document.createElement("span");balance.className="customer-directory-balance";
+    balance.textContent=financeMoney(item.balance_usd,"USD");
+    const chevron=document.createElement("span");chevron.className="customer-directory-chevron";chevron.textContent="⌄";
+    toggle.append(avatar,identity,balance,chevron);
+    const details=document.createElement("div");details.className="customer-directory-details hidden";
+    const detailRows=[
+      ["📧","البريد الإلكتروني",item.email||"غير متوفر"],
+      ["📱","رقم الهاتف",item.phone||"غير مسجل"],
+      ["🪪","رقم العضوية",item.member_code||"غير متوفر"],
+      ["💵","رصيد الدولار",financeMoney(item.balance_usd,"USD")],
+      ["💰","رصيد الليرة السورية",financeMoney(item.balance_syp,"SYP")]
+    ];
+    detailRows.forEach(([icon,label,value])=>{
+      const row=document.createElement("div");row.className="customer-detail-row";
+      const key=document.createElement("span");key.textContent=icon+" "+label;
+      const val=document.createElement("strong");val.textContent=value;
+      row.append(key,val);details.appendChild(row);
+    });
+    toggle.addEventListener("click",()=>{
+      const opening=details.classList.contains("hidden");
+      details.classList.toggle("hidden",!opening);
+      toggle.setAttribute("aria-expanded",String(opening));
+      chevron.textContent=opening?"⌃":"⌄";
+      card.classList.toggle("expanded",opening);
+    });
+    card.append(toggle,details);box.appendChild(card);
   });
 }
 
