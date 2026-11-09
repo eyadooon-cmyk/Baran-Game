@@ -3217,26 +3217,16 @@ function filterBaranCustomerDirectory(){
   if(!rows.length){box.textContent=query?"لا يوجد زبون يطابق البحث.":"لا توجد حسابات مسجلة بعد.";return;}
   rows.forEach(item=>{
     const card=document.createElement("div");card.className="ops-item";
-    const maskedEmail=maskBaranEmail(item.email)||"بريد غير متوفر";
-    const hasBalance=Number(item.balance_usd||0)>0||Number(item.balance_syp||0)>0;
     const heading=document.createElement("div");
     heading.style.display="flex";heading.style.flexWrap="wrap";heading.style.alignItems="center";heading.style.gap="6px 10px";
-    const title=document.createElement("strong");const safeName=String(item.full_name||"").trim();title.textContent=(safeName&&safeName.toLowerCase()!==String(item.email||"").trim().toLowerCase()&&!safeName.includes("@"))?safeName:maskedEmail;
-    const emailTag=document.createElement("span");emailTag.className="small";emailTag.textContent=maskedEmail;
-    const status=document.createElement("span");status.className="small";status.style.fontWeight="800";
-    status.style.color=hasBalance?"#16a34a":"#9ca3af";
-    status.textContent=hasBalance?"● لديه رصيد":"○ لا يوجد رصيد";
-    const compactWallet=document.createElement("span");compactWallet.className="small";
-    compactWallet.style.fontWeight="700";
-    compactWallet.textContent=financeMoney(item.balance_usd,"USD")+" | "+financeMoney(item.balance_syp,"SYP");
-    heading.append(title,emailTag,status,compactWallet);
+    const title=document.createElement("strong");title.textContent=item.full_name||item.email||"زبون";
+    const balance=document.createElement("span");balance.className="small";balance.style.fontWeight="800";
+    balance.textContent="الرصيد: "+financeMoney(item.balance_usd,"USD")+" | "+financeMoney(item.balance_syp,"SYP");
+    heading.append(title,balance);
     const code=document.createElement("div");code.textContent="رقم العضوية: "+(item.member_code||"غير متوفر");
-    const email=document.createElement("div");email.textContent="البريد: "+maskedEmail;
+    const email=document.createElement("div");email.textContent="البريد: "+(item.email||"غير متوفر");
     const phone=document.createElement("div");phone.textContent="الهاتف: "+(item.phone||"غير مسجل");
-    const walletTitle=document.createElement("div");walletTitle.style.marginTop="10px";walletTitle.style.fontWeight="800";walletTitle.textContent="رصيد المحفظة";
-    const usd=document.createElement("div");usd.textContent="الدولار: "+financeMoney(item.balance_usd,"USD");
-    const syp=document.createElement("div");syp.textContent="الليرة السورية: "+financeMoney(item.balance_syp,"SYP");
-    card.append(heading,code,email,phone,walletTitle,usd,syp);box.appendChild(card);
+    card.append(heading,code,email,phone);box.appendChild(card);
   });
 }
 
