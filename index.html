@@ -857,8 +857,8 @@ footer{color:#9f91aa}
 .customer-directory-list{display:grid;gap:10px;margin:14px 0}
 .customer-directory-item{overflow:hidden;background:linear-gradient(145deg,#1c1723,#141019);border:1px solid #40334b;border-radius:15px;transition:border-color .2s,box-shadow .2s}
 .customer-directory-item.expanded{border-color:#9b79b4;box-shadow:0 8px 24px #0004}
-.customer-directory-toggle{width:100%;display:flex;align-items:center;gap:11px;padding:14px;background:transparent;color:#eee8f4;text-align:right;border-radius:0}
-.customer-directory-toggle:hover{background:#261d30}
+.customer-directory-toggle{list-style:none;width:100%;display:flex;align-items:center;gap:11px;padding:14px;background:transparent;color:#eee8f4;text-align:right;border-radius:0}
+.customer-directory-toggle::-webkit-details-marker{display:none}.customer-directory-toggle::marker{content:''}.customer-directory-item[open] .customer-directory-toggle{background:#261d30}.customer-directory-item[open] .customer-directory-chevron{color:#e2c9f5}
 .customer-directory-avatar{width:43px;height:43px;flex:0 0 43px;display:grid;place-items:center;border-radius:13px;background:#30223b;border:1px solid #665078;font-size:20px}
 .customer-directory-identity{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;text-align:right}
 .customer-directory-identity strong{font-size:14px;color:#f1eaf7;overflow-wrap:anywhere}
@@ -3249,10 +3249,9 @@ function filterBaranCustomerDirectory(){
     empty.textContent=query?"لا يوجد زبون يطابق البحث.":"لا توجد حسابات مسجلة بعد.";
     box.appendChild(empty);return;
   }
-  rows.forEach((item,index)=>{
-    const card=document.createElement("article");card.className="customer-directory-item";
-    const toggle=document.createElement("button");toggle.type="button";toggle.className="customer-directory-toggle";
-    toggle.setAttribute("aria-expanded","false");
+  rows.forEach(item=>{
+    const card=document.createElement("details");card.className="customer-directory-item";
+    const summary=document.createElement("summary");summary.className="customer-directory-toggle";
     const avatar=document.createElement("span");avatar.className="customer-directory-avatar";avatar.textContent="👤";
     const identity=document.createElement("span");identity.className="customer-directory-identity";
     const title=document.createElement("strong");title.textContent=item.full_name||item.email||"زبون";
@@ -3260,9 +3259,9 @@ function filterBaranCustomerDirectory(){
     identity.append(title,subtitle);
     const balance=document.createElement("span");balance.className="customer-directory-balance";
     balance.textContent=financeMoney(item.balance_usd,"USD");
-    const chevron=document.createElement("span");chevron.className="customer-directory-chevron";chevron.textContent="⌄";
-    toggle.append(avatar,identity,balance,chevron);
-    const details=document.createElement("div");details.className="customer-directory-details hidden";
+    const hint=document.createElement("span");hint.className="customer-directory-chevron";hint.textContent="تفاصيل";
+    summary.append(avatar,identity,balance,hint);
+    const details=document.createElement("div");details.className="customer-directory-details";
     const detailRows=[
       ["📧","البريد الإلكتروني",item.email||"غير متوفر"],
       ["📱","رقم الهاتف",item.phone||"غير مسجل"],
@@ -3276,16 +3275,10 @@ function filterBaranCustomerDirectory(){
       const val=document.createElement("strong");val.textContent=value;
       row.append(key,val);details.appendChild(row);
     });
-    toggle.addEventListener("click",()=>{
-      const opening=details.classList.contains("hidden");
-      details.classList.toggle("hidden",!opening);
-      toggle.setAttribute("aria-expanded",String(opening));
-      chevron.textContent=opening?"⌃":"⌄";
-      card.classList.toggle("expanded",opening);
-    });
-    card.append(toggle,details);box.appendChild(card);
+    card.append(summary,details);box.appendChild(card);
   });
 }
+
 
 async function loadAdminPanel(){
   if(!baranAdminNotificationPoll){
