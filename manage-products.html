@@ -44,6 +44,15 @@ a{color:#c5b4d6}
   <h2>إضافة منتج أو تعديله</h2>
   <p class="small">يمكن حفظ المنتج دون سعر الآن. اترك حقل السعر فارغاً حتى يتوفر سعر معتمد؛ ولن يصبح المنتج قابلاً للطلب قبل تفعيل الشراء لاحقاً.</p>
   <div id="productMessage" class="small" role="status"></div>
+  <div class="panel" style="margin:14px 0;border:1px solid #8a6bb0">
+    <h3>🤖 مساعد إضافة المنتجات</h3>
+    <p class="small">اكتب طلبك بشكل طبيعي، مثلاً: أضف باقات فري فاير 310 و520 و1060 جوهرة بدون أسعار. سيعرض المساعد معاينة أولاً، ولن يحفظ إلا بعد تأكيدك.</p>
+    <label for="productAssistantCommand">شو المنتجات اللي بدك تضيفها؟</label>
+    <input id="productAssistantCommand" type="text" maxlength="500" placeholder="أضف باقات فري فاير 310 و520 و1060 جوهرة">
+    <div class="actions"><button id="productAssistantPrepare" type="button" onclick="prepareAssistantProducts()">تحليل الطلب وتجهيز المنتجات</button></div>
+    <div id="productAssistantPreview" class="small" role="status"></div>
+    <div class="actions"><button id="productAssistantConfirm" type="button" class="hidden" onclick="confirmAssistantProducts()">تأكيد الإضافة والحفظ</button></div>
+  </div>
   <input id="productId" type="hidden">
   <label for="productCode">رمز المنتج (إنجليزي)</label>
   <input id="productCode" type="text" maxlength="60" dir="ltr" placeholder="FREEFIRE_100">
@@ -87,6 +96,48 @@ async function callAdminApi(method="GET",payload=null){
   let result={};try{result=await response.json()}catch(e){}
   if(!response.ok)throw new Error(result.error||"تعذر تنفيذ الطلب.");
   return result;
+}
+let assistantProductsPending=[];
+function prepareAssistantProducts(){
+  const command=(document.getElementById("productAssistantCommand").value||"").trim();
+  const preview=document.getElementById("productAssistantPreview");
+  const confirm=document.getElementById("productAssistantConfirm");
+  assistantProductsPending=[];
+  confirm.classList.add("hidden");
+  if(!command){preview.textContent="اكتب طلب الإضافة أولاً.";return;}
+  const lower=command.toLowerCase();
+  const numbers=[...new Set((command.match(/\\d{2,5}/g)||[]).map(Number))].filter(n=>n>0&&n<=100000);
+  if(!/(free\\s*fire|فري\\s*فاير|فريفاير)/i.test(command)||!/(جوهرة|جواهر|diamond|diamonds)/i.test(command)){
+    preview.textContent="حالياً المساعد يدعم تجهيز باقات فري فاير بالجواهر. اكتب مثلاً: أضف باقات فري فاير 310 و520 و1060 جوهرة.";
+    return;
+  }
+  if(!numbers.length){preview.textContent="ما قدرت أستخرج أرقام الباقات. اكتب أرقام الجواهر بوضوح.";return;}
+  assistantProductsPending=numbers.map((n,index)=>({
+    product_code:"FREEFIRE_"+n,
+    category:"game",
+    name:"Free Fire – "+n+" جوهرة",
+    description:"باقة "+n+" جوهرة فري فاير",
+    sort_order:3+index,
+    is_active:true
+  }));
+  preview.textContent="معاينة المنتجات ("+assistantProductsPending.length+"): "+assistantProductsPending.map(p=>p.name+" ["+p.product_code+"]").join(" | ")+" — الأسعار فارغة، والمنتجات مفعّلة. راجع القائمة ثم أكد الحفظ.";
+  confirm.classList.remove("hidden");
+}
+async function confirmAssistantProducts(){
+  const button=document.getElementById("productAssistantConfirm");
+  const preview=document.getElementById("productAssistantPreview");
+  if(!assistantProductsPending.length){preview.textContent="لا توجد منتجات جاهزة للحفظ.";return;}
+  button.disabled=true;
+  preview.textContent="جاري فحص الرموز وحفظ المنتجات...";
+  try{
+    const result=await callAdminApi("POST",{action:"product_bulk_save",products:assistantProductsPending});
+    const lines=(result.results||[]).map(x=>x.product_code+": "+({created:"تمت الإضافة",skipped_duplicate:"موجود مسبقاً — تم تخطيه",invalid:"بيانات غير صالحة",error:"تعذر الحفظ"}[x.status]||x.status));
+    preview.textContent="انتهت العملية. أُضيف: "+result.created+" | موجود مسبقاً: "+result.skipped+" | تعذّر: "+result.failed+". "+lines.join(" — ");
+    assistantProductsPending=[];
+    button.classList.add("hidden");
+    await loadAdminPanel();
+  }catch(error){preview.textContent="تعذر تنفيذ الإضافة: "+error.message;}
+  finally{button.disabled=false;}
 }
 async function loadAdminPanel(){
   const box=document.getElementById("adminProducts");
