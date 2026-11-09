@@ -1403,6 +1403,7 @@ footer{color:#9f91aa}
         <div class="admin-hub-intro"><strong>مركز إدارة Baran Game</strong><p class="small">اختر القسم الذي تريد العمل عليه. كل قسم يفتح وحده حتى تبقى الشاشة مرتبة وواضحة على الهاتف.</p></div>
         <div class="admin-hub-grid">
           <button type="button" class="admin-hub-card" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المساعد الذكي، المراقبة والإعلانات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+          <button type="button" class="admin-hub-card" onclick="showAdminPanel('safe-actions')"><span class="admin-hub-icon">🛠️</span><strong>تنفيذ المهام الإدارية الآمنة</strong><small>معاينة التعديلات المسموحة وتأكيدها مع سجل تدقيق.</small><span class="admin-hub-open">فتح القسم ←</span></button>
           <button type="button" class="admin-hub-card" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>التذاكر المالية</strong><small>الحالات المالية التي تحتاج مراجعتك.</small><span class="admin-hub-open">فتح القسم ←</span></button>
           <button type="button" class="admin-hub-card" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>إدارة المستخدمين</strong><small>عرض حسابات المستخدمين ومعلوماتهم.</small><span class="admin-hub-open">فتح القسم ←</span></button>
           <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
@@ -1732,6 +1733,12 @@ footer{color:#9f91aa}
         </div>
 
       
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="safe-actions">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>🛠️ تنفيذ المهام الإدارية الآمنة</h2></div>
+        <p class="small">هذا القسم مستقل عن مساعد الإحصائيات. اطلب تعديلاً مسموحاً، راجع المعاينة، ثم أكّد التنفيذ بنفسك.</p>
+        <section id="baranSafeActionsHost" class="deposit-card" aria-label="تنفيذ المهام الإدارية الآمنة" style="display:block!important;visibility:visible!important;margin:12px 0;padding:14px;border:1px solid #8b6ba8"></section>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="finance">
