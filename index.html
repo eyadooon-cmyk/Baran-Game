@@ -3229,14 +3229,16 @@ async function loadAdminPanel(){
   message.textContent="";
   try{
     const result=await callAdminApi("GET");
+    // Render the customer directory first so an unrelated dashboard renderer
+    // cannot leave the customer list stuck on its initial loading message.
+    renderBaranCustomerDirectory(result.customers||[]);
     const requests=result.requests||[];
     renderAdminDepositRequestList(container,requests.filter(x=>x.request_source!=="owner_wallet"&&x.request_source!=="owner_usd_sale"));
     if(ownerContainer)renderAdminDepositRequestList(ownerContainer,requests.filter(x=>x.request_source==="owner_wallet"),true);
     const saleContainer=document.getElementById("adminOwnerUsdSaleRequests");
     if(saleContainer)renderAdminDepositRequestList(saleContainer,requests.filter(x=>x.request_source==="owner_usd_sale"),false);
     if(typeof renderOperationsDashboard==="function")renderOperationsDashboard(result);
-    renderBaranCustomerDirectory(result.customers||[]);
-    if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
+    if(typeof renderAdminNotifications==="function"renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
     renderBaranAutoSupportQueue(result.auto_support_queue||[],result.feedback||[]);
