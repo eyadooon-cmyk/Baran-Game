@@ -161,7 +161,7 @@
     const note = document.createElement("p"); note.className = "small";
     note.textContent = "اكتب التعديل المطلوب بلغة عادية. المساعد سيجهّز معاينة فقط؛ لن يُحفظ أي تغيير إلا بعد ضغطك على زر التأكيد.";
     const input = document.createElement("textarea"); input.id = "baranSafeActionInput"; input.rows = 3; input.maxLength = 700;
-    input.placeholder = "مثال: أضف مورداً باسم RTC MARKET، أو غيّر حالة تذكرة، أو اعتمد/ارفض تقييماً برمزه";
+    input.placeholder = "مثال: أضف مورداً، عدّل وصف منتج، غيّر حالة تذكرة، أو حدّث ملاحظة تنفيذ طلب/ربط مورد بمنتج";
     input.style.cssText = "width:100%;box-sizing:border-box;margin:8px 0;padding:11px;border-radius:9px;background:#0e0a13;color:#fff;border:1px solid #69527c";
     const plan = document.createElement("button"); plan.type = "button"; plan.textContent = "جهّز معاينة التعديل"; plan.style.cssText = "width:100%;min-height:44px;margin:4px 0;padding:10px";
     const preview = document.createElement("div"); preview.id = "baranSafeActionPreview";
@@ -172,7 +172,7 @@
     cancel.style.cssText = "display:none;width:100%;min-height:40px;margin-top:6px;padding:8px";
     const status = document.createElement("p"); status.className = "small"; status.style.marginTop = "8px"; status.setAttribute("aria-live","polite");
     const safe = document.createElement("p"); safe.className = "ops-muted";
-    safe.textContent = "🔒 المسموح حالياً: تعديل اسم ووصف وتصنيف وترتيب وإظهار/إخفاء المنتجات؛ تغيير حالة تذاكر الدعم؛ اعتماد أو رفض تقييمات الزبائن فقط؛ وإضافة مورد أو تعديل اسمه وملاحظاته وحالة نشاطه. كل ذلك بعد معاينة وموافقتك. لا يكتب ردوداً للزبائن، ولا يعدّل بيانات الاتصال أو تكاليف الموردين أو ربط المنتجات أو رصيد المورد أو مفاتيح وإعدادات API. الأسعار والأرصدة والإيداعات والاستردادات والطلبات والدفع وسعر الصرف والصلاحيات محظورة.";
+    safe.textContent = "🔒 المسموح بعد المعاينة وموافقتك: تعديل بيانات المنتجات غير السعرية؛ تغيير حالة تذاكر الدعم؛ اعتماد/رفض التقييمات؛ إضافة مورد أو تعديل اسمه وملاحظاته وحالة نشاطه؛ تعديل الملاحظات الداخلية لتنفيذ طلب موجود؛ وتعديل ملاحظات ربط المورد بالمنتج فقط. لا يغيّر حالة الطلب أو الشحن أو الاسترداد أو التكلفة أو العملة أو SKU أو أولوية المورد أو مهلة التنفيذ. لا يغيّر بيانات الزبائن أو نقاط الولاء أو المحافظ أو الإيداعات أو الأسعار أو سعر الصرف أو مفاتيح API أو الصلاحيات. الردود والإعلانات والإجراءات المالية تبقى ضمن أدواتها المنفصلة وبحدود موافقتها.";
     panel.append(heading,note,input,plan,preview,confirm,cancel,status,safe);
     const headingNode = host.querySelector("h2");
     if (headingNode && headingNode.parentNode === host) headingNode.insertAdjacentElement("afterend", panel);
@@ -186,7 +186,7 @@
       try {
         const result = await callSafeAction({mode:"plan",command});
         pendingSafeProposal = result.proposal; const p = result.proposal;
-        preview.textContent = (p.target_type === "ticket" ? "تذكرة الدعم: " : p.target_type === "review" ? "تقييم الزبون: " : (p.target_type === "supplier" || p.target_type === "supplier_create") ? "المورد: " : "المنتج: ") + p.target_name + " (" + p.target_key + ")\nسبب التعديل: " + p.reason +
+        preview.textContent = (p.target_type === "ticket" ? "تذكرة الدعم: " : p.target_type === "review" ? "تقييم الزبون: " : (p.target_type === "supplier" || p.target_type === "supplier_create") ? "المورد: " : p.target_type === "fulfillment_note" ? "ملاحظات تنفيذ الطلب: " : p.target_type === "supplier_product_note" ? "ملاحظات ربط المورد بالمنتج: " : "المنتج: ") + p.target_name + " (" + p.target_key + ")\nسبب التعديل: " + p.reason +
           "\n\nالقيم الحالية:\n" + JSON.stringify(p.before,null,2) +
           "\n\nالقيم المقترحة:\n" + JSON.stringify(p.changes,null,2) +
           "\n\n" + (p.target_type === "ticket" ? "تنبيه: تغيير حالة التذكرة قد يرسل إشعاراً للزبون. " : p.target_type === "review" ? "سيتم اعتماد التقييم أو رفضه فقط، دون كتابة رد أو حذف. " : "") + "لن يتم الحفظ إلا بعد موافقتك الصريحة.";
