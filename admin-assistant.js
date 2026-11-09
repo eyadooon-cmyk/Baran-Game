@@ -152,7 +152,7 @@
     return result;
   }
   function installSafeActions() {
-    const host = document.getElementById("baranAdminAssistant");
+    const host = document.getElementById("baranSafeActionsHost");
     if (!host || document.getElementById("baranSafeActions")) return;
     const panel = document.createElement("section");
     panel.id = "baranSafeActions";
@@ -222,8 +222,9 @@
   }
   // Retry when the admin panel is rendered or revealed after login/navigation.
   const adminUiObserver = new MutationObserver(() => {
-    const host = document.getElementById("baranAdminAssistant");
-    if (host && (!document.getElementById("baranSafeActions") || !document.getElementById("baranAiTeam"))) initializeAdminEnhancements();
+    const assistantHost = document.getElementById("baranAdminAssistant");
+    const safeHost = document.getElementById("baranSafeActionsHost");
+    if ((assistantHost && !document.getElementById("baranAiTeam")) || (safeHost && !document.getElementById("baranSafeActions"))) initializeAdminEnhancements();
   });
   adminUiObserver.observe(document.documentElement, { childList: true, subtree: true });
 
