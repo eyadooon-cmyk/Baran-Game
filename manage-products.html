@@ -65,7 +65,7 @@ a{color:#c5b4d6}
   <label for="productActive">حالة المنتج</label>
   <select id="productActive"><option value="true">مفعّل</option><option value="false">متوقف ومخفي</option></select>
   <div class="actions">
-    <button id="saveProductButton" type="button" onclick="saveProduct()">حفظ المنتج</button>
+    <button id="saveProductButton" type="button">حفظ المنتج</button>
     <button type="button" class="secondary" onclick="resetProductForm()">تفريغ النموذج</button>
     <button type="button" class="secondary" onclick="loadAdminPanel()">تحديث القائمة</button>
   </div>
@@ -107,7 +107,13 @@ async function boot(){
   }catch(error){note.textContent="لا يمكن فتح إدارة المنتجات: "+error.message+" — إذا لم تكن مسجلاً، افتح المتجر وسجّل الدخول."}
 }
 </script>
-<script src="./products.js"></script>
-<script>boot();</script>
+<script src="./products.js?v=20261109-1"></script>
+<script>
+document.getElementById("saveProductButton").addEventListener("click", function () {
+  if (typeof saveProduct === "function") saveProduct();
+  else document.getElementById("productMessage").textContent = "تعذر تحميل كود الحفظ. حدّث الصفحة وحاول مجدداً.";
+});
+boot();
+</script>
 </body>
 </html>
