@@ -3239,7 +3239,7 @@ async function loadAdminPanel(){
     const saleContainer=document.getElementById("adminOwnerUsdSaleRequests");
     if(saleContainer)renderAdminDepositRequestList(saleContainer,requests.filter(x=>x.request_source==="owner_usd_sale"),false);
     if(typeof renderOperationsDashboard==="function")renderOperationsDashboard(result);
-    if(typeof renderAdminNotifications==="function"renderAdminNotifications(result.notifications||[]);
+    if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
     renderBaranAutoSupportQueue(result.auto_support_queue||[],result.feedback||[]);
