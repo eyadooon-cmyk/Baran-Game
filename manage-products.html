@@ -98,30 +98,39 @@ async function callAdminApi(method="GET",payload=null){
   return result;
 }
 let assistantProductsPending=[];
-function prepareAssistantProducts(){
+async function prepareAssistantProducts(){
   const command=(document.getElementById("productAssistantCommand").value||"").trim();
   const preview=document.getElementById("productAssistantPreview");
   const confirm=document.getElementById("productAssistantConfirm");
+  const prepare=document.getElementById("productAssistantPrepare");
   assistantProductsPending=[];
   confirm.classList.add("hidden");
   if(!command){preview.textContent="اكتب طلب الإضافة أولاً.";return;}
-  const lower=command.toLowerCase();
-  const numbers=[...new Set((command.match(/\d{2,5}/g)||[]).map(Number))].filter(n=>n>0&&n<=100000);
-  if(!/(free\s*fire|فري\s*فاير|فريفاير)/i.test(command)||!/(جوهرة|جواهر|diamond|diamonds)/i.test(command)){
-    preview.textContent="حالياً المساعد يدعم تجهيز باقات فري فاير بالجواهر. اكتب مثلاً: أضف باقات فري فاير 310 و520 و1060 جوهرة.";
-    return;
+  prepare.disabled=true;
+  preview.textContent="المساعد الذكي يحلل طلبك ويجهز معاينة المنتجات...";
+  try{
+    const {data:{session},error}=await sb.auth.getSession();
+    if(error||!session)throw new Error("انتهت جلسة الدخول. سجّل الدخول من المتجر ثم أعد المحاولة.");
+    const response=await fetch(SUPABASE_URL+"/functions/v1/baran-product-assistant",{
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+session.access_token,
+        "apikey":SUPABASE_KEY,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({command})
+    });
+    let result={};try{result=await response.json()}catch(e){}
+    if(!response.ok)throw new Error(result.error||"تعذر تحليل الطلب.");
+    if(!Array.isArray(result.products)||!result.products.length)throw new Error("لم يتم العثور على منتجات واضحة في الطلب.");
+    assistantProductsPending=result.products;
+    preview.textContent="معاينة "+assistantProductsPending.length+" منتجاً:\\n"+assistantProductsPending.map((p,i)=>(i+1)+") "+p.name+" | الرمز: "+p.product_code+" | القسم: "+productCategoryLabel(p.category)+" | بدون سعر").join("\\n")+"\\n\\nراجع الأسماء والتصنيفات. لن يتم الحفظ قبل ضغط زر التأكيد.";
+    confirm.classList.remove("hidden");
+  }catch(error){
+    preview.textContent="تعذر تحليل الطلب: "+(error.message||"خطأ غير معروف");
+  }finally{
+    prepare.disabled=false;
   }
-  if(!numbers.length){preview.textContent="ما قدرت أستخرج أرقام الباقات. اكتب أرقام الجواهر بوضوح.";return;}
-  assistantProductsPending=numbers.map((n,index)=>({
-    product_code:"FREEFIRE_"+n,
-    category:"game",
-    name:"Free Fire – "+n+" جوهرة",
-    description:"باقة "+n+" جوهرة فري فاير",
-    sort_order:3+index,
-    is_active:true
-  }));
-  preview.textContent="معاينة المنتجات ("+assistantProductsPending.length+"): "+assistantProductsPending.map(p=>p.name+" ["+p.product_code+"]").join(" | ")+" — الأسعار فارغة، والمنتجات مفعّلة. راجع القائمة ثم أكد الحفظ.";
-  confirm.classList.remove("hidden");
 }
 async function confirmAssistantProducts(){
   const button=document.getElementById("productAssistantConfirm");
