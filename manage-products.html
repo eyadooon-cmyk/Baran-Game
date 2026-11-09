@@ -106,8 +106,8 @@ function prepareAssistantProducts(){
   confirm.classList.add("hidden");
   if(!command){preview.textContent="اكتب طلب الإضافة أولاً.";return;}
   const lower=command.toLowerCase();
-  const numbers=[...new Set((command.match(/\\d{2,5}/g)||[]).map(Number))].filter(n=>n>0&&n<=100000);
-  if(!/(free\\s*fire|فري\\s*فاير|فريفاير)/i.test(command)||!/(جوهرة|جواهر|diamond|diamonds)/i.test(command)){
+  const numbers=[...new Set((command.match(/\d{2,5}/g)||[]).map(Number))].filter(n=>n>0&&n<=100000);
+  if(!/(free\s*fire|فري\s*فاير|فريفاير)/i.test(command)||!/(جوهرة|جواهر|diamond|diamonds)/i.test(command)){
     preview.textContent="حالياً المساعد يدعم تجهيز باقات فري فاير بالجواهر. اكتب مثلاً: أضف باقات فري فاير 310 و520 و1060 جوهرة.";
     return;
   }
