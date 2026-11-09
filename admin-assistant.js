@@ -159,9 +159,9 @@
     panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid #8b6ab0;border-radius:14px;background:#171020";
     const heading = document.createElement("h3"); heading.textContent = "🛠️ تنفيذ المهام الإدارية الآمنة"; heading.style.margin = "0 0 6px";
     const note = document.createElement("p"); note.className = "small";
-    note.textContent = "الملاحظات الداخلية الآمنة تُنفّذ تلقائياً بعد التحقق وتُسجّل بالتدقيق. إذا تعطل OpenAI استخدم الصيغة المباشرة: ملاحظة مورد | اسم المورد | النص، أو ملاحظة تنفيذ | UUID الطلب | النص، أو ملاحظة ربط | UUID سجل الربط | النص. أي تغيير قد يؤثر على الزبون يحتاج موافقتك، والعمليات المالية محظورة.";
+    note.textContent = "احكي مع المساعد بطريقتك العادية، مثلاً: ضيف ملاحظة على مورد RTC MARKET إنو ناطرين تفعيل الـ API. أو سجّل إنو مشكلة تنفيذ الطلب لسا قيد المتابعة. الملاحظات الداخلية الواضحة ممكن تنحفظ تلقائياً بعد التحقق من السجل، مع سجل تدقيق. إذا ما عرف أي مورد أو طلب تقصد، رح يسألك. أي تغيير يؤثر على الزبون يحتاج موافقتك، والعمليات المالية محظورة."
     const input = document.createElement("textarea"); input.id = "baranSafeActionInput"; input.rows = 3; input.maxLength = 700;
-    input.placeholder = "مثال احتياطي: ملاحظة مورد | RTC MARKET | بانتظار اعتماد API. أو ملاحظة تنفيذ | UUID الطلب | تمت مراجعة حالة المورد";
+    input.placeholder = "اكتب طلبك بشكل طبيعي… مثال: ضيف ملاحظة على مورد RTC MARKET إنو ناطرين تفعيل الـ API";
     input.style.cssText = "width:100%;box-sizing:border-box;margin:8px 0;padding:11px;border-radius:9px;background:#0e0a13;color:#fff;border:1px solid #69527c";
     const plan = document.createElement("button"); plan.type = "button"; plan.textContent = "جهّز معاينة التعديل"; plan.style.cssText = "width:100%;min-height:44px;margin:4px 0;padding:10px";
     const preview = document.createElement("div"); preview.id = "baranSafeActionPreview";
