@@ -174,8 +174,9 @@
     const safe = document.createElement("p"); safe.className = "ops-muted";
     safe.textContent = "🔒 المسموح: اسم المنتج ووصفه وتصنيفه وترتيبه وإظهاره أو إخفاؤه. الأسعار والأرصدة والإيداعات والاستردادات والطلبات والموردون والدفع وسعر الصرف وAPI والصلاحيات محظورة.";
     panel.append(heading,note,input,plan,preview,confirm,cancel,status,safe);
-    const team = document.getElementById("baranAiTeam");
-    if (team && team.parentNode === host) host.insertBefore(panel,team); else host.appendChild(panel);
+    const headingNode = host.querySelector("h2");
+    if (headingNode && headingNode.parentNode === host) headingNode.insertAdjacentElement("afterend", panel);
+    else host.insertBefore(panel, host.firstChild);
 
     plan.addEventListener("click", async () => {
       const command = input.value.trim();
@@ -210,8 +211,21 @@
     });
   }
 
-  installDepartmentTeam();
-  installSafeActions();
+  function initializeAdminEnhancements() {
+    try { installSafeActions(); } catch (error) { console.error("Baran safe actions UI:", error); }
+    try { installDepartmentTeam(); } catch (error) { console.error("Baran AI team UI:", error); }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeAdminEnhancements, { once: true });
+  } else {
+    initializeAdminEnhancements();
+  }
+  // Retry when the admin panel is rendered or revealed after login/navigation.
+  const adminUiObserver = new MutationObserver(() => {
+    const host = document.getElementById("baranAdminAssistant");
+    if (host && (!document.getElementById("baranSafeActions") || !document.getElementById("baranAiTeam"))) initializeAdminEnhancements();
+  });
+  adminUiObserver.observe(document.documentElement, { childList: true, subtree: true });
 
   window.runBaranAdminHealthCheck = function () {
     void send("اعمل فحصاً تشغيلياً شاملاً للمتجر الآن. راجع الأرباح المسجلة اليوم وهذا الشهر، الطلبات المفتوحة وتكاليف الموردين الناقصة، الإيداعات المعلقة، تذاكر الدعم المفتوحة، المنتجات والموردين والتنبيهات وسجل التدقيق. افصل الحقائق عن الاحتمالات، رتّب المشاكل حسب الخطورة، واكتب لكل مشكلة الدليل والخطوة المقترحة لحلها. لا تنفذ أي تعديل.");
