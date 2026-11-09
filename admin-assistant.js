@@ -161,7 +161,7 @@
     const note = document.createElement("p"); note.className = "small";
     note.textContent = "اكتب التعديل المطلوب بلغة عادية. المساعد سيجهّز معاينة فقط؛ لن يُحفظ أي تغيير إلا بعد ضغطك على زر التأكيد.";
     const input = document.createElement("textarea"); input.id = "baranSafeActionInput"; input.rows = 3; input.maxLength = 700;
-    input.placeholder = "مثال: غيّر وصف منتج PUBG Mobile 60 UC إلى: شحن 60 شدة...";
+    input.placeholder = "مثال: غيّر وصف منتج PUBG Mobile 60 UC... أو غيّر حالة التذكرة BG-XXXX إلى قيد المعالجة";
     input.style.cssText = "width:100%;box-sizing:border-box;margin:8px 0;padding:11px;border-radius:9px;background:#0e0a13;color:#fff;border:1px solid #69527c";
     const plan = document.createElement("button"); plan.type = "button"; plan.textContent = "جهّز معاينة التعديل"; plan.style.cssText = "width:100%;min-height:44px;margin:4px 0;padding:10px";
     const preview = document.createElement("div"); preview.id = "baranSafeActionPreview";
@@ -172,7 +172,7 @@
     cancel.style.cssText = "display:none;width:100%;min-height:40px;margin-top:6px;padding:8px";
     const status = document.createElement("p"); status.className = "small"; status.style.marginTop = "8px"; status.setAttribute("aria-live","polite");
     const safe = document.createElement("p"); safe.className = "ops-muted";
-    safe.textContent = "🔒 المسموح: اسم المنتج ووصفه وتصنيفه وترتيبه وإظهاره أو إخفاؤه. الأسعار والأرصدة والإيداعات والاستردادات والطلبات والموردون والدفع وسعر الصرف وAPI والصلاحيات محظورة.";
+    safe.textContent = "🔒 المسموح حالياً: اسم المنتج ووصفه وتصنيفه وترتيبه وإظهاره أو إخفاؤه، وتغيير حالة تذكرة الدعم فقط (pending / in_progress / completed) بعد معاينة وموافقتك. تغيير حالة التذكرة قد يرسل إشعاراً للزبون. لا يكتب المساعد ردوداً للزبائن. الأسعار والأرصدة والإيداعات والاستردادات والطلبات والموردون والدفع وسعر الصرف وAPI والصلاحيات محظورة.";
     panel.append(heading,note,input,plan,preview,confirm,cancel,status,safe);
     const headingNode = host.querySelector("h2");
     if (headingNode && headingNode.parentNode === host) headingNode.insertAdjacentElement("afterend", panel);
@@ -186,9 +186,10 @@
       try {
         const result = await callSafeAction({mode:"plan",command});
         pendingSafeProposal = result.proposal; const p = result.proposal;
-        preview.textContent = "المنتج: " + p.product_name + " (" + p.product_code + ")\nسبب التعديل: " + p.reason +
-          "\n\nالقيم الحالية:\n" + JSON.stringify(p.before,null,2) +
-          "\n\nالقيم المقترحة:\n" + JSON.stringify(p.changes,null,2) + "\n\nلن يتم الحفظ إلا بعد موافقتك الصريحة.";
+        preview.textContent = (p.target_type === "ticket" ? "تذكرة الدعم: " : "المنتج: ") + p.target_name + " (" + p.target_key + ")\\nسبب التعديل: " + p.reason +
+          "\\n\\nالقيم الحالية:\\n" + JSON.stringify(p.before,null,2) +
+          "\\n\\nالقيم المقترحة:\\n" + JSON.stringify(p.changes,null,2) +
+          "\\n\\n" + (p.target_type === "ticket" ? "تنبيه: تغيير حالة التذكرة قد يرسل إشعاراً للزبون. " : "") + "لن يتم الحفظ إلا بعد موافقتك الصريحة."
         preview.style.display = "block"; confirm.style.display = "block"; cancel.style.display = "block";
         status.textContent = "المعاينة جاهزة. راجع كل قيمة قبل التأكيد.";
       } catch(error) { preview.style.display = "none"; status.textContent = error?.message || "تعذر إعداد المعاينة."; }
