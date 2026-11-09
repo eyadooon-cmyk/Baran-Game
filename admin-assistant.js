@@ -88,6 +88,50 @@
     void send(question);
   };
 
+  // Department-focused AI team: uses the existing admin-only, read-only data context.
+  const teamTasks = [
+    ["🧭", "قائد الفريق", "أنت الآن قائد فريق Baran Game. أعطني تقريراً تنفيذياً مختصراً عن حالة المتجر من البيانات المتاحة: أهم 3 أولويات، ما يعمل جيداً، ما تعطل، وما يحتاج تدخلي أنا. لا تنفذ أي إجراء."],
+    ["📦", "مسؤول الطلبات", "حلل الطلبات المسجلة: المعلقة والمتأخرة والفاشلة والمكتملة، واربطها ببيانات تنفيذ المورد إن وجدت. اذكر رقم الطلب والحالة والدليل والخطوة المقترحة. لا تغيّر أي حالة ولا تنفذ شحناً أو استرداداً."],
+    ["🎧", "مسؤول خدمة الزبائن", "راجع تذاكر الدعم المفتوحة فقط، صنّفها حسب الأولوية والموضوع، لخّص المشكلة واقترح مسودة رد مناسبة لكل حالة. لا تحفظ أو ترسل أي رد ولا تغيّر حالة التذكرة."],
+    ["💰", "المحلل المالي", "حلل المبيعات والتكاليف والمصاريف والأرباح من السجلات المتاحة، وافصل USD عن SYP، وميّز الربح الإجمالي عن صافي الربح. اذكر النواقص التي تمنع حساباً دقيقاً. قراءة فقط دون أي حركة مالية."],
+    ["🛡️", "مسؤول الأمان", "راجع سجل التدقيق والتنبيهات ومحاولات الدخول والأحداث الأمنية المتاحة. صنّف المخاطر حسب الخطورة، واذكر الدليل والإجراء الوقائي المقترح. لا تغيّر صلاحيات أو إعدادات."],
+    ["⚙️", "مسؤول التشغيل", "حلل حالة المراقبة والأعطال والتنبيهات والطلبات التي تنتظر المورد وتكاليف المورد الناقصة. فرّق بين المشكلة المؤكدة والاحتمال، ورتّب خطوات الفحص دون تنفيذ تغييرات."]
+  ];
+
+  function installDepartmentTeam() {
+    const host = document.getElementById("baranAdminAssistant");
+    if (!host || document.getElementById("baranAiTeam")) return;
+    const panel = document.createElement("div");
+    panel.id = "baranAiTeam";
+    panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid #675078;border-radius:14px;background:#100b16";
+    const heading = document.createElement("h3");
+    heading.textContent = "🤖 فريق Baran AI — مساعدين متخصصين";
+    heading.style.margin = "0 0 6px";
+    const note = document.createElement("p");
+    note.className = "small";
+    note.textContent = "اختر القسم ليعمل المساعد بدور متخصص ويحلل بيانات المتجر الحقيقية. جميع الأدوار للقراءة والتحليل فقط.";
+    const grid = document.createElement("div");
+    grid.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px";
+    teamTasks.forEach(([emoji, label, prompt]) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = emoji + " " + label;
+      button.style.cssText = "width:100%;min-height:46px;padding:10px;font-size:13px";
+      button.addEventListener("click", () => { void send(prompt); });
+      grid.appendChild(button);
+    });
+    const safety = document.createElement("div");
+    safety.className = "ops-muted";
+    safety.style.marginTop = "10px";
+    safety.textContent = "🔒 ممنوع على الفريق: تعديل الأرصدة أو الموافقة على الإيداعات أو الاسترداد أو الشحن أو تغيير الأسعار والموردين أو إعدادات API.";
+    panel.append(heading, note, grid, safety);
+    const status = document.getElementById("baranAdminAssistantStatus");
+    if (status && status.parentNode === host) status.insertAdjacentElement("afterend", panel);
+    else host.appendChild(panel);
+  }
+
+  installDepartmentTeam();
+
   window.runBaranAdminHealthCheck = function () {
     void send("اعمل فحصاً تشغيلياً شاملاً للمتجر الآن. راجع الأرباح المسجلة اليوم وهذا الشهر، الطلبات المفتوحة وتكاليف الموردين الناقصة، الإيداعات المعلقة، تذاكر الدعم المفتوحة، المنتجات والموردين والتنبيهات وسجل التدقيق. افصل الحقائق عن الاحتمالات، رتّب المشاكل حسب الخطورة، واكتب لكل مشكلة الدليل والخطوة المقترحة لحلها. لا تنفذ أي تعديل.");
   };
