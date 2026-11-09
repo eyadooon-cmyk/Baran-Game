@@ -1553,6 +1553,49 @@ footer{color:#9f91aa}
         <div id="opsSupplierProductMessage" class="ops-muted" role="status"></div>
       </div>
       <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
+      <hr style="border-color:#40334b;margin:24px 0">
+      <h3>إعداد ربط API المورد</h3>
+      <p class="small">هذه إعدادات تحضيرية فقط. لا يتم الاتصال بالمورد أو إرسال طلبات حقيقية من هذه الصفحة. مفاتيح API تحفظ لاحقاً في Supabase Secrets، ولا تكتبها هنا.</p>
+      <div class="ops-form">
+        <label for="opsApiSupplierSelect">المورد</label>
+        <select id="opsApiSupplierSelect"><option value="">اختر المورد</option></select>
+        <label for="opsApiAdapter">نوع موصل API</label>
+        <select id="opsApiAdapter">
+          <option value="pending">بانتظار تحديد المورد</option>
+          <option value="rtc_market">RTC MARKET</option>
+          <option value="flow1st">Flow1st</option>
+          <option value="generic_rest">REST عام (بعد مراجعة وثائق المورد)</option>
+          <option value="custom">موصل مخصص</option>
+        </select>
+        <label for="opsApiBaseUrl">عنوان API الأساسي (HTTPS)</label>
+        <input id="opsApiBaseUrl" type="url" maxlength="500" placeholder="https://api.supplier.com">
+        <label for="opsApiHealthPath">مسار فحص الخدمة</label>
+        <input id="opsApiHealthPath" maxlength="240" placeholder="/health">
+        <label for="opsApiBalancePath">مسار فحص الرصيد</label>
+        <input id="opsApiBalancePath" maxlength="240" placeholder="/balance">
+        <label for="opsApiCreatePath">مسار إنشاء الطلب</label>
+        <input id="opsApiCreatePath" maxlength="240" placeholder="/orders">
+        <label for="opsApiStatusPath">مسار متابعة الطلب</label>
+        <input id="opsApiStatusPath" maxlength="240" placeholder="/orders/{reference}">
+        <label for="opsApiSecretName">اسم السر في Supabase (اسم فقط، وليس المفتاح)</label>
+        <input id="opsApiSecretName" maxlength="100" placeholder="BARAN_SUPPLIER_API_KEY">
+        <label for="opsApiHeaderName">اسم ترويسة المصادقة</label>
+        <input id="opsApiHeaderName" maxlength="64" value="Authorization">
+        <label for="opsApiPrefix">بادئة المفتاح</label>
+        <input id="opsApiPrefix" maxlength="40" value="Bearer ">
+        <label for="opsApiLowBalance">حد تنبيه انخفاض الرصيد</label>
+        <input id="opsApiLowBalance" type="number" min="0" step="0.01" value="0">
+        <label for="opsApiCurrency">عملة رصيد المورد</label>
+        <select id="opsApiCurrency"><option value="USD">USD دولار</option><option value="SYP">SYP ليرة</option></select>
+        <label><input id="opsApiEnabled" type="checkbox"> حفظ الإعدادات كاتصال قيد التجهيز</label>
+        <button class="full" type="button" onclick="opsSaveSupplierApiConfig()">حفظ إعدادات API</button>
+        <button class="secondary full" type="button" onclick="opsSimulateSupplierApi()">فحص تجريبي محلي دون الاتصال بالمورد</button>
+        <div id="opsApiMessage" class="ops-muted" role="status"></div>
+      </div>
+      <div id="opsApiStatus" class="ops-list">لا توجد إعدادات API محفوظة.</div>
+      <h4>سجل اتصال المورد ومحاولات الطلبات</h4>
+      <div id="opsApiEvents" class="ops-list">لا توجد أحداث مسجلة.</div>
+      <div id="opsApiAttempts" class="ops-list">لا توجد محاولات تنفيذ مسجلة.</div>
       
       </div>
 
@@ -1831,7 +1874,7 @@ footer{color:#9f91aa}
 <script src="./profile-settings.js?v=20261107-1"></script>
 <script src="./community.js?v=20261107-2"></script>
 <script src="./baran-assistant.js"></script>
-<script src="./admin-operations.js?v=20261107-3"></script>
+<script src="./admin-operations.js?v=20261109-1"></script>
 <script src="./admin-assistant.js?v=20261106-3"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
