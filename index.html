@@ -1458,8 +1458,12 @@ footer{color:#9f91aa}
       <div class="admin-subpanel hidden" data-admin-panel="users">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>إدارة المستخدمين</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
-      <h2>إدارة المستخدمين 👥</h2>
-      <p class="small">ابحث عن الزبون برقم العضوية أو الاسم أو الهاتف أو البريد الإلكتروني.</p>
+      <h2>إدارة المستخدمين وأرصدة الزبائن 👥</h2>
+      <p class="small">عرض أرصدة الزبائن الفعلية بالدولار والليرة السورية. هذا القسم للعرض والمتابعة فقط ولا يتيح تعديل الأرصدة.</p>
+      <div class="finance-section" style="margin:12px 0;padding:14px">
+        <div class="finance-section-heading"><div><span class="finance-kicker">CUSTOMER WALLETS</span><h3>أرصدة محافظ الزبائن</h3><p class="small">الأرصدة مأخوذة مباشرة من محافظ الحسابات المسجلة.</p></div><span class="finance-section-icon">👛</span></div>
+        <div id="customerWalletTotals" class="finance-grid"></div>
+      </div>
       <input id="opsCustomerSearch" type="search" maxlength="120" placeholder="ابحث برقم العضوية BG-000001 أو الاسم أو الهاتف..." oninput="filterBaranCustomerDirectory()">
       <div id="opsCustomers" class="ops-list">جاري تحميل المستخدمين...</div>
       
@@ -3169,6 +3173,23 @@ function renderAdminDepositRequestList(container,requests,isOwner=false){
 let baranCustomerDirectory=[];
 function renderBaranCustomerDirectory(customers){
   baranCustomerDirectory=Array.isArray(customers)?customers:[];
+  const totals=document.getElementById("customerWalletTotals");
+  if(totals){
+    totals.replaceChildren();
+    const sumUsd=baranCustomerDirectory.reduce((sum,item)=>sum+Number(item.balance_usd||0),0);
+    const sumSyp=baranCustomerDirectory.reduce((sum,item)=>sum+Number(item.balance_syp||0),0);
+    const cards=[
+      ["عدد حسابات الزبائن",baranCustomerDirectory.length.toLocaleString("en-US")],
+      ["إجمالي أرصدة الدولار",financeMoney(sumUsd,"USD")],
+      ["إجمالي أرصدة الليرة",financeMoney(sumSyp,"SYP")]
+    ];
+    cards.forEach(([label,value])=>{
+      const card=document.createElement("div");card.className="finance-card";
+      const heading=document.createElement("strong");heading.textContent=label;
+      const amount=document.createElement("div");amount.textContent=value;
+      card.append(heading,amount);totals.appendChild(card);
+    });
+  }
   filterBaranCustomerDirectory();
 }
 function filterBaranCustomerDirectory(){
@@ -3185,7 +3206,10 @@ function filterBaranCustomerDirectory(){
     const code=document.createElement("div");code.textContent="رقم العضوية: "+(item.member_code||"غير متوفر");
     const email=document.createElement("div");email.textContent="البريد: "+(item.email||"غير متوفر");
     const phone=document.createElement("div");phone.textContent="الهاتف: "+(item.phone||"غير مسجل");
-    card.append(title,code,email,phone);box.appendChild(card);
+    const walletTitle=document.createElement("div");walletTitle.style.marginTop="10px";walletTitle.style.fontWeight="800";walletTitle.textContent="رصيد المحفظة";
+    const usd=document.createElement("div");usd.textContent="الدولار: "+financeMoney(item.balance_usd,"USD");
+    const syp=document.createElement("div");syp.textContent="الليرة السورية: "+financeMoney(item.balance_syp,"SYP");
+    card.append(title,code,email,phone,walletTitle,usd,syp);box.appendChild(card);
   });
 }
 
