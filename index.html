@@ -1466,6 +1466,12 @@ footer{color:#9f91aa}
         <div id="customerWalletTotals" class="finance-grid"></div>
       </div>
       <input id="opsCustomerSearch" type="search" maxlength="120" placeholder="ابحث برقم العضوية BG-000001 أو الاسم أو الهاتف..." oninput="filterBaranCustomerDirectory()">
+      <select id="opsCustomerSort" aria-label="ترتيب الزبائن" onchange="filterBaranCustomerDirectory()">
+        <option value="newest">ترتيب حسب الأحدث</option>
+        <option value="any_balance">أصحاب الرصيد أولاً</option>
+        <option value="usd">الأعلى رصيداً بالدولار</option>
+        <option value="syp">الأعلى رصيداً بالليرة</option>
+      </select>
       <div id="opsCustomers" class="ops-list">جاري تحميل المستخدمين...</div>
       
       </div>
@@ -3196,21 +3202,31 @@ function renderBaranCustomerDirectory(customers){
 function filterBaranCustomerDirectory(){
   const box=document.getElementById("opsCustomers");
   const search=document.getElementById("opsCustomerSearch");
+  const sort=document.getElementById("opsCustomerSort");
   if(!box)return;
   const query=(search?.value||"").trim().toLocaleLowerCase("ar");
   const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
+  const sortMode=sort?.value||"newest";
+  rows.sort((a,b)=>{
+    if(sortMode==="usd")return Number(b.balance_usd||0)-Number(a.balance_usd||0);
+    if(sortMode==="syp")return Number(b.balance_syp||0)-Number(a.balance_syp||0);
+    if(sortMode==="any_balance")return Number((Number(b.balance_usd||0)>0||Number(b.balance_syp||0)>0))-Number((Number(a.balance_usd||0)>0||Number(a.balance_syp||0)>0));
+    return new Date(b.created_at||0)-new Date(a.created_at||0);
+  });
   box.replaceChildren();
   if(!rows.length){box.textContent=query?"لا يوجد زبون يطابق البحث.":"لا توجد حسابات مسجلة بعد.";return;}
   rows.forEach(item=>{
     const card=document.createElement("div");card.className="ops-item";
     const title=document.createElement("strong");title.textContent=item.full_name||"زبون بدون اسم";
+    const status=document.createElement("span");status.className="small";status.style.display="inline-block";status.style.marginInlineStart="8px";
+    status.textContent=(Number(item.balance_usd||0)>0||Number(item.balance_syp||0)>0)?"● لديه رصيد":"○ الرصيد صفر";
     const code=document.createElement("div");code.textContent="رقم العضوية: "+(item.member_code||"غير متوفر");
     const email=document.createElement("div");email.textContent="البريد: "+(item.email||"غير متوفر");
     const phone=document.createElement("div");phone.textContent="الهاتف: "+(item.phone||"غير مسجل");
     const walletTitle=document.createElement("div");walletTitle.style.marginTop="10px";walletTitle.style.fontWeight="800";walletTitle.textContent="رصيد المحفظة";
     const usd=document.createElement("div");usd.textContent="الدولار: "+financeMoney(item.balance_usd,"USD");
     const syp=document.createElement("div");syp.textContent="الليرة السورية: "+financeMoney(item.balance_syp,"SYP");
-    card.append(title,code,email,phone,walletTitle,usd,syp);box.appendChild(card);
+    card.append(title,status,code,email,phone,walletTitle,usd,syp);box.appendChild(card);
   });
 }
 
