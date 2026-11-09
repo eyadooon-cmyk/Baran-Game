@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#09080d">
+<title>خطة العمل اليومية | BARAN GAME</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{--bg:#09080d;--panel:#17131b;--line:#40334b;--accent:#8b6ba8;--muted:#b9a9c9}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eee8f4;font-family:Arial,Tahoma,sans-serif;line-height:1.8}
+main{width:min(900px,100%);margin:auto;padding:16px}
+header{padding:22px 16px;background:linear-gradient(135deg,#21172b,#100b16);border-bottom:1px solid var(--line)}
+h1{margin:0;color:#e3d5ef;font-size:24px}h2{font-size:18px;color:#d7c4e8;margin:0 0 8px}
+p{margin:7px 0;color:#d0c5d9}.muted,.small{color:var(--muted);font-size:13px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+button,a.btn{border:0;border-radius:10px;padding:11px 15px;background:var(--accent);color:#120d18;font-weight:bold;text-decoration:none;cursor:pointer}
+button.secondary,a.secondary{background:#2a2231;color:#eee8f4;border:1px solid #51415e}
+#status{padding:12px;border:1px solid var(--line);border-radius:12px;background:#120e17;margin:14px 0}
+.task{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px;margin:13px 0}
+.task.high{border-right:4px solid #e2a05b}.task.medium{border-right:4px solid #9d88c0}.task.low{border-right:4px solid #6da98b}
+.task-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.pill{display:inline-block;border:1px solid #675078;border-radius:999px;padding:2px 9px;font-size:12px;color:#e3d5ef}
+.field{margin:11px 0}.field strong{display:block;color:#cbb9dc;font-size:13px}.field span{display:block;white-space:pre-wrap}
+select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #51415e;background:#0c0911;color:#fff;font:inherit}
+textarea{min-height:65px;resize:vertical}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.actions button{flex:1;min-width:130px}
+.empty{padding:20px;text-align:center;border:1px dashed var(--line);border-radius:12px}
+.warning{background:#211a29;border:1px solid #574667;border-radius:12px;padding:12px;margin:14px 0}
+@media(max-width:520px){main{padding:11px}.task{padding:12px}h1{font-size:21px}}
+</style>
+</head>
+<body>
+<header><main><h1>🗂️ خطة العمل اليومية — BARAN GAME</h1><p>مهام مرتبة حسب الأولوية، مع متابعة الحالة وسجل تدقيق.</p></main></header>
+<main>
+<div class="toolbar">
+<a class="btn secondary" href="./index.html">← الرجوع للوحة الإدارة</a>
+<button id="refresh" type="button">تحديث الخطة</button>
+</div>
+<div id="status" role="status" aria-live="polite">جاري التحقق من جلسة المدير...</div>
+<div class="warning small">تنبيه أمان: تغيير الحالة هنا لتتبّع تقدم المهمة فقط. لا ينفذ شحناً أو ربط مورد أو تعديل منتج أو طلب أو رصيد أو إيداع. أي إجراء تشغيلي فعلي يحتاج موافقة منفصلة ومعاينة وسجل تدقيق.</div>
+<div id="summary" class="muted"></div>
+<div id="tasks"><div class="empty">جاري تحميل المهام...</div></div>
+</main>
+<script>
+(function(){
+"use strict";
+const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
+const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const statusBox=document.getElementById("status"),tasksBox=document.getElementById("tasks"),summary=document.getElementById("summary");
+const labels={new:"جديدة",in_review:"قيد المراجعة",in_progress:"قيد التنفيذ",blocked:"متوقفة",completed:"مكتملة"};
+const priorityLabels={high:"عالية",medium:"متوسطة",low:"منخفضة"};
+let session=null,busy=false;
+function safe(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function call(payload){
+ const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin-work-plan",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(payload)});
+ let data={};try{data=await response.json()}catch(_){}
+ if(!response.ok)throw new Error(data.error||"تعذر تنفيذ الطلب");
+ return data;
+}
+function render(tasks){
+ summary.textContent="إجمالي المهام: "+tasks.length+" — المكتملة: "+tasks.filter(t=>t.status==="completed").length+" — المفتوحة: "+tasks.filter(t=>t.status!=="completed").length;
+ if(!tasks.length){tasksBox.innerHTML='<div class="empty">ما في مهام مسجلة حالياً.</div>';return;}
+ tasksBox.innerHTML=tasks.map(t=>{
+  const options=Object.entries(labels).map(([value,label])=>'<option value="'+value+'" '+(t.status===value?'selected':'')+'>'+label+'</option>').join("");
+  return '<article class="task '+safe(t.priority)+'" data-id="'+safe(t.id)+'">'+
+   '<div class="task-top"><div><span class="pill">'+safe(t.task_code)+'</span> <span class="pill">أولوية '+safe(priorityLabels[t.priority]||t.priority)+'</span></div><span class="pill">'+safe(labels[t.status]||t.status)+'</span></div>'+
+   '<h2 style="margin-top:10px">'+safe(t.title)+'</h2><div class="muted">'+safe(t.area)+'</div>'+
+   '<div class="field"><strong>الدليل المسجل</strong><span>'+safe(t.evidence)+'</span></div>'+
+   '<div class="field"><strong>التأثير</strong><span>'+safe(t.impact)+'</span></div>'+
+   '<div class="field"><strong>الخطوة المقترحة</strong><span>'+safe(t.next_step)+'</span></div>'+
+   '<div class="field"><strong>معيار الإنجاز</strong><span>'+safe(t.success_criteria)+'</span></div>'+
+   '<div class="field"><strong>حالة المهمة</strong><select class="task-status">'+options+'</select></div>'+
+   '<div class="field"><strong>ملاحظة إدارية (اختياري)</strong><textarea class="task-note" maxlength="500" placeholder="اكتب ملاحظة مختصرة عن سبب تغيير الحالة...">'+safe(t.approval_note||"")+'</textarea></div>'+
+   '<div class="actions"><button type="button" class="save-status">حفظ حالة المهمة</button></div>'+
+   '<div class="small">آخر تحديث: '+safe(t.updated_at?new Date(t.updated_at).toLocaleString("ar"):"غير متاح")+'</div>'+
+   '</article>';
+ }).join("");
+ tasksBox.querySelectorAll(".save-status").forEach(button=>button.addEventListener("click",async()=>{
+  if(busy)return;
+  const card=button.closest(".task"),select=card.querySelector(".task-status"),note=card.querySelector(".task-note");
+  const current=card.querySelector(".task-top .pill:last-child").textContent;
+  const oldStatus=Object.keys(labels).find(k=>labels[k]===current);
+  const next=select.value;
+  if(next===oldStatus){statusBox.textContent="الحالة لم تتغير.";return;}
+  if(!confirm("تأكيد تغيير حالة المهمة فقط إلى («"+labels[next]+"»)؟ هذا لا ينفذ الإجراء التشغيلي نفسه."))return;
+  busy=true;button.disabled=true;statusBox.textContent="جاري حفظ الحالة وتسجيلها في سجل التدقيق...";
+  try{await call({action:"status_update",confirm:true,task_id:card.dataset.id,expected_status:oldStatus,new_status:next,approval_note:note.value});statusBox.textContent="تم تحديث حالة المهمة وتسجيلها. عم حدّث الخطة...";await load();}
+  catch(error){statusBox.textContent=error.message;}
+  finally{busy=false;button.disabled=false;}
+ }));
+}
+async function load(){
+ if(!session)throw new Error("سجّل الدخول أولاً من لوحة الإدارة.");
+ const result=await call({action:"list"});render(result.tasks||[]);
+ statusBox.textContent="تم تحميل الخطة من قاعدة البيانات — آخر فحص: "+new Date(result.checked_at).toLocaleString("ar");
+}
+async function init(){
+ try{const {data,error}=await sb.auth.getSession();if(error)throw error;session=data.session;
+  if(!session){statusBox.textContent="ما في جلسة دخول حالية. افتح لوحة BARAN GAME وسجّل دخولك كمدير، ثم ارجع لهالصفحة.";tasksBox.innerHTML="";return;}
+  await load();
+ }catch(error){statusBox.textContent=error.message||"تعذر تحميل خطة العمل.";}
+}
+document.getElementById("refresh").addEventListener("click",()=>{if(!busy)load().catch(e=>statusBox.textContent=e.message);});
+init();
+})();
+</script>
+</body>
+</html>
