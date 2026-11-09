@@ -42,7 +42,7 @@ a{color:#c5b4d6}
     <p class="small">عند تغيير السعر، تتحدث أسعار الليرة لكل المنتجات تلقائياً. الطلبات السابقة تحتفظ بسعر الصرف وقت إنشائها.</p>
   </div>
   <h2>إضافة منتج أو تعديله</h2>
-  <p class="small">أدخل سعر المنتج بالدولار فقط؛ سعر الليرة يُحسب تلقائياً حسب سعر الصرف الحالي. الطلب والشحن غير مفعّلين بهذه المرحلة.</p>
+  <p class="small">يمكن حفظ المنتج دون سعر الآن. اترك حقل السعر فارغاً حتى يتوفر سعر معتمد؛ ولن يصبح المنتج قابلاً للطلب قبل تفعيل الشراء لاحقاً.</p>
   <div id="productMessage" class="small" role="status"></div>
   <input id="productId" type="hidden">
   <label for="productCode">رمز المنتج (إنجليزي)</label>
@@ -58,7 +58,7 @@ a{color:#c5b4d6}
   <label for="productDescription">وصف مختصر</label>
   <input id="productDescription" type="text" maxlength="500" placeholder="تفاصيل المنتج أو مدة الاشتراك">
   <label for="productPriceUsd">السعر بالدولار</label>
-  <input id="productPriceUsd" type="number" min="0.01" step="0.01" value="0" inputmode="decimal" oninput="updateProductPricePreview()">
+  <input id="productPriceUsd" type="number" min="0.01" step="0.01" value="" inputmode="decimal" placeholder="اتركه فارغاً إذا لم يتحدد السعر" oninput="updateProductPricePreview()">
   <p id="productPricePreview" class="small">أدخل سعر الدولار لمعاينة سعر الليرة.</p>
   <label for="productSortOrder">ترتيب العرض</label>
   <input id="productSortOrder" type="number" min="0" step="1" value="100">
