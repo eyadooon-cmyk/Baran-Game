@@ -189,7 +189,8 @@
         preview.textContent = (p.target_type === "ticket" ? "تذكرة الدعم: " : "المنتج: ") + p.target_name + " (" + p.target_key + ")\nسبب التعديل: " + p.reason +
           "\n\nالقيم الحالية:\n" + JSON.stringify(p.before,null,2) +
           "\n\nالقيم المقترحة:\n" + JSON.stringify(p.changes,null,2) +
-          "\n\n" + (p.target_type === "ticket" ? "تنبيه: تغيير حالة التذكرة قد يرسل إشعاراً للزبون. " : "") + "لن يتم الحفظ إلا بعد موافقتك الصريحة."; confirm.style.display = "block"; cancel.style.display = "block";
+          "\n\n" + (p.target_type === "ticket" ? "تنبيه: تغيير حالة التذكرة قد يرسل إشعاراً للزبون. " : "") + "لن يتم الحفظ إلا بعد موافقتك الصريحة.";
+        preview.style.display = "block"; confirm.style.display = "block"; cancel.style.display = "block";
         status.textContent = "المعاينة جاهزة. راجع كل قيمة قبل التأكيد.";
       } catch(error) { preview.style.display = "none"; status.textContent = error?.message || "تعذر إعداد المعاينة."; }
       finally { plan.disabled = false; }
