@@ -3221,7 +3221,7 @@ function filterBaranCustomerDirectory(){
     const hasBalance=Number(item.balance_usd||0)>0||Number(item.balance_syp||0)>0;
     const heading=document.createElement("div");
     heading.style.display="flex";heading.style.flexWrap="wrap";heading.style.alignItems="center";heading.style.gap="6px 10px";
-    const title=document.createElement("strong");title.textContent=item.full_name||maskedEmail;
+    const title=document.createElement("strong");const safeName=String(item.full_name||"").trim();title.textContent=(safeName&&safeName.toLowerCase()!==String(item.email||"").trim().toLowerCase()&&!safeName.includes("@"))?safeName:maskedEmail;
     const emailTag=document.createElement("span");emailTag.className="small";emailTag.textContent=maskedEmail;
     const status=document.createElement("span");status.className="small";status.style.fontWeight="800";
     status.style.color=hasBalance?"#16a34a":"#9ca3af";
