@@ -152,7 +152,7 @@ async function loadCatalog(){
         const title=document.createElement("strong");title.textContent=product.name;
         const description=document.createElement("p");description.textContent=product.description||"";
         const prices=document.createElement("div");prices.className="product-prices";prices.textContent=productPriceText(product);
-        const note=document.createElement("div");note.className="small";note.textContent="الطلب والشحن غير مفعّلين بعد.";
+        const note=document.createElement("div");note.className="small";note.textContent=product.price_usd==null||Number(product.price_usd)<=0?"قيد التجهيز — السعر غير محدد، والطلب غير متاح حالياً.":"الطلب والشحن غير مفعّلين بعد.";
         card.append(title,description,prices,note);group.box.appendChild(card);
       });
     });
