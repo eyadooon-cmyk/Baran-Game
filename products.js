@@ -70,7 +70,7 @@ function editProduct(product){
   document.getElementById("productCategory").value=product.category;
   document.getElementById("productName").value=product.name;
   document.getElementById("productDescription").value=product.description||"";
-  document.getElementById("productPriceUsd").value=Number(product.price_usd||0);
+  document.getElementById("productPriceUsd").value=product.price_usd==null?"":Number(product.price_usd);
   document.getElementById("productSortOrder").value=Number(product.sort_order||0);
   document.getElementById("productActive").value=String(product.is_active);
   document.getElementById("productMessage").textContent="تعدّل الآن: "+product.name;
@@ -83,11 +83,12 @@ async function saveProduct(){
   const productCode=document.getElementById("productCode").value.trim().toUpperCase();
   const name=document.getElementById("productName").value.trim();
   const description=document.getElementById("productDescription").value.trim();
-  const priceUsd=Number(document.getElementById("productPriceUsd").value);
+  const priceRaw=document.getElementById("productPriceUsd").value.trim();
+  const priceUsd=priceRaw===""?null:Number(priceRaw);
   const sortOrder=Number(document.getElementById("productSortOrder").value);
   if(!/^[A-Z0-9][A-Z0-9_-]{1,59}$/.test(productCode)){message.textContent="اكتب رمزاً إنجليزياً من حرفين على الأقل، مثل FREEFIRE_100.";return;}
   if(name.length<2){message.textContent="اكتب اسم المنتج.";return;}
-  if(!Number.isFinite(priceUsd)||priceUsd<=0){message.textContent="أدخل سعراً صحيحاً بالدولار أكبر من صفر.";return;}
+  if(priceUsd!==null&&(!Number.isFinite(priceUsd)||priceUsd<=0)){message.textContent="إذا ما عندك سعر اترك الحقل فارغاً، وإذا توفر أدخل سعراً أكبر من صفر.";return;}
   if(!Number.isInteger(sortOrder)||sortOrder<0){message.textContent="ترتيب العرض يجب أن يكون رقماً صحيحاً موجباً أو صفراً.";return;}
   const payload={
     action:"product_save",
@@ -188,5 +189,5 @@ function updateProductPricePreview(){
   const preview=document.getElementById("productPricePreview");
   if(!preview)return;
   const usd=Number(document.getElementById("productPriceUsd")?.value||0);
-  preview.textContent=usd>0?"السعر بالليرة: "+Math.round(usd*currentExchangeRate).toLocaleString("en-US")+" ل.س":"أدخل سعر الدولار لمعاينة سعر الليرة.";
+  preview.textContent=usd>0?"السعر بالليرة: "+Math.round(usd*currentExchangeRate).toLocaleString("en-US")+" ل.س":"اترك السعر فارغاً إذا لم يُحدد بعد؛ سيظهر للزبائن: السعر غير محدد.";
 }
