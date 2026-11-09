@@ -186,11 +186,10 @@
       try {
         const result = await callSafeAction({mode:"plan",command});
         pendingSafeProposal = result.proposal; const p = result.proposal;
-        preview.textContent = (p.target_type === "ticket" ? "تذكرة الدعم: " : "المنتج: ") + p.target_name + " (" + p.target_key + ")\\nسبب التعديل: " + p.reason +
-          "\\n\\nالقيم الحالية:\\n" + JSON.stringify(p.before,null,2) +
-          "\\n\\nالقيم المقترحة:\\n" + JSON.stringify(p.changes,null,2) +
-          "\\n\\n" + (p.target_type === "ticket" ? "تنبيه: تغيير حالة التذكرة قد يرسل إشعاراً للزبون. " : "") + "لن يتم الحفظ إلا بعد موافقتك الصريحة."
-        preview.style.display = "block"; confirm.style.display = "block"; cancel.style.display = "block";
+        preview.textContent = (p.target_type === "ticket" ? "تذكرة الدعم: " : "المنتج: ") + p.target_name + " (" + p.target_key + ")\nسبب التعديل: " + p.reason +
+          "\n\nالقيم الحالية:\n" + JSON.stringify(p.before,null,2) +
+          "\n\nالقيم المقترحة:\n" + JSON.stringify(p.changes,null,2) +
+          "\n\n" + (p.target_type === "ticket" ? "تنبيه: تغيير حالة التذكرة قد يرسل إشعاراً للزبون. " : "") + "لن يتم الحفظ إلا بعد موافقتك الصريحة."; confirm.style.display = "block"; cancel.style.display = "block";
         status.textContent = "المعاينة جاهزة. راجع كل قيمة قبل التأكيد.";
       } catch(error) { preview.style.display = "none"; status.textContent = error?.message || "تعذر إعداد المعاينة."; }
       finally { plan.disabled = false; }
@@ -206,7 +205,7 @@
         const result = await callSafeAction({mode:"execute",confirm:true,proposal:pendingSafeProposal});
         pendingSafeProposal = null; confirm.style.display = "none"; cancel.style.display = "none";
         status.textContent = result.warning || "✅ " + (result.message || "تم تنفيذ التعديل وتسجيله.");
-        preview.textContent = "النتيجة المسجلة:\n" + JSON.stringify(result.product || {},null,2);
+        preview.textContent = "النتيجة المسجلة:\n" + JSON.stringify(result.record || result.product || {},null,2);
       } catch(error) { status.textContent = error?.message || "تعذر تنفيذ التعديل."; }
       finally { confirm.disabled = false; cancel.disabled = false; }
     });
