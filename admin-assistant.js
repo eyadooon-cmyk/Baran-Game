@@ -219,7 +219,29 @@
         }catch(error){confirm.disabled=false;cancel.disabled=false;confirm.textContent="إعادة المحاولة";const err=document.createElement("p");err.textContent="لم يتم تأكيد التنفيذ: "+(error?.message||"خطأ غير معروف");card.appendChild(err);}
       });
       cancel.addEventListener("click",()=>{actions.remove();card.appendChild(document.createTextNode("\nتم إلغاء المعاينة؛ لم يتم تغيير أي بيانات."));history.push({role:"assistant",content:"تم إلغاء المعاينة؛ لم يتم تغيير أي بيانات."});history=history.slice(-10);});
-    }catch(error){if(card)card.textContent="تعذر تجهيز المعاينة: "+(error?.message||"خطأ غير معروف")+"\nلم يتم تنفيذ أي تغيير.";}
+    }catch(error){
+      const reason=String(error?.message||"");
+      if(/429|rate.?limit|quota|openai|الحد المؤقت|وصلنا للحد/i.test(reason)){
+        try{
+          const {data:sessionData}=await sb.auth.getSession();
+          const session=sessionData?.session;
+          if(!session)throw new Error("انتهت جلسة الدخول.");
+          const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin-offline",{
+            method:"POST",
+            headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+            body:JSON.stringify({question:command})
+          });
+          const result=await response.json().catch(()=>({}));
+          if(!response.ok||!result.reply)throw new Error(result.error||"تعذر تجهيز قراءة احتياطية.");
+          if(card)card.textContent="⚠️ لم أستطع تحليل وتنفيذ أمر التغيير بسبب حد OpenAI. لم يتم أي تعديل.\n\n"+result.reply;
+          return;
+        }catch(fallbackError){
+          if(card)card.textContent="تعذر تجهيز المعاينة بسبب حد OpenAI، وتعذر التقرير الاحتياطي: "+(fallbackError?.message||"خطأ غير معروف")+"\nلم يتم تنفيذ أي تغيير.";
+          return;
+        }
+      }
+      if(card)card.textContent="تعذر تجهيز المعاينة: "+reason+"\nلم يتم تنفيذ أي تغيير.";
+    }
   }
   function installSafeActions() {
     const host = document.getElementById("baranSafeActionsHost");
