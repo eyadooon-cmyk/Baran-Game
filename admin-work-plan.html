@@ -64,7 +64,7 @@ function render(tasks){
  if(!tasks.length){tasksBox.innerHTML='<div class="empty">ما في مهام مسجلة حالياً.</div>';return;}
  tasksBox.innerHTML=tasks.map(t=>{
   const options=Object.entries(labels).map(([value,label])=>'<option value="'+value+'" '+(t.status===value?'selected':'')+'>'+label+'</option>').join("");
-  return '<article class="task '+safe(t.priority)+'" data-id="'+safe(t.id)+'" data-status="'+safe(t.status)+'">'+
+  return '<article class="task '+safe(t.priority)+'" data-id="'+safe(t.id)+'" data-task-code="'+safe(t.task_code)+'" data-status="'+safe(t.status)+'">'+
    '<div class="task-top"><div><span class="pill">'+safe(t.task_code)+'</span> <span class="pill">أولوية '+safe(priorityLabels[t.priority]||t.priority)+'</span></div><span class="pill">'+safe(labels[t.status]||t.status)+'</span></div>'+
    '<h2 style="margin-top:10px">'+safe(t.title)+'</h2><div class="muted">'+safe(t.area)+'</div>'+
    '<div class="field"><strong>الدليل المسجل</strong><span>'+safe(t.evidence)+'</span></div>'+
@@ -75,7 +75,7 @@ function render(tasks){
    '<div class="field"><strong>إسناد المهمة للمشرفة</strong><select class="task-assignee"><option value="">غير مسندة</option>'+moderators.map(m=>'<option value="'+safe(m.user_id)+'" '+(t.assigned_to===m.user_id?'selected':'')+'>'+safe(m.full_name||m.member_code||'مشرفة')+'</option>').join('')+'</select></div>'+
    '<div class="actions"><button type="button" class="assign-task secondary">حفظ الإسناد</button></div>'+
    '<div class="field"><strong>ملاحظة إدارية (اختياري)</strong><textarea class="task-note" maxlength="500" placeholder="اكتب ملاحظة مختصرة عن سبب تغيير الحالة...">'+safe(t.approval_note||"")+'</textarea></div>'+
-   '<div class="actions"><button type="button" class="save-status">حفظ حالة المهمة</button></div>'+
+   '<div class="actions"><button type="button" class="save-status">حفظ حالة '+safe(t.task_code)+'</button></div>'+
    '<div class="small">آخر تحديث: '+safe(t.updated_at?new Date(t.updated_at).toLocaleString("ar"):"غير متاح")+'</div>'+
    '</article>';
  }).join("");
@@ -95,9 +95,10 @@ function render(tasks){
   const oldStatus=card.dataset.status;
   const next=select.value;
   if(next===oldStatus){statusBox.textContent="الحالة لم تتغير.";return;}
-  if(!confirm("تأكيد تغيير حالة المهمة فقط إلى («"+labels[next]+"»)؟ هذا لا ينفذ الإجراء التشغيلي نفسه."))return;
-  busy=true;button.disabled=true;statusBox.textContent="جاري حفظ الحالة وتسجيلها في سجل التدقيق...";
-  try{await call({action:"status_update",confirm:true,task_id:card.dataset.id,expected_status:oldStatus,new_status:next,approval_note:note.value});statusBox.textContent="تم تحديث حالة المهمة وتسجيلها. عم حدّث الخطة...";await load();}
+  const taskCode=card.dataset.taskCode||"غير معروف",taskTitle=card.querySelector("h2").textContent.trim();
+  if(!confirm("تأكيد تغيير حالة المهمة التالية فقط؟\\nرمز المهمة: "+taskCode+"\\nالعنوان: "+taskTitle+"\\nالحالة الجديدة: "+labels[next]+"\\nلن يتم تغيير أي مهمة أخرى، ولن ينفذ هذا الإجراء شحناً أو عملية مالية."))return;
+  busy=true;button.disabled=true;statusBox.textContent="جاري حفظ حالة المهمة "+taskCode+" وتسجيلها في سجل التدقيق...";
+  try{await call({action:"status_update",confirm:true,task_id:card.dataset.id,expected_status:oldStatus,new_status:next,approval_note:note.value});statusBox.textContent="تم تحديث حالة "+taskCode+" («"+taskTitle+"») وتسجيلها. عم حدّث الخطة...";await load();}
   catch(error){statusBox.textContent=error.message;}
   finally{busy=false;button.disabled=false;}
  }));
