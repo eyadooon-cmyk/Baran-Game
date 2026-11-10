@@ -289,6 +289,24 @@ section,.auth-card{border-color:#49345f}
 .drawer-link #adminDrawerOrdersCount.hidden,.drawer-link #adminDrawerSupportCount.hidden{display:none!important}
 @media(max-width:380px){.admin-drawer-counts{gap:3px}.admin-drawer-count{font-size:9px;padding:3px 5px}}
 
+/* بطاقة المحفظة المختصرة في الصفحة الرئيسية */
+.home-wallet-card{position:relative;isolation:isolate;overflow:hidden;margin:14px 0 20px;padding:17px;border:1px solid #76558f;border-radius:18px;background:radial-gradient(circle at 100% 0%,#56387566,transparent 42%),linear-gradient(130deg,#241832,#15101c 72%,#21152c);box-shadow:0 10px 25px #0005}
+.home-wallet-card:after{content:"";position:absolute;z-index:-1;left:-35px;bottom:-75px;width:180px;height:180px;border-radius:50%;background:#a56bd6;filter:blur(65px);opacity:.15;pointer-events:none}
+.home-wallet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.home-wallet-kicker{font:800 9px/1.4 Orbitron,Cairo,sans-serif;letter-spacing:1.7px;color:#c9a9e5}
+.home-wallet-head h3{margin:5px 0 1px;color:#f0e7f7;font-size:18px}
+.home-wallet-head p{margin:0;color:#bfaecc;font-size:11px}
+.home-wallet-symbol{display:grid;place-items:center;width:43px;height:43px;flex:0 0 43px;border:1px solid #a77acb88;border-radius:14px;background:#a56bd626;color:#e1c8f5;font-size:25px}
+.home-wallet-balances{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:15px 0 12px}
+.home-wallet-balance{min-width:0;padding:12px;border:1px solid #604779;border-radius:13px;background:#100c1688}
+.home-wallet-balance span{display:block;color:#bfaecc;font-size:10px;margin-bottom:5px}
+.home-wallet-balance strong{display:block;color:#f3eafa;font-size:clamp(18px,4.5vw,23px);font-weight:900;overflow-wrap:anywhere}
+.home-wallet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.home-wallet-actions button{display:flex;align-items:center;justify-content:center;gap:6px;min-height:43px;margin:0;padding:10px;border:1px solid #8d63ad;border-radius:11px;background:linear-gradient(110deg,#49305f,#30203f);color:#f7edff;font-size:12px}
+.home-wallet-actions .home-wallet-add{background:#d9c1ed;color:#21152c;border-color:#d9c1ed}
+.home-wallet-status{margin:9px 2px 0;color:#a99ab5;font-size:10px;line-height:1.6}
+@media(max-width:360px){.home-wallet-card{padding:13px}.home-wallet-balance{padding:10px 8px}.home-wallet-actions button{font-size:11px}}
+
 /* Wallet redesign — premium royal purple */
 .wallet-page{position:relative;overflow:hidden;padding:clamp(15px,3vw,25px)!important;background:linear-gradient(145deg,#17111f 0%,#100d16 58%,#1b1325 100%)!important;border-color:#5c4274!important}
 .wallet-hero{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:space-between;min-height:148px;padding:22px 20px;margin:-2px -2px 18px;border:1px solid #604779;border-radius:18px;overflow:hidden;background:linear-gradient(110deg,#241832 0%,#17111f 60%,#21152d 100%);box-shadow:inset 0 1px #ffffff0b,0 12px 28px #0005}
@@ -1484,6 +1502,21 @@ footer{color:#9f91aa}
         <h2>كل ألعابك وخدماتك الرقمية بمكان واحد</h2>
         <p>ألعاب، اشتراكات، بطاقات رقمية وتطبيقات — اختار القسم المناسب ووصل لمنتجك بسهولة.</p>
       </div>
+      <section class="home-wallet-card" aria-label="ملخص محفظتك">
+        <div class="home-wallet-head">
+          <div><span class="home-wallet-kicker">BARAN WALLET</span><h3>محفظتك الرقمية</h3><p>رصيدك جاهز لمشترياتك القادمة</p></div>
+          <span class="home-wallet-symbol" aria-hidden="true">◈</span>
+        </div>
+        <div class="home-wallet-balances">
+          <div class="home-wallet-balance"><span>رصيد الدولار · USD</span><strong id="homeWalletUsd">— $</strong></div>
+          <div class="home-wallet-balance"><span>رصيد الليرة · SYP</span><strong id="homeWalletSyp">— ل.س</strong></div>
+        </div>
+        <div class="home-wallet-actions">
+          <button type="button" onclick="showSection('wallet',null)">عرض المحفظة <span aria-hidden="true">‹</span></button>
+          <button type="button" class="home-wallet-add" onclick="showSection('paymentMethods',null)">＋ إضافة رصيد</button>
+        </div>
+        <p class="home-wallet-status" id="homeWalletStatus" aria-live="polite">يتم تحديث الرصيد عند تسجيل الدخول.</p>
+      </section>
       <div class="home-shortcuts" aria-label="وصول سريع لكل الأقسام">
         <button class="home-shortcut" type="button" onclick="showSection('games',null)"><span class="home-shortcut-icon">🎮</span><span class="home-shortcut-copy"><strong>الألعاب</strong><small>شحن وباقات الألعاب</small></span></button>
         <button class="home-shortcut" type="button" onclick="showSection('services',null)"><span class="home-shortcut-icon">✦</span><span class="home-shortcut-copy"><strong>الاشتراكات والخدمات</strong><small>AI وVPN وتطبيقات</small></span></button>
@@ -3564,11 +3597,16 @@ async function loadWallet(){
       return;
     }
 
-    document.getElementById("usd").textContent=
-      Number(data.balance_usd||0).toFixed(2)+" $";
-
-    document.getElementById("syp").textContent=
-      Number(data.balance_syp||0).toLocaleString("en-US")+" ل.س";
+    const usdText=Number(data.balance_usd||0).toFixed(2)+" $";
+    const sypText=Number(data.balance_syp||0).toLocaleString("en-US")+" ل.س";
+    document.getElementById("usd").textContent=usdText;
+    document.getElementById("syp").textContent=sypText;
+    const homeUsd=document.getElementById("homeWalletUsd");
+    const homeSyp=document.getElementById("homeWalletSyp");
+    const homeStatus=document.getElementById("homeWalletStatus");
+    if(homeUsd)homeUsd.textContent=usdText;
+    if(homeSyp)homeSyp.textContent=sypText;
+    if(homeStatus)homeStatus.textContent="تم تحديث أرصدتك من المحفظة بأمان.";
     await loadDepositRequests();
 
   }catch(error){
