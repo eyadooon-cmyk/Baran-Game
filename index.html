@@ -1315,6 +1315,7 @@ footer{color:#9f91aa}
     <button onclick="showSection('support',this)">آراء ودعم</button>
     <button id="adminNavButton" class="hidden" onclick="showSection('admin',this);loadAdminPanel()">لوحة الإدارة</button>
     <button id="staffPortalNavButton" class="hidden" onclick="openStaffPortal(this)">بوابة المشرفة</button>
+    <button id="staffTasksNavButton" class="hidden" onclick="openStaffTasks(this)">🗂️ مهامي</button>
   </nav>
   <div class="store-toolbar">
     <button class="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" onclick="toggleSideMenu()" id="menuToggle">☰</button>
@@ -2309,6 +2310,12 @@ footer{color:#9f91aa}
       <h3>📦 الطلبات</h3><div id="staffPortalOrders" class="ops-list">جاري التحميل...</div>
       <h3>👥 العملاء</h3><div id="staffPortalCustomers" class="ops-list">جاري التحميل...</div>
     </section>
+    <section id="staffTasks" class="hidden" dir="rtl">
+      <div class="admin-subpanel-head"><h2>🗂️ مهامي المسندة إليّ</h2><button type="button" class="secondary" onclick="loadStaffTasks()">🔄 تحديث المهام</button></div>
+      <p class="small">هنا تظهر المهام التي أسندها المالك لهذا الحساب فقط. يمكنك تحديث حالة المهمة وكتابة ملاحظة، ولا يمكنك تعديل بيانات المتجر أو الأسعار أو الأرصدة.</p>
+      <div id="staffTasksStatus" class="ops-list" role="status" aria-live="polite">جاري تحميل المهام...</div>
+      <div id="staffTasksList" class="ops-list"></div>
+    </section>
   </main>
 <button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="openBaranSupportAssistant()" aria-controls="aiAssistantPanel">💬 الدعم الفني</button>
   </div>
@@ -2672,6 +2679,7 @@ function showSection(id,button){
   if(!currentUser) return;
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
   if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
+  if(id==="staffTasks"&&!baranStaffPortalAuthorized){alert("إدارة المهام غير متاحة قبل التحقق من صلاحية المشرفة.");return;}
   const target=document.getElementById(id);
   if(!target) return;
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
@@ -2684,13 +2692,14 @@ function showSection(id,button){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة"};
+  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
   if(id==="pubgStore")loadBaranGameCatalog("PUBG");
   if(id==="freeFireStore")loadBaranGameCatalog("FREEFIRE");
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
+  if(id==="staffTasks")loadStaffTasks();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
   if(id==="settings"&&typeof refreshBaranPushSettingsStatus==="function")refreshBaranPushSettingsStatus();
   window.scrollTo({top:0,behavior:"smooth"});
@@ -3622,8 +3631,72 @@ async function loadStaffPortal(){
     baranStaffPortalAuthorized=false;baranStaffPortalData=null;
     if(status)status.textContent="تعذر فتح بوابة المشرفة: "+(error.message||"تحقق من تسجيل الدخول والصلاحيات.");
     const button=document.getElementById("staffPortalNavButton");if(button)button.classList.add("hidden");
+    const tasksButton=document.getElementById("staffTasksNavButton");if(tasksButton)tasksButton.classList.add("hidden");
     return false;
   }
+}
+async function loadStaffTasks(){
+  const status=document.getElementById("staffTasksStatus");
+  const box=document.getElementById("staffTasksList");
+  if(status)status.textContent="جاري تحميل المهام المسندة لهذا الحساب...";
+  if(!box)return;
+  try{
+    const {data,error}=await sb.functions.invoke("baran-staff-portal",{body:{action:"my_tasks"}});
+    if(error)throw error;
+    if(!data||data.role!=="moderator"||!Array.isArray(data.tasks))throw new Error(data?.error||"تعذر التحقق من مهام المشرفة.");
+    box.replaceChildren();
+    if(!data.tasks.length){box.textContent="ما في مهام مسندة إلك حالياً. لما يعيّنلك المالك مهمة رح تظهر هون.";status.textContent="تم التحقق — لا توجد مهام مسندة حالياً.";return;}
+    const labels={new:"جديدة",in_review:"قيد المراجعة",in_progress:"قيد التنفيذ",blocked:"متوقفة",completed:"مكتملة"};
+    const priority={high:"عالية",medium:"متوسطة",low:"منخفضة"};
+    data.tasks.forEach(task=>{
+      const card=staffPortalNode("article",null,"ops-item");
+      card.append(
+        staffPortalNode("strong",(task.task_code||"مهمة")+" — "+(task.title||"مهمة")),
+        staffPortalNode("p","المجال: "+(task.area||"—")+" | الأولوية: "+(priority[task.priority]||task.priority||"—"),"small"),
+        staffPortalNode("p","الوضع الحالي: "+(labels[task.status]||task.status||"—"),"small"),
+        staffPortalNode("p","التفاصيل: "+(task.evidence||"—")),
+        staffPortalNode("p","الأثر: "+(task.impact||"—")),
+        staffPortalNode("p","الخطوة المطلوبة: "+(task.next_step||"—")),
+        staffPortalNode("p","معيار الإنجاز: "+(task.success_criteria||"—"))
+      );
+      if(task.moderator_note)card.append(staffPortalNode("p","آخر ملاحظة منك: "+task.moderator_note,"small"));
+      if(task.status!=="completed"){
+        const statusLabel=staffPortalNode("label","تحديث الحالة");
+        const select=document.createElement("select");select.className="staff-task-status";
+        [["in_progress","قيد التنفيذ"],["blocked","متوقفة"],["completed","مكتملة"]].forEach(([value,label])=>{
+          const option=document.createElement("option");option.value=value;option.textContent=label;option.selected=task.status===value;select.append(option);
+        });
+        const note=document.createElement("textarea");note.maxLength=1000;note.rows=3;note.placeholder="ملاحظة للمسؤول عن المهمة (اختياري)...";
+        note.value=task.moderator_note||"";
+        const button=staffPortalNode("button","حفظ تحديث المهمة");button.type="button";button.className="full";
+        const result=staffPortalNode("div","","small");
+        button.addEventListener("click",async()=>{
+          button.disabled=true;result.textContent="جاري حفظ التحديث...";
+          try{
+            const response=await sb.functions.invoke("baran-staff-portal",{body:{action:"update_my_task",task_id:task.id,expected_status:task.status,new_status:select.value,note:note.value}});
+            if(response.error)throw response.error;
+            if(!response.data?.success)throw new Error(response.data?.error||"تعذر حفظ التحديث.");
+            result.textContent="تم حفظ تحديث المهمة.";await loadStaffTasks();
+          }catch(error){result.textContent=error.message||"تعذر تحديث المهمة.";}
+          finally{button.disabled=false;}
+        });
+        card.append(statusLabel,select,note,button,result);
+      }else{
+        card.append(staffPortalNode("p","تم إكمال هذه المهمة.","small"));
+      }
+      box.append(card);
+    });
+    status.textContent="تم تحميل "+data.tasks.length+" مهمة مسندة لهذا الحساب فقط.";
+  }catch(error){
+    if(status)status.textContent="تعذر تحميل المهام: "+(error.message||"تحقق من صلاحية المشرفة.");
+    box.replaceChildren();
+  }
+}
+async function openStaffTasks(button){
+  if(!baranStaffPortalAuthorized){
+    const ok=await loadStaffPortal();if(!ok)return;
+  }
+  showSection("staffTasks",button||document.getElementById("staffTasksNavButton"));
 }
 async function openStaffPortal(button){
   if(!baranStaffPortalAuthorized){
@@ -3635,8 +3708,10 @@ async function openStaffPortal(button){
 async function checkAdminAccess(){
   const navButton=document.getElementById("adminNavButton");
   const staffButton=document.getElementById("staffPortalNavButton");
+  const staffTasksButton=document.getElementById("staffTasksNavButton");
   const drawerButton=document.getElementById("adminDrawerButton");
   if(staffButton)staffButton.classList.add("hidden");
+  if(staffTasksButton)staffTasksButton.classList.add("hidden");
   baranStaffPortalAuthorized=false;baranStaffPortalData=null;
   baranAdminPanelAuthorized=false;
   const walletAdminTransfers=document.getElementById("walletAdminTransfers");
@@ -3658,6 +3733,7 @@ async function checkAdminAccess(){
       if(!staffError&&data&&data.role==="moderator"){
         baranStaffPortalAuthorized=true;baranStaffPortalData=data;renderStaffPortal();
         if(staffButton)staffButton.classList.remove("hidden");
+        if(staffTasksButton)staffTasksButton.classList.remove("hidden");
         return false;
       }
     }
