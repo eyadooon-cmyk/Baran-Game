@@ -1266,6 +1266,7 @@ footer{color:#9f91aa}
     <button onclick="showSection('account',this)">حسابي</button>
     <button onclick="showSection('support',this)">آراء ودعم</button>
     <button id="adminNavButton" class="hidden" onclick="showSection('admin',this);loadAdminPanel()">لوحة الإدارة</button>
+    <button id="staffPortalNavButton" class="hidden" onclick="openStaffPortal(this)">بوابة المشرفة</button>
   </nav>
   <div class="store-toolbar">
     <button class="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" onclick="toggleSideMenu()" id="menuToggle">☰</button>
@@ -2239,6 +2240,15 @@ footer{color:#9f91aa}
       <h3>طلباتي ورسائلي السابقة</h3>
       <div id="myFeedbackList" class="small">جاري تحميل الرسائل...</div>
     </section>
+
+    <section id="staffPortal" class="hidden" dir="rtl">
+      <div class="admin-subpanel-head"><h2>🛡️ بوابة المشرفة</h2><button type="button" class="secondary" onclick="loadStaffPortal()">🔄 تحديث البيانات</button></div>
+      <p class="small">صلاحيات محدودة لمتابعة الدعم والطلبات والعملاء فقط. لا تتضمن هذه البوابة المحافظ أو الأرصدة أو الأسعار أو الموردين أو إعدادات المتجر.</p>
+      <div id="staffPortalStatus" class="ops-list" role="status" aria-live="polite">جاري التحقق من الصلاحية...</div>
+      <h3>🎧 تذاكر الدعم</h3><div id="staffPortalTickets" class="ops-list">جاري التحميل...</div>
+      <h3>📦 الطلبات</h3><div id="staffPortalOrders" class="ops-list">جاري التحميل...</div>
+      <h3>👥 العملاء</h3><div id="staffPortalCustomers" class="ops-list">جاري التحميل...</div>
+    </section>
   </main>
 <button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="openBaranSupportAssistant()" aria-controls="aiAssistantPanel">💬 الدعم الفني</button>
   </div>
@@ -2459,8 +2469,14 @@ async function findBaranStaffUser(){
 }
 async function setBaranModerator(email,enabled){
   if(!currentUser||currentUser.id!==BARAN_OWNER_ID){alert("هذا الإجراء للمالك فقط.");return;}
-  if(enabled){alert("لم نفعّل الإضافة بعد: يجب أولاً ربط صلاحيات المشرفة المحدودة بلوحة الإدارة وحماية الأقسام الحساسة. لن نمنح الحساب وصولاً قبل اكتمال ذلك.");return;}
-  const action="إلغاء صلاحية المشرف عن هذا الحساب";
+  if(enabled){
+    const portalReady=await sb.functions.invoke("baran-staff-portal",{body:{action:"dashboard"}});
+    if(portalReady.error||!portalReady.data||portalReady.data.role!=="owner"){
+      alert("تعذر التحقق من جاهزية بوابة المشرفة. لم يتم منح أي صلاحية.");
+      return;
+    }
+  }
+  const action=enabled?"تفعيل صلاحية المشرف المحدودة لهذا الحساب":"إلغاء صلاحية المشرف عن هذا الحساب";
   if(!confirm("تأكيد "+action+"؟\n"+email+"\n\nلن تُمنح صلاحيات مالية."))return;
   const result=document.getElementById("staffFindResult");
   if(result)result.textContent="جاري تنفيذ التغيير...";
@@ -2649,7 +2665,7 @@ function showSection(id,button){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة"};
+  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
@@ -3490,9 +3506,117 @@ function moveOwnerWalletToolsToAdmin(){
   document.getElementById("ownerWalletFinanceCard")?.classList.remove("hidden");
 }
 
+
+let baranStaffPortalAuthorized = false;
+let baranStaffPortalData = null;
+
+function staffPortalNode(tag, text, className){
+  const node=document.createElement(tag);
+  if(text!==undefined&&text!==null)node.textContent=String(text);
+  if(className)node.className=className;
+  return node;
+}
+function renderStaffPortal(){
+  const status=document.getElementById("staffPortalStatus");
+  const ticketsBox=document.getElementById("staffPortalTickets");
+  const ordersBox=document.getElementById("staffPortalOrders");
+  const customersBox=document.getElementById("staffPortalCustomers");
+  if(!baranStaffPortalData)return;
+  const data=baranStaffPortalData;
+  if(status)status.textContent="تم التحقق من صلاحية البوابة. آخر تحديث: "+new Date(data.generated_at||Date.now()).toLocaleString("ar");
+  if(ticketsBox){
+    ticketsBox.replaceChildren();
+    const rows=Array.isArray(data.tickets)?data.tickets:[];
+    if(!rows.length)ticketsBox.textContent="لا توجد تذاكر دعم حالياً.";
+    rows.forEach(ticket=>{
+      const card=staffPortalNode("article",null,"ops-item");
+      const heading=staffPortalNode("strong",ticket.subject||ticket.ticket_code||"تذكرة دعم");
+      const details=staffPortalNode("p","رقم التذكرة: "+(ticket.ticket_code||"—")+" | الحالة: "+(ticket.status||"—"),"small");
+      const message=staffPortalNode("p",ticket.message||"");
+      const reply=staffPortalNode("p",ticket.admin_reply?"الرد الحالي: "+ticket.admin_reply:"لم يتم الرد بعد.","small");
+      card.append(heading,details,message,reply);
+      if(ticket.ticket_code){
+        const form=staffPortalNode("form",null,"ops-form");
+        const area=staffPortalNode("textarea");area.rows=3;area.maxLength=2000;area.required=true;area.placeholder="اكتب الرد للزبون...";
+        const button=staffPortalNode("button","إرسال الرد");button.type="submit";button.className="full";
+        const result=staffPortalNode("div","","small");
+        form.append(area,button,result);
+        form.addEventListener("submit",async event=>{
+          event.preventDefault();
+          const value=area.value.trim();if(value.length<2){result.textContent="اكتب رداً أوضح قبل الإرسال.";return;}
+          button.disabled=true;result.textContent="جاري إرسال الرد...";
+          try{
+            const {data:response,error}=await sb.functions.invoke("baran-staff-portal",{body:{action:"reply_ticket",ticket_code:ticket.ticket_code,reply:value}});
+            if(error)throw error;
+            if(!response||response.success!==true)throw new Error(response?.error||"تعذر إرسال الرد.");
+            result.textContent="تم حفظ الرد على التذكرة.";
+            await loadStaffPortal();
+          }catch(error){result.textContent="فشل إرسال الرد: "+(error.message||"خطأ غير معروف");button.disabled=false;}
+        });
+        card.append(form);
+      }
+      ticketsBox.append(card);
+    });
+  }
+  if(ordersBox){
+    ordersBox.replaceChildren();
+    const rows=Array.isArray(data.orders)?data.orders:[];
+    if(!rows.length)ordersBox.textContent="لا توجد طلبات حالياً.";
+    rows.forEach(order=>{
+      const card=staffPortalNode("article",null,"ops-item");
+      card.append(
+        staffPortalNode("strong","طلب #"+String(order.id||"").slice(0,12)),
+        staffPortalNode("p","المنتج: "+(order.product_code||"—")+" | الكمية: "+(order.quantity??"—"),"small"),
+        staffPortalNode("p","معرّف اللاعب: "+(order.player_id||"—")+" | الحالة: "+(order.status||"—"),"small"),
+        staffPortalNode("p","التاريخ: "+(order.created_at?new Date(order.created_at).toLocaleString("ar"):"—"),"small")
+      );
+      ordersBox.append(card);
+    });
+  }
+  if(customersBox){
+    customersBox.replaceChildren();
+    const rows=Array.isArray(data.customers)?data.customers:[];
+    if(!rows.length)customersBox.textContent="لا توجد حسابات عملاء لعرضها.";
+    rows.forEach(customer=>{
+      const card=staffPortalNode("article",null,"ops-item");
+      card.append(
+        staffPortalNode("strong",customer.full_name||"عميل Baran Game"),
+        staffPortalNode("p","رقم العضوية: "+(customer.member_code||"—"),"small"),
+        staffPortalNode("p","تاريخ التسجيل: "+(customer.created_at?new Date(customer.created_at).toLocaleDateString("ar"):"—"),"small")
+      );
+      customersBox.append(card);
+    });
+  }
+}
+async function loadStaffPortal(){
+  const status=document.getElementById("staffPortalStatus");
+  if(status)status.textContent="جاري التحقق وتحميل البيانات...";
+  try{
+    const {data,error}=await sb.functions.invoke("baran-staff-portal",{body:{action:"dashboard"}});
+    if(error)throw error;
+    if(!data||!["moderator","owner"].includes(data.role))throw new Error(data?.error||"لا تملك صلاحية دخول هذه البوابة.");
+    if(data.role!=="moderator"&&currentUser?.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7")throw new Error("الدور غير مخوّل.");
+    baranStaffPortalAuthorized=true;baranStaffPortalData=data;renderStaffPortal();return true;
+  }catch(error){
+    baranStaffPortalAuthorized=false;baranStaffPortalData=null;
+    if(status)status.textContent="تعذر فتح بوابة المشرفة: "+(error.message||"تحقق من تسجيل الدخول والصلاحيات.");
+    const button=document.getElementById("staffPortalNavButton");if(button)button.classList.add("hidden");
+    return false;
+  }
+}
+async function openStaffPortal(button){
+  if(!baranStaffPortalAuthorized){
+    const ok=await loadStaffPortal();if(!ok)return;
+  }
+  showSection("staffPortal",button||document.getElementById("staffPortalNavButton"));
+}
+
 async function checkAdminAccess(){
   const navButton=document.getElementById("adminNavButton");
+  const staffButton=document.getElementById("staffPortalNavButton");
   const drawerButton=document.getElementById("adminDrawerButton");
+  if(staffButton)staffButton.classList.add("hidden");
+  baranStaffPortalAuthorized=false;baranStaffPortalData=null;
   const walletAdminTransfers=document.getElementById("walletAdminTransfers");
   if(navButton)navButton.classList.add("hidden");
   if(drawerButton)drawerButton.classList.add("hidden");
@@ -3506,6 +3630,14 @@ async function checkAdminAccess(){
     return true;
   }catch(error){
     console.error("Baran Game admin access check failed:",error.message);
+    if(currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){
+      const {data,error:staffError}=await sb.functions.invoke("baran-staff-portal",{body:{action:"dashboard"}});
+      if(!staffError&&data&&data.role==="moderator"){
+        baranStaffPortalAuthorized=true;baranStaffPortalData=data;renderStaffPortal();
+        if(staffButton)staffButton.classList.remove("hidden");
+        return false;
+      }
+    }
     return false;
   }
 }
