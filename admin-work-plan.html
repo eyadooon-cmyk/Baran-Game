@@ -64,7 +64,7 @@ function render(tasks){
  if(!tasks.length){tasksBox.innerHTML='<div class="empty">ما في مهام مسجلة حالياً.</div>';return;}
  tasksBox.innerHTML=tasks.map(t=>{
   const options=Object.entries(labels).map(([value,label])=>'<option value="'+value+'" '+(t.status===value?'selected':'')+'>'+label+'</option>').join("");
-  return '<article class="task '+safe(t.priority)+'" data-id="'+safe(t.id)+'" data-task-code="'+safe(t.task_code)+'" data-status="'+safe(t.status)+'">'+
+  return '<article class="task '+safe(t.priority)+'" data-id="'+safe(t.id)+'" data-task-code="'+safe(t.task_code)+'" data-status="'+safe(t.status)+'" data-assigned-to="'+safe(t.assigned_to||"")+'">'+
    '<div class="task-top"><div><span class="pill">'+safe(t.task_code)+'</span> <span class="pill">أولوية '+safe(priorityLabels[t.priority]||t.priority)+'</span></div><span class="pill">'+safe(labels[t.status]||t.status)+'</span></div>'+
    '<h2 style="margin-top:10px">'+safe(t.title)+'</h2><div class="muted">'+safe(t.area)+'</div>'+
    '<div class="field"><strong>الدليل المسجل</strong><span>'+safe(t.evidence)+'</span></div>'+
@@ -83,9 +83,8 @@ function render(tasks){
   if(busy)return;
   const card=button.closest(".task"),target=card.querySelector(".task-assignee").value;
   const taskCode=card.dataset.taskCode||"غير معروف",taskTitle=card.querySelector("h2").textContent.trim();
-  const currentAssignee=card.querySelector(".task-assignee").selectedOptions[0]?.textContent||"غير مسندة";
   if(!target){
-   if(!card.querySelector(".task-assignee").value && currentAssignee==="غير مسندة"){statusBox.textContent="المهمة غير مسندة أصلاً.";return;}
+   if(!card.dataset.assignedTo){statusBox.textContent="المهمة غير مسندة أصلاً.";return;}
    if(!confirm("تأكيد إلغاء إسناد المهمة التالية فقط؟\\nرمز المهمة: "+taskCode+"\\nالعنوان: "+taskTitle+"\\nسيتم إزالة المشرفة من المهمة، مع إبقاء حالة المهمة وملاحظاتها كما هي."))return;
   }else{
    if(!confirm("تأكيد إسناد المهمة («"+taskTitle+"») إلى المشرفة المحددة؟"))return;
