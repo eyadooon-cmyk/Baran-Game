@@ -58,28 +58,31 @@
       let result = {};
       try { result = await response.json(); } catch (_) {}
       if (!response.ok) {
-        // On the main AI rate limit, allow only audited internal-note fallback.
         if (response.status === 429) {
-          try {
-            const fallback = await callSafeAction({ mode: "plan", command: clean });
-            const p = fallback?.proposal;
-            const allowed = fallback?.auto_execute === true && p &&
-              ["supplier", "fulfillment_note", "supplier_product_note"].includes(p.target_type) &&
-              (p.target_type !== "supplier" || (Object.keys(p.changes || {}).length === 1 && Object.prototype.hasOwnProperty.call(p.changes, "notes")));
-            if (allowed) {
-              const done = await callSafeAction({ mode: "execute", confirm: true, proposal: p });
-              if (pending) pending.remove();
-              const message = "⚠️ وصلنا للحد المؤقت للذكاء الاصطناعي، فاشتغلت بوضع الملاحظات الاحتياطي.\\n" +
-                (done.message || "تم تسجيل الملاحظة الداخلية مع سجل التدقيق.") +
-                "\\nما تم تغيير أي رصيد أو مبلغ أو بيانات ظاهرة للزبون.";
-              addMessage(message, "bot");
-              history.push({ role: "assistant", content: message });
-              history = history.slice(-10);
-              return;
-            }
-          } catch (fallbackError) {
-            throw new Error(fallbackError?.message || "الذكاء الاصطناعي وصل للحد المؤقت، وتعذر تنفيذ الملاحظة الاحتياطية.");
+          const offline = await fetch(SUPABASE_URL + "/functions/v1/baran-admin-offline", {
+            method: "POST",
+            headers: {
+              "Authorization": "Bearer " + session.access_token,
+              "apikey": SUPABASE_KEY,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ question: clean })
+          });
+          let offlineResult = {};
+          try { offlineResult = await offline.json(); } catch (_) {}
+          if (!offline.ok || !offlineResult.reply) {
+            throw new Error(offlineResult.error || "وصل OpenAI للحد المؤقت، وتعذر تجهيز التقرير الاحتياطي. لم يتم أي تعديل.");
           }
+          if (pending) pending.remove();
+          const message = "⚠️ وضع Baran الاحتياطي المستقل (بدون OpenAI)\\n" +
+            offlineResult.reply +
+            (offlineResult.unavailable?.length ? "\\nأقسام لم تتوفر: " + offlineResult.unavailable.join("، ") : "");
+          addMessage(message, "bot");
+          history.push({ role: "assistant", content: message });
+          history = history.slice(-10);
+          const status = document.getElementById("baranAdminAssistantStatus");
+          if (status) status.textContent = "وضع احتياطي مستقل — قراءة مباشرة من قاعدة البيانات، آخر تحديث: " + new Date(offlineResult.data_updated_at || Date.now()).toLocaleString("ar");
+          return;
         }
         throw new Error(result.error || "تعذر الوصول إلى مساعد الإدارة.");
       }
