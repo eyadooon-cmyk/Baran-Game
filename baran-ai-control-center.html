@@ -30,6 +30,7 @@ input{width:100%;min-height:45px;padding:11px;border-radius:10px;border:1px soli
 .tag{display:inline-block;padding:2px 8px;border-radius:20px;background:#30243a;color:#e7d8f4;font-size:12px;margin-left:5px}
 #status{padding:10px;border:1px solid var(--line);border-radius:10px;background:#120e17}
 @media(max-width:540px){main{padding:10px}.grid{grid-template-columns:1fr}h1{font-size:20px}.panel{padding:12px}}
+ .ai-roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.ai-role{padding:13px;border:1px solid #604779;border-radius:13px;background:linear-gradient(145deg,#251b30,#120e17)}.ai-role h3{margin:0 0 5px;color:#e3cef4;font-size:15px}.ai-role p{font-size:12px;color:var(--muted);min-height:38px}.ai-role button{width:100%;margin-top:6px}.ai-role .small{min-height:0}@media(max-width:540px){.ai-roles{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -54,6 +55,19 @@ input{width:100%;min-height:45px;padding:11px;border-radius:10px;border:1px soli
 </div>
 <p id="monitorDetails" class="small">سيتم تحميل لقطة المراقبة من الخادم.</p>
 <div id="alerts"></div>
+</section>
+<section class="panel">
+<h2>🧩 فريق Baran الذكي — ستة مساعدين متخصصين</h2>
+<p class="small">كل قسم يشغّل مراجعة متخصصة اعتماداً على البيانات المتاحة فعلياً. النتائج تحليل وتوصيات، وليست تنفيذاً لتغييرات حساسة.</p>
+<div class="ai-roles">
+ <article class="ai-role"><h3>🧭 المدير اليومي الذكي</h3><p>ملخص حالة المتجر، الأولويات، ما يحتاج تدخلك، وخطوات اليوم.</p><button class="role-run" data-role="daily">إنشاء تقرير المدير</button></article>
+ <article class="ai-role"><h3>🎧 مركز الدعم المستقل</h3><p>متابعة التذاكر والردود التلقائية، واستخراج الحالات التي تحتاج تدخلك.</p><button class="role-run" data-role="support">مراجعة الدعم</button></article>
+ <article class="ai-role"><h3>🛡️ حارس الأمان الذكي</h3><p>مراجعة التنبيهات وسجل التدقيق ومؤشرات المخاطر دون تغيير الصلاحيات.</p><button class="role-run" data-role="security">فحص الأمان</button></article>
+ <article class="ai-role"><h3>🔌 مراقب الموردين والأسعار</h3><p>حالة الموردين وربط المنتجات وبيانات التكلفة وجاهزية API.</p><button class="role-run" data-role="suppliers">تحليل الموردين</button></article>
+ <article class="ai-role"><h3>🗂️ مدير مهام المشروع</h3><p>ترتيب المهام المفتوحة والمتعثرة وعرض ما أُنجز وما يلي.</p><button class="role-run" data-role="tasks">مراجعة خطة العمل</button></article>
+ <article class="ai-role"><h3>💜 محلل الزبائن والولاء</h3><p>تحليل نشاط الزبائن والطلبات والعودة للشراء، إذا كانت البيانات متوفرة.</p><button class="role-run" data-role="customers">تحليل الزبائن</button></article>
+</div>
+<p id="roleStatus" class="small" aria-live="polite">الأقسام الستة جاهزة للمراجعة بعد تسجيل دخول المدير.</p>
 </section>
 <section class="panel">
 <h2>🤖 اسأل المساعد الإداري</h2>
@@ -147,6 +161,28 @@ async function ask(q){
  finally{busy=false;el("send").disabled=false;}
 }
 el("askForm").addEventListener("submit",e=>{e.preventDefault();const q=el("question").value;el("question").value="";void ask(q);});
+
+const rolePrompts={
+ daily:"أنشئ تقرير المدير اليومي: حالة المتجر، التغييرات المؤكدة، أهم 5 أولويات، المخاطر، وما يحتاج تدخلي. لا تخمن أي بيانات.",
+ support:"راجع مركز الدعم: عدد التذاكر المفتوحة وحالات الانتظار والردود التلقائية، وحدد الحالات التي تحتاج تدخلي وسبب التحويل. لا ترسل أي رد جديد.",
+ security:"نفّذ مراجعة أمان للبيانات المتاحة: سجل التدقيق والتنبيهات ومحاولات الدخول والأخطاء المتكررة. اذكر الدليل والخطورة والإجراء المقترح، ولا تغيّر الصلاحيات.",
+ tasks:"راجع خطة عمل Baran Game كاملة: المهام المفتوحة والمتعثرة والمكتملة، ورتب أهم الخطوات التالية مع سبب الأولوية. لا تغيّر حالة أي مهمة.",
+ customers:"حلل الزبائن والولاء اعتماداً على السجلات المتاحة فقط: عدد الزبائن النشطين، تكرار الطلب، العملاء العائدين، الطلبات، وأنماط النشاط. إذا كانت بيانات الزبائن أو الفترات غير متاحة فاذكر ذلك صراحة ولا تخترع أرقاماً."
+};
+document.querySelectorAll(".role-run").forEach(b=>b.addEventListener("click",async()=>{
+ const role=b.dataset.role;const status=el("roleStatus");
+ if(role==="tasks"){status.textContent="جاري تحديث خطة العمل والمراقبة...";try{await refresh();status.textContent="تم تحديث خطة العمل ولقطة المراقبة. راجع القائمة أعلاه.";}catch(e){status.textContent=e.message;}return;}
+ if(role==="suppliers"){
+  status.textContent="جاري تحليل الموردين والأسعار من بيانات الخادم...";
+  try{const r=await api("baran-supplier-manager",{mode:"summary"});say("🔌 تقرير مراقب الموردين والأسعار");say(r.reply);status.textContent="اكتمل تحليل الموردين. وقت التقرير: "+new Date(r.generated_at||Date.now()).toLocaleString("ar");}
+  catch(e){status.textContent="تعذر تحليل الموردين: "+e.message;say("تعذر تحليل الموردين: "+e.message,"error");}
+  return;
+ }
+ status.textContent="جاري تشغيل المساعد المختص...";
+ await ask(rolePrompts[role]||"اعمل مراجعة شاملة آمنة لمتجر Baran Game.");
+ status.textContent="انتهت المراجعة. راجع نتيجة المساعد في المحادثة.";
+}));
+
 document.querySelectorAll(".quick").forEach(b=>b.addEventListener("click",()=>void ask(b.dataset.q)));
 el("refresh").addEventListener("click",()=>{if(!busy)refresh().catch(e=>el("status").textContent=e.message);});
 async function init(){
