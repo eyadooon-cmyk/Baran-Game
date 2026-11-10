@@ -31,6 +31,8 @@ input{width:100%;min-height:45px;padding:11px;border-radius:10px;border:1px soli
 #status{padding:10px;border:1px solid var(--line);border-radius:10px;background:#120e17}
 @media(max-width:540px){main{padding:10px}.grid{grid-template-columns:1fr}h1{font-size:20px}.panel{padding:12px}}
  .ai-roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.ai-role{padding:13px;border:1px solid #604779;border-radius:13px;background:linear-gradient(145deg,#251b30,#120e17)}.ai-role h3{margin:0 0 5px;color:#e3cef4;font-size:15px}.ai-role p{font-size:12px;color:var(--muted);min-height:38px}.ai-role button{width:100%;margin-top:6px}.ai-role .small{min-height:0}@media(max-width:540px){.ai-roles{grid-template-columns:1fr}}
+
+.feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.feature-card{padding:13px;border:1px solid #59446b;border-radius:13px;background:linear-gradient(145deg,#21182c,#120e17);min-width:0}.feature-icon{font-size:23px}.feature-card h3{font-size:15px;color:#e2d1f0;margin:5px 0}.feature-card p{font-size:12px;color:var(--muted);line-height:1.7;min-height:76px}.feature-link{display:block;color:#d9c5eb;font-size:12px;text-decoration:underline;margin-top:8px}.feature-card button{width:100%;margin:7px 0}#smokeTestResult{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:6px}@media(max-width:650px){.feature-grid{grid-template-columns:1fr}.feature-card p{min-height:0}}
 </style>
 </head>
 <body>
@@ -55,6 +57,14 @@ input{width:100%;min-height:45px;padding:11px;border-radius:10px;border:1px soli
 </div>
 <p id="monitorDetails" class="small">سيتم تحميل لقطة المراقبة من الخادم.</p>
 <div id="alerts"></div>
+</section>
+<section class="panel feature-grid-panel">
+<h2>🚦 مراكز التشغيل الذكية</h2>
+<div class="feature-grid">
+ <article class="feature-card"><div class="feature-icon">🚨</div><h3>مركز الإنذار المبكر</h3><p>يعرض التنبيهات التي ترجعها المراقبة الفعلية، مع حالة الاتصال وآخر فحص. غياب التنبيه لا يثبت سلامة كل الخدمات.</p><a class="feature-link" href="#status">عرض حالة المراقبة والتنبيهات ↑</a></article>
+ <article class="feature-card"><div class="feature-icon">🛂</div><h3>مركز الموافقات الإدارية</h3><p>الإجراءات الحساسة تبقى ضمن لوحة الإدارة الآمنة: معاينة السبب والأثر قبل موافقتك. لا توجد موافقة مالية تلقائية.</p><a class="feature-link" href="./index.html">فتح لوحة الإدارة والمراجعة اليدوية ↗</a></article>
+ <article class="feature-card"><div class="feature-icon">🧪</div><h3>مختبر اختبار المتجر</h3><p>اختبار اتصال خدمات الإدارة وخطة العمل والمراقبة بقراءة فقط، دون إنشاء طلبات أو تعديل أرصدة أو إرسال شحنات.</p><button id="runSmokeTest" type="button">تشغيل الفحص الآمن</button><div id="smokeTestResult" class="small" role="status" aria-live="polite">لم يبدأ الفحص بعد.</div></article>
+</div>
 </section>
 <section class="panel">
 <h2>🧩 فريق Baran الذكي — ستة مساعدين متخصصين</h2>
@@ -184,6 +194,17 @@ document.querySelectorAll(".role-run").forEach(b=>b.addEventListener("click",asy
 }));
 
 document.querySelectorAll(".quick").forEach(b=>b.addEventListener("click",()=>void ask(b.dataset.q)));
+async function runSmokeTest(){
+ const box=el("smokeTestResult"),button=el("runSmokeTest");
+ if(busy)return;
+ button.disabled=true;box.textContent="جاري فحص الخدمات بقراءة فقط...";
+ try{
+  const checks=await Promise.allSettled([api("baran-admin-monitor",{}),api("baran-admin-work-plan",{action:"list"})]);
+  const names=["خدمة المراقبة","خطة العمل"];
+  box.textContent=checks.map((r,i)=>names[i]+": "+(r.status==="fulfilled"?"استجابة ناجحة":"فشل — "+(r.reason?.message||"خطأ غير معروف"))).join("\n")+"\nلم يتم إنشاء بيانات أو تعديل أي سجل.";
+ }finally{button.disabled=false;}
+}
+el("runSmokeTest").addEventListener("click",runSmokeTest);
 el("refresh").addEventListener("click",()=>{if(!busy)refresh().catch(e=>el("status").textContent=e.message);});
 async function init(){
  try{const {data,error}=await sb.auth.getSession();if(error)throw error;session=data.session;
