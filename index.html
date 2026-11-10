@@ -5099,6 +5099,25 @@ function baranServicePrice(product){
  if(Number.isFinite(syp)&&syp>0)values.push(syp.toLocaleString("en-US")+" ل.س");
  return values.length?values.join(" · "):"السعر قيد التجهيز";
 }
+const baranServiceSelection={product:null,category:null,containerId:null};
+function baranShowServiceSelection(product,category,containerId){
+ const container=document.getElementById(containerId);if(!container)return;
+ baranServiceSelection.product=product;baranServiceSelection.category=category;baranServiceSelection.containerId=containerId;
+ let preview=container.querySelector(".baran-service-selection-preview");
+ if(!preview){preview=document.createElement("section");preview.className="baran-service-selection-preview";preview.setAttribute("aria-live","polite");container.append(preview);}
+ preview.replaceChildren();
+ const title=document.createElement("strong");title.textContent="مراجعة اختيارك";
+ const name=document.createElement("p");name.textContent=product.name||product.product_code||"منتج رقمي";
+ const price=document.createElement("p");price.textContent="السعر المعروض: "+baranServicePrice(product);
+ const note=document.createElement("p");note.className="small";note.textContent="هذه معاينة فقط. لم يتم إنشاء طلب أو حجز المنتج أو خصم أي رصيد.";
+ const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="الشراء غير مفعّل — بانتظار ربط المورد والتحقق من التنفيذ";
+ preview.append(title,name,price,note,status);
+ container.querySelectorAll("[data-service-product-id]").forEach(button=>{
+  const selected=button.dataset.serviceProductId===String(product.id);
+  button.textContent=selected?"تم الاختيار للمراجعة":"اختيار للمراجعة";
+  button.setAttribute("aria-pressed",String(selected));
+ });
+}
 async function loadBaranServiceCatalog(category,containerId,title,icon){
  const container=document.getElementById(containerId);
  if(!container||!currentUser)return;
