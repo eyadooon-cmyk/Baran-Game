@@ -1316,6 +1316,7 @@ footer{color:#9f91aa}
     <button id="adminNavButton" class="hidden" onclick="showSection('admin',this);loadAdminPanel()">لوحة الإدارة</button>
     <button id="staffPortalNavButton" class="hidden" onclick="openStaffPortal(this)">بوابة المشرفة</button>
     <button id="staffTasksNavButton" class="hidden" onclick="openStaffTasks(this)">🗂️ مهامي</button>
+    <button id="staffAssistantNavButton" class="hidden" onclick="openStaffAssistant(this)">🤖 مساعدتي الذكي</button>
   </nav>
   <div class="store-toolbar">
     <button class="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" onclick="toggleSideMenu()" id="menuToggle">☰</button>
@@ -1370,6 +1371,7 @@ footer{color:#9f91aa}
     <button class="drawer-link" data-section="settings" onclick="navigateDrawer('settings')"><span class="drawer-icon">⚙</span>الإعدادات</button>
     <button id="adminDrawerButton" class="drawer-link hidden" data-section="admin" onclick="navigateDrawer('admin')"><span class="drawer-icon">⌘</span><span>لوحة الإدارة</span><span class="admin-drawer-counts"><span id="adminDrawerOrdersCount" class="admin-drawer-count orders hidden">طلبات <b>0</b></span><span id="adminDrawerSupportCount" class="admin-drawer-count support hidden">دعم <b>0</b></span></span></button>
     <button id="staffTasksDrawerButton" class="drawer-link hidden" data-section="staffTasks" onclick="navigateDrawer('staffTasks')"><span class="drawer-icon">🗂️</span><span>مهامي المسندة</span></button>
+    <button id="staffAssistantDrawerButton" class="drawer-link hidden" data-section="staffAssistant" onclick="navigateDrawer('staffAssistant')"><span class="drawer-icon">🤖</span><span>مساعدتي الذكي</span></button>
     <div class="drawer-divider"></div>
     <a class="drawer-link" href="./terms.html" style="text-decoration:none"><span class="drawer-icon">▤</span>شروط الاستخدام</a>
     <a class="drawer-link" href="./privacy.html" style="text-decoration:none"><span class="drawer-icon">◇</span>سياسة الخصوصية</a>
@@ -2317,6 +2319,21 @@ footer{color:#9f91aa}
       <div id="staffTasksStatus" class="ops-list" role="status" aria-live="polite">جاري تحميل المهام...</div>
       <div id="staffTasksList" class="ops-list"></div>
     </section>
+    <section id="staffAssistant" class="hidden" dir="rtl">
+      <div class="admin-subpanel-head"><h2>🤖 مساعدتي الذكي</h2><button type="button" class="secondary" onclick="clearModeratorAssistantChat()">محادثة جديدة</button></div>
+      <p class="small">مساعد خاص بالمشرفة لتحليل مهامها وتذاكر الدعم وحالات الطلبات، وتقديم خطوات ومقترحات عملية. القراءة والتحليل فقط؛ لا يرسل ردوداً ولا يغيّر أي بيانات.</p>
+      <div class="ops-item" style="border-color:#665078;background:#17121d">
+        <strong>🔒 حدود الصلاحية</strong>
+        <p class="small">لا يصل إلى المحافظ أو الأرصدة أو الإيداعات أو الأرباح أو الأسعار أو التكاليف أو الموردين أو مفاتيح API أو إعدادات الأمان. أي قرار حساس يُرفع للمالك.</p>
+      </div>
+      <div id="moderatorAssistantMessages" class="ops-list" aria-live="polite" style="min-height:130px;max-height:48vh;overflow-y:auto">
+        <div class="ops-item">أهلاً! فيني أساعدك بتحليل مهامك، فهم مشكلة طلب، أو تجهيز مسودة رد دعم للمراجعة.</div>
+      </div>
+      <label for="moderatorAssistantInput">اكتبي سؤالك</label>
+      <textarea id="moderatorAssistantInput" rows="3" maxlength="1500" placeholder="مثلاً: اشرحلي مهمة اختبار رحلة العميل، شو الخطوات اللي لازم أعملها؟"></textarea>
+      <button id="moderatorAssistantSend" type="button" class="full" onclick="sendModeratorAssistantMessage()">إرسال السؤال للتحليل</button>
+      <div id="moderatorAssistantStatus" class="small" role="status" aria-live="polite"></div>
+    </section>
   </main>
 <button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="openBaranSupportAssistant()" aria-controls="aiAssistantPanel">💬 الدعم الفني</button>
   </div>
@@ -2681,6 +2698,7 @@ function showSection(id,button){
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
   if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
   if(id==="staffTasks"&&!baranStaffPortalAuthorized){alert("إدارة المهام غير متاحة قبل التحقق من صلاحية المشرفة.");return;}
+  if(id==="staffAssistant"&&!baranStaffPortalAuthorized){alert("مساعد المشرفة غير متاح قبل التحقق من الصلاحية.");return;}
   const target=document.getElementById(id);
   if(!target) return;
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
@@ -3700,6 +3718,53 @@ async function openStaffTasks(button){
   }
   showSection("staffTasks",button||document.getElementById("staffTasksNavButton"));
 }
+let moderatorAssistantHistory=[];
+function appendModeratorAssistantMessage(role,text){
+  const box=document.getElementById("moderatorAssistantMessages");if(!box)return null;
+  const item=staffPortalNode("div",null,"ops-item");
+  const heading=staffPortalNode("strong",role==="user"?"أنتِ":"مساعدتي الذكي");
+  const body=staffPortalNode("p",text);body.style.whiteSpace="pre-wrap";
+  item.append(heading,body);box.append(item);box.scrollTop=box.scrollHeight;return body;
+}
+function clearModeratorAssistantChat(){
+  moderatorAssistantHistory=[];
+  const box=document.getElementById("moderatorAssistantMessages");
+  if(box){box.replaceChildren();appendModeratorAssistantMessage("assistant","أهلاً! اسأليني عن مهامك أو تذاكر الدعم أو حالات الطلبات، وسأساعدك بالتحليل والاقتراحات فقط.");}
+  const status=document.getElementById("moderatorAssistantStatus");if(status)status.textContent="بدأت محادثة جديدة.";
+}
+async function sendModeratorAssistantMessage(){
+  if(!baranStaffPortalAuthorized){alert("مساعد المشرفة غير متاح لهذا الحساب.");return;}
+  const input=document.getElementById("moderatorAssistantInput");
+  const button=document.getElementById("moderatorAssistantSend");
+  const status=document.getElementById("moderatorAssistantStatus");
+  if(!input||!button||!status)return;
+  const message=input.value.trim();
+  if(message.length<2){status.textContent="اكتبي سؤالاً واضحاً أولاً.";return;}
+  if(message.length>1500){status.textContent="السؤال طويل؛ اختصريه إلى 1500 حرف.";return;}
+  const history=moderatorAssistantHistory.slice(-4);
+  appendModeratorAssistantMessage("user",message);
+  const pending=appendModeratorAssistantMessage("assistant","جاري تحليل السؤال وبيانات التشغيل المسموح بها...");
+  input.value="";button.disabled=true;status.textContent="جاري التحليل...";
+  try{
+    const {data,error}=await sb.functions.invoke("baran-moderator-assistant",{body:{message,history}});
+    if(error)throw error;
+    if(!data||typeof data.reply!=="string")throw new Error(data?.error||"تعذر الحصول على رد المساعد.");
+    if(pending)pending.textContent=data.reply;
+    moderatorAssistantHistory.push({role:"user",content:message},{role:"assistant",content:data.reply});
+    moderatorAssistantHistory=moderatorAssistantHistory.slice(-4);
+    status.textContent="تحليل للقراءة فقط — آخر تحديث للبيانات: "+new Date(data.data_updated_at||Date.now()).toLocaleTimeString("ar");
+  }catch(error){
+    if(pending)pending.textContent="تعذر التحليل: "+(error.message||"خطأ غير معروف");
+    status.textContent="لم يتم تنفيذ أي إجراء أو تعديل. يمكنك المحاولة لاحقاً.";
+  }finally{
+    button.disabled=false;input.focus();
+    const box=document.getElementById("moderatorAssistantMessages");if(box)box.scrollTop=box.scrollHeight;
+  }
+}
+async function openStaffAssistant(button){
+  if(!baranStaffPortalAuthorized){const ok=await loadStaffPortal();if(!ok)return;}
+  showSection("staffAssistant",button||document.getElementById("staffAssistantNavButton"));
+}
 async function openStaffPortal(button){
   if(!baranStaffPortalAuthorized){
     const ok=await loadStaffPortal();if(!ok)return;
@@ -3712,10 +3777,14 @@ async function checkAdminAccess(){
   const staffButton=document.getElementById("staffPortalNavButton");
   const staffTasksButton=document.getElementById("staffTasksNavButton");
   const staffTasksDrawerButton=document.getElementById("staffTasksDrawerButton");
+  const staffAssistantButton=document.getElementById("staffAssistantNavButton");
+  const staffAssistantDrawerButton=document.getElementById("staffAssistantDrawerButton");
   const drawerButton=document.getElementById("adminDrawerButton");
   if(staffButton)staffButton.classList.add("hidden");
   if(staffTasksButton)staffTasksButton.classList.add("hidden");
   if(staffTasksDrawerButton)staffTasksDrawerButton.classList.add("hidden");
+  if(staffAssistantButton)staffAssistantButton.classList.add("hidden");
+  if(staffAssistantDrawerButton)staffAssistantDrawerButton.classList.add("hidden");
   baranStaffPortalAuthorized=false;baranStaffPortalData=null;
   baranAdminPanelAuthorized=false;
   const walletAdminTransfers=document.getElementById("walletAdminTransfers");
@@ -3739,6 +3808,8 @@ async function checkAdminAccess(){
         if(staffButton)staffButton.classList.remove("hidden");
         if(staffTasksButton)staffTasksButton.classList.remove("hidden");
         if(staffTasksDrawerButton)staffTasksDrawerButton.classList.remove("hidden");
+        if(staffAssistantButton)staffAssistantButton.classList.remove("hidden");
+        if(staffAssistantDrawerButton)staffAssistantDrawerButton.classList.remove("hidden");
         return false;
       }
     }
