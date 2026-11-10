@@ -74,9 +74,9 @@
             throw new Error(offlineResult.error || "وصل OpenAI للحد المؤقت، وتعذر تجهيز التقرير الاحتياطي. لم يتم أي تعديل.");
           }
           if (pending) pending.remove();
-          const message = "⚠️ وضع Baran الاحتياطي المستقل (بدون OpenAI)\\n" +
+          const message = "⚠️ وضع Baran الاحتياطي المستقل (بدون OpenAI)\n" +
             offlineResult.reply +
-            (offlineResult.unavailable?.length ? "\\nأقسام لم تتوفر: " + offlineResult.unavailable.join("، ") : "");
+            (offlineResult.unavailable?.length ? "\nأقسام لم تتوفر: " + offlineResult.unavailable.join("، ") : "");
           addMessage(message, "bot");
           history.push({ role: "assistant", content: message });
           history = history.slice(-10);
@@ -88,7 +88,7 @@
       }
       if (!result.reply) throw new Error("وصل رد غير مكتمل من المساعد.");
       if (pending) pending.remove();
-      addMessage((result.sent ? "✅ تم إرسال الرد إلى صاحب التذكرة " + result.ticket_code + " ووصل إشعار داخل المتجر.\\n\\n" : "") + result.reply, "bot");
+      addMessage((result.sent ? "✅ تم إرسال الرد إلى صاحب التذكرة " + result.ticket_code + " ووصل إشعار داخل المتجر.\n\n" : "") + result.reply, "bot");
       history.push({ role: "assistant", content: result.reply });
       history = history.slice(-10);
       if (result.data_updated_at) {
