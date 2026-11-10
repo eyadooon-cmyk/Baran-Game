@@ -4430,3 +4430,35 @@ restoreSession();
 </script>
 </body>
 </html>
+
+
+/* OWNER WALLET MOBILE STACK FIX */
+.wallet-page#ownerWalletFinanceMount{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.wallet-page#ownerWalletFinanceMount > #walletExchangeAdminPanel,
+.wallet-page#ownerWalletFinanceMount > #ownerWalletFundingPanel,
+.wallet-page#ownerWalletFinanceMount > #ownerUsdSalePanel{
+  display:block;
+  float:none!important;
+  clear:both!important;
+  grid-column:1 / -1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  margin:16px 0!important;
+}
+.wallet-page#ownerWalletFinanceMount h2,
+.wallet-page#ownerWalletFinanceMount h3{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
