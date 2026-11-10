@@ -82,10 +82,20 @@ function render(tasks){
  tasksBox.querySelectorAll(".assign-task").forEach(button=>button.addEventListener("click",async()=>{
   if(busy)return;
   const card=button.closest(".task"),target=card.querySelector(".task-assignee").value;
-  if(!target){statusBox.textContent="اختَر مشرفة نشطة لإسناد المهمة.";return;}
-  if(!confirm("تأكيد إسناد المهمة («"+card.querySelector("h2").textContent+"») إلى المشرفة المحددة؟"))return;
-  busy=true;button.disabled=true;statusBox.textContent="جاري إسناد المهمة...";
-  try{await call({action:"assign_task",confirm:true,task_id:card.dataset.id,assigned_to:target});statusBox.textContent="تم إسناد المهمة وتسجيل العملية. عم حدّث الخطة...";await load();}
+  const taskCode=card.dataset.taskCode||"غير معروف",taskTitle=card.querySelector("h2").textContent.trim();
+  const currentAssignee=card.querySelector(".task-assignee").selectedOptions[0]?.textContent||"غير مسندة";
+  if(!target){
+   if(!card.querySelector(".task-assignee").value && currentAssignee==="غير مسندة"){statusBox.textContent="المهمة غير مسندة أصلاً.";return;}
+   if(!confirm("تأكيد إلغاء إسناد المهمة التالية فقط؟\\nرمز المهمة: "+taskCode+"\\nالعنوان: "+taskTitle+"\\nسيتم إزالة المشرفة من المهمة، مع إبقاء حالة المهمة وملاحظاتها كما هي."))return;
+  }else{
+   if(!confirm("تأكيد إسناد المهمة («"+taskTitle+"») إلى المشرفة المحددة؟"))return;
+  }
+  busy=true;button.disabled=true;statusBox.textContent=target?"جاري إسناد المهمة "+taskCode+"...":"جاري إلغاء إسناد المهمة "+taskCode+"...";
+  try{
+   await call({action:"assign_task",confirm:true,task_id:card.dataset.id,assigned_to:target||null});
+   statusBox.textContent=target?"تم إسناد "+taskCode+" وتسجيل العملية. عم حدّث الخطة...":"تم إلغاء إسناد "+taskCode+" مع إبقاء حالتها كما هي. عم حدّث الخطة...";
+   await load();
+  }
   catch(error){statusBox.textContent=error.message;}
   finally{busy=false;button.disabled=false;}
  }));
