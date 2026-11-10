@@ -1369,6 +1369,7 @@ footer{color:#9f91aa}
     <button class="drawer-link" data-section="support" onclick="navigateDrawer('support')"><span class="drawer-icon">◉</span>التقييمات والاقتراحات والدعم</button>
     <button class="drawer-link" data-section="settings" onclick="navigateDrawer('settings')"><span class="drawer-icon">⚙</span>الإعدادات</button>
     <button id="adminDrawerButton" class="drawer-link hidden" data-section="admin" onclick="navigateDrawer('admin')"><span class="drawer-icon">⌘</span><span>لوحة الإدارة</span><span class="admin-drawer-counts"><span id="adminDrawerOrdersCount" class="admin-drawer-count orders hidden">طلبات <b>0</b></span><span id="adminDrawerSupportCount" class="admin-drawer-count support hidden">دعم <b>0</b></span></span></button>
+    <button id="staffTasksDrawerButton" class="drawer-link hidden" data-section="staffTasks" onclick="navigateDrawer('staffTasks')"><span class="drawer-icon">🗂️</span><span>مهامي المسندة</span></button>
     <div class="drawer-divider"></div>
     <a class="drawer-link" href="./terms.html" style="text-decoration:none"><span class="drawer-icon">▤</span>شروط الاستخدام</a>
     <a class="drawer-link" href="./privacy.html" style="text-decoration:none"><span class="drawer-icon">◇</span>سياسة الخصوصية</a>
@@ -3632,6 +3633,7 @@ async function loadStaffPortal(){
     if(status)status.textContent="تعذر فتح بوابة المشرفة: "+(error.message||"تحقق من تسجيل الدخول والصلاحيات.");
     const button=document.getElementById("staffPortalNavButton");if(button)button.classList.add("hidden");
     const tasksButton=document.getElementById("staffTasksNavButton");if(tasksButton)tasksButton.classList.add("hidden");
+    const tasksDrawerButton=document.getElementById("staffTasksDrawerButton");if(tasksDrawerButton)tasksDrawerButton.classList.add("hidden");
     return false;
   }
 }
@@ -3709,9 +3711,11 @@ async function checkAdminAccess(){
   const navButton=document.getElementById("adminNavButton");
   const staffButton=document.getElementById("staffPortalNavButton");
   const staffTasksButton=document.getElementById("staffTasksNavButton");
+  const staffTasksDrawerButton=document.getElementById("staffTasksDrawerButton");
   const drawerButton=document.getElementById("adminDrawerButton");
   if(staffButton)staffButton.classList.add("hidden");
   if(staffTasksButton)staffTasksButton.classList.add("hidden");
+  if(staffTasksDrawerButton)staffTasksDrawerButton.classList.add("hidden");
   baranStaffPortalAuthorized=false;baranStaffPortalData=null;
   baranAdminPanelAuthorized=false;
   const walletAdminTransfers=document.getElementById("walletAdminTransfers");
@@ -3734,6 +3738,7 @@ async function checkAdminAccess(){
         baranStaffPortalAuthorized=true;baranStaffPortalData=data;renderStaffPortal();
         if(staffButton)staffButton.classList.remove("hidden");
         if(staffTasksButton)staffTasksButton.classList.remove("hidden");
+        if(staffTasksDrawerButton)staffTasksDrawerButton.classList.remove("hidden");
         return false;
       }
     }
