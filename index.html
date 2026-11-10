@@ -1389,6 +1389,13 @@ footer{color:#9f91aa}
 @media(min-width:560px){.baran-service-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:360px){.baran-service-product{padding:10px}.baran-service-product strong{font-size:12px}}
 </style>
+<style id="baran-service-selection-preview-style">
+.baran-service-select-button{width:100%;margin-top:10px;padding:11px 13px;border:1px solid #a879c9;border-radius:11px;background:linear-gradient(120deg,#a56bd6,#75439b);color:#160d20;font-weight:900;cursor:pointer}
+.baran-service-select-button:disabled{opacity:.45;cursor:not-allowed}
+.baran-service-select-button[aria-pressed="true"]{background:#352342;color:#f0dafa;border-color:#d6a7f4}
+.baran-service-selection-preview{margin-top:16px;padding:15px;border:1px solid #a879c9;border-radius:14px;background:linear-gradient(145deg,#2b1d38,#15101d);color:#f5eafa;line-height:1.8}
+.baran-service-selection-preview p{margin:7px 0}
+</style>
 </head>
 <body>
 
@@ -5126,6 +5133,7 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    if(price.textContent==="السعر قيد التجهيز"){
     const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="بانتظار اعتماد السعر";card.append(status);
    }
+   const choose=document.createElement("button");choose.type="button";choose.className="baran-service-select-button";choose.textContent="اختيار للمراجعة";choose.dataset.serviceProductId=String(product.id||"");choose.setAttribute("aria-pressed","false");choose.disabled=price.textContent==="السعر قيد التجهيز"||!product.id;choose.addEventListener("click",()=>baranShowServiceSelection(product,category,containerId));card.append(choose);
    grid.append(card);
   });
   container.append(intro,grid);
