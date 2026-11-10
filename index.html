@@ -5159,7 +5159,11 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    .eq("category",category).eq("is_active",true).order("sort_order",{ascending:true});
   if(error)throw error;
   container.replaceChildren(heading);
-  const products=Array.isArray(data)?data:[];
+  let products=Array.isArray(data)?data:[];
+  // Hide generic ChatGPT Plus when the specific monthly package exists.
+  if(category==="ai"&&products.some(p=>p.product_code==="CHATGPT_PLUS_1_MONTH")){
+   products=products.filter(p=>p.product_code!=="CHATGPT_PLUS");
+  }
   if(!products.length){
    const empty=document.createElement("div");empty.className="baran-catalog-empty";
    empty.textContent="لا توجد منتجات مفعّلة في هذا القسم حالياً. ستظهر المنتجات هنا بعد اعتمادها وإضافة أسعارها.";
