@@ -1149,6 +1149,37 @@ footer{color:#9f91aa}
   [data-admin-panel="users"] .customer-detail-row strong{flex:1 1 55%;text-align:left}
 }
 @media(max-width:520px){.customer-directory-stats{grid-template-columns:1fr}.customer-stat-card{padding:11px}.customer-stat-icon{width:39px;height:39px;flex-basis:39px}.customer-directory-toggle{gap:8px;padding:12px}.customer-directory-avatar{width:39px;height:39px;flex-basis:39px}.customer-directory-balance{font-size:11px;padding:5px 6px}.customer-detail-row{font-size:11px}}
+/* OWNER WALLET MOBILE STACK FIX */
+.wallet-page#ownerWalletFinanceMount{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+.wallet-page#ownerWalletFinanceMount > #walletExchangeAdminPanel,
+.wallet-page#ownerWalletFinanceMount > #ownerWalletFundingPanel,
+.wallet-page#ownerWalletFinanceMount > #ownerUsdSalePanel{
+  display:block;
+  float:none!important;
+  clear:both!important;
+  grid-column:1 / -1!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  margin:16px 0!important;
+}
+.wallet-page#ownerWalletFinanceMount h2,
+.wallet-page#ownerWalletFinanceMount h3{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+
 </style>
 
 </head>
@@ -4430,35 +4461,3 @@ restoreSession();
 </script>
 </body>
 </html>
-
-
-/* OWNER WALLET MOBILE STACK FIX */
-.wallet-page#ownerWalletFinanceMount{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-}
-.wallet-page#ownerWalletFinanceMount > #walletExchangeAdminPanel,
-.wallet-page#ownerWalletFinanceMount > #ownerWalletFundingPanel,
-.wallet-page#ownerWalletFinanceMount > #ownerUsdSalePanel{
-  display:block;
-  float:none!important;
-  clear:both!important;
-  grid-column:1 / -1!important;
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-  box-sizing:border-box!important;
-  margin:16px 0!important;
-}
-.wallet-page#ownerWalletFinanceMount h2,
-.wallet-page#ownerWalletFinanceMount h3{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-  white-space:normal!important;
-  overflow-wrap:anywhere!important;
-  word-break:normal!important;
-}
