@@ -897,6 +897,19 @@ footer{color:#9f91aa}
 [data-admin-panel="overview"] #baranAdminAssistant{border-color:#70568a!important}
 [data-admin-panel="overview"] .deposit-card{border-radius:15px}
 @media(max-width:520px){.overview-welcome{align-items:flex-start;flex-direction:column}.overview-welcome h3{font-size:20px}.overview-live{align-self:flex-start}[data-admin-panel="overview"]>#opsStats{grid-template-columns:repeat(2,minmax(0,1fr))}[data-admin-panel="overview"]>#opsStats .ops-card{padding:11px;min-height:82px}}
+
+/* تنظيم لوحة الإدارة إلى مجموعات واضحة للهاتف والكمبيوتر */
+.admin-hub-groups{display:grid;gap:16px}
+.admin-hub-group{padding:13px;border:1px solid #40334b;border-radius:17px;background:linear-gradient(155deg,#17121e,#100d15);box-shadow:0 7px 20px #0003}
+.admin-hub-group-title{display:flex;align-items:center;gap:11px;margin:0 0 12px;padding:2px 3px 11px;border-bottom:1px solid #40334b}
+.admin-hub-group-title>span{display:grid;place-items:center;flex:0 0 36px;height:36px;border:1px solid #72558b;border-radius:11px;background:#2b2036;color:#e2c8f7;font-weight:900;font-size:12px}
+.admin-hub-group-title strong{display:block;color:#e8d9f4;font-size:15px}
+.admin-hub-group-title small{display:block;margin-top:3px;color:#a99ab5;font-size:11px;line-height:1.6}
+.admin-hub-group .admin-hub-grid{gap:9px}
+.admin-hub-group .admin-hub-card{min-height:132px;padding:13px}
+.admin-hub-card-primary{border-color:#9870b4;background:linear-gradient(145deg,#352443,#1b1424)}
+.admin-hub-card-sensitive{border-color:#6b5362}
+@media(max-width:380px){.admin-hub-group{padding:10px}.admin-hub-group .admin-hub-card{min-height:120px;padding:11px}.admin-hub-group .admin-hub-grid{grid-template-columns:1fr}}
 </style>
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
@@ -1453,18 +1466,33 @@ footer{color:#9f91aa}
       <h2>لوحة الإدارة 🔐</h2>
       <div id="adminHub" class="admin-hub">
         <div class="admin-hub-intro"><strong>مركز إدارة Baran Game</strong><p class="small">اختر القسم الذي تريد العمل عليه. كل قسم يفتح وحده حتى تبقى الشاشة مرتبة وواضحة على الهاتف.</p></div>
-        <div class="admin-hub-grid">
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المساعد الذكي، المراقبة والإعلانات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>التذاكر المالية</strong><small>الحالات المالية التي تحتاج مراجعتك.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>إدارة المستخدمين</strong><small>عرض حسابات المستخدمين ومعلوماتهم.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والأسعار</strong><small>إدارة الموردين وربط المنتجات والتكاليف.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('loyalty')"><span class="admin-hub-icon">🎁</span><strong>نقاط الولاء</strong><small>إضافة النقاط أو خصمها مع تسجيل السبب.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('security')"><span class="admin-hub-icon">🛡️</span><strong>الأمان والإيداعات</strong><small>سجل الإدارة والتنبيهات وطلبات الشحن.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>التحقق من ملكية الحساب قبل الاستعادة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>الدعم والردود الآلية</strong><small>التذاكر والردود الآلية وآراء العملاء.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button type="button" class="admin-hub-card" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>الحسابات المالية</strong><small>الأرباح ورأس المال والمصاريف والحركات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-          <button id="ownerWalletFinanceCard" type="button" class="admin-hub-card hidden" onclick="showAdminPanel('wallet-finance')"><span class="admin-hub-icon">💳</span><strong>محفظة المالك</strong><small>أرصدة المالك وأسعار الصرف وطلبات الشحن والتحويلات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+        <div class="admin-hub-groups">
+          <section class="admin-hub-group">
+            <div class="admin-hub-group-title"><span>01</span><div><strong>مركز التشغيل</strong><small>ابدأ من هنا لمتابعة المتجر وتجهيز الطلبات.</small></div></div>
+            <div class="admin-hub-grid">
+              <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المراقبة ومساعد الإدارة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والمنتجات</strong><small>الموردون والربط والأسعار والتكاليف.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+            </div>
+          </section>
+          <section class="admin-hub-group">
+            <div class="admin-hub-group-title"><span>02</span><div><strong>الزبائن والدعم</strong><small>الحسابات والتذاكر وخدمة العملاء.</small></div></div>
+            <div class="admin-hub-grid">
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>إدارة المستخدمين</strong><small>حسابات الزبائن ومحافظهم للمتابعة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>الدعم والردود الآلية</strong><small>الردود التلقائية والتذاكر ورسائل الزبائن.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('loyalty')"><span class="admin-hub-icon">🎁</span><strong>نقاط الولاء</strong><small>متابعة النقاط وسجل المكافآت.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>التحقق من الملكية قبل الاستعادة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+            </div>
+          </section>
+          <section class="admin-hub-group">
+            <div class="admin-hub-group-title"><span>03</span><div><strong>المالية والحماية</strong><small>الأموال والإيداعات وسجلات الأمان — انتبه قبل أي إجراء.</small></div></div>
+            <div class="admin-hub-grid">
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>الحسابات المالية</strong><small>الأرباح ورأس المال والمصاريف والحركات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card admin-hub-card-sensitive" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>التذاكر المالية</strong><small>حالات الحوالات والأرصدة التي تحتاج مراجعتك.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card admin-hub-card-sensitive" onclick="showAdminPanel('security')"><span class="admin-hub-icon">🛡️</span><strong>الأمان والإيداعات</strong><small>طلبات الشحن وسجل الإدارة والتنبيهات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button id="ownerWalletFinanceCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" onclick="showAdminPanel('wallet-finance')"><span class="admin-hub-icon">💳</span><strong>محفظة المالك</strong><small>أرصدة المالك والتحويلات وطلبات التمويل.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+            </div>
+          </section>
         </div>
       </div>
 
