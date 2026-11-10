@@ -1712,6 +1712,12 @@ footer{color:#9f91aa}
 <div><span aria-hidden="true">✓</span><strong>مراجعة آمنة</strong><small>قبل إضافة الرصيد</small></div>
 <div><span aria-hidden="true">⌁</span><strong>شفافية</strong><small>حالة طلبك واضحة</small></div>
 </div>
+      <section class="wallet-activity-panel" aria-labelledby="walletLedgerTitle">
+        <div class="wallet-activity-heading"><div><span class="wallet-activity-kicker">ACCOUNT LEDGER</span><h2 id="walletLedgerTitle">سجل حركة المحفظة</h2><p>الإيداعات والخصومات والمشتريات والاستردادات المسجلة فعلياً.</p></div>
+        <button type="button" class="wallet-history-refresh" onclick="loadWalletTransactions()" aria-label="تحديث سجل حركة المحفظة">↻ تحديث</button></div>
+        <div id="walletTransactionHistory" class="wallet-deposit-history" aria-live="polite">جاري تحميل حركة المحفظة...</div>
+        <p class="wallet-history-note">يعرض العمليات المسجلة فقط، ولا ينشئ حركات أو يغيّر الرصيد.</p>
+      </section>
       <section class="wallet-activity-panel" aria-labelledby="walletActivityTitle">
         <div class="wallet-activity-heading">
           <div><span class="wallet-activity-kicker">WALLET ACTIVITY</span><h2 id="walletActivityTitle">سجل طلبات شحن المحفظة</h2><p>تابع طلبات الإيداع وحالة مراجعتها من مكان واحد.</p></div>
@@ -3481,7 +3487,26 @@ async function loadDepositRequests(){
   }catch(error){
     container.textContent="تعذر تحميل الطلبات: "+error.message;
   }
+  void loadWalletTransactions();
 }
+
+async function loadWalletTransactions(){
+ const box=document.getElementById("walletTransactionHistory");if(!box||!currentUser)return;box.textContent="جاري تحميل سجل الحركة...";
+ try{
+  const {data:{user},error:userError}=await sb.auth.getUser();if(userError||!user)throw new Error("انتهت الجلسة.");
+  const {data,error}=await sb.from("wallet_transactions").select("id,amount,currency,transaction_type,description,created_at,order_id,deposit_request_id").eq("user_id",user.id).order("created_at",{ascending:false}).limit(100);
+  if(error)throw error;box.replaceChildren();
+  if(!data?.length){const e=document.createElement("div");e.className="wallet-history-empty";e.innerHTML='<span>◈</span><strong>لا توجد حركات مسجلة بعد</strong><small>ستظهر هنا العمليات عندما تسجلها أنظمة المتجر.</small>';box.appendChild(e);return;}
+  const labels={deposit:"إيداع رصيد",purchase:"شراء",order:"شراء طلب",refund:"استرداد",withdrawal:"سحب رصيد",owner_usd_sale_out:"تسوية بيع دولار",adjustment:"تسوية رصيد"};
+  for(const item of data){const row=document.createElement("article");row.className="wallet-deposit-item";const top=document.createElement("div");top.className="wallet-deposit-top";
+   const title=document.createElement("strong");title.textContent=labels[item.transaction_type]||String(item.transaction_type||"حركة محفظة");
+   const amount=document.createElement("strong");amount.className="wallet-deposit-amount";const v=Number(item.amount||0);amount.textContent=(v>0?"+":"")+v.toLocaleString("en-US",{maximumFractionDigits:2})+" "+String(item.currency||"");amount.style.color=v<0?"#ff9292":"#a9e8bd";top.append(title,amount);
+   const meta=document.createElement("div");meta.className="wallet-deposit-meta";const desc=document.createElement("span");desc.textContent=item.description||"لا يوجد وصف";const date=document.createElement("time");date.dateTime=item.created_at||"";date.textContent=item.created_at?new Date(item.created_at).toLocaleString("ar"):"—";meta.append(desc,date);row.append(top,meta);
+   if(item.order_id||item.deposit_request_id){const ref=document.createElement("small");ref.textContent=item.order_id?"رقم الطلب: "+item.order_id:"رقم طلب الإيداع: "+item.deposit_request_id;row.appendChild(ref);}box.appendChild(row);
+  }
+ }catch(error){box.textContent="تعذر تحميل سجل الحركة: "+(error.message||"خطأ غير معروف");}
+}
+
 
 
 let walletExchangeRates={syp_to_usd_rate:14400,usd_to_syp_rate:14400};
