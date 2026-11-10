@@ -1290,6 +1290,60 @@ footer{color:#9f91aa}
 .game-availability-note{padding:10px;border-radius:10px;background:#2a2018;color:#e9c99b;line-height:1.8}
 @media(min-width:560px){.game-package-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
+<style id="baran-home-all-store-upgrade">
+.baran-promo-carousel{position:relative;min-height:176px;margin:16px 0 18px;overflow:hidden;border:1px solid #76518f;border-radius:19px;background:linear-gradient(120deg,#352044,#17111f 75%);box-shadow:0 12px 26px #0005}
+.baran-promo-slide{display:none;align-items:center;justify-content:space-between;gap:12px;min-height:176px;padding:19px 18px 38px;box-sizing:border-box;background:radial-gradient(circle at 88% 20%,#b77ce833,transparent 35%)}
+.baran-promo-slide.is-active{display:flex;animation:baranPromoIn .45s ease}
+.baran-promo-copy{position:relative;z-index:1;max-width:75%}
+.baran-promo-copy>span{font-size:9px;font-weight:900;letter-spacing:1.4px;color:#d6b2ef}
+.baran-promo-copy h3{margin:8px 0 5px;font-size:19px;line-height:1.5;color:#fff}
+.baran-promo-copy p{margin:0 0 12px;font-size:11px;line-height:1.8;color:#d0bfdc}
+.baran-promo-copy button{padding:9px 13px;border:1px solid #b58bd0;border-radius:10px;background:#a56bd6;color:#1a1022;font-size:11px;font-weight:900}
+.baran-promo-art{display:grid;place-items:center;flex:0 0 76px;width:76px;height:76px;border:1px solid #b98cdb66;border-radius:24px;background:#a56bd626;font-size:43px;box-shadow:0 0 35px #a56bd633}
+.baran-promo-dots{position:absolute;bottom:12px;right:18px;display:flex;gap:6px}
+.baran-promo-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:#80698e}
+.baran-promo-dots button.is-active{width:22px;border-radius:8px;background:#d7b2f0}
+.home-feature-section,.home-todays-offers{margin:18px 0}
+.home-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.home-feature-card{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;padding:13px;text-align:right;border:1px solid #574267;border-radius:15px;background:linear-gradient(145deg,#241a30,#15101c);color:#f4eafa}
+.home-feature-card>span{display:grid;place-items:center;width:37px;height:37px;margin-bottom:3px;border-radius:11px;background:#a56bd626;font-size:20px}
+.home-feature-card strong{font-size:13px;color:#f0e5f8}
+.home-feature-card small{font-size:10px;color:#bba9ca;line-height:1.6}
+.home-feature-card em{margin-top:4px;color:#d3a9f0;font-size:10px;font-style:normal;font-weight:900}
+.home-offer-empty{display:flex;align-items:center;gap:12px;padding:15px;border:1px dashed #76518f;border-radius:15px;background:linear-gradient(120deg,#241a30,#17121f)}
+.home-offer-empty>span{display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:13px;background:#a56bd626;font-size:23px}
+.home-offer-empty strong{font-size:12px;color:#eadcf5}
+.home-offer-empty p{margin:4px 0 0;font-size:10px;line-height:1.8;color:#bba9ca}
+.home-feature-card,.baran-promo-copy button{cursor:pointer;transition:transform .18s ease,border-color .18s ease}
+.home-feature-card:active,.baran-promo-copy button:active{transform:scale(.98)}
+@keyframes baranPromoIn{from{opacity:.45;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.baran-promo-slide.is-active{animation:none}}
+@media(min-width:650px){.home-feature-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.baran-promo-slide{padding-right:28px;padding-left:28px}.baran-promo-art{width:96px;height:96px;flex-basis:96px;font-size:52px}}
+@media(max-width:360px){.baran-promo-copy h3{font-size:16px}.baran-promo-art{width:58px;height:58px;flex-basis:58px;font-size:32px}.baran-promo-slide{padding-right:12px;padding-left:12px}}
+</style>
+<script id="baran-home-promo-rotation">
+(function(){
+ const root=document.getElementById('baranPromoCarousel');
+ if(!root||root.dataset.rotationReady==='1')return;
+ root.dataset.rotationReady='1';
+ const slides=Array.from(root.querySelectorAll('[data-promo-slide]'));
+ const dots=Array.from(root.querySelectorAll('[data-promo-dot]'));
+ if(slides.length<2)return;
+ let active=0,timer=null;
+ function show(index){
+  active=(index+slides.length)%slides.length;
+  slides.forEach((el,i)=>el.classList.toggle('is-active',i===active));
+  dots.forEach((el,i)=>el.classList.toggle('is-active',i===active));
+ }
+ function start(){if(timer)clearInterval(timer);timer=setInterval(()=>show(active+1),5000);}
+ dots.forEach((dot,i)=>dot.addEventListener('click',()=>{show(i);start();}));
+ root.addEventListener('mouseenter',()=>{if(timer)clearInterval(timer);});
+ root.addEventListener('mouseleave',start);
+ root.addEventListener('touchstart',()=>{if(timer)clearInterval(timer);},{passive:true});
+ root.addEventListener('touchend',start,{passive:true});
+ show(0);start();
+})();
+</script>
 </head>
 <body>
 
@@ -1450,20 +1504,47 @@ footer{color:#9f91aa}
         <div id="storeSearchResults" class="store-search-results" aria-live="polite"></div>
       </div>
       <div class="home-welcome">
-        <span class="home-welcome-kicker">✦ BARAN GAME · DIGITAL STORE</span>
-        <h2>كل اللي بتحبه… صار أقرب 🎮</h2>
-        <p>اختار لعبتك أو خدمتك، حدّد الباقة، وراجع طلبك بخطوات واضحة. وإذا احتجت مساعدة، فريق Baran معك.</p>
+        <span class="home-welcome-kicker">✦ BARAN GAME · ALL YOUR DIGITAL NEEDS</span>
+        <h2>كل ألعابك وخدماتك الرقمية بمكان واحد</h2>
+        <p>ألعاب، اشتراكات، بطاقات رقمية وتطبيقات — اختار القسم المناسب ووصل لمنتجك بسهولة.</p>
         <div class="home-welcome-actions">
-          <button type="button" class="home-cta-primary" onclick="showSection('games',null)">ابدأ الشحن الآن <span aria-hidden="true">←</span></button>
-          <button type="button" class="home-cta-secondary" onclick="showSection('services',null)">استكشف الخدمات</button>
+          <button type="button" class="home-cta-primary" onclick="showSection('games',null)">تصفح الألعاب <span aria-hidden="true">←</span></button>
+          <button type="button" class="home-cta-secondary" onclick="showSection('services',null)">تصفح كل الخدمات</button>
         </div>
       </div>
-      <div class="home-shortcuts" aria-label="اختصارات سريعة">
-        <button class="home-shortcut" type="button" onclick="showSection('games',null)"><span class="home-shortcut-icon">🎮</span><span class="home-shortcut-copy"><strong>اشحن لعبة</strong><small>PUBG وFree Fire</small></span></button>
-        <button class="home-shortcut" type="button" onclick="showSection('services',null)"><span class="home-shortcut-icon">✦</span><span class="home-shortcut-copy"><strong>الخدمات الرقمية</strong><small>اشتراكات وبطاقات</small></span></button>
-        <button class="home-shortcut" type="button" onclick="showSection('wallet',null)"><span class="home-shortcut-icon">👛</span><span class="home-shortcut-copy"><strong>اشحن محفظتك</strong><small>الدولار والليرة</small></span></button>
-        <button class="home-shortcut" type="button" onclick="showSection('orders',null)"><span class="home-shortcut-icon">📦</span><span class="home-shortcut-copy"><strong>تابع طلبك</strong><small>اعرف حالة الشحن</small></span></button>
+      <div class="baran-promo-carousel" id="baranPromoCarousel" aria-label="عروض وأقسام Baran Game">
+        <article class="baran-promo-slide is-active" data-promo-slide>
+          <div class="baran-promo-copy"><span>BARAN GAMING</span><h3>عالم الألعاب بانتظارك</h3><p>PUBG MOBILE وFree Fire والمزيد من الألعاب.</p><button type="button" onclick="showSection('games',null)">اكتشف الألعاب ←</button></div><div class="baran-promo-art" aria-hidden="true">🎮</div>
+        </article>
+        <article class="baran-promo-slide" data-promo-slide>
+          <div class="baran-promo-copy"><span>DIGITAL SUBSCRIPTIONS</span><h3>خدمات رقمية لحياتك اليومية</h3><p>ذكاء اصطناعي وVPN وتطبيقات واشتراكات.</p><button type="button" onclick="showSection('services',null)">اكتشف الخدمات ←</button></div><div class="baran-promo-art" aria-hidden="true">✦</div>
+        </article>
+        <article class="baran-promo-slide" data-promo-slide>
+          <div class="baran-promo-copy"><span>DIGITAL GIFT CARDS</span><h3>بطاقاتك الرقمية بمكان واحد</h3><p>تصفح Google Play والبطاقات الرقمية المتاحة.</p><button type="button" onclick="showSection('giftCardsStore',null)">تصفح البطاقات ←</button></div><div class="baran-promo-art" aria-hidden="true">🎁</div>
+        </article>
+        <div class="baran-promo-dots" aria-label="التنقل بين الشرائح"><button type="button" class="is-active" data-promo-dot aria-label="العرض الأول"></button><button type="button" data-promo-dot aria-label="العرض الثاني"></button><button type="button" data-promo-dot aria-label="العرض الثالث"></button></div>
       </div>
+      <div class="home-shortcuts" aria-label="وصول سريع لكل الأقسام">
+        <button class="home-shortcut" type="button" onclick="showSection('games',null)"><span class="home-shortcut-icon">🎮</span><span class="home-shortcut-copy"><strong>الألعاب</strong><small>شحن وباقات الألعاب</small></span></button>
+        <button class="home-shortcut" type="button" onclick="showSection('services',null)"><span class="home-shortcut-icon">✦</span><span class="home-shortcut-copy"><strong>الاشتراكات والخدمات</strong><small>AI وVPN وتطبيقات</small></span></button>
+        <button class="home-shortcut" type="button" onclick="showSection('giftCardsStore',null)"><span class="home-shortcut-icon">🎁</span><span class="home-shortcut-copy"><strong>البطاقات الرقمية</strong><small>بطاقات الهدايا</small></span></button>
+        <button class="home-shortcut" type="button" onclick="showSection('mobileTopup',null)"><span class="home-shortcut-icon">📱</span><span class="home-shortcut-copy"><strong>شحن الهاتف</strong><small>سيريتل وMTN</small></span></button>
+        <button class="home-shortcut" type="button" onclick="showSection('orders',null)"><span class="home-shortcut-icon">📦</span><span class="home-shortcut-copy"><strong>طلباتي</strong><small>تابع حالة طلبك</small></span></button>
+        <button class="home-shortcut" type="button" onclick="showSection('wallet',null)"><span class="home-shortcut-icon">👛</span><span class="home-shortcut-copy"><strong>المحفظة</strong><small>رصيدك وحركاتك</small></span></button>
+      </div>
+      <section class="home-feature-section" aria-labelledby="baranPopularTitle">
+        <div class="home-categories-heading"><h2 id="baranPopularTitle">الأكثر استكشافاً</h2><span>من مختلف أقسام المتجر</span></div>
+        <div class="home-feature-grid">
+          <button type="button" class="home-feature-card" onclick="showSection('games',null)"><span>🎮</span><strong>الألعاب</strong><small>PUBG MOBILE وFree Fire</small><em>تصفح القسم ←</em></button>
+          <button type="button" class="home-feature-card" onclick="showSection('chatgptStore',null)"><span>🤖</span><strong>الذكاء الاصطناعي</strong><small>اشتراكات AI</small><em>تصفح القسم ←</em></button>
+          <button type="button" class="home-feature-card" onclick="showSection('vpnStore',null)"><span>🛡️</span><strong>اشتراكات VPN</strong><small>خدمات VPN</small><em>تصفح القسم ←</em></button>
+          <button type="button" class="home-feature-card" onclick="showSection('giftCardsStore',null)"><span>🎁</span><strong>البطاقات الرقمية</strong><small>Google Play وغيرها</small><em>تصفح القسم ←</em></button>
+        </div>
+      </section>
+      <section class="home-todays-offers" aria-labelledby="baranOffersTitle">
+        <div class="home-categories-heading"><h2 id="baranOffersTitle">عروض اليوم ✨</h2><span>العروض المعتمدة فقط</span></div>
+        <div class="home-offer-empty"><span>🎉</span><div><strong>ترقّب عروض Baran القادمة</strong><p>رح تظهر هون الخصومات والباقات الخاصة فور اعتمادها، مع السعر قبل وبعد الخصم.</p></div></div>
+      </section>
       <div class="home-order-steps" aria-label="خطوات الطلب">
         <div class="home-order-steps-heading"><strong>كيف تطلب من Baran؟</strong><span>3 خطوات بسيطة</span></div>
         <div class="home-order-steps-grid">
