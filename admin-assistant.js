@@ -41,6 +41,11 @@
       const { data: sessionData, error: sessionError } = await sb.auth.getSession();
       const session = sessionData?.session;
       if (sessionError || !session) throw new Error("انتهت جلسة الدخول. سجّل دخولك من جديد.");
+      if (isLikelyAdminAction(clean)) {
+        if (pending) pending.remove();
+        await handleMainChatAction(clean);
+        return;
+      }
       const response = await fetch(SUPABASE_URL + "/functions/v1/baran-admin-assistant", {
         method: "POST",
         headers: {
@@ -175,6 +180,43 @@
     try { result = await response.json(); } catch (_) {}
     if (!response.ok) throw new Error(result.error || "تعذر تنفيذ طلب الإدارة الآمن.");
     return result;
+  }
+  function isLikelyAdminAction(command) {
+    return /(?:ضيف|أضف|اضف|نضيف|أضيف|انشئ|أنشئ|إنشاء|اضافة|إضافة|سجّل|سجل|عدّل|عدل|نعدل|غيّر|غير|اربط|نربط|فعّل|فعل|نفعّل|عطّل|عطل|اعتمد|ارفض|أغلق|اغلق|افتح|انشر|حدّث|حدث|اجعل|حوّل|حول|حط|بدّل|بدل|اكتب ملاحظة|ضيف ملاحظة|سجل ملاحظة|نفّذ|نفذ|تفعيل|تعطيل|نشر مسودة|تعديل سعر|تعديل منتج|تغيير حالة)/i.test(command) ||
+      /(?:بدي|اريد|أريد|خلينا|ممكن)\s+.{0,35}(?:إضافة|اضافة|إنشاء|انشاء|تعديل|ربط|تفعيل|تعطيل|نشر|اعتماد|رفض)/i.test(command);
+  }
+  async function handleMainChatAction(command) {
+    const card = addMessage("🛠️ عم حضّر معاينة المهمة من نفس المحادثة…", "bot");
+    try {
+      const planned = await callSafeAction({mode:"plan",command});
+      const p = planned?.proposal;
+      if (!p) { if (card) card.textContent = planned?.error || "ما قدرت أجهّز معاينة آمنة. ما تم تغيير أي بيانات."; return; }
+      const labels = {product:"تعديل منتج",product_create:"إنشاء منتج",supplier:"تعديل مورد",supplier_create:"إضافة مورد",supplier_product:"تعديل ربط مورد ومنتج",supplier_product_create:"إنشاء ربط مورد ومنتج",ticket:"تحديث تذكرة",review:"تحديث تقييم",order_status:"تحديث حالة طلب",announcement_create:"إنشاء مسودة إعلان",announcement_publish:"نشر إعلان",fulfillment_note:"تعديل ملاحظة تنفيذ",supplier_product_note:"تعديل ملاحظة ربط"};
+      const details = JSON.stringify({العنصر:p.target_name||p.target_key,السبب:p.reason,قبل:p.before,التغييرات:p.changes,تنبيه:planned.notice||""},null,2);
+      if (planned.auto_execute === true) {
+        const done = await callSafeAction({mode:"execute",confirm:true,proposal:p});
+        const message = "✅ " + (done.message || "تم تنفيذ المهمة وتسجيلها.") + "\n" + (done.notice || "");
+        if (card) card.textContent = message;
+        history.push({role:"assistant",content:message}); history=history.slice(-10); return;
+      }
+      if (card) {
+        card.textContent = "📋 معاينة: " + (labels[p.target_type] || "مهمة إدارية") + "\n" + details + "\n\nراجع التفاصيل قبل التأكيد. لم يتم تنفيذ أي تغيير بعد.";
+        card.style.whiteSpace="pre-wrap";card.style.padding="12px";card.style.border="1px solid #8b6ab0";card.style.borderRadius="12px";
+      }
+      const actions=document.createElement("div");actions.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px";
+      const confirm=document.createElement("button");confirm.type="button";confirm.textContent="✅ تأكيد التنفيذ";confirm.style.cssText="padding:9px 14px;border:0;border-radius:9px;background:#6d3ca0;color:#fff;font-weight:600";
+      const cancel=document.createElement("button");cancel.type="button";cancel.textContent="إلغاء";cancel.style.cssText="padding:9px 14px;border:1px solid #888;border-radius:9px;background:transparent;color:inherit";
+      actions.append(confirm,cancel);card.appendChild(actions);
+      confirm.addEventListener("click",async()=>{
+        confirm.disabled=true;cancel.disabled=true;confirm.textContent="جارٍ التنفيذ…";
+        try{
+          const done=await callSafeAction({mode:"execute",confirm:true,proposal:p});actions.remove();
+          const resultText="✅ "+(done.message||"تم تنفيذ المهمة وتسجيلها.")+(done.warning?"\n⚠️ "+done.warning:"")+(done.notice?"\n"+done.notice:"");
+          card.appendChild(document.createTextNode("\n"+resultText));history.push({role:"assistant",content:resultText});history=history.slice(-10);
+        }catch(error){confirm.disabled=false;cancel.disabled=false;confirm.textContent="إعادة المحاولة";const err=document.createElement("p");err.textContent="لم يتم تأكيد التنفيذ: "+(error?.message||"خطأ غير معروف");card.appendChild(err);}
+      });
+      cancel.addEventListener("click",()=>{actions.remove();card.appendChild(document.createTextNode("\nتم إلغاء المعاينة؛ لم يتم تغيير أي بيانات."));history.push({role:"assistant",content:"تم إلغاء المعاينة؛ لم يتم تغيير أي بيانات."});history=history.slice(-10);});
+    }catch(error){if(card)card.textContent="تعذر تجهيز المعاينة: "+(error?.message||"خطأ غير معروف")+"\nلم يتم تنفيذ أي تغيير.";}
   }
   function installSafeActions() {
     const host = document.getElementById("baranSafeActionsHost");
