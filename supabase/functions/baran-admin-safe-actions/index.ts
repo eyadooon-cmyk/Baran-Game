@@ -137,9 +137,17 @@ Deno.serve(async(req:Request)=>{
    const buildOfflineProposal=()=>{
     const normalizeArabic=(v:string)=>String(v||"").toLowerCase().normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[ـ]/g," ").replace(/\s+/g," ").trim();
     const normalized=normalizeArabic(command);
-    const wantsChange=/(?:فعّل|فعل|نشط|عطّل|عطل|وقف|اغلق|افتح|عالج|وافق|اعتمد|ارفض)/u.test(normalized);
+    const wantsChange=/(?:فعّل|فعل|نشط|عطّل|عطل|وقف|اغلق|افتح|عالج|وافق|اعتمد|ارفض|انشئ|اضف|اربط|ربط)/u.test(normalized);
     const uuidMatch=command.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
     const reason="اقتراح آلي دون OpenAI؛ راجع المعاينة وأكد قبل الحفظ";
+    const newProduct=command.match(/(?:منتج جديد|اضافة منتج|إضافة منتج|انشاء منتج|إنشاء منتج)\s*[:：]\s*([A-Z0-9_-]{3,40})\s*[|،]\s*([^|،]{2,120})\s*[|،]\s*(game|ai|vpn|gift_card|app)\s*[|،]\s*([^|]{0,500})/i);
+    if(newProduct){const code=newProduct[1].toUpperCase(),name=newProduct[2].trim(),category=newProduct[3].toLowerCase(),description=newProduct[4].trim();const sort_order=Math.max(0,...products.map((x:any)=>Number(x.sort_order)||0))+1;return {proposal:{target_type:"product_create",target_key:code,changes:{product_code:code,name,description,category,sort_order,is_active:false,price_usd:null,price_syp:null},reason}};}
+    const newSupplier=command.match(/(?:مورد جديد|اضافة مورد|إضافة مورد|انشاء مورد|إنشاء مورد)\s*[:：]\s*([^|،؛\n]{2,120})/u);
+    if(newSupplier){const name=newSupplier[1].trim();return {proposal:{target_type:"supplier_create",target_key:name,changes:{name,notes:"",is_active:false},reason}};}
+    const newAnnouncement=command.match(/(?:اعلان صيانة|إعلان صيانة|انشاء اعلان|إنشاء إعلان|مسودة اعلان|مسودة إعلان)\s*[:：]\s*([^|،؛\n]{2,120})\s*[|،]\s*([\s\S]{1,500})/u);
+    if(newAnnouncement){const title=newAnnouncement[1].trim(),body=newAnnouncement[2].trim();return {proposal:{target_type:"announcement_create",target_key:title,changes:{kind:"maintenance",title,body},reason}};}
+    const newLink=command.match(/(?:اربط|ربط)\s+المورد\s+(.+?)\s+بالمنتج\s+(.+?)\s+(?:مع\s+)?SKU\s+([^\s،;]+)\s+(?:وتكلفه|وتكلفة|تكلفه|تكلفة)\s*([0-9]+(?:[.,][0-9]+)?)\s*(USD|SYP)/i);
+    if(newLink){const sn=normalizeArabic(newLink[1]),pn=normalizeArabic(newLink[2]);const ss=suppliers.filter((x:any)=>normalizeArabic(x.name)===sn),pp=products.filter((x:any)=>normalizeArabic(x.product_code)===pn||normalizeArabic(x.name)===pn);if(ss.length!==1||pp.length!==1)return {error:"استخدم اسم المورد ورمز المنتج المطابقين تماماً للقائمة.",status:409};return {proposal:{target_type:"supplier_product_create",target_key:ss[0].name+" | "+pp[0].product_code,changes:{supplier_id:ss[0].id,product_id:pp[0].id,supplier_sku:newLink[3],unit_cost:Number(newLink[4].replace(",", ".")),currency:newLink[5].toUpperCase(),is_preferred:false,lead_time_hours:null,notes:""},reason}};}
     if(wantsChange){
       const ps=products.filter((x:any)=>x.product_code&&normalized.includes(normalizeArabic(x.product_code)));
       if(ps.length===1){
@@ -159,6 +167,13 @@ Deno.serve(async(req:Request)=>{
         const status=/(?:اغلق|اكمل|تم الحل|مكتمل)/u.test(normalized)?"completed":/(?:ابدأ|باشر|قيد المعالجه|عالج)/u.test(normalized)?"in_progress":/(?:اعاده فتح|افتح)/u.test(normalized)?"pending":null;
         if(status)return {proposal:{target_type:"ticket",target_key:ts[0].ticket_key,changes:{status},reason}};
         return {error:"حدد حالة التذكرة: قيد المعالجة أو مكتملة أو إعادة فتح.",status:400};
+      }
+      if(/طلب|طلبات|order/u.test(normalized)){
+        if(!uuidMatch)return {error:"تغيير حالة الطلب يتطلب UUID الطلب كاملاً.",status:400};
+        const os=orders.filter((x:any)=>x.id===uuidMatch[0]);if(os.length!==1)return {error:"لم أجد طلباً مطابقاً لهذا UUID.",status:404};
+        const status=/(?:فشل|فاشل|failed)/u.test(normalized)?"failed":/(?:معالجه|قيد المعالجه|processing)/u.test(normalized)?"processing":null;
+        if(!status||!validOrderTransition(os[0].status,status))return {error:"المسموح فقط pending إلى processing أو processing إلى failed.",status:409};
+        return {proposal:{target_type:"order_status",target_key:os[0].id,changes:{status},reason}};
       }
       if(/تقييم|review/u.test(normalized)){
         const rs=reviews.filter((x:any)=>uuidMatch?x.id===uuidMatch[0]:(x.ticket_key&&normalized.includes(normalizeArabic(x.ticket_key))));
