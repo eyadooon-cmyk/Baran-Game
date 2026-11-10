@@ -845,6 +845,22 @@ footer{color:#9f91aa}
 .learning-guide ol{padding-right:22px}
 .learning-note{padding:11px;border-right:3px solid #b99ad2;background:#241b2d;border-radius:9px;color:#e5d9ef;font-size:13px;line-height:1.8}
 @media(max-width:500px){.learning-grid{grid-template-columns:1fr}}
+
+/* ترتيب وتجربة قسم الرئيسية والإحصائيات على الهاتف */
+.overview-welcome{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 16px;padding:17px;border:1px solid #6b5480;border-radius:16px;background:radial-gradient(circle at 10% 0%,#49315f 0,transparent 48%),linear-gradient(135deg,#21182c,#120e17)}
+.overview-welcome h3{margin:5px 0;color:#eee4f7;font-size:22px}
+.overview-welcome p{margin:0;color:#c5b7d1;font-size:13px;line-height:1.7}
+.overview-kicker{font-size:10px;letter-spacing:1.5px;color:#b99bd2;font-weight:800}
+.overview-live{flex:0 0 auto;padding:6px 9px;border:1px solid #655078;border-radius:30px;background:#17121e;color:#d8c9e5;font-size:10px}
+[data-admin-panel="overview"]>h3{margin:10px 0;color:#d8c9e5;font-size:16px}
+[data-admin-panel="overview"]>#opsStats{margin:0 0 18px;gap:9px}
+[data-admin-panel="overview"]>#opsStats .ops-card{min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:5px;background:linear-gradient(145deg,#241b30,#15111b);border-color:#59446b;box-shadow:0 5px 15px #0002}
+[data-admin-panel="overview"]>#opsStats .ops-value{font-size:24px;color:#e2d1f0}
+[data-admin-panel="overview"] #baranAutoMonitor{border-color:#59446b!important;background:linear-gradient(145deg,#1d1726,#14101a)}
+[data-admin-panel="overview"] #baranAutoMonitor h3{color:#d7c4e8}
+[data-admin-panel="overview"] #baranAdminAssistant{border-color:#70568a!important}
+[data-admin-panel="overview"] .deposit-card{border-radius:15px}
+@media(max-width:520px){.overview-welcome{align-items:flex-start;flex-direction:column}.overview-welcome h3{font-size:20px}.overview-live{align-self:flex-start}[data-admin-panel="overview"]>#opsStats{grid-template-columns:repeat(2,minmax(0,1fr))}[data-admin-panel="overview"]>#opsStats .ops-card{padding:11px;min-height:82px}}
 </style>
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
@@ -1418,18 +1434,27 @@ footer{color:#9f91aa}
 
       <div class="admin-subpanel hidden" data-admin-panel="overview">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الرئيسية والإحصائيات</h2></div>
-        <section class="deposit-card" aria-label="تنفيذ المهام الإدارية الآمنة" style="display:block!important;visibility:visible!important;margin:10px 0 18px;padding:15px;border:2px solid #a879d1;background:#191222"><h2>🛠️ تنفيذ المهام الإدارية الآمنة</h2><p class="small">هذا القسم ظاهر هنا مباشرة فوق مساعد الإحصائيات. اكتب المهمة، راجع المعاينة، ولا يتم الحفظ إلا بعد موافقتك.</p><div id="baranSafeActionsHost"></div></section>
-        <section class="deposit-card" aria-label="إرسال إعلان عام للزبائن">
-        <h2>📢 إرسال إعلان لجميع الزبائن</h2>
-        <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
-        <label for="baranAnnouncementTitle">عنوان الإعلان</label>
-        <input id="baranAnnouncementTitle" maxlength="100" placeholder="مثلاً: عودة الخدمة للعمل">
-        <label for="baranAnnouncementBody">نص الإعلان</label>
-        <textarea id="baranAnnouncementBody" rows="3" maxlength="500" placeholder="اكتب تفاصيل التحديث للزبائن..."></textarea>
-        <button id="baranAnnouncementSend" class="full" type="button" onclick="sendBaranAnnouncement()">إرسال الإعلان للزبائن</button>
-        <div id="baranAnnouncementStatus" class="small" role="status" aria-live="polite"></div>
+        </section>
+        </section>
       </section>
-      <section id="baranAdminAssistant" class="deposit-card" aria-label="مساعد الإدارة الذكي" style="display:block!important;visibility:visible!important;position:relative!important;order:-1;margin:16px 0;padding:16px;border:1px solid #8b6ba8">
+
+      </section>
+      </div></div>
+
+
+      
+      </div>
+
+        <div class="overview-welcome"><div><span class="overview-kicker">BARAN GAME · ADMIN OVERVIEW</span><h3>مركز القيادة</h3><p>نظرة سريعة وواضحة على حالة المتجر، التنبيهات، وأهم ما يحتاج متابعتك.</p></div><span class="overview-live">● لوحة الإدارة</span></div>
+<h3>نظرة عامة على المتجر</h3>
+      <div id="opsStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div>
+<section id="baranAutoMonitor" class="deposit-card" aria-label="المراقبة التلقائية" style="display:block!important;visibility:visible!important;margin:16px 0;padding:16px;border:1px solid #39d98a">
+        <h3>🛡️ حالة النظام والمراقبة التلقائية 24/7</h3>
+        <p class="small">فحص آلي كل 15 دقيقة للطلبات والإيداعات وتذاكر الدعم وتكاليف الموردين. هذه المراقبة لا تغيّر الأرصدة أو الدفعات.</p>
+        <div id="opsMonitorStatus" class="ops-muted">جاري تحميل حالة المراقبة...</div>
+        <div id="opsMonitorAlerts" class="ops-list">جاري تحميل التنبيهات...</div>
+      </section>
+<section id="baranAdminAssistant" class="deposit-card" aria-label="مساعد الإدارة الذكي" style="display:block!important;visibility:visible!important;position:relative!important;order:-1;margin:16px 0;padding:16px;border:1px solid #8b6ba8">
         <h2>🧠 مساعد إدارة Baran Game</h2>
         <p class="small">مساعد إداري وتقني متصل ببيانات المتجر الحقيقية: الأرباح، الطلبات، الموردون، الإيداعات، تذاكر الدعم، وفحص الحالة التشغيلية.</p>
         <div id="baranAdminAssistantMessages" class="ai-assistant-messages" style="height:210px;max-height:35vh;background:#100b16;border-radius:12px" aria-live="polite">
@@ -1449,19 +1474,17 @@ footer{color:#9f91aa}
         <div style="margin:12px 0"><a href="./admin-work-plan.html" class="secondary" style="display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border:1px solid #675078;border-radius:10px;text-decoration:none;color:#eee8f4;background:#2a2231;font-weight:700">🗂️ فتح خطة العمل اليومية ومتابعة المهام</a></div>
         <div id="baranAdminAssistantStatus" class="ops-muted">🔒 خاص بالمدير فقط — يقرأ البيانات مباشرة، ولا ينفذ تغييرات مالية أو حساسة.</div>
       </section>
-
-      <section id="baranAutoMonitor" class="deposit-card" aria-label="المراقبة التلقائية" style="display:block!important;visibility:visible!important;margin:16px 0;padding:16px;border:1px solid #39d98a">
-        <h3>🛡️ حالة النظام والمراقبة التلقائية 24/7</h3>
-        <p class="small">فحص آلي كل 15 دقيقة للطلبات والإيداعات وتذاكر الدعم وتكاليف الموردين. هذه المراقبة لا تغيّر الأرصدة أو الدفعات.</p>
-        <div id="opsMonitorStatus" class="ops-muted">جاري تحميل حالة المراقبة...</div>
-        <div id="opsMonitorAlerts" class="ops-list">جاري تحميل التنبيهات...</div>
+<section class="deposit-card" aria-label="تنفيذ المهام الإدارية الآمنة" style="display:block!important;visibility:visible!important;margin:10px 0 18px;padding:15px;border:2px solid #a879d1;background:#191222"><h2>🛠️ تنفيذ المهام الإدارية الآمنة</h2><p class="small">هذا القسم ظاهر هنا مباشرة فوق مساعد الإحصائيات. اكتب المهمة، راجع المعاينة، ولا يتم الحفظ إلا بعد موافقتك.</p><div id="baranSafeActionsHost"></div></section>
+<section class="deposit-card" aria-label="إرسال إعلان عام للزبائن">
+        <h2>📢 إرسال إعلان لجميع الزبائن</h2>
+        <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
+        <label for="baranAnnouncementTitle">عنوان الإعلان</label>
+        <input id="baranAnnouncementTitle" maxlength="100" placeholder="مثلاً: عودة الخدمة للعمل">
+        <label for="baranAnnouncementBody">نص الإعلان</label>
+        <textarea id="baranAnnouncementBody" rows="3" maxlength="500" placeholder="اكتب تفاصيل التحديث للزبائن..."></textarea>
+        <button id="baranAnnouncementSend" class="full" type="button" onclick="sendBaranAnnouncement()">إرسال الإعلان للزبائن</button>
+        <div id="baranAnnouncementStatus" class="small" role="status" aria-live="polite"></div>
       </section>
-      <h3>نظرة عامة على المتجر</h3>
-      <div id="opsStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
-
-
-      
-      </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="financial-support">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>التذاكر المالية</h2></div>
