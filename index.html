@@ -1374,6 +1374,20 @@ footer{color:#9f91aa}
 .baran-home-v2 .home-service-note{margin-top:16px}
 @media(max-width:390px){.baran-home-v2 .home-quick-actions{gap:6px}.baran-home-v2 .home-quick-actions button{padding:10px 7px}.baran-home-v2 .home-quick-actions strong{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.baran-home-v2 .baran-promo-slide.is-active{animation:none}}
+/* Unified digital product cards */
+.baran-service-catalog{margin-top:14px}
+.baran-catalog-intro{margin:0 0 12px;color:#bba9ca;font-size:12px;line-height:1.8}
+.baran-service-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.baran-service-product{display:flex;flex-direction:column;gap:8px;min-width:0;padding:13px;border:1px solid #59416d;border-radius:15px;background:linear-gradient(145deg,#241a30,#15101c);color:#f4eafa}
+.baran-service-product-head{display:flex;align-items:center;gap:8px}
+.baran-service-product-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:#a56bd626;font-size:20px}
+.baran-service-product strong{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.baran-service-product p{margin:0;color:#bba9ca;font-size:10px;line-height:1.7;overflow-wrap:anywhere}
+.baran-service-product-price{margin-top:auto;padding-top:8px;border-top:1px solid #493653;color:#e0b9f6;font-size:12px;font-weight:900;line-height:1.8}
+.baran-service-product-status{display:inline-flex;align-self:flex-start;padding:4px 8px;border-radius:8px;background:#4b351d;color:#f2d09c;font-size:9px;font-weight:800}
+.baran-catalog-empty{padding:14px;border:1px dashed #76518f;border-radius:13px;color:#c8b6d5;font-size:12px;line-height:1.8}
+@media(min-width:560px){.baran-service-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:360px){.baran-service-product{padding:10px}.baran-service-product strong{font-size:12px}}
 </style>
 </head>
 <body>
@@ -1602,25 +1616,25 @@ footer{color:#9f91aa}
     <section id="chatgptStore" class="hidden">
       <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
       <div class="hero"><h2>اشتراكات ChatGPT</h2><p>باقات الذكاء الاصطناعي وطلباتها ضمن هذا القسم فقط.</p></div>
-      <div class="deposit-card"><strong>باقات ChatGPT</strong><p class="small">ستظهر المنتجات والأسعار المعتمدة هنا بعد إضافتها إلى الكتالوج.</p></div>
+      <div id="chatgptProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>باقات ChatGPT</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="vpnStore" class="hidden">
       <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
       <div class="hero"><h2>اشتراكات VPN</h2><p>كل مزودي وباقات ومدد VPN ضمن هذا القسم فقط.</p></div>
-      <div class="deposit-card"><strong>باقات VPN</strong><p class="small">ستظهر المنتجات والأسعار المعتمدة هنا بعد إضافتها إلى الكتالوج.</p></div>
+      <div id="vpnProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>باقات VPN</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="giftCardsStore" class="hidden">
       <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
       <div class="hero"><h2>بطاقات الهدايا</h2><p>بطاقات Google Play وباقي البطاقات الرقمية ضمن هذا القسم فقط.</p></div>
-      <div class="deposit-card"><strong>بطاقات Google Play</strong><p class="small">ستظهر الفئات والأسعار المعتمدة هنا بعد إضافتها إلى الكتالوج.</p></div>
+      <div id="giftCardProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>بطاقات Google Play</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="appsStore" class="hidden">
       <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
       <div class="hero"><h2>التطبيقات المدفوعة</h2><p>التطبيقات والاشتراكات الخاصة بها ضمن هذا القسم فقط.</p></div>
-      <div class="deposit-card"><strong>التطبيقات المتاحة</strong><p class="small">ستظهر المنتجات والأسعار المعتمدة هنا بعد إضافتها إلى الكتالوج.</p></div>
+      <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="mobileTopup" class="hidden">
@@ -2873,6 +2887,10 @@ function showSection(id,button){
   closeSideMenu();
   if(id==="pubgStore")loadBaranGameCatalog("PUBG");
   if(id==="freeFireStore")loadBaranGameCatalog("FREEFIRE");
+  if(id==="chatgptStore")loadBaranServiceCatalog("ai","chatgptProductCatalog","باقات ChatGPT","🤖");
+  if(id==="vpnStore")loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️");
+  if(id==="giftCardsStore")loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁");
+  if(id==="appsStore")loadBaranServiceCatalog("app","appsProductCatalog","التطبيقات المدفوعة","📱");
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
   if(id==="staffTasks")loadStaffTasks();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
@@ -5064,6 +5082,62 @@ document.addEventListener("input",event=>{
   if(event.target?.id==="pubgPlayerId")baranUpdateGameSummary("PUBG");
   if(event.target?.id==="freeFirePlayerId")baranUpdateGameSummary("FREEFIRE");
 });
+</script>
+<script id="baran-service-catalog">
+function baranServicePrice(product){
+ const usd=product.price_usd==null||product.price_usd===""?null:Number(product.price_usd);
+ const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
+ const values=[];
+ if(Number.isFinite(usd)&&usd>0)values.push(usd.toFixed(2)+" $");
+ if(Number.isFinite(syp)&&syp>0)values.push(syp.toLocaleString("en-US")+" ل.س");
+ return values.length?values.join(" · "):"السعر قيد التجهيز";
+}
+async function loadBaranServiceCatalog(category,containerId,title,icon){
+ const container=document.getElementById(containerId);
+ if(!container||!currentUser)return;
+ container.replaceChildren();
+ const heading=document.createElement("strong");heading.textContent=title;
+ const loading=document.createElement("p");loading.className="small";loading.textContent="جاري تحميل المنتجات المعتمدة...";
+ container.append(heading,loading);
+ try{
+  const {data,error}=await sb.from("products")
+   .select("id,product_code,name,description,price_usd,price_syp,sort_order")
+   .eq("category",category).eq("is_active",true).order("sort_order",{ascending:true});
+  if(error)throw error;
+  container.replaceChildren(heading);
+  const products=Array.isArray(data)?data:[];
+  if(!products.length){
+   const empty=document.createElement("div");empty.className="baran-catalog-empty";
+   empty.textContent="لا توجد منتجات مفعّلة في هذا القسم حالياً. ستظهر المنتجات هنا بعد اعتمادها وإضافة أسعارها.";
+   container.append(empty);return;
+  }
+  const intro=document.createElement("p");intro.className="baran-catalog-intro";
+  intro.textContent="المنتجات المعروضة من كتالوج Baran Game النشط. راجع السعر والتفاصيل قبل طلب الخدمة.";
+  const grid=document.createElement("div");grid.className="baran-service-product-grid";
+  products.forEach(product=>{
+   const card=document.createElement("article");card.className="baran-service-product";
+   const head=document.createElement("div");head.className="baran-service-product-head";
+   const symbol=document.createElement("span");symbol.className="baran-service-product-icon";symbol.textContent=icon;
+   const name=document.createElement("strong");name.textContent=product.name||product.product_code||"منتج رقمي";
+   head.append(symbol,name);
+   const description=document.createElement("p");description.textContent=product.description||"خدمة رقمية من Baran Game.";
+   const price=document.createElement("div");price.className="baran-service-product-price";price.textContent=baranServicePrice(product);
+   card.append(head,description,price);
+   if(price.textContent==="السعر قيد التجهيز"){
+    const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="بانتظار اعتماد السعر";card.append(status);
+   }
+   grid.append(card);
+  });
+  container.append(intro,grid);
+  const note=document.createElement("p");note.className="small";note.textContent="عرض المنتجات لا ينشئ طلباً ولا يخصم رصيداً. ستُتاح خطوات الشراء بعد تجهيز مسار الطلب والتحقق من توفر المورد.";
+  container.append(note);
+ }catch(error){
+  console.error("Baran service catalog:",error);
+  container.replaceChildren(heading);
+  const message=document.createElement("div");message.className="baran-catalog-empty";message.textContent="تعذر تحميل المنتجات حالياً. حاول تحديث الصفحة.";
+  container.append(message);
+ }
+}
 </script>
 <script id="baran-home-carousel">
 (function(){
