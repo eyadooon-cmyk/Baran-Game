@@ -64,7 +64,7 @@ function render(tasks){
  if(!tasks.length){tasksBox.innerHTML='<div class="empty">ما في مهام مسجلة حالياً.</div>';return;}
  tasksBox.innerHTML=tasks.map(t=>{
   const options=Object.entries(labels).map(([value,label])=>'<option value="'+value+'" '+(t.status===value?'selected':'')+'>'+label+'</option>').join("");
-  return '<article class="task '+safe(t.priority)+'" data-id="'+safe(t.id)+'">'+
+  return '<article class="task '+safe(t.priority)+'" data-id="'+safe(t.id)+'" data-status="'+safe(t.status)+'">'+
    '<div class="task-top"><div><span class="pill">'+safe(t.task_code)+'</span> <span class="pill">أولوية '+safe(priorityLabels[t.priority]||t.priority)+'</span></div><span class="pill">'+safe(labels[t.status]||t.status)+'</span></div>'+
    '<h2 style="margin-top:10px">'+safe(t.title)+'</h2><div class="muted">'+safe(t.area)+'</div>'+
    '<div class="field"><strong>الدليل المسجل</strong><span>'+safe(t.evidence)+'</span></div>'+
@@ -92,8 +92,7 @@ function render(tasks){
  tasksBox.querySelectorAll(".save-status").forEach(button=>button.addEventListener("click",async()=>{
   if(busy)return;
   const card=button.closest(".task"),select=card.querySelector(".task-status"),note=card.querySelector(".task-note");
-  const current=card.querySelector(".task-top .pill:last-child").textContent;
-  const oldStatus=Object.keys(labels).find(k=>labels[k]===current);
+  const oldStatus=card.dataset.status;
   const next=select.value;
   if(next===oldStatus){statusBox.textContent="الحالة لم تتغير.";return;}
   if(!confirm("تأكيد تغيير حالة المهمة فقط إلى («"+labels[next]+"»)؟ هذا لا ينفذ الإجراء التشغيلي نفسه."))return;
