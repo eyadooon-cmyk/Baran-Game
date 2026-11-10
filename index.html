@@ -972,6 +972,31 @@ footer{color:#9f91aa}
   }
 }
 
+
+/* فصل بطاقتي محفظة المالك عن بعضهما ومنع ظهورهما جنباً إلى جنب */
+.wallet-page #ownerWalletFundingPanel,
+.wallet-page #ownerUsdSalePanel{
+  display:block;
+  float:none;
+  clear:both;
+  grid-column:1 / -1;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  margin:16px 0!important;
+  position:relative;
+}
+.wallet-page #ownerWalletFundingPanel h2,
+.wallet-page #ownerWalletFundingPanel h3,
+.wallet-page #ownerUsdSalePanel h2{
+  display:block!important;
+  width:100%;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  line-height:1.65;
+}
+
 </style>
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
