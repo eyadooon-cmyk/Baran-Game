@@ -1396,6 +1396,12 @@ footer{color:#9f91aa}
 .baran-service-selection-preview{margin-top:16px;padding:15px;border:1px solid #a879c9;border-radius:14px;background:linear-gradient(145deg,#2b1d38,#15101d);color:#f5eafa;line-height:1.8}
 .baran-service-selection-preview p{margin:7px 0}
 </style>
+<style id="baran-unified-selection-style">
+.baran-unified-selection{margin:12px 0;padding:14px;border:1px solid #a879c9;border-radius:14px;background:linear-gradient(145deg,#2b1d38,#15101d);color:#f5eafa;line-height:1.8}
+.baran-unified-selection p{margin:7px 0}
+.baran-unified-selection>strong{display:block;color:#e8c9ff;font-size:15px}
+.baran-unified-selection .baran-service-product-status{display:inline-block;margin-top:5px}
+</style>
 </head>
 <body>
 
@@ -5011,6 +5017,18 @@ sb.auth.onAuthStateChange((event,session)=>{
 restoreSession();
 </script>
 <script id="baran-game-package-selection">
+function baranRenderUnifiedSelection(target,product,priceText,detailText){
+ if(!target)return;
+ target.replaceChildren();
+ target.classList.add("baran-unified-selection");
+ const heading=document.createElement("strong");heading.textContent="مراجعة اختيارك";
+ const name=document.createElement("p");name.textContent=product.name||product.product_code||"منتج رقمي";
+ const price=document.createElement("p");price.textContent="السعر المعروض: "+priceText;
+ const detail=document.createElement("p");detail.className="small";detail.textContent=detailText||"راجع البيانات قبل المتابعة.";
+ const note=document.createElement("p");note.className="small";note.textContent="معاينة فقط: لم يتم إنشاء طلب أو حجز المنتج أو خصم أي رصيد.";
+ const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="الشراء والشحن غير مفعّلين حالياً حتى التحقق من المورد ومسار التنفيذ.";
+ target.append(heading,name,price,detail,note,status);
+}
 const baranGameSelections={PUBG:null,FREEFIRE:null};
 function baranMoneyText(product){
   const usd=product.price_usd==null||product.price_usd===""?null:Number(product.price_usd);
@@ -5024,7 +5042,8 @@ function baranSelectGamePackage(game,product){
   baranGameSelections[game]=product;
   const summary=document.getElementById(game==="PUBG"?"pubgSelectionSummary":"freeFireSelectionSummary");
   if(!summary)return;
-  summary.textContent="الباقة: "+(product.name||product.product_code)+" | السعر: "+baranMoneyText(product)+" | المعرّف: "+(document.getElementById(game==="PUBG"?"pubgPlayerId":"freeFirePlayerId")?.value.trim()||"بانتظار الإدخال");
+  const playerId=document.getElementById(game==="PUBG"?"pubgPlayerId":"freeFirePlayerId")?.value.trim()||"بانتظار الإدخال";
+  baranRenderUnifiedSelection(summary,product,baranMoneyText(product),"معرّف اللاعب: "+playerId);
   const grid=document.querySelector('[data-game-package-grid="'+game+'"]');
   if(grid)grid.querySelectorAll("button[data-product-code]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.productCode===product.product_code)));
 }
@@ -5032,9 +5051,13 @@ function baranUpdateGameSummary(game){
   const product=baranGameSelections[game];
   const summary=document.getElementById(game==="PUBG"?"pubgSelectionSummary":"freeFireSelectionSummary");
   if(!summary)return;
-  summary.textContent=product
-    ?"الباقة: "+(product.name||product.product_code)+" | السعر: "+baranMoneyText(product)+" | Player ID: "+(document.getElementById(game==="PUBG"?"pubgPlayerId":"freeFirePlayerId")?.value.trim()||"بانتظار الإدخال")
-    :"لم يتم اختيار باقة بعد.";
+  if(product){
+    const playerId=document.getElementById(game==="PUBG"?"pubgPlayerId":"freeFirePlayerId")?.value.trim()||"بانتظار الإدخال";
+    baranRenderUnifiedSelection(summary,product,baranMoneyText(product),"معرّف اللاعب: "+playerId);
+  }else{
+    summary.textContent="لم يتم اختيار باقة بعد.";
+    summary.classList.remove("baran-unified-selection");
+  }
 }
 async function loadBaranGameCatalog(game){
   const isPubg=game==="PUBG";
@@ -5105,13 +5128,7 @@ function baranShowServiceSelection(product,category,containerId){
  baranServiceSelection.product=product;baranServiceSelection.category=category;baranServiceSelection.containerId=containerId;
  let preview=container.querySelector(".baran-service-selection-preview");
  if(!preview){preview=document.createElement("section");preview.className="baran-service-selection-preview";preview.setAttribute("aria-live","polite");container.append(preview);}
- preview.replaceChildren();
- const title=document.createElement("strong");title.textContent="مراجعة اختيارك";
- const name=document.createElement("p");name.textContent=product.name||product.product_code||"منتج رقمي";
- const price=document.createElement("p");price.textContent="السعر المعروض: "+baranServicePrice(product);
- const note=document.createElement("p");note.className="small";note.textContent="هذه معاينة فقط. لم يتم إنشاء طلب أو حجز المنتج أو خصم أي رصيد.";
- const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="الشراء غير مفعّل — بانتظار ربط المورد والتحقق من التنفيذ";
- preview.append(title,name,price,note,status);
+ baranRenderUnifiedSelection(preview,product,baranServicePrice(product),"القسم: "+category+" · "+(product.description||"خدمة رقمية"));
  container.querySelectorAll("[data-service-product-id]").forEach(button=>{
   const selected=button.dataset.serviceProductId===String(product.id);
   button.textContent=selected?"تم الاختيار للمراجعة":"اختيار للمراجعة";
