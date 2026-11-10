@@ -2506,14 +2506,18 @@ async function loadBaranStaffList(){
   if(!box)return;
   if(!currentUser||currentUser.id!==BARAN_OWNER_ID){box.textContent="غير مصرح.";return;}
   box.textContent="جاري تحميل قائمة المشرفين...";
-  const rowsResult=await callBaranStaffPortal("staff_list");
-  const rows=Array.isArray(rowsResult)?rowsResult:[];
-  if(!rows.length){box.textContent="لا يوجد مشرفون مسجلون حالياً.";return;}
-  box.innerHTML=rows.map(row=>{
-    const email=staffEscapeHtml(row.email);
-    const active=!!row.is_active;
-    return '<div class="ops-item"><strong>'+email+'</strong><p class="small">الدور: '+staffEscapeHtml(row.role||"moderator")+' — الحالة: '+(active?"مفعّل":"موقوف")+'</p>'+(active?'<button type="button" class="secondary" onclick="setBaranModerator(\''+staffEscapeHtml(row.email).replace(/'/g,"&#39;")+'\',false)">إلغاء صلاحية المشرف</button>':'')+'</div>';
-  }).join("");
+  try{
+    const rowsResult=await callBaranStaffPortal("staff_list");
+    const rows=Array.isArray(rowsResult)?rowsResult:[];
+    if(!rows.length){box.textContent="لا يوجد مشرفون مسجلون حالياً.";return;}
+    box.innerHTML=rows.map(row=>{
+      const email=staffEscapeHtml(row.email);
+      const active=!!row.is_active;
+      return '<div class="ops-item"><strong>'+email+'</strong><p class="small">الدور: '+staffEscapeHtml(row.role||"moderator")+' — الحالة: '+(active?"مفعّل":"موقوف")+'</p>'+(active?'<button type="button" class="secondary" onclick="setBaranModerator(\\''+staffEscapeHtml(row.email).replace(/'/g,"&#39;")+'\\',false)">إلغاء صلاحية المشرف</button>':'')+'</div>';
+    }).join("");
+  }catch(error){
+    box.textContent="تعذر تحميل قائمة المشرفين: "+(error.message||"خطأ غير معروف");
+  }
 }
 async function findBaranStaffUser(){
   const input=document.getElementById("staffEmailInput");
@@ -2529,7 +2533,7 @@ async function findBaranStaffUser(){
     if(!data||!data.found){result.textContent="لم يتم العثور على حساب بهذا البريد. يجب أن يكون الحساب مسجلاً مسبقاً.";return;}
     if(data.is_owner){result.textContent="هذا بريد حساب المالك، ولا يمكن تحويله إلى مشرف.";return;}
     const safeEmail=staffEscapeHtml(data.email);
-    result.innerHTML='<div class="ops-item"><strong>تم العثور على الحساب</strong><p dir="ltr">'+safeEmail+'</p><p class="small">'+(data.already_moderator?"هذا الحساب مشرف مفعّل حالياً.":"الحساب غير مفعّل كمشرف.")+'</p>'+(data.already_moderator?'':'<button type="button" class="full" onclick="setBaranModerator(\''+safeEmail.replace(/'/g,"&#39;")+'\',true)">تفعيل صلاحية المشرفة</button>')+'</div>';
+    result.innerHTML='<div class="ops-item"><strong>تم العثور على الحساب</strong><p dir="ltr">'+safeEmail+'</p><p class="small">'+(data.already_moderator?"هذا الحساب مشرف مفعّل حالياً.":"الحساب غير مفعّل كمشرف.")+'</p>'+(data.already_moderator?'':'<button type="button" class="full" onclick="setBaranModerator(\\''+safeEmail.replace(/'/g,"&#39;")+'\\',true)">تفعيل صلاحية المشرفة</button>')+'</div>';
   }catch(error){result.textContent="تعذر البحث: "+(error.message||"خطأ غير معروف");}
   finally{button.disabled=false;}
 }
@@ -2543,12 +2547,16 @@ async function setBaranModerator(email,enabled){
     }
   }
   const action=enabled?"تفعيل صلاحية المشرف المحدودة لهذا الحساب":"إلغاء صلاحية المشرف عن هذا الحساب";
-  if(!confirm("تأكيد "+action+"؟\n"+email+"\n\nلن تُمنح صلاحيات مالية."))return;
+  if(!confirm("تأكيد "+action+"؟\\n"+email+"\\n\\nلن تُمنح صلاحيات مالية."))return;
   const result=document.getElementById("staffFindResult");
   if(result)result.textContent="جاري تنفيذ التغيير...";
-  await callBaranStaffPortal("staff_set_moderator",{email,enabled});
-  if(result)result.textContent=enabled?"تم تفعيل دور المشرف في قاعدة البيانات.":"تم إلغاء دور المشرف في قاعدة البيانات.";
-  await loadBaranStaffList();
+  try{
+    await callBaranStaffPortal("staff_set_moderator",{email,enabled});
+    if(result)result.textContent=enabled?"تم تفعيل دور المشرف في قاعدة البيانات.":"تم إلغاء دور المشرف في قاعدة البيانات.";
+    await loadBaranStaffList();
+  }catch(error){
+    if(result)result.textContent="لم يتم تغيير الصلاحية: "+(error.message||"خطأ غير معروف");
+  }
 }
  
 /* فهرس تنقّل داخلي تلقائي لكل قسم إداري */
