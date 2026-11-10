@@ -926,6 +926,52 @@ footer{color:#9f91aa}
 .admin-subpanel .ops-list{margin:12px 0}
 @media(max-width:520px){.admin-section-nav{top:48px;padding:8px}.admin-section-nav-links button{min-height:38px}.admin-section-anchor{scroll-margin-top:132px}.admin-subpanel:not([data-admin-panel="overview"]){padding:11px!important}}
 
+
+/* إصلاح عرض فهرس وأزرار أقسام الإدارة: عمودي على الهاتف لمنع دفع الصفحة أفقياً */
+@media(max-width:700px){
+  #adminPanel .admin-hub-grid,
+  #adminPanel .admin-hub-group .admin-hub-grid{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%;
+    min-width:0;
+  }
+  #adminPanel .admin-hub-card{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  #adminPanel .admin-hub-card strong,
+  #adminPanel .admin-hub-card small{
+    display:block;
+    width:100%;
+    max-width:100%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  #adminPanel .admin-section-nav-links{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    width:100%;
+    min-width:0;
+    overflow-x:hidden;
+  }
+  #adminPanel .admin-section-nav-links button{
+    flex:1 1 auto;
+    width:100%;
+    max-width:100%;
+    white-space:normal;
+    text-align:right;
+    overflow-wrap:anywhere;
+  }
+}
+
 </style>
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
