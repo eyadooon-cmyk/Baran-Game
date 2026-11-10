@@ -1143,39 +1143,67 @@ footer{color:#9f91aa}
     </section>
 
     <section id="games" class="hidden">
-      <h2>قسم الألعاب 🎮</h2>
+      <h2>الألعاب 🎮</h2>
+      <p class="small">اختر اللعبة لفتح متجرها الخاص. كل لعبة لها باقاتها وطلباتُها بشكل مستقل.</p>
       <div class="grid">
-        <div class="item">
-          <img src="https://pbs.twimg.com/media/EZrVgJ_XkAQX9jX.jpg" alt="PUBG MOBILE - صورة رسمية لشخصيات اللعبة">
-          <div class="item-content">
-            <strong>PUBG MOBILE</strong>
-            <p>شحن شدات UC</p>
-            <button onclick="orderAlert('PUBG Mobile')">اطلب الآن</button>
-          </div>
-        </div>
-        <div class="item">
-          <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="Free Fire - صورة لشخصيات اللعبة">
-          <div class="item-content">
-            <strong>FREE FIRE</strong>
-            <p>شحن جواهر</p>
-            <button onclick="orderAlert('Free Fire')">اطلب الآن</button>
-          </div>
-        </div>
+        <button class="item" type="button" onclick="showSection('pubgStore',null)" style="text-align:right;cursor:pointer">
+          <img src="https://pbs.twimg.com/media/EZrVgJ_XkAQX9jX.jpg" alt="PUBG MOBILE">
+          <span class="item-content"><strong>PUBG MOBILE</strong><span>ادخل إلى متجر شدات UC والطلبات الخاصة باللعبة</span><span class="small">فتح متجر PUBG ←</span></span>
+        </button>
+        <button class="item" type="button" onclick="showSection('freeFireStore',null)" style="text-align:right;cursor:pointer">
+          <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE">
+          <span class="item-content"><strong>FREE FIRE</strong><span>ادخل إلى متجر جواهر Free Fire والطلبات الخاصة باللعبة</span><span class="small">فتح متجر Free Fire ←</span></span>
+        </button>
       </div>
-      <div id="gameProductCatalog"></div>
-      <p class="small">الشحن الفعلي يحتاج ربط مورد معتمد.</p>
+    </section>
+
+    <section id="pubgStore" class="hidden">
+      <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <div class="hero"><h2>PUBG MOBILE</h2><p>متجر شدات UC — جميع باقات PUBG وطلباتها ستظهر هنا فقط.</p></div>
+      <div id="pubgProductCatalog" class="deposit-card"><strong>باقات PUBG MOBILE</strong><p class="small">لا توجد حالياً باقات وأسعار مورد معتمدة للعرض. ستظهر هنا عند ربط كتالوج المورد، دون استخدام أسعار تقديرية.</p></div>
+      <p class="small">الشحن غير متاح حتى ربط مورد معتمد واختبار التنفيذ.</p>
+    </section>
+
+    <section id="freeFireStore" class="hidden">
+      <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <div class="hero"><h2>FREE FIRE</h2><p>متجر جواهر Free Fire — جميع الباقات وتفاصيل وطلبات Free Fire ستكون هنا فقط.</p></div>
+      <div id="freeFireProductCatalog" class="deposit-card"><strong>باقات جواهر Free Fire</strong><p class="small">لا توجد حالياً باقات وأسعار مورد معتمدة للعرض. ستظهر هنا عند ربط كتالوج المورد، دون استخدام أسعار تقديرية.</p></div>
+      <p class="small">الشحن غير متاح حتى ربط مورد معتمد واختبار التنفيذ.</p>
     </section>
 
     <section id="services" class="hidden">
       <h2>الخدمات الرقمية</h2>
+      <p class="small">اختر الخدمة لفتح صفحتها المستقلة ومنتجاتها فقط.</p>
       <div class="grid">
-        <div class="item"><div class="item-content"><strong>ChatGPT Plus</strong>اشتراكات الذكاء الاصطناعي</div></div>
-        <div class="item"><div class="item-content"><strong>VPN</strong>اشتراكات VPN</div></div>
-        <div class="item"><div class="item-content"><strong>Google Play</strong>بطاقات رقمية</div></div>
-        <div class="item"><div class="item-content"><strong>Apps</strong>تطبيقات مدفوعة</div></div>
+        <button class="item" type="button" onclick="showSection('chatgptStore',null)"><span class="item-content"><strong>ChatGPT Plus</strong><span>اشتراكات الذكاء الاصطناعي</span><span class="small">فتح القسم ←</span></span></button>
+        <button class="item" type="button" onclick="showSection('vpnStore',null)"><span class="item-content"><strong>VPN</strong><span>اشتراكات VPN</span><span class="small">فتح القسم ←</span></span></button>
+        <button class="item" type="button" onclick="showSection('giftCardsStore',null)"><span class="item-content"><strong>Google Play</strong><span>بطاقات رقمية</span><span class="small">فتح القسم ←</span></span></button>
+        <button class="item" type="button" onclick="showSection('appsStore',null)"><span class="item-content"><strong>Apps</strong><span>تطبيقات مدفوعة</span><span class="small">فتح القسم ←</span></span></button>
       </div>
-      <div id="serviceProductCatalog"></div>
-      <p class="small">تُعرض أسعار المنتجات بالدولار والليرة وفق سعر الصرف الحالي. الطلبات تتاح بعد تجهيز الموردين.</p>
+    </section>
+
+    <section id="chatgptStore" class="hidden">
+      <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <div class="hero"><h2>اشتراكات ChatGPT</h2><p>باقات الذكاء الاصطناعي وطلباتها ضمن هذا القسم فقط.</p></div>
+      <div class="deposit-card"><strong>باقات ChatGPT</strong><p class="small">ستظهر المنتجات والأسعار المعتمدة هنا بعد إضافتها إلى الكتالوج.</p></div>
+    </section>
+
+    <section id="vpnStore" class="hidden">
+      <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <div class="hero"><h2>اشتراكات VPN</h2><p>كل مزودي وباقات ومدد VPN ضمن هذا القسم فقط.</p></div>
+      <div class="deposit-card"><strong>باقات VPN</strong><p class="small">ستظهر المنتجات والأسعار المعتمدة هنا بعد إضافتها إلى الكتالوج.</p></div>
+    </section>
+
+    <section id="giftCardsStore" class="hidden">
+      <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <div class="hero"><h2>بطاقات الهدايا</h2><p>بطاقات Google Play وباقي البطاقات الرقمية ضمن هذا القسم فقط.</p></div>
+      <div class="deposit-card"><strong>بطاقات Google Play</strong><p class="small">ستظهر الفئات والأسعار المعتمدة هنا بعد إضافتها إلى الكتالوج.</p></div>
+    </section>
+
+    <section id="appsStore" class="hidden">
+      <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <div class="hero"><h2>التطبيقات المدفوعة</h2><p>التطبيقات والاشتراكات الخاصة بها ضمن هذا القسم فقط.</p></div>
+      <div class="deposit-card"><strong>التطبيقات المتاحة</strong><p class="small">ستظهر المنتجات والأسعار المعتمدة هنا بعد إضافتها إلى الكتالوج.</p></div>
     </section>
 
     <section id="mobileTopup" class="hidden">
@@ -2297,7 +2325,7 @@ function showSection(id,button){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",services:"الخدمات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة"};
+  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
