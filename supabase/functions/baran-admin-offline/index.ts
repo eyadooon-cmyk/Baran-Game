@@ -37,12 +37,13 @@ Deno.serve(async(req:Request)=>{
    db.from("supplier_products").select("id,supplier_id,product_id,supplier_sku,unit_cost,currency,is_preferred,lead_time_hours,updated_at").order("updated_at",{ascending:false}).limit(200),
    db.from("customer_feedback").select("id,ticket_code,feedback_type,subject,message,rating,status,admin_reply,created_at,updated_at").order("created_at",{ascending:false}).limit(200),
    db.from("deposit_requests").select("id,status,currency,created_at").order("created_at",{ascending:false}).limit(200),
+   db.from("wallet_transactions").select("id,amount,currency,transaction_type,description,created_at,order_id,deposit_request_id").order("created_at",{ascending:false}).limit(200),
    db.from("admin_audit_log").select("action,entity_type,created_at").order("created_at",{ascending:false}).limit(30),
    db.from("store_announcements").select("kind,title,status,created_at,published_at,notification_count").order("created_at",{ascending:false}).limit(30)
   ]);
-  const labels=["products","orders","fulfillment","suppliers","supplier_products","feedback","deposits","audit","announcements"],data:Record<string,any[]>={},unavailable:string[]=[];
+  const labels=["products","orders","fulfillment","suppliers","supplier_products","feedback","deposits","wallet_transactions","audit","announcements"],data:Record<string,any[]>={},unavailable:string[]=[];
   specs.forEach((r:any,i:number)=>{if(r.error){data[labels[i]]=[];unavailable.push(labels[i]);}else data[labels[i]]=r.data||[];});
-  const products=data.products,orders=data.orders,fulfillment=data.fulfillment,suppliers=data.suppliers,links=data.supplier_products,feedback=data.feedback,deposits=data.deposits,audit=data.audit,announcements=data.announcements;
+  const products=data.products,orders=data.orders,fulfillment=data.fulfillment,suppliers=data.suppliers,links=data.supplier_products,feedback=data.feedback,deposits=data.deposits,walletTransactions=data.wallet_transactions,audit=data.audit,announcements=data.announcements;
   const openTickets=feedback.filter(x=>x.feedback_type==="support"&&["pending","in_progress"].includes(x.status));
   const reviews=feedback.filter(x=>x.feedback_type==="review"),failed=orders.filter(x=>["failed","error"].includes(String(x.status).toLowerCase()));
   const waiting=orders.filter(x=>["pending","processing"].includes(String(x.status).toLowerCase()));
@@ -109,6 +110,8 @@ Deno.serve(async(req:Request)=>{
    lines.push("لا أصف الفرق بأنه صافي ربح: العينة آخر 200 سجل وقد لا تشمل المصاريف أو المرتجعات أو كل التكاليف.");
    lines.push("الطلبات حسب الحالة: "+fmt(statusCounts));
   }
+  const ww=has(q,["محفظة","حركة مالية","حركات المحفظة","سجل المحفظة","خصم","استرداد","إيداع","ايداع","wallet","transaction"]);
+  if(ww){lines.push("\\n💳 سجل حركة المحفظة — قراءة فقط","عدد العمليات ضمن آخر 200 سجل: "+walletTransactions.length,"توزيع الأنواع: "+fmt(countBy(walletTransactions,x=>String(x.transaction_type||"غير محدد"))));for(const t of walletTransactions.slice(0,40))lines.push(String(t.created_at)+" | "+t.transaction_type+" | "+money(n(t.amount),String(t.currency||""))+" | "+String(t.description||"").slice(0,120));lines.push("السجل يعرض العمليات المسجلة فقط، وقد لا يشمل المسارات غير المربوطة بعد.");}
   if(wsec){
    lines.push("\n🛡️ سجل التدقيق","أحدث السجلات المتاحة: "+audit.length);
    for(const a of audit.slice(0,20))lines.push(a.created_at+" | "+a.action+" | "+(a.entity_type||"غير محدد"));
