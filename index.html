@@ -1323,7 +1323,9 @@ footer{color:#9f91aa}
 .game-package-option strong{font-size:14px;color:#f3e8fb}
 .game-package-option small{font-size:11px;line-height:1.6;color:#c1aecf}
 .game-package-option .game-package-price{font-size:13px;font-weight:800;color:#d7aaf5}
-.game-package-option[aria-pressed="true"]{border:2px solid #c18bed;background:linear-gradient(145deg,#39234d,#21152d);box-shadow:0 0 0 2px #a56bd622}
+ .game-package-option[aria-pressed="true"]{border:2px solid #c18bed;background:linear-gradient(145deg,#39234d,#21152d);box-shadow:0 0 0 2px #a56bd622}
+.game-package-option:disabled{opacity:.62;cursor:not-allowed;border-style:dashed}
+.game-package-pending{color:#e9c99b;font-size:10px;line-height:1.6}
 .game-checkout{margin:15px 0;padding:16px;border:1px solid #76518f;border-radius:16px;background:linear-gradient(145deg,#21182b,#120e18)}
 .game-checkout h3{margin:0 0 7px;color:#ecdafa}
 .game-checkout label{display:block;margin:12px 0 6px;color:#e7d5f3;font-weight:700}
@@ -5030,6 +5032,11 @@ function baranRenderUnifiedSelection(target,product,priceText,detailText){
  target.append(heading,name,price,detail,note,status);
 }
 const baranGameSelections={PUBG:null,FREEFIRE:null};
+function baranHasApprovedGamePrice(product){
+  const usd=product.price_usd==null||product.price_usd===""?null:Number(product.price_usd);
+  const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
+  return (Number.isFinite(usd)&&usd>0)||(Number.isFinite(syp)&&syp>0);
+}
 function baranMoneyText(product){
   const usd=product.price_usd==null||product.price_usd===""?null:Number(product.price_usd);
   const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
@@ -5039,6 +5046,7 @@ function baranMoneyText(product){
   return parts.length?parts.join(" · "):"السعر قيد التجهيز";
 }
 function baranSelectGamePackage(game,product){
+  if(!baranHasApprovedGamePrice(product))return;
   baranGameSelections[game]=product;
   const summary=document.getElementById(game==="PUBG"?"pubgSelectionSummary":"freeFireSelectionSummary");
   if(!summary)return;
@@ -5075,7 +5083,7 @@ async function loadBaranGameCatalog(game){
       .like("product_code",prefix+"%")
       .order("sort_order",{ascending:true});
     if(error)throw error;
-    const pattern=isPubg?/^PUBG_[A-Z0-9_-]+$/:/^FREEFIRE_\d+$/;
+    const pattern=isPubg?/^PUBG_MOBILE_\d+_UC$/:/^FREEFIRE_\d+$/;
     const packages=(data||[]).filter(p=>pattern.test(p.product_code||""));
     container.replaceChildren(heading);
     if(!packages.length){
@@ -5092,7 +5100,10 @@ async function loadBaranGameCatalog(game){
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
       const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
+      button.disabled=!baranHasApprovedGamePrice(product);
+      if(button.disabled){button.setAttribute("aria-label",(product.name||product.product_code)+" — بانتظار اعتماد السعر");}
       button.append(name,description,price);
+      if(button.disabled){const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير متاحة للاختيار حتى اعتماد السعر";button.append(pending);}
       button.addEventListener("click",()=>baranSelectGamePackage(game,product));
       grid.append(button);
     });
