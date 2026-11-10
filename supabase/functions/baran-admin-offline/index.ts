@@ -1,6 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 const ORIGIN = "https://eyadooon-cmyk.github.io";
 const headers = {"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin","Content-Type":"application/json","Cache-Control":"no-store"};
+function readKeyObject(name:string):string|undefined {
+ const raw=Deno.env.get(name);
+ if(!raw)return undefined;
+ try{return JSON.parse(raw).default;}catch{return undefined;}
+}
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
 const n=(v:unknown)=>{const x=Number(v??0);return Number.isFinite(x)?x:0;};
 const money=(v:number,c:string)=>new Intl.NumberFormat("en-US",{maximumFractionDigits:2}).format(v)+" "+c;
@@ -12,7 +17,7 @@ Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return reply({error:"Method not allowed"},405);
  const origin=req.headers.get("Origin");if(origin&&origin!==ORIGIN)return reply({error:"Origin not allowed"},403);
  try{
-  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY")??readKeyObject("SUPABASE_PUBLISHABLE_KEYS"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if(!url||!anon||!service)return reply({error:"Server configuration incomplete"},500);
   const auth=req.headers.get("Authorization")||"",token=auth.startsWith("Bearer ")?auth.slice(7):"";
   if(!token)return reply({error:"Authentication required"},401);
