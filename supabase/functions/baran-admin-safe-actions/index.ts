@@ -137,7 +137,7 @@ Deno.serve(async(req:Request)=>{
    const buildOfflineProposal=()=>{
     const normalizeArabic=(v:string)=>String(v||"").toLowerCase().normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[ـ]/g," ").replace(/\s+/g," ").trim();
     const normalized=normalizeArabic(command);
-    const wantsChange=/(?:فعّل|فعل|نشط|عطّل|عطل|وقف|اغلق|افتح|عالج|وافق|اعتمد|ارفض|انشئ|اضف|اربط|ربط)/u.test(normalized);
+    const wantsChange=/(?:فعّل|فعل|نشط|عطّل|عطل|وقف|اوقف|اخف|اظهر|اغلق|افتح|عالج|وافق|اعتمد|ارفض|انشئ|اضف|اربط|ربط|غير|عدل|تعديل|حدث)/u.test(normalized);
     const uuidMatch=command.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
     const reason="اقتراح آلي دون OpenAI؛ راجع المعاينة وأكد قبل الحفظ";
     const newProduct=command.match(/(?:منتج جديد|اضافة منتج|إضافة منتج|انشاء منتج|إنشاء منتج)\s*[:：]\s*([A-Z0-9_-]{3,40})\s*[|،]\s*([^|،]{2,120})\s*[|،]\s*(game|ai|vpn|gift_card|app)\s*[|،]\s*([^|]{0,500})/i);
