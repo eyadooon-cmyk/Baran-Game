@@ -1250,6 +1250,26 @@ footer{color:#9f91aa}
 .home-category-card-body em{margin-top:3px;color:#d3a9f0;font-size:11px;font-style:normal;font-weight:800}
 .home-service-note{display:flex;align-items:flex-start;gap:9px;margin:14px 0;padding:12px;border:1px solid #665078;border-radius:13px;background:#1a1422;color:#cdbbdc;font-size:11px;line-height:1.8}
 .home-service-note b{color:#e2c8f7}
+.home-welcome-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}
+.home-welcome-actions button{min-height:43px;padding:10px 16px;border-radius:12px;font-size:12px;font-weight:900}
+.home-cta-primary{background:linear-gradient(120deg,#d9b4f2,#a979cb);color:#1b1024;box-shadow:0 7px 18px #a56bd633}
+.home-cta-primary span{display:inline-block;margin-right:8px;font-size:16px}
+.home-cta-secondary{background:#21182b;color:#eadcf5;border:1px solid #76518f}
+.home-order-steps{margin:18px 0 21px;padding:14px;border:1px solid #4c3a5c;border-radius:16px;background:linear-gradient(145deg,#1c1624,#110d17)}
+.home-order-steps-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}
+.home-order-steps-heading strong{font-size:14px;color:#eadcf5}
+.home-order-steps-heading span{font-size:10px;color:#b9a9c9}
+.home-order-steps-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.home-order-step{display:flex;flex-direction:column;gap:5px;min-width:0;padding:10px 8px;border:1px solid #40334b;border-radius:12px;background:#17121e}
+.home-order-step>span{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#a56bd626;color:#d7b5ef;font-size:10px;font-weight:900}
+.home-order-step strong{font-size:11px;color:#f0e5f8}
+.home-order-step small{font-size:9px;line-height:1.6;color:#b9a9c9}
+.home-category-card{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.home-category-card:hover{transform:translateY(-3px);border-color:#a979cb;box-shadow:0 12px 25px #0006}
+.home-shortcut{transition:transform .18s ease,border-color .18s ease}
+.home-shortcut:hover{border-color:#a979cb}
+@media(max-width:360px){.home-order-steps{padding:10px}.home-order-step{padding:8px 6px}.home-order-step strong{font-size:10px}.home-order-step small{font-size:8px}}
+@media(max-width:520px){.home-welcome-actions button{flex:1}}
 @media(max-width:360px){.home-shortcut{padding:9px;gap:7px}.home-shortcut-icon{width:33px;height:33px;flex-basis:33px}.home-category-card img{height:94px}.home-category-card-body{padding:10px}}
 @media(min-width:650px){.home-shortcuts{grid-template-columns:repeat(4,minmax(0,1fr))}.home-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.home-category-card img{height:130px}}
 </style>
@@ -1433,12 +1453,24 @@ footer{color:#9f91aa}
         <span class="home-welcome-kicker">✦ BARAN GAME · DIGITAL STORE</span>
         <h2>كل اللي بتحبه… صار أقرب 🎮</h2>
         <p>اختار لعبتك أو خدمتك، حدّد الباقة، وراجع طلبك بخطوات واضحة. وإذا احتجت مساعدة، فريق Baran معك.</p>
+        <div class="home-welcome-actions">
+          <button type="button" class="home-cta-primary" onclick="showSection('games',null)">ابدأ الشحن الآن <span aria-hidden="true">←</span></button>
+          <button type="button" class="home-cta-secondary" onclick="showSection('services',null)">استكشف الخدمات</button>
+        </div>
       </div>
       <div class="home-shortcuts" aria-label="اختصارات سريعة">
         <button class="home-shortcut" type="button" onclick="showSection('games',null)"><span class="home-shortcut-icon">🎮</span><span class="home-shortcut-copy"><strong>اشحن لعبة</strong><small>PUBG وFree Fire</small></span></button>
         <button class="home-shortcut" type="button" onclick="showSection('services',null)"><span class="home-shortcut-icon">✦</span><span class="home-shortcut-copy"><strong>الخدمات الرقمية</strong><small>اشتراكات وبطاقات</small></span></button>
         <button class="home-shortcut" type="button" onclick="showSection('wallet',null)"><span class="home-shortcut-icon">👛</span><span class="home-shortcut-copy"><strong>اشحن محفظتك</strong><small>الدولار والليرة</small></span></button>
         <button class="home-shortcut" type="button" onclick="showSection('orders',null)"><span class="home-shortcut-icon">📦</span><span class="home-shortcut-copy"><strong>تابع طلبك</strong><small>اعرف حالة الشحن</small></span></button>
+      </div>
+      <div class="home-order-steps" aria-label="خطوات الطلب">
+        <div class="home-order-steps-heading"><strong>كيف تطلب من Baran؟</strong><span>3 خطوات بسيطة</span></div>
+        <div class="home-order-steps-grid">
+          <div class="home-order-step"><span>01</span><strong>اختار المنتج</strong><small>لعبة أو خدمة من الأقسام</small></div>
+          <div class="home-order-step"><span>02</span><strong>أدخل البيانات</strong><small>راجع المعرّف والباقة</small></div>
+          <div class="home-order-step"><span>03</span><strong>راجع طلبك</strong><small>تابع الحالة من طلباتي</small></div>
+        </div>
       </div>
       <div class="home-categories-heading"><h2>اختار القسم المناسب</h2><span>كل قسم واضح لحاله</span></div>
       <div class="home-category-grid">
