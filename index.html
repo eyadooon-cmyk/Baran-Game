@@ -846,6 +846,42 @@ footer{color:#9f91aa}
 .learning-note{padding:11px;border-right:3px solid #b99ad2;background:#241b2d;border-radius:9px;color:#e5d9ef;font-size:13px;line-height:1.8}
 @media(max-width:500px){.learning-grid{grid-template-columns:1fr}}
 
+
+/* مركز قيادة الإدارة — تصميم موحد ومتجاوب */
+[data-admin-panel="overview"]{padding:clamp(12px,2.5vw,22px);background:linear-gradient(180deg,#15101d 0%,#100c15 100%);border-color:#493858}
+[data-admin-panel="overview"]>.admin-subpanel-head{position:sticky;top:0;z-index:4;padding:8px 0 13px;background:#120e18ed;backdrop-filter:blur(10px)}
+[data-admin-panel="overview"]>.admin-subpanel-head h2{font-size:17px;color:#e8d9f4}
+[data-admin-panel="overview"] .admin-back{min-height:38px;padding:7px 11px}
+.overview-welcome{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:14px;margin:8px 0 22px;padding:clamp(18px,4vw,25px);border:1px solid #624879;border-radius:19px;background:radial-gradient(ellipse at 5% 5%,#62427b88,transparent 50%),linear-gradient(120deg,#281c35,#17111f 75%);box-shadow:0 12px 28px #0004}
+.overview-welcome:after{content:"BG";position:absolute;left:16px;bottom:-30px;font-size:100px;font-weight:900;color:#ffffff08;direction:ltr;pointer-events:none}
+.overview-welcome h3{margin:6px 0;color:#f1e7f8;font-size:clamp(20px,4vw,25px)}
+.overview-welcome p{margin:0;max-width:520px;color:#c7b7d2;font-size:13px;line-height:1.9}
+.overview-kicker{font-size:10px;letter-spacing:1.6px;color:#c4a3dc;font-weight:800}
+.overview-live{position:relative;z-index:1;white-space:nowrap;padding:7px 11px;border:1px solid #806394;border-radius:30px;background:#17111f;color:#e3d1ef;font-size:11px}
+.overview-section-heading{display:flex;align-items:center;gap:11px;margin:23px 0 10px}
+.overview-section-heading>span{display:grid;place-items:center;flex:0 0 34px;height:34px;border:1px solid #76598d;border-radius:11px;background:#281d33;color:#d9c1eb;font-size:11px;font-weight:900}
+.overview-section-heading h3{margin:0;color:#e8d9f4;font-size:16px}
+.overview-section-heading p{margin:2px 0 0;color:#a99ab5;font-size:11px}
+[data-admin-panel="overview"]>#opsStats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px}
+[data-admin-panel="overview"]>#opsStats .ops-card{display:flex;flex-direction:column;justify-content:center;gap:5px;min-height:94px;padding:13px;border:1px solid #59436b;border-radius:15px;background:linear-gradient(145deg,#261c31,#17121e);box-shadow:0 6px 18px #0003}
+[data-admin-panel="overview"]>#opsStats .ops-card .ops-value{font-size:clamp(22px,5vw,28px);color:#ead9f6}
+[data-admin-panel="overview"] .overview-panel{display:block!important;visibility:visible!important;margin:0 0 16px;padding:clamp(13px,3vw,19px);border:1px solid #4f3b60;border-radius:17px;background:linear-gradient(150deg,#1d1726,#130f19);box-shadow:0 8px 22px #0003}
+[data-admin-panel="overview"] .overview-panel h2,[data-admin-panel="overview"] .overview-panel h3{color:#e6d5f2}
+[data-admin-panel="overview"] .monitor-panel{border-color:#435b55}
+[data-admin-panel="overview"] .assistant-panel{border-color:#70528a;background:linear-gradient(145deg,#21172d,#15101d)}
+[data-admin-panel="overview"] #baranAdminAssistantMessages{height:clamp(190px,32vh,310px)!important;max-height:42vh!important;padding:12px!important;border:1px solid #493858}
+[data-admin-panel="overview"] #baranAdminAssistantForm{display:flex;gap:8px;align-items:stretch;margin:12px 0}
+[data-admin-panel="overview"] #baranAdminAssistantForm input{min-width:0;flex:1}
+[data-admin-panel="overview"] #baranAdminAssistantForm button{flex:0 0 auto;min-width:75px}
+[data-admin-panel="overview"] .assistant-panel .ops-actions button{min-height:42px}
+[data-admin-panel="overview"] .safe-panel{border-color:#70558b}
+[data-admin-panel="overview"] .announcement-panel{border-color:#57466b}
+[data-admin-panel="overview"] .announcement-panel textarea{min-height:95px}
+[data-admin-panel="overview"] .announcement-panel #baranAnnouncementSend{width:100%;margin-top:12px}
+[data-admin-panel="overview"] .overview-panel .small,[data-admin-panel="overview"] .overview-panel .ops-muted{line-height:1.8}
+@media(min-width:700px){[data-admin-panel="overview"]>#opsStats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:520px){.overview-welcome{align-items:flex-start;flex-direction:column}.overview-live{align-self:flex-start}[data-admin-panel="overview"]>.admin-subpanel-head{gap:8px}[data-admin-panel="overview"]>.admin-subpanel-head h2{font-size:15px}[data-admin-panel="overview"] #baranAdminAssistantForm{flex-direction:column}[data-admin-panel="overview"] #baranAdminAssistantForm button{width:100%}[data-admin-panel="overview"] .ops-actions button{min-width:100%}}
+
 /* ترتيب وتجربة قسم الرئيسية والإحصائيات على الهاتف */
 .overview-welcome{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 16px;padding:17px;border:1px solid #6b5480;border-radius:16px;background:radial-gradient(circle at 10% 0%,#49315f 0,transparent 48%),linear-gradient(135deg,#21182c,#120e17)}
 .overview-welcome h3{margin:5px 0;color:#eee4f7;font-size:22px}
@@ -1434,16 +1470,18 @@ footer{color:#9f91aa}
 
       <div class="admin-subpanel hidden" data-admin-panel="overview">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الرئيسية والإحصائيات</h2></div>
-<div class="overview-welcome"><div><span class="overview-kicker">BARAN GAME · ADMIN OVERVIEW</span><h3>مركز القيادة</h3><p>نظرة سريعة وواضحة على حالة المتجر، التنبيهات، وأهم ما يحتاج متابعتك.</p></div><span class="overview-live">● لوحة الإدارة</span></div>
-<h3>نظرة عامة على المتجر</h3>
+<div class="overview-welcome"><div><span class="overview-kicker">BARAN GAME · ADMIN OVERVIEW</span><h3>أهلاً بك في مركز القيادة</h3><p>كل مؤشرات المتجر وأدوات الإدارة المهمة بمكان واحد، بترتيب واضح وسهل من الهاتف.</p></div><span class="overview-live">● لوحة الإدارة</span></div>
+<div class="overview-section-heading"><span>01</span><div><h3>ملخص المتجر</h3><p>الأرقام والمؤشرات المسجلة حالياً</p></div></div>
 <div id="opsStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
-<section id="baranAutoMonitor" class="deposit-card" aria-label="المراقبة التلقائية" style="display:block!important;visibility:visible!important;margin:16px 0;padding:16px;border:1px solid #39d98a">
+<div class="overview-section-heading"><span>02</span><div><h3>صحة النظام</h3><p>المراقبة والتنبيهات التشغيلية</p></div></div>
+<section id="baranAutoMonitor" class="deposit-card overview-panel monitor-panel" aria-label="المراقبة التلقائية">
         <h3>🛡️ حالة النظام والمراقبة التلقائية 24/7</h3>
         <p class="small">فحص آلي كل 15 دقيقة للطلبات والإيداعات وتذاكر الدعم وتكاليف الموردين. هذه المراقبة لا تغيّر الأرصدة أو الدفعات.</p>
         <div id="opsMonitorStatus" class="ops-muted">جاري تحميل حالة المراقبة...</div>
         <div id="opsMonitorAlerts" class="ops-list">جاري تحميل التنبيهات...</div>
       </section>
-<section id="baranAdminAssistant" class="deposit-card" aria-label="مساعد الإدارة الذكي" style="display:block!important;visibility:visible!important;position:relative!important;order:-1;margin:16px 0;padding:16px;border:1px solid #8b6ba8">
+<div class="overview-section-heading"><span>03</span><div><h3>مساعد الإدارة</h3><p>اسأل، حلّل، وخذ توصيات تشغيلية</p></div></div>
+<section id="baranAdminAssistant" class="deposit-card overview-panel assistant-panel" aria-label="مساعد الإدارة الذكي">
         <h2>🧠 مساعد إدارة Baran Game</h2>
         <p class="small">مساعد إداري وتقني متصل ببيانات المتجر الحقيقية: الأرباح، الطلبات، الموردون، الإيداعات، تذاكر الدعم، وفحص الحالة التشغيلية.</p>
         <div id="baranAdminAssistantMessages" class="ai-assistant-messages" style="height:210px;max-height:35vh;background:#100b16;border-radius:12px" aria-live="polite">
@@ -1463,8 +1501,10 @@ footer{color:#9f91aa}
         <div style="margin:12px 0"><a href="./admin-work-plan.html" class="secondary" style="display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border:1px solid #675078;border-radius:10px;text-decoration:none;color:#eee8f4;background:#2a2231;font-weight:700">🗂️ فتح خطة العمل اليومية ومتابعة المهام</a></div>
         <div id="baranAdminAssistantStatus" class="ops-muted">🔒 خاص بالمدير فقط — يقرأ البيانات مباشرة، ولا ينفذ تغييرات مالية أو حساسة.</div>
       </section>
-<section class="deposit-card" aria-label="تنفيذ المهام الإدارية الآمنة" style="display:block!important;visibility:visible!important;margin:10px 0 18px;padding:15px;border:2px solid #a879d1;background:#191222"><h2>🛠️ تنفيذ المهام الإدارية الآمنة</h2><p class="small">هذا القسم ظاهر هنا مباشرة فوق مساعد الإحصائيات. اكتب المهمة، راجع المعاينة، ولا يتم الحفظ إلا بعد موافقتك.</p><div id="baranSafeActionsHost"></div></section>
-<section class="deposit-card" aria-label="إرسال إعلان عام للزبائن">
+<div class="overview-section-heading"><span>04</span><div><h3>الإجراءات الإدارية</h3><p>راجع المعاينة قبل اعتماد أي إجراء</p></div></div>
+<section class="deposit-card overview-panel safe-panel" aria-label="تنفيذ المهام الإدارية الآمنة"><h2>🛠️ تنفيذ المهام الإدارية الآمنة</h2><p class="small">اكتب المهمة، راجع تفاصيلها وتأثيرها، ولا يتم الحفظ إلا بعد موافقتك.</p><div id="baranSafeActionsHost"></div></section>
+<div class="overview-section-heading"><span>05</span><div><h3>التواصل مع الزبائن</h3><p>إعلانات وتحديثات الخدمة</p></div></div>
+<section class="deposit-card overview-panel announcement-panel" aria-label="إرسال إعلان عام للزبائن">
         <h2>📢 إرسال إعلان لجميع الزبائن</h2>
         <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
         <label for="baranAnnouncementTitle">عنوان الإعلان</label>
