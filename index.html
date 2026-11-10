@@ -2513,8 +2513,11 @@ async function loadBaranStaffList(){
     box.innerHTML=rows.map(row=>{
       const email=staffEscapeHtml(row.email);
       const active=!!row.is_active;
-      return '<div class="ops-item"><strong>'+email+'</strong><p class="small">الدور: '+staffEscapeHtml(row.role||"moderator")+' — الحالة: '+(active?"مفعّل":"موقوف")+'</p>'+(active?'<button type="button" class="secondary" onclick="setBaranModerator(\\''+staffEscapeHtml(row.email).replace(/'/g,"&#39;")+'\\',false)">إلغاء صلاحية المشرف</button>':'')+'</div>';
+      return '<div class="ops-item"><strong>'+email+'</strong><p class="small">الدور: '+staffEscapeHtml(row.role||"moderator")+' — الحالة: '+(active?"مفعّل":"موقوف")+'</p>'+(active?'<button type="button" class="secondary" data-staff-email="'+email+'" data-staff-enabled="false">إلغاء صلاحية المشرف</button>':'')+'</div>';
     }).join("");
+    box.querySelectorAll("button[data-staff-email]").forEach(button=>{
+      button.addEventListener("click",()=>setBaranModerator(button.dataset.staffEmail,button.dataset.staffEnabled==="true"));
+    });
   }catch(error){
     box.textContent="تعذر تحميل قائمة المشرفين: "+(error.message||"خطأ غير معروف");
   }
@@ -2533,7 +2536,11 @@ async function findBaranStaffUser(){
     if(!data||!data.found){result.textContent="لم يتم العثور على حساب بهذا البريد. يجب أن يكون الحساب مسجلاً مسبقاً.";return;}
     if(data.is_owner){result.textContent="هذا بريد حساب المالك، ولا يمكن تحويله إلى مشرف.";return;}
     const safeEmail=staffEscapeHtml(data.email);
-    result.innerHTML='<div class="ops-item"><strong>تم العثور على الحساب</strong><p dir="ltr">'+safeEmail+'</p><p class="small">'+(data.already_moderator?"هذا الحساب مشرف مفعّل حالياً.":"الحساب غير مفعّل كمشرف.")+'</p>'+(data.already_moderator?'':'<button type="button" class="full" onclick="setBaranModerator(\\''+safeEmail.replace(/'/g,"&#39;")+'\\',true)">تفعيل صلاحية المشرفة</button>')+'</div>';
+    result.innerHTML='<div class="ops-item"><strong>تم العثور على الحساب</strong><p dir="ltr">'+safeEmail+'</p><p class="small">'+(data.already_moderator?"هذا الحساب مشرف مفعّل حالياً.":"الحساب غير مفعّل كمشرف.")+'</p>'+(data.already_moderator?'':'<button type="button" class="full" data-staff-email="'+safeEmail+'" data-staff-enabled="true">تفعيل صلاحية المشرفة</button>')+'</div>';
+    result.querySelector("button[data-staff-email]")?.addEventListener("click",event=>{
+      const target=event.currentTarget;
+      setBaranModerator(target.dataset.staffEmail,target.dataset.staffEnabled==="true");
+    });
   }catch(error){result.textContent="تعذر البحث: "+(error.message||"خطأ غير معروف");}
   finally{button.disabled=false;}
 }
@@ -2547,7 +2554,7 @@ async function setBaranModerator(email,enabled){
     }
   }
   const action=enabled?"تفعيل صلاحية المشرف المحدودة لهذا الحساب":"إلغاء صلاحية المشرف عن هذا الحساب";
-  if(!confirm("تأكيد "+action+"؟\\n"+email+"\\n\\nلن تُمنح صلاحيات مالية."))return;
+  if(!confirm("تأكيد "+action+"؟\n"+email+"\n\nلن تُمنح صلاحيات مالية."))return;
   const result=document.getElementById("staffFindResult");
   if(result)result.textContent="جاري تنفيذ التغيير...";
   try{
