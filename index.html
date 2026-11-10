@@ -1167,7 +1167,7 @@ footer{color:#9f91aa}
     <section id="freeFireStore" class="hidden">
       <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
       <div class="hero"><h2>FREE FIRE</h2><p>متجر جواهر Free Fire — جميع الباقات وتفاصيل وطلبات Free Fire ستكون هنا فقط.</p></div>
-      <div id="freeFireProductCatalog" class="deposit-card"><strong>باقات جواهر Free Fire</strong><p class="small">لا توجد حالياً باقات وأسعار مورد معتمدة للعرض. ستظهر هنا عند ربط كتالوج المورد، دون استخدام أسعار تقديرية.</p></div>
+      <div id="freeFireProductCatalog" class="deposit-card" aria-live="polite"><strong>باقات جواهر Free Fire</strong><p class="small">جاري تحميل الباقات...</p></div>
       <p class="small">الشحن غير متاح حتى ربط مورد معتمد واختبار التنفيذ.</p>
     </section>
 
@@ -2311,6 +2311,70 @@ function clearStoreSearch(){
   if(output){output.replaceChildren();output.classList.remove("active");}
 }
 
+async function loadFreeFireCatalog(){
+  const container=document.getElementById("freeFireProductCatalog");
+  if(!container)return;
+  container.replaceChildren();
+  const heading=document.createElement("strong");
+  heading.textContent="باقات جواهر Free Fire";
+  const status=document.createElement("p");
+  status.className="small";
+  status.textContent="جاري تحميل الباقات...";
+  container.append(heading,status);
+  try{
+    const {data,error}=await sb.from("products")
+      .select("id,product_code,name,description,price_usd,price_syp,sort_order")
+      .eq("category","game")
+      .eq("is_active",true)
+      .like("product_code","FREEFIRE_%")
+      .order("sort_order",{ascending:true});
+    if(error)throw error;
+    const packages=(data||[]).filter(product=>/^FREEFIRE_\\d+$/.test(product.product_code||""));
+    container.replaceChildren(heading);
+    if(!packages.length){
+      const empty=document.createElement("p");
+      empty.className="small";
+      empty.textContent="لا توجد باقات Free Fire مفعّلة حالياً في الكتالوج.";
+      container.append(empty);
+      return;
+    }
+    const grid=document.createElement("div");
+    grid.className="grid";
+    packages.forEach(product=>{
+      const card=document.createElement("div");
+      card.className="deposit-card";
+      const name=document.createElement("strong");
+      name.textContent=product.name||"باقة جواهر Free Fire";
+      const description=document.createElement("p");
+      description.className="small";
+      description.textContent=product.description||"باقة جواهر Free Fire";
+      const price=document.createElement("p");
+      price.className="small";
+      const usd=Number(product.price_usd);
+      const syp=Number(product.price_syp);
+      const hasUsd=product.price_usd!==null&&product.price_usd!==""&&Number.isFinite(usd)&&usd>0;
+      const hasSyp=product.price_syp!==null&&product.price_syp!==""&&Number.isFinite(syp)&&syp>0;
+      price.textContent=hasUsd||hasSyp
+        ? [hasUsd?usd.toFixed(2)+" $":null,hasSyp?syp.toLocaleString("en-US")+" ل.س":null].filter(Boolean).join(" · ")
+        : "السعر قيد التجهيز";
+      card.append(name,description,price);
+      grid.append(card);
+    });
+    container.append(grid);
+    const note=document.createElement("p");
+    note.className="small";
+    note.textContent="الطلب والشحن غير متاحين حالياً حتى اعتماد الأسعار وربط مورد فعلي لكل باقة.";
+    container.append(note);
+  }catch(error){
+    console.error("تعذر تحميل كتالوج Free Fire:",error);
+    container.replaceChildren(heading);
+    const message=document.createElement("p");
+    message.className="small";
+    message.textContent="تعذر تحميل الباقات الآن. حاول تحديث الصفحة لاحقاً.";
+    container.append(message);
+  }
+}
+
 function showSection(id,button){
   if(!currentUser) return;
   const target=document.getElementById(id);
@@ -2329,6 +2393,7 @@ function showSection(id,button){
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
+  if(id==="freeFireStore")loadFreeFireCatalog();
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
   if(id==="settings"&&typeof refreshBaranPushSettingsStatus==="function")refreshBaranPushSettingsStatus();
