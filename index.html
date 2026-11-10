@@ -997,6 +997,46 @@ footer{color:#9f91aa}
   line-height:1.65;
 }
 
+
+
+/* صفحة حسابي — تنسيق مبسّط ومتجاوب دون تغيير وظائف الحساب */
+.account-page{padding:clamp(14px,3vw,22px);background:linear-gradient(180deg,#17121e 0%,#120e18 100%);border-color:#49345f}
+.account-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.account-page-heading h2{margin:3px 0 0;font-size:25px;color:#e8dff0}
+.account-page-heading p{margin:2px 0 0}
+.account-eyebrow{font-size:10px;font-weight:800;letter-spacing:1.5px;color:#b98bd8}
+.account-heading-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#4a3260,#24192f);border:1px solid #80609a;color:#eadcf5;font-size:22px}
+.account-page .account-identity-card{margin:0 0 12px;padding:16px;background:linear-gradient(120deg,#38264a,#21182b 70%,#19131f);border:1px solid #775591;border-radius:17px;box-shadow:0 8px 22px #0003}
+.account-page .account-avatar-wrap{width:72px;height:72px;flex-basis:72px}
+.account-page .account-member-code{background:#17111f;border-color:#76558e}
+.account-info-note{margin:0 2px 16px}
+.account-section-label{display:flex;align-items:center;gap:11px;margin:17px 2px 9px}
+.account-section-icon,.account-shortcut-icon{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:12px;background:#30203f;border:1px solid #684985;color:#eadcf5;font-size:19px}
+.account-section-label>div,.account-shortcut>span:nth-child(2),.account-security summary>span:nth-child(2){display:flex;flex-direction:column;gap:2px;min-width:0}
+.account-section-label strong,.account-shortcut strong,.account-security summary strong{font-size:14px;color:#f1eaf7}
+.account-section-label small,.account-shortcut small,.account-security summary small{font-size:11px;color:#b9a9c9}
+.account-panel,.account-security-card{padding:15px;margin:0 0 11px;background:#1d1725;border:1px solid #4e3b60;border-radius:14px}
+.account-panel label,.account-security-card label{display:block;margin-top:9px;color:#cbb9da;font-size:13px}
+.account-panel input,.account-security-card input{margin:6px 0 9px;background:#100c16;border-color:#51405f}
+.account-panel .full,.account-security-card .full{margin-top:8px}
+.account-feedback{min-height:18px;margin-top:8px}
+.account-shortcut{display:flex;align-items:center;gap:12px;width:100%;margin:11px 0;padding:12px;text-align:right;background:#1d1725;border:1px solid #4e3b60;border-radius:14px;color:#fff}
+.account-shortcut-icon{font-size:18px}
+.account-shortcut-arrow{margin-right:auto;color:#cbb1df;font-size:20px}
+.account-security{margin:11px 0;background:#1d1725;border:1px solid #76558e;border-radius:14px;overflow:hidden}
+.account-security summary{display:flex;align-items:center;gap:12px;padding:13px;cursor:pointer;list-style:none}
+.account-security summary::-webkit-details-marker{display:none}
+.account-security-chevron{margin-right:auto;color:#d7c4e8;font-size:22px;transition:transform .2s}
+.account-security[open] .account-security-chevron{transform:rotate(180deg)}
+.account-security-content{padding:0 12px 12px;border-top:1px solid #40304f}
+.account-security-card{margin:12px 0 0;background:#17121e}
+.account-security-card h3{margin:0;color:#e5d7ef;font-size:15px}
+.account-security-note{padding:9px 11px;margin:10px 0 0;background:#241a30;border-radius:10px;color:#cbb9da}
+.account-signout{width:100%;margin-top:15px;padding:13px;background:#28151e;color:#ffc4cf;border:1px solid #754052;border-radius:13px}
+.account-page button{transition:transform .16s ease,border-color .16s ease,filter .16s ease}
+.account-page button:active{transform:scale(.985)}
+@media(max-width:390px){.account-page .account-identity-card{gap:10px;padding:12px}.account-page .account-avatar-wrap{width:58px;height:58px;flex-basis:58px}.account-page .account-identity-details strong{font-size:15px}.account-member-code{gap:6px}.account-member-code strong{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.account-page button,.account-security-chevron{transition:none}}
 </style>
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
@@ -1757,45 +1797,64 @@ footer{color:#9f91aa}
       <p class="small">ملاحظة: إذا كان إذن الإشعارات محظوراً من Chrome، افتح إعدادات الموقع في المتصفح واسمح بالإشعارات أولاً.</p>
     </section>
 
-    <section id="account" class="hidden">
-      <h2>حسابي</h2>
+    <section id="account" class="hidden account-page">
+      <div class="account-page-heading">
+        <div><span class="account-eyebrow">BARAN GAME · MY ACCOUNT</span><h2>حسابي</h2><p class="small">إدارة حسابك ومعلوماتك بسهولة.</p></div>
+        <span class="account-heading-mark" aria-hidden="true">✦</span>
+      </div>
       <div class="account-identity-card">
         <div class="account-avatar-wrap"><img id="accountAvatar" class="account-avatar hidden" alt="الصورة الشخصية"><div id="accountAvatarFallback" class="account-avatar-fallback">B</div></div>
         <div class="account-identity-details"><strong id="accountDisplayName">مستخدم Baran Game</strong><span id="accountDisplayEmail" dir="ltr"></span><span id="accountProviderLabel" class="account-provider-label">حساب Baran Game</span><div class="account-member-code"><span>رقم العضوية</span><strong id="accountMemberCode" dir="ltr">جاري التحميل...</strong><button type="button" class="secondary" onclick="copyBaranMemberCode()">نسخ المعرّف</button><span id="memberCodeMessage" class="small" role="status"></span></div></div>
       </div>
-      <p id="accountInfo" class="small"></p>
-      <button class="full secondary" onclick="showSection('rewards',null)">النقاط والمكافآت 🎁</button>
-      <div class="deposit-card">
-        <h3>تعديل بيانات الحساب 👤</h3>
+      <p id="accountInfo" class="small account-info-note"></p>
+
+      <div class="account-section-label"><span class="account-section-icon">♙</span><div><strong>الملف الشخصي</strong><small>بيانات الحساب الأساسية</small></div></div>
+      <div class="account-panel">
         <label for="profileFullName">الاسم الكامل</label>
         <input id="profileFullName" type="text" maxlength="80" autocomplete="name" placeholder="اكتب اسمك">
-        <label for="profilePhone">رقم الهاتف (اختياري)</label>
+        <label for="profilePhone">رقم التواصل (اختياري)</label>
         <input id="profilePhone" type="tel" maxlength="30" autocomplete="tel" placeholder="رقم التواصل">
         <button id="saveProfileButton" class="full" type="button" onclick="saveProfileDetails()">حفظ البيانات</button>
-        <div id="profileMessage" class="small" role="status"></div>
+        <div id="profileMessage" class="small account-feedback" role="status"></div>
       </div>
-      <div class="deposit-card">
-        <h3>تغيير البريد الإلكتروني ✉️</h3>
-        <p class="small">سيُرسل رابط تأكيد إلى البريد الجديد. لن يتغير بريد الحساب قبل تأكيده.</p>
-        <label for="newAccountEmail">البريد الإلكتروني الجديد</label>
-        <input id="newAccountEmail" type="email" autocomplete="email" placeholder="name@example.com">
-        <label for="emailChangePassword">كلمة المرور الحالية للتأكيد</label>
-        <input id="emailChangePassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية">
-        <button id="changeEmailButton" class="full" type="button" onclick="changeAccountEmail()">إرسال رابط تأكيد البريد</button>
-        <div id="emailChangeMessage" class="small" role="status"></div>
-      </div>
-      <div class="deposit-card">
-        <h3>تغيير كلمة المرور 🔐</h3>
-        <label for="currentAccountPassword">كلمة المرور الحالية</label>
-        <input id="currentAccountPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية">
-        <label for="newAccountPassword">كلمة المرور الجديدة</label>
-        <input id="newAccountPassword" type="password" autocomplete="new-password" placeholder="8 أحرف على الأقل مع حرف كبير وصغير ورقم ورمز">
-        <label for="confirmAccountPassword">تأكيد كلمة المرور الجديدة</label>
-        <input id="confirmAccountPassword" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور الجديدة">
-        <button id="changePasswordButton" class="full" type="button" onclick="changeAccountPassword()">تحديث كلمة المرور</button>
-        <div id="changePasswordMessage" class="small" role="status"></div>
-      </div>
-      <button class="full secondary" onclick="signOut()">تسجيل الخروج</button>
+
+      <button class="account-shortcut" type="button" onclick="showSection('rewards',null)">
+        <span class="account-shortcut-icon">🎁</span><span><strong>النقاط والمكافآت</strong><small>رصيد نقاطك ومكافآتك</small></span><span class="account-shortcut-arrow">←</span>
+      </button>
+
+      <details class="account-security">
+        <summary>
+          <span class="account-shortcut-icon">♧</span>
+          <span><strong>الأمان والخصوصية</strong><small>إعدادات حماية الحساب وتحديث بيانات الدخول</small></span>
+          <span class="account-security-chevron">⌄</span>
+        </summary>
+        <div class="account-security-content">
+          <div class="account-security-card">
+            <h3>تغيير البريد الإلكتروني</h3>
+            <p class="small">سيُرسل رابط تأكيد إلى البريد الجديد. لن يتغير بريد الحساب قبل تأكيده.</p>
+            <label for="newAccountEmail">البريد الإلكتروني الجديد</label>
+            <input id="newAccountEmail" type="email" autocomplete="email" placeholder="name@example.com">
+            <label for="emailChangePassword">كلمة المرور الحالية للتأكيد</label>
+            <input id="emailChangePassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية">
+            <button id="changeEmailButton" class="full" type="button" onclick="changeAccountEmail()">إرسال رابط تأكيد البريد</button>
+            <div id="emailChangeMessage" class="small account-feedback" role="status"></div>
+          </div>
+          <div class="account-security-card">
+            <h3>تغيير كلمة المرور</h3>
+            <label for="currentAccountPassword">كلمة المرور الحالية</label>
+            <input id="currentAccountPassword" type="password" autocomplete="current-password" placeholder="كلمة المرور الحالية">
+            <label for="newAccountPassword">كلمة المرور الجديدة</label>
+            <input id="newAccountPassword" type="password" autocomplete="new-password" placeholder="8 أحرف على الأقل مع حرف كبير وصغير ورقم ورمز">
+            <label for="confirmAccountPassword">تأكيد كلمة المرور الجديدة</label>
+            <input id="confirmAccountPassword" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور الجديدة">
+            <button id="changePasswordButton" class="full" type="button" onclick="changeAccountPassword()">تحديث كلمة المرور</button>
+            <div id="changePasswordMessage" class="small account-feedback" role="status"></div>
+          </div>
+          <p class="small account-security-note">لا تشارك كلمة المرور أو رموز التحقق مع أي شخص. استخدم كلمة مرور قوية وخاصة بهذا الحساب.</p>
+        </div>
+      </details>
+
+      <button class="account-signout" type="button" onclick="signOut()">تسجيل الخروج</button>
     </section>
 
     <section id="admin" class="hidden">
