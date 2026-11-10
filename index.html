@@ -2329,7 +2329,7 @@ async function loadFreeFireCatalog(){
       .like("product_code","FREEFIRE_%")
       .order("sort_order",{ascending:true});
     if(error)throw error;
-    const packages=(data||[]).filter(product=>/^FREEFIRE_\\d+$/.test(product.product_code||""));
+    const packages=(data||[]).filter(product=>/^FREEFIRE_\d+$/.test(product.product_code||""));
     container.replaceChildren(heading);
     if(!packages.length){
       const empty=document.createElement("p");
