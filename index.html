@@ -1323,6 +1323,7 @@ footer{color:#9f91aa}
 </style>
 <script id="baran-home-promo-rotation">
 (function(){
+ function init(){
  const root=document.getElementById('baranPromoCarousel');
  if(!root||root.dataset.rotationReady==='1')return;
  root.dataset.rotationReady='1';
@@ -1342,6 +1343,9 @@ footer{color:#9f91aa}
  root.addEventListener('touchstart',()=>{if(timer)clearInterval(timer);},{passive:true});
  root.addEventListener('touchend',start,{passive:true});
  show(0);start();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+ else init();
 })();
 </script>
 </head>
