@@ -1321,33 +1321,6 @@ footer{color:#9f91aa}
 @media(min-width:650px){.home-feature-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.baran-promo-slide{padding-right:28px;padding-left:28px}.baran-promo-art{width:96px;height:96px;flex-basis:96px;font-size:52px}}
 @media(max-width:360px){.baran-promo-copy h3{font-size:16px}.baran-promo-art{width:58px;height:58px;flex-basis:58px;font-size:32px}.baran-promo-slide{padding-right:12px;padding-left:12px}}
 </style>
-<script id="baran-home-promo-rotation">
-(function(){
- function init(){
- const root=document.getElementById('baranPromoCarousel');
- if(!root||root.dataset.rotationReady==='1')return;
- root.dataset.rotationReady='1';
- const slides=Array.from(root.querySelectorAll('[data-promo-slide]'));
- const dots=Array.from(root.querySelectorAll('[data-promo-dot]'));
- if(slides.length<2)return;
- let active=0,timer=null;
- function show(index){
-  active=(index+slides.length)%slides.length;
-  slides.forEach((el,i)=>el.classList.toggle('is-active',i===active));
-  dots.forEach((el,i)=>el.classList.toggle('is-active',i===active));
- }
- function start(){if(timer)clearInterval(timer);timer=setInterval(()=>show(active+1),5000);}
- dots.forEach((dot,i)=>dot.addEventListener('click',()=>{show(i);start();}));
- root.addEventListener('mouseenter',()=>{if(timer)clearInterval(timer);});
- root.addEventListener('mouseleave',start);
- root.addEventListener('touchstart',()=>{if(timer)clearInterval(timer);},{passive:true});
- root.addEventListener('touchend',start,{passive:true});
- show(0);start();
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
- else init();
-})();
-</script>
 </head>
 <body>
 
@@ -1364,8 +1337,7 @@ footer{color:#9f91aa}
         <span class="baran-ticker-arabic" dir="rtl">أهلاً بك! عالمك للألعاب والاشتراكات والخدمات الرقمية، كل اللي بتحبه بمكان واحد 🎮</span>
       </div>
     </div>
-  </div> <p>مرحباً بك في عالم الألعاب والخدمات الرقمية</p>
-  <p>كل ما تحبّه… بمكان واحد 🎮</p>
+  </div>
   <div class="header-tag">GAMING • DIGITAL • REWARDS</div>
 </header>
 
@@ -1511,22 +1483,6 @@ footer{color:#9f91aa}
         <span class="home-welcome-kicker">✦ BARAN GAME · ALL YOUR DIGITAL NEEDS</span>
         <h2>كل ألعابك وخدماتك الرقمية بمكان واحد</h2>
         <p>ألعاب، اشتراكات، بطاقات رقمية وتطبيقات — اختار القسم المناسب ووصل لمنتجك بسهولة.</p>
-        <div class="home-welcome-actions">
-          <button type="button" class="home-cta-primary" onclick="showSection('games',null)">تصفح الألعاب <span aria-hidden="true">←</span></button>
-          <button type="button" class="home-cta-secondary" onclick="showSection('services',null)">تصفح كل الخدمات</button>
-        </div>
-      </div>
-      <div class="baran-promo-carousel" id="baranPromoCarousel" aria-label="عروض وأقسام Baran Game">
-        <article class="baran-promo-slide is-active" data-promo-slide>
-          <div class="baran-promo-copy"><span>BARAN GAMING</span><h3>عالم الألعاب بانتظارك</h3><p>PUBG MOBILE وFree Fire والمزيد من الألعاب.</p><button type="button" onclick="showSection('games',null)">اكتشف الألعاب ←</button></div><div class="baran-promo-art" aria-hidden="true">🎮</div>
-        </article>
-        <article class="baran-promo-slide" data-promo-slide>
-          <div class="baran-promo-copy"><span>DIGITAL SUBSCRIPTIONS</span><h3>خدمات رقمية لحياتك اليومية</h3><p>ذكاء اصطناعي وVPN وتطبيقات واشتراكات.</p><button type="button" onclick="showSection('services',null)">اكتشف الخدمات ←</button></div><div class="baran-promo-art" aria-hidden="true">✦</div>
-        </article>
-        <article class="baran-promo-slide" data-promo-slide>
-          <div class="baran-promo-copy"><span>DIGITAL GIFT CARDS</span><h3>بطاقاتك الرقمية بمكان واحد</h3><p>تصفح Google Play والبطاقات الرقمية المتاحة.</p><button type="button" onclick="showSection('giftCardsStore',null)">تصفح البطاقات ←</button></div><div class="baran-promo-art" aria-hidden="true">🎁</div>
-        </article>
-        <div class="baran-promo-dots" aria-label="التنقل بين الشرائح"><button type="button" class="is-active" data-promo-dot aria-label="العرض الأول"></button><button type="button" data-promo-dot aria-label="العرض الثاني"></button><button type="button" data-promo-dot aria-label="العرض الثالث"></button></div>
       </div>
       <div class="home-shortcuts" aria-label="وصول سريع لكل الأقسام">
         <button class="home-shortcut" type="button" onclick="showSection('games',null)"><span class="home-shortcut-icon">🎮</span><span class="home-shortcut-copy"><strong>الألعاب</strong><small>شحن وباقات الألعاب</small></span></button>
@@ -1536,19 +1492,6 @@ footer{color:#9f91aa}
         <button class="home-shortcut" type="button" onclick="showSection('orders',null)"><span class="home-shortcut-icon">📦</span><span class="home-shortcut-copy"><strong>طلباتي</strong><small>تابع حالة طلبك</small></span></button>
         <button class="home-shortcut" type="button" onclick="showSection('wallet',null)"><span class="home-shortcut-icon">👛</span><span class="home-shortcut-copy"><strong>المحفظة</strong><small>رصيدك وحركاتك</small></span></button>
       </div>
-      <section class="home-feature-section" aria-labelledby="baranPopularTitle">
-        <div class="home-categories-heading"><h2 id="baranPopularTitle">الأكثر استكشافاً</h2><span>من مختلف أقسام المتجر</span></div>
-        <div class="home-feature-grid">
-          <button type="button" class="home-feature-card" onclick="showSection('games',null)"><span>🎮</span><strong>الألعاب</strong><small>PUBG MOBILE وFree Fire</small><em>تصفح القسم ←</em></button>
-          <button type="button" class="home-feature-card" onclick="showSection('chatgptStore',null)"><span>🤖</span><strong>الذكاء الاصطناعي</strong><small>اشتراكات AI</small><em>تصفح القسم ←</em></button>
-          <button type="button" class="home-feature-card" onclick="showSection('vpnStore',null)"><span>🛡️</span><strong>اشتراكات VPN</strong><small>خدمات VPN</small><em>تصفح القسم ←</em></button>
-          <button type="button" class="home-feature-card" onclick="showSection('giftCardsStore',null)"><span>🎁</span><strong>البطاقات الرقمية</strong><small>Google Play وغيرها</small><em>تصفح القسم ←</em></button>
-        </div>
-      </section>
-      <section class="home-todays-offers" aria-labelledby="baranOffersTitle">
-        <div class="home-categories-heading"><h2 id="baranOffersTitle">عروض اليوم ✨</h2><span>العروض المعتمدة فقط</span></div>
-        <div class="home-offer-empty"><span>🎉</span><div><strong>ترقّب عروض Baran القادمة</strong><p>رح تظهر هون الخصومات والباقات الخاصة فور اعتمادها، مع السعر قبل وبعد الخصم.</p></div></div>
-      </section>
       <div class="home-order-steps" aria-label="خطوات الطلب">
         <div class="home-order-steps-heading"><strong>كيف تطلب من Baran؟</strong><span>3 خطوات بسيطة</span></div>
         <div class="home-order-steps-grid">
@@ -1556,25 +1499,6 @@ footer{color:#9f91aa}
           <div class="home-order-step"><span>02</span><strong>أدخل البيانات</strong><small>راجع المعرّف والباقة</small></div>
           <div class="home-order-step"><span>03</span><strong>راجع طلبك</strong><small>تابع الحالة من طلباتي</small></div>
         </div>
-      </div>
-      <div class="home-categories-heading"><h2>اختار القسم المناسب</h2><span>كل قسم واضح لحاله</span></div>
-      <div class="home-category-grid">
-        <button class="home-category-card" type="button" onclick="showSection('games',null)">
-          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700&q=80" alt="الألعاب الإلكترونية" loading="lazy">
-          <span class="home-category-card-body"><strong>الألعاب 🎮</strong><small>PUBG MOBILE وFREE FIRE</small><em>عرض الألعاب ←</em></span>
-        </button>
-        <button class="home-category-card" type="button" onclick="showSection('services',null)">
-          <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=700&q=80" alt="الخدمات الرقمية" loading="lazy">
-          <span class="home-category-card-body"><strong>الخدمات الرقمية ✦</strong><small>ChatGPT وVPN وتطبيقات</small><em>عرض الخدمات ←</em></span>
-        </button>
-        <button class="home-category-card" type="button" onclick="showSection('giftCardsStore',null)">
-          <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700&q=80" alt="البطاقات الرقمية" loading="lazy">
-          <span class="home-category-card-body"><strong>البطاقات الرقمية 🎁</strong><small>Google Play وبطاقات أخرى</small><em>عرض البطاقات ←</em></span>
-        </button>
-        <button class="home-category-card" type="button" onclick="showSection('mobileTopup',null)">
-          <img src="https://images.unsplash.com/photo-1511704368843-0e7f2e4f7b2b?w=700&q=80" alt="شحن رصيد الهاتف" loading="lazy">
-          <span class="home-category-card-body"><strong>شحن رصيد الجوال 📱</strong><small>سيريتل وMTN</small><em>تفاصيل الخدمة ←</em></span>
-        </button>
       </div>
       <div class="home-service-note"><span>ℹ️</span><span><b>معلومة مهمة:</b> تظهر حالة توفر كل خدمة داخل قسمها. لن نعرض أسعاراً تقديرية أو نؤكد شحناً قبل تفعيل المورد المعتمد.</span></div>
     </section>
