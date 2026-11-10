@@ -2459,7 +2459,8 @@ async function findBaranStaffUser(){
 }
 async function setBaranModerator(email,enabled){
   if(!currentUser||currentUser.id!==BARAN_OWNER_ID){alert("هذا الإجراء للمالك فقط.");return;}
-  const action=enabled?"تفعيل صلاحية المشرفة لهذا الحساب":"إلغاء صلاحية المشرف عن هذا الحساب";
+  if(enabled){alert("لم نفعّل الإضافة بعد: يجب أولاً ربط صلاحيات المشرفة المحدودة بلوحة الإدارة وحماية الأقسام الحساسة. لن نمنح الحساب وصولاً قبل اكتمال ذلك.");return;}
+  const action="إلغاء صلاحية المشرف عن هذا الحساب";
   if(!confirm("تأكيد "+action+"؟\n"+email+"\n\nلن تُمنح صلاحيات مالية."))return;
   const result=document.getElementById("staffFindResult");
   if(result)result.textContent="جاري تنفيذ التغيير...";
