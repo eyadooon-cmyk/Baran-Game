@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100b16">
+<title>Baran AI Control Center</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#0c0911;--panel:#17121e;--line:#51415e;--accent:#9a72bd;--muted:#b9a9c9}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#21152c,#0c0911 48%);color:#eee8f4;font-family:Arial,Tahoma,sans-serif;line-height:1.75}
+header{padding:22px 15px;border-bottom:1px solid var(--line);background:#100b16dd}
+main{width:min(1000px,100%);margin:auto;padding:14px}
+h1{font-size:23px;margin:0;color:#eadcf5}h2{font-size:18px;margin:0 0 8px;color:#ddc9ef}p{margin:5px 0}
+.muted,.small{color:var(--muted);font-size:13px}
+.toolbar,.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+button,a.btn{display:inline-flex;justify-content:center;align-items:center;min-height:43px;padding:9px 13px;border:1px solid #80649a;border-radius:10px;background:#6f4a91;color:white;text-decoration:none;font-weight:700;cursor:pointer}
+button.secondary,a.secondary{background:#282031;border-color:var(--line);color:#eee8f4}
+button:disabled{opacity:.55;cursor:wait}
+.panel{margin:13px 0;padding:15px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,#1b1522,#120e17);box-shadow:0 8px 24px #0003}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{padding:13px;border:1px solid #51415e;border-radius:12px;background:#100c15}
+.stat strong{display:block;font-size:22px;color:#e4d3f1}
+.stat span{font-size:12px;color:var(--muted)}
+#chat{height:260px;max-height:42vh;overflow:auto;padding:10px;border-radius:12px;background:#0d0912;border:1px solid #40334b}
+.msg{white-space:pre-wrap;overflow-wrap:anywhere;padding:10px;margin:7px 0;border-radius:10px;background:#211a2a}
+.msg.user{background:#342344}.msg.error{border:1px solid #a65353}
+input{width:100%;min-height:45px;padding:11px;border-radius:10px;border:1px solid var(--line);background:#0d0912;color:white;font:inherit}
+.task{padding:11px;margin:8px 0;border:1px solid #51415e;border-radius:11px;background:#110d17}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;background:#30243a;color:#e7d8f4;font-size:12px;margin-left:5px}
+#status{padding:10px;border:1px solid var(--line);border-radius:10px;background:#120e17}
+@media(max-width:540px){main{padding:10px}.grid{grid-template-columns:1fr}h1{font-size:20px}.panel{padding:12px}}
+</style>
+</head>
+<body>
+<header><main>
+<h1>🧠 Baran AI Control Center</h1>
+<p class="muted">مركز موحّد لمساعد الإدارة والمراقبة والدعم وخطة العمل — قراءة وتحليل آمن.</p>
+<div class="toolbar">
+<a class="btn secondary" href="./index.html">العودة للمتجر ولوحة الإدارة</a>
+<a class="btn secondary" href="./admin-work-plan.html">خطة العمل الكاملة</a>
+<button id="refresh" type="button">تحديث البيانات</button>
+</div>
+<div id="status" role="status" aria-live="polite">جاري التحقق من جلسة المدير...</div>
+</main></header>
+<main>
+<section class="panel">
+<h2>📊 لقطة حالة المتجر</h2>
+<div class="grid" id="stats">
+<div class="stat"><strong>—</strong><span>حالة المراقبة</span></div>
+<div class="stat"><strong>—</strong><span>التنبيهات النشطة</span></div>
+<div class="stat"><strong>—</strong><span>المهام المفتوحة</span></div>
+<div class="stat"><strong>—</strong><span>المهام المكتملة</span></div>
+</div>
+<p id="monitorDetails" class="small">سيتم تحميل لقطة المراقبة من الخادم.</p>
+<div id="alerts"></div>
+</section>
+<section class="panel">
+<h2>🤖 اسأل المساعد الإداري</h2>
+<p class="small">المساعد يقرأ السجلات المتاحة ويحللها. ما بيغيّر أرصدة أو إيداعات أو أسعار أو طلبات أو إعدادات موردين.</p>
+<div id="chat" aria-live="polite"><div class="msg">أهلاً! اختر مهمة سريعة أو اكتب سؤالك، وأنا براجع بيانات Baran Game المسجلة.</div></div>
+<form id="askForm" class="toolbar">
+<input id="question" maxlength="1200" autocomplete="off" placeholder="مثلاً: اعمل تقرير شامل عن وضع المتجر وأهم المشاكل...">
+<button id="send" type="submit">إرسال السؤال</button>
+</form>
+<div class="actions">
+<button class="secondary quick" data-q="اعمل تقريراً تنفيذياً عن وضع Baran Game: أهم المشاكل والأولويات وما يحتاج تدخلي، مع الدليل والخطوة التالية.">🧭 تقرير المدير</button>
+<button class="secondary quick" data-q="راجع تذاكر الدعم المفتوحة فقط، صنّفها حسب الأولوية والسبب، واقترح مسودات ردود. لا ترسل أي رد.">🎧 فريق الدعم</button>
+<button class="secondary quick" data-q="راجع الموردين وربط المنتجات وجاهزية API وتكاليف الشراء، وحدد ما هو مربوط فعلياً وما ينقص قبل التفعيل.">🔌 الموردون وAPI</button>
+<button class="secondary quick" data-q="حلل سجل التدقيق والتنبيهات والمخاطر الأمنية المتاحة، واذكر الدليل والإجراء الوقائي دون تغيير الصلاحيات.">🛡️ الأمان</button>
+<button class="secondary quick" data-q="دقق المنتجات والأسعار والتصنيفات والبيانات الناقصة، وافصل ما هو مؤكد عن المقترحات. لا تحفظ أي تعديل.">🛍️ المنتجات</button>
+<button class="secondary quick" data-q="اعمل تقريراً مالياً من السجلات الرسمية، وافصل USD عن SYP وبيّن ما ينقص لحساب صافي الربح بدقة. قراءة فقط.">💰 التحليل المالي</button>
+</div>
+<p id="assistantStamp" class="small"></p>
+</section>
+<section class="panel">
+<h2>🗂️ مهام المشروع</h2>
+<p class="small">هذه قائمة من خطة العمل الحالية. تغيير حالة المهمة متاح من صفحة الخطة الأصلية فقط، ولا يعني تنفيذ الإجراء التشغيلي.</p>
+<div id="tasks"><p class="muted">جاري تحميل المهام...</p></div>
+</section>
+<section class="panel">
+<h2>🔒 حدود الصلاحيات</h2>
+<p class="small">المساعد يستطيع التحليل والمراقبة وتجهيز مسودات الردود والخطط. الحالات المالية والأمنية الحساسة تُحوّل إليك مع السبب. لا اعتماد حوالات، لا إضافة أو خصم رصيد، لا استرداد، لا تعديل أسعار أو تكاليف، ولا شحن مورد تلقائي من هذه اللوحة.</p>
+</section>
+</main>
+<script>
+(function(){
+"use strict";
+const URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
+const KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+const sb=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let session=null,busy=false,history=[];
+const el=id=>document.getElementById(id);
+function say(text,kind){const d=document.createElement("div");d.className="msg "+(kind||"");d.textContent=String(text||"");el("chat").appendChild(d);el("chat").scrollTop=el("chat").scrollHeight;return d;}
+async function api(name,body){
+ if(!session)throw new Error("سجّل الدخول من لوحة الإدارة أولاً.");
+ const r=await fetch(URL+"/functions/v1/"+name,{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"apikey":KEY,"Content-Type":"application/json"},body:JSON.stringify(body||{})});
+ let data={};try{data=await r.json()}catch(_){}
+ if(!r.ok)throw new Error(data.error||"تعذر الاتصال بالخدمة.");
+ return data;
+}
+function value(x){if(x===null||x===undefined)return "غير متاح";if(typeof x==="object")return JSON.stringify(x);return String(x);}
+function renderTasks(tasks){
+ const box=el("tasks");box.replaceChildren();
+ if(!tasks.length){box.textContent="ما في مهام مسجلة حالياً.";return;}
+ tasks.slice(0,8).forEach(t=>{
+  const card=document.createElement("div");card.className="task";
+  const title=document.createElement("strong");title.textContent=t.title||"مهمة بدون عنوان";
+  const meta=document.createElement("div");meta.className="small";meta.textContent=(t.task_code||"")+" • الأولوية: "+(t.priority||"—")+" • الحالة: "+(t.status||"—");
+  const next=document.createElement("p");next.className="small";next.textContent="الخطوة التالية: "+(t.next_step||"غير محددة");
+  card.append(title,meta,next);box.appendChild(card);
+ });
+}
+async function refresh(){
+ el("status").textContent="جاري تحميل المراقبة وخطة العمل...";
+ const [monitorResult,planResult]=await Promise.allSettled([api("baran-admin-monitor",{}),api("baran-admin-work-plan",{action:"list"})]);
+ let open=0,done=0;
+ if(planResult.status==="fulfilled"){
+  const tasks=planResult.value.tasks||[];open=tasks.filter(t=>t.status!=="completed").length;done=tasks.length-open;renderTasks(tasks);
+ }else{el("tasks").textContent="تعذر تحميل خطة العمل: "+planResult.reason.message;}
+ if(monitorResult.status==="fulfilled"){
+  const m=monitorResult.value.monitor||{};
+  const active=Array.isArray(m.active_alerts)?m.active_alerts.length:(m.active_alerts_count??m.alerts_active??"—");
+  el("stats").innerHTML="";
+  [["متصل","حالة طلب لقطة المراقبة"],[value(active),"التنبيهات النشطة"],[String(open),"المهام المفتوحة"],[String(done),"المهام المكتملة"]].forEach(([n,l])=>{const d=document.createElement("div");d.className="stat";const b=document.createElement("strong");b.textContent=n;const s=document.createElement("span");s.textContent=l;d.append(b,s);el("stats").appendChild(d);});
+  el("monitorDetails").textContent="آخر استجابة: "+new Date(monitorResult.value.checked_at||Date.now()).toLocaleString("ar")+" — بيانات المراقبة وصلت من الخادم.";
+  const alerts=el("alerts");alerts.replaceChildren();
+  const list=Array.isArray(m.active_alerts)?m.active_alerts:[];
+  list.slice(0,5).forEach(a=>{const d=document.createElement("div");d.className="task";d.textContent=(a.title||a.alert_type||"تنبيه")+(a.message?" — "+a.message:"");alerts.appendChild(d);});
+  if(!list.length)alerts.textContent="لم تُرجع لقطة المراقبة قائمة تنبيهات مفصلة في هذه الاستجابة.";
+ }else{el("monitorDetails").textContent="تعذر تحميل المراقبة: "+monitorResult.reason.message;}
+ const errors=[monitorResult,planResult].filter(x=>x.status==="rejected").length;
+ el("status").textContent=errors?"تم تحميل أجزاء من المركز، وهناك "+errors+" خدمة تحتاج مراجعة.":"تم تحميل المراقبة وخطة العمل بنجاح.";
+}
+async function ask(q){
+ if(busy)return;const clean=String(q||"").trim();if(!clean)return;
+ if(clean.length>1200){say("اختصر السؤال إلى 1200 حرف.","error");return;}
+ say(clean,"user");history.push({role:"user",content:clean});history=history.slice(-10);
+ const pending=say("عم راجع السجلات...");
+ busy=true;el("send").disabled=true;
+ try{
+  const result=await api("baran-admin-assistant",{messages:history});
+  if(!result.reply)throw new Error("وصل رد غير مكتمل من المساعد.");
+  pending.remove();say(result.reply);history.push({role:"assistant",content:result.reply});history=history.slice(-10);
+  el("assistantStamp").textContent="آخر تحديث للبيانات: "+new Date(result.data_updated_at||Date.now()).toLocaleString("ar");
+ }catch(e){pending.remove();say(e.message,"error");}
+ finally{busy=false;el("send").disabled=false;}
+}
+el("askForm").addEventListener("submit",e=>{e.preventDefault();const q=el("question").value;el("question").value="";void ask(q);});
+document.querySelectorAll(".quick").forEach(b=>b.addEventListener("click",()=>void ask(b.dataset.q)));
+el("refresh").addEventListener("click",()=>{if(!busy)refresh().catch(e=>el("status").textContent=e.message);});
+async function init(){
+ try{const {data,error}=await sb.auth.getSession();if(error)throw error;session=data.session;
+  if(!session){el("status").textContent="ما في جلسة دخول. افتح المتجر وسجّل دخولك كمدير، وبعدها ارجع لهالصفحة.";el("tasks").textContent="بانتظار تسجيل الدخول.";return;}
+  await refresh();
+ }catch(e){el("status").textContent=e.message||"تعذر التحقق من الجلسة.";}
+}
+init();
+})();
+</script>
+</body>
+</html>
