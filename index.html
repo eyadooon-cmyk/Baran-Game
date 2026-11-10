@@ -289,6 +289,30 @@ section,.auth-card{border-color:#49345f}
 .drawer-link #adminDrawerOrdersCount.hidden,.drawer-link #adminDrawerSupportCount.hidden{display:none!important}
 @media(max-width:380px){.admin-drawer-counts{gap:3px}.admin-drawer-count{font-size:9px;padding:3px 5px}}
 
+/* سجل نشاط المحفظة وطلبات الشحن */
+.wallet-activity-panel{margin:17px 0 20px;padding:15px;border:1px solid #59416d;border-radius:17px;background:linear-gradient(155deg,#1d1627,#120e18);box-shadow:0 8px 22px #0003}
+.wallet-activity-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
+.wallet-activity-kicker{font-size:9px;font-weight:900;letter-spacing:1.5px;color:#bd99dc}
+.wallet-activity-heading h2{margin:4px 0;color:#eddef8;font-size:17px}
+.wallet-activity-heading p{margin:0;color:#b9a9c7;font-size:11px;line-height:1.6}
+.wallet-history-refresh{flex:0 0 auto;width:auto;min-height:36px;margin:0;padding:7px 10px;border:1px solid #72558a;border-radius:10px;background:#30223d;color:#ead8f7;font-size:11px}
+.wallet-deposit-history{display:grid;gap:9px}
+.wallet-deposit-item{min-width:0;padding:12px;border:1px solid #493653;border-radius:13px;background:linear-gradient(120deg,#21182b,#17121f)}
+.wallet-deposit-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wallet-deposit-amount{color:#f0e4fa;font-size:17px;font-weight:900;overflow-wrap:anywhere}
+.wallet-deposit-status{flex:0 0 auto;padding:5px 9px;border-radius:20px;font-size:10px;font-weight:800}
+.wallet-deposit-status.is-pending{background:#72521c33;border:1px solid #9c783c;color:#f0cf91}
+.wallet-deposit-status.is-approved{background:#285a4033;border:1px solid #54896a;color:#a8dfb9}
+.wallet-deposit-status.is-rejected{background:#71343433;border:1px solid #995858;color:#efb0b0}
+.wallet-deposit-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 12px;margin-top:8px;color:#b9a9c7;font-size:10px;line-height:1.7}
+.wallet-receipt-link{display:inline-flex;margin-top:9px;color:#d6b2f0;font-size:11px;font-weight:800;text-decoration:none}
+.wallet-history-empty{display:grid;justify-items:center;gap:6px;padding:23px 12px;border:1px dashed #604879;border-radius:13px;background:#17121f;text-align:center}
+.wallet-history-empty>span{font-size:25px;color:#c9a3e8}
+.wallet-history-empty strong{color:#e8d9f4;font-size:13px}
+.wallet-history-empty small{color:#ad9dbb;font-size:11px;line-height:1.6}
+.wallet-history-note{margin:11px 2px 0;color:#a99ab5;font-size:10px;line-height:1.8}
+@media(max-width:380px){.wallet-activity-panel{padding:12px}.wallet-activity-heading{align-items:flex-start}.wallet-deposit-meta{flex-direction:column}.wallet-deposit-amount{font-size:15px}}
+
 /* بطاقة المحفظة المختصرة في الصفحة الرئيسية */
 .home-wallet-card{position:relative;isolation:isolate;overflow:hidden;margin:14px 0 20px;padding:17px;border:1px solid #76558f;border-radius:18px;background:radial-gradient(circle at 100% 0%,#56387566,transparent 42%),linear-gradient(130deg,#241832,#15101c 72%,#21152c);box-shadow:0 10px 25px #0005}
 .home-wallet-card:after{content:"";position:absolute;z-index:-1;left:-35px;bottom:-75px;width:180px;height:180px;border-radius:50%;background:#a56bd6;filter:blur(65px);opacity:.15;pointer-events:none}
@@ -1688,6 +1712,14 @@ footer{color:#9f91aa}
 <div><span aria-hidden="true">✓</span><strong>مراجعة آمنة</strong><small>قبل إضافة الرصيد</small></div>
 <div><span aria-hidden="true">⌁</span><strong>شفافية</strong><small>حالة طلبك واضحة</small></div>
 </div>
+      <section class="wallet-activity-panel" aria-labelledby="walletActivityTitle">
+        <div class="wallet-activity-heading">
+          <div><span class="wallet-activity-kicker">WALLET ACTIVITY</span><h2 id="walletActivityTitle">سجل طلبات شحن المحفظة</h2><p>تابع طلبات الإيداع وحالة مراجعتها من مكان واحد.</p></div>
+          <button type="button" class="wallet-history-refresh" onclick="loadDepositRequests()" aria-label="تحديث سجل الشحن">↻ تحديث</button>
+        </div>
+        <div id="depositHistory" class="wallet-deposit-history" aria-live="polite">سجّل الدخول لعرض طلباتك.</div>
+        <p class="wallet-history-note">تظهر هنا طلبات الشحن المرسلة عبر طرق الدفع. لا يُضاف الرصيد إلا بعد تأكيد وصول الحوالة.</p>
+      </section>
 
       <div id="walletAdminTransfers" class="hidden">
       <div class="wallet-transfer-panel" id="walletExchangeAdminPanel">
@@ -1852,8 +1884,6 @@ footer{color:#9f91aa}
             <p class="small shamcash-payment-note">مهم: إرسال الطلب لا يعني إضافة الرصيد فوراً. صورة الإشعار للمراجعة فقط، وسيُضاف الرصيد بعد التحقق من وصول الحوالة فعلياً.</p>
             <div id="depositMessage" class="small" role="status"></div>
           </div>
-          <h2 style="margin-top:22px">طلبات الإيداع السابقة</h2>
-          <div id="depositHistory" class="small">سجّل الدخول لعرض طلباتك.</div>
         </div>
       </div>
     </section>
@@ -3415,29 +3445,34 @@ async function loadDepositRequests(){
     if(error) throw error;
     container.replaceChildren();
     if(!data||data.length===0){
-      container.textContent="لا توجد طلبات شحن حتى الآن.";
+      const empty=document.createElement("div");
+      empty.className="wallet-history-empty";
+      empty.innerHTML='<span aria-hidden="true">◈</span><strong>لا توجد طلبات شحن حتى الآن</strong><small>عند إرسال طلب شحن، ستظهر تفاصيله وحالته هنا.</small>';
+      container.appendChild(empty);
       return;
     }
     const labels={pending:"قيد المراجعة",approved:"تمت الموافقة",rejected:"مرفوض"};
     for(const item of data){
-      const row=document.createElement("div");
-      row.className="deposit-row";
-      const date=new Date(item.created_at).toLocaleString("ar");
-      const details=document.createElement("div");
-      details.textContent="المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
-        " | رقم العملية: "+item.transfer_reference+
-        " | الحالة: "+(labels[item.status]||item.status)+
-        " | التاريخ: "+date;
-      row.appendChild(details);
+      const row=document.createElement("article");
+      row.className="wallet-deposit-item";
+      const top=document.createElement("div");top.className="wallet-deposit-top";
+      const amount=document.createElement("strong");amount.className="wallet-deposit-amount";
+      amount.textContent=Number(item.amount).toLocaleString("en-US",{maximumFractionDigits:2})+" "+String(item.currency||"").toUpperCase();
+      const status=document.createElement("span");
+      status.className="wallet-deposit-status "+(item.status==="approved"?"is-approved":item.status==="rejected"?"is-rejected":"is-pending");
+      status.textContent=labels[item.status]||"الحالة غير محددة";
+      top.append(amount,status);
+      const meta=document.createElement("div");meta.className="wallet-deposit-meta";
+      const reference=document.createElement("span");reference.textContent="رقم العملية: "+(item.transfer_reference||"—");
+      const date=document.createElement("time");date.dateTime=item.created_at||"";
+      date.textContent=item.created_at?new Date(item.created_at).toLocaleString("ar"):"—";
+      meta.append(reference,date);row.append(top,meta);
       if(item.receipt_path){
         const {data:signed,error:signedError}=await sb.storage.from("shamcash-receipts").createSignedUrl(item.receipt_path,300);
         if(!signedError&&signed?.signedUrl){
           const link=document.createElement("a");
-          link.href=signed.signedUrl;
-          link.target="_blank";
-          link.rel="noopener noreferrer";
-          link.textContent="عرض صورة الإشعار";
-          link.className="small";
+          link.href=signed.signedUrl;link.target="_blank";link.rel="noopener noreferrer";
+          link.textContent="عرض إيصال التحويل ↗";link.className="wallet-receipt-link";
           row.appendChild(link);
         }
       }
