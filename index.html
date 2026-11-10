@@ -953,6 +953,88 @@ footer{color:#9f91aa}
 .customer-detail-row strong{color:#eee8f4;text-align:left;overflow-wrap:anywhere}
 .customer-directory-empty{padding:22px;text-align:center;color:#b9a9c9;background:#17121e;border:1px dashed #57436a;border-radius:14px}
 
+
+/* إصلاح شامل للتمدد الأفقي في جميع أقسام لوحة الإدارة على الهاتف */
+#adminPanel,
+#adminPanel .admin-subpanel,
+#adminPanel .admin-subpanel > *,
+#adminPanel .finance-section,
+#adminPanel .support-workspace,
+#adminPanel .support-view,
+#adminPanel .security-view,
+#adminPanel .ops-form,
+#adminPanel .ops-list,
+#adminPanel .ops-item{
+  box-sizing:border-box;
+  min-width:0;
+  max-width:100%;
+}
+#adminPanel .admin-subpanel{
+  width:100%;
+  overflow-x:hidden;
+}
+#adminPanel .admin-subpanel :where(div,section,article,header,footer,form,fieldset){
+  min-width:0;
+  max-width:100%;
+}
+#adminPanel .admin-subpanel :where(h1,h2,h3,h4,p,small,strong,span,label,a){
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#adminPanel .finance-hero,
+#adminPanel .finance-section-heading,
+#adminPanel .support-section-head,
+#adminPanel .security-section-title{
+  min-width:0;
+  max-width:100%;
+}
+#adminPanel .finance-hero>div,
+#adminPanel .finance-section-heading>div,
+#adminPanel .support-section-head>div,
+#adminPanel .security-section-title>div{
+  min-width:0;
+  flex:1 1 auto;
+}
+#adminPanel .finance-filter-row,
+#adminPanel .finance-form-grid,
+#adminPanel .finance-sale-grid,
+#adminPanel .ops-grid,
+#adminPanel .admin-hub-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  min-width:0;
+  max-width:100%;
+}
+#adminPanel .admin-subpanel input,
+#adminPanel .admin-subpanel select,
+#adminPanel .admin-subpanel textarea{
+  box-sizing:border-box;
+  max-width:100%;
+  min-width:0;
+}
+#adminPanel .admin-subpanel pre,
+#adminPanel .admin-subpanel code{
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+@media(max-width:560px){
+  #adminPanel .admin-subpanel{padding:10px!important}
+  #adminPanel .finance-hero{align-items:flex-start;flex-wrap:wrap}
+  #adminPanel .finance-section-heading{align-items:flex-start}
+  #adminPanel .finance-section-heading>div{flex:1 1 0}
+  #adminPanel .finance-filter-row,
+  #adminPanel .finance-form-grid,
+  #adminPanel .finance-sale-grid{grid-template-columns:minmax(0,1fr)}
+  #adminPanel .finance-filter-row>*,
+  #adminPanel .finance-form-grid>*,
+  #adminPanel .finance-sale-grid>*{min-width:0;max-width:100%}
+  #adminPanel .finance-card div{overflow-wrap:anywhere}
+  #adminPanel .admin-subpanel-head{align-items:flex-start}
+  #adminPanel .admin-subpanel-head h2{min-width:0;flex:1 1 150px;font-size:16px}
+  #adminPanel .admin-subpanel .ops-actions{display:flex;flex-wrap:wrap;gap:8px}
+  #adminPanel .admin-subpanel .ops-actions button{max-width:100%;white-space:normal}
+}
+
 /* إصلاح تمدد قسم المستخدمين خارج عرض الهاتف */
 [data-admin-panel="users"]{
   box-sizing:border-box!important;
