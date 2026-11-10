@@ -2490,6 +2490,14 @@ async function sendBaranSectionAssistant(sectionId,input,messages,status,sendBut
 
 
 const BARAN_OWNER_ID="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7";
+async function callBaranStaffPortal(action,payload={}){
+  const {data,error}=await sb.functions.invoke("baran-staff-portal",{
+    body:{action,...payload}
+  });
+  if(error)throw error;
+  if(data?.error)throw new Error(data.error);
+  return data?.result;
+}
 function staffEscapeHtml(value){
   return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 }
@@ -2498,9 +2506,8 @@ async function loadBaranStaffList(){
   if(!box)return;
   if(!currentUser||currentUser.id!==BARAN_OWNER_ID){box.textContent="غير مصرح.";return;}
   box.textContent="جاري تحميل قائمة المشرفين...";
-  const {data,error}=await sb.rpc("baran_staff_list");
-  if(error){box.textContent="تعذر تحميل القائمة: "+error.message;return;}
-  const rows=Array.isArray(data)?data:[];
+  const rowsResult=await callBaranStaffPortal("staff_list");
+  const rows=Array.isArray(rowsResult)?rowsResult:[];
   if(!rows.length){box.textContent="لا يوجد مشرفون مسجلون حالياً.";return;}
   box.innerHTML=rows.map(row=>{
     const email=staffEscapeHtml(row.email);
@@ -2518,8 +2525,7 @@ async function findBaranStaffUser(){
   if(!email){result.textContent="اكتب البريد الإلكتروني أولاً.";return;}
   button.disabled=true;result.textContent="جاري البحث...";
   try{
-    const {data,error}=await sb.rpc("baran_staff_find_user",{p_email:email});
-    if(error)throw error;
+    const data=await callBaranStaffPortal("staff_find_user",{email});
     if(!data||!data.found){result.textContent="لم يتم العثور على حساب بهذا البريد. يجب أن يكون الحساب مسجلاً مسبقاً.";return;}
     if(data.is_owner){result.textContent="هذا بريد حساب المالك، ولا يمكن تحويله إلى مشرف.";return;}
     const safeEmail=staffEscapeHtml(data.email);
@@ -2540,8 +2546,7 @@ async function setBaranModerator(email,enabled){
   if(!confirm("تأكيد "+action+"؟\n"+email+"\n\nلن تُمنح صلاحيات مالية."))return;
   const result=document.getElementById("staffFindResult");
   if(result)result.textContent="جاري تنفيذ التغيير...";
-  const {data,error}=await sb.rpc("baran_staff_set_moderator",{p_email:email,p_enabled:enabled});
-  if(error){if(result)result.textContent="لم يتم التغيير: "+error.message;return;}
+  await callBaranStaffPortal("staff_set_moderator",{email,enabled});
   if(result)result.textContent=enabled?"تم تفعيل دور المشرف في قاعدة البيانات.":"تم إلغاء دور المشرف في قاعدة البيانات.";
   await loadBaranStaffList();
 }
