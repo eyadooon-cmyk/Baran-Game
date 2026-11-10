@@ -910,6 +910,22 @@ footer{color:#9f91aa}
 .admin-hub-card-primary{border-color:#9870b4;background:linear-gradient(145deg,#352443,#1b1424)}
 .admin-hub-card-sensitive{border-color:#6b5362}
 @media(max-width:380px){.admin-hub-group{padding:10px}.admin-hub-group .admin-hub-card{min-height:120px;padding:11px}.admin-hub-group .admin-hub-grid{grid-template-columns:1fr}}
+
+/* فهرس داخلي ثابت وسهل الوصول لأقسام الإدارة الطويلة */
+.admin-section-nav{position:sticky;top:54px;z-index:5;display:flex;flex-direction:column;gap:7px;margin:0 -2px 16px;padding:10px;background:rgba(20,15,27,.96);border:1px solid #493858;border-radius:13px;backdrop-filter:blur(12px);box-shadow:0 6px 18px #0004}
+.admin-section-nav-label{font-size:11px;font-weight:900;color:#d7b8ef}
+.admin-section-nav-links{display:flex;gap:7px;overflow-x:auto;padding:1px 0 4px;scrollbar-width:thin}
+.admin-section-nav-links button{flex:0 0 auto;min-height:34px;padding:7px 11px;border:1px solid #624879;border-radius:999px;background:#241a30;color:#eee4f6;font-size:11px;font-weight:700;white-space:nowrap}
+.admin-section-nav-links button:active{background:#49315f;border-color:#b58bd4}
+.admin-section-anchor{scroll-margin-top:145px}
+.admin-subpanel:not([data-admin-panel="overview"]){line-height:1.8}
+.admin-subpanel:not([data-admin-panel="overview"])>h2,.admin-subpanel:not([data-admin-panel="overview"])>h3{margin:18px 0 9px;padding-bottom:8px;border-bottom:1px solid #493858;color:#e4d2f2}
+.admin-subpanel:not([data-admin-panel="overview"])>hr{margin:13px 0!important;border-color:#40334b!important;opacity:.65}
+.admin-subpanel:not([data-admin-panel="overview"])>.deposit-card,.admin-subpanel:not([data-admin-panel="overview"])>.finance-section,.admin-subpanel:not([data-admin-panel="overview"])>.support-workspace{margin:13px 0}
+.admin-subpanel .ops-form{margin:12px 0;padding:14px;border:1px solid #40334b;border-radius:13px;background:#17121e}
+.admin-subpanel .ops-list{margin:12px 0}
+@media(max-width:520px){.admin-section-nav{top:48px;padding:8px}.admin-section-nav-links button{min-height:38px}.admin-section-anchor{scroll-margin-top:132px}.admin-subpanel:not([data-admin-panel="overview"]){padding:11px!important}}
+
 </style>
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
@@ -2131,6 +2147,49 @@ async function sendBaranSectionAssistant(sectionId,input,messages,status,sendBut
   }
 }
 
+
+/* فهرس تنقّل داخلي تلقائي لكل قسم إداري */
+function buildAdminSectionNav(panel,id){
+  if(!panel)return;
+  const old=panel.querySelector(":scope > .admin-section-nav");
+  if(old)old.remove();
+  const nav=document.createElement("nav");
+  nav.className="admin-section-nav";
+  nav.setAttribute("aria-label","التنقل داخل القسم");
+  const label=document.createElement("span");
+  label.className="admin-section-nav-label";
+  label.textContent="داخل القسم";
+  const links=document.createElement("div");
+  links.className="admin-section-nav-links";
+  const selector="h2,h3,h4,.overview-section-heading,.finance-section-heading,.security-section-title,.support-section-head";
+  const headings=Array.from(panel.querySelectorAll(selector)).filter(el=>{
+    if(el.closest(".admin-subpanel-head")||el.closest(".baran-section-assistant"))return false;
+    if(el.closest(".hidden"))return false;
+    const txt=(el.innerText||el.textContent||"").replace(/\\s+/g," ").trim();
+    return txt.length>1;
+  });
+  const used=new Set();
+  headings.forEach((heading,index)=>{
+    let title=(heading.innerText||heading.textContent||"").replace(/\\s+/g," ").trim();
+    title=title.replace(/^[0-9٠-٩]+\\s*/,"").slice(0,34);
+    if(!title||used.has(title))return;
+    used.add(title);
+    const targetId="admin-jump-"+id+"-"+index;
+    heading.id=targetId;
+    heading.classList.add("admin-section-anchor");
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.textContent=title;
+    btn.addEventListener("click",()=>document.getElementById(targetId)?.scrollIntoView({behavior:"smooth",block:"start"}));
+    links.appendChild(btn);
+  });
+  if(!links.children.length)return;
+  nav.append(label,links);
+  const head=panel.querySelector(":scope > .admin-subpanel-head");
+  if(head)head.insertAdjacentElement("afterend",nav);
+  else panel.insertBefore(nav,panel.firstChild);
+}
+
 function showAdminPanel(id){
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
@@ -2138,6 +2197,7 @@ function showAdminPanel(id){
   const hub=document.getElementById("adminHub");
   if(hub)hub.classList.add("hidden");
   admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!==id));
+  buildAdminSectionNav(admin.querySelector('.admin-subpanel[data-admin-panel="'+id+'"]'),id);
   if(BARAN_SECTION_ASSISTANTS[id])ensureBaranSectionAssistant(id);
   if(id==="overview"||id==="financial-support"||id==="users"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"){
     if(typeof loadAdminPanel==="function")loadAdminPanel();
