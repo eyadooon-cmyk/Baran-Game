@@ -2653,6 +2653,8 @@ async function loadFreeFireCatalog(){
 
 function showSection(id,button){
   if(!currentUser) return;
+  if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
+  if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
   const target=document.getElementById(id);
   if(!target) return;
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
@@ -3509,6 +3511,7 @@ function moveOwnerWalletToolsToAdmin(){
 
 let baranStaffPortalAuthorized = false;
 let baranStaffPortalData = null;
+let baranAdminPanelAuthorized = false;
 
 function staffPortalNode(tag, text, className){
   const node=document.createElement(tag);
@@ -3617,6 +3620,7 @@ async function checkAdminAccess(){
   const drawerButton=document.getElementById("adminDrawerButton");
   if(staffButton)staffButton.classList.add("hidden");
   baranStaffPortalAuthorized=false;baranStaffPortalData=null;
+  baranAdminPanelAuthorized=false;
   const walletAdminTransfers=document.getElementById("walletAdminTransfers");
   if(navButton)navButton.classList.add("hidden");
   if(drawerButton)drawerButton.classList.add("hidden");
@@ -3624,6 +3628,7 @@ async function checkAdminAccess(){
   if(!currentUser)return false;
   try{
     await callAdminApi("POST",{action:"admin_check"});
+    baranAdminPanelAuthorized=true;
     if(navButton)navButton.classList.remove("hidden");
     if(drawerButton)drawerButton.classList.remove("hidden");
     if(currentUser.id==="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){moveOwnerWalletToolsToAdmin();/* Customer deposit form remains visible for the owner on the payment screen. */loadWalletExchangeSettings();loadWalletExchangeHistory();loadOwnerFundingHistory();}
