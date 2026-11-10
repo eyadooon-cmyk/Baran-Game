@@ -57,12 +57,13 @@
           throw new Error(offlineResult.error || "تعذر تجهيز التقرير المباشر من قاعدة البيانات.");
         }
         if (pending) pending.remove();
-        const message = "🟣 تقرير مباشر من Baran — دون استهلاك OpenAI\n" + offlineResult.reply;
+        const report = formatOfflineReport(offlineResult);
+        const message = "🟣 تقرير مباشر من Baran — دون استهلاك OpenAI\n" + report.reply;
         addMessage(message, "bot");
         history.push({ role: "assistant", content: message });
         history = history.slice(-10);
         const status = document.getElementById("baranAdminAssistantStatus");
-        if (status) status.textContent = "قراءة مباشرة من قاعدة البيانات — " + new Date(offlineResult.data_updated_at || Date.now()).toLocaleString("ar");
+        if (status) status.textContent = "قراءة مباشرة من قاعدة البيانات — " + report.stamp;
         return;
       }
       if (isLikelyAdminAction(clean)) {
@@ -98,8 +99,9 @@
             throw new Error(offlineResult.error || "وصل OpenAI للحد المؤقت، وتعذر تجهيز التقرير الاحتياطي. لم يتم أي تعديل.");
           }
           if (pending) pending.remove();
+          const report = formatOfflineReport(offlineResult);
           const message = "⚠️ وضع Baran الاحتياطي المستقل (بدون OpenAI)\n" +
-            offlineResult.reply +
+            report.reply +
             (offlineResult.unavailable?.length ? "\nأقسام لم تتوفر: " + offlineResult.unavailable.join("، ") : "");
           addMessage(message, "bot");
           history.push({ role: "assistant", content: message });
@@ -208,6 +210,12 @@
     if (!response.ok) throw new Error(result.error || "تعذر تنفيذ طلب الإدارة الآمن.");
     return result;
   }
+  function formatOfflineReport(result) {
+    const stamp = new Date(result?.data_updated_at || Date.now()).toLocaleString("ar");
+    const reply = String(result?.reply || "").replace(/وقت قراءة البيانات:\s*[^\n]*/, "وقت قراءة البيانات: " + stamp);
+    return { reply, stamp };
+  }
+
   function isOfflineReadOnlyQuery(command) {
     return /(?:تقرير|ملخص|حالة|افحص|فحص|راجع|اعرض|قائمة|تحليل|حلل|كم عدد|عدد|مراقبة|الأولويات|التذاكر|الطلبات|المنتجات|الموردين|المورد|الربح|الأرباح|المبيعات|التقييمات|سجل التدقيق|الأمان|جاهزية المتجر|وضع المتجر)/i.test(command);
   }
@@ -278,7 +286,7 @@
     panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid #8b6ab0;border-radius:14px;background:#171020";
     const heading = document.createElement("h3"); heading.textContent = "🛠️ تنفيذ المهام الإدارية الآمنة"; heading.style.margin = "0 0 6px";
     const note = document.createElement("p"); note.className = "small";
-    note.textContent = "المساعد بيستخدم الذكاء الاصطناعي لفهم طلبات الإدارة وتجهيز تنفيذها. صار يقدر كمان ينشئ منتجات جديدة كمسودات غير نشطة، ويعدّل المنتجات والبيانات التشغيلية المسموحة، ويدير الموردين وروابطهم والتذاكر والتقييمات والملاحظات. راجع المعاينة قبل التأكيد؛ ما رح ينشر منتج جديد أو يفعّله تلقائياً. العمليات المالية الحساسة تبقى محمية بموافقتك الصريحة."
+    note.textContent = "الأوامر الواضحة مثل تفعيل منتج أو تحديث تذكرة تُفهم أولاً مباشرة دون OpenAI. إذا كان الطلب معقداً أو يحتاج توضيحاً، قد يستخدم المساعد OpenAI عند توفره. يمكنه تجهيز تعديلات المنتجات والموردين والتذاكر والتقييمات والروابط ضمن الصلاحيات المحددة. راجع المعاينة قبل التأكيد؛ المنتجات الجديدة تُنشأ غير نشطة. العمليات المالية الحساسة تبقى محمية بموافقتك الصريحة."
     const input = document.createElement("textarea"); input.id = "baranSafeActionInput"; input.rows = 3; input.maxLength = 700;
     input.placeholder = "اكتب طلبك بشكل طبيعي… مثال: ضيف ملاحظة على مورد RTC MARKET إنو ناطرين تفعيل الـ API";
     input.style.cssText = "width:100%;box-sizing:border-box;margin:8px 0;padding:11px;border-radius:9px;background:#0e0a13;color:#fff;border:1px solid #69527c";
