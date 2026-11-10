@@ -69,22 +69,31 @@ Deno.serve(async (req: Request) => {
     if (body?.action === "assign_task") {
       if (body.confirm !== true) return json({ error: "تأكيد المالك مطلوب لإسناد المهمة." }, 400);
       if (typeof body.task_id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.task_id)) return json({ error: "معرّف المهمة غير صالح." }, 400);
-      if (typeof body.assigned_to !== "string" || !/^[0-9a-f-]{36}$/i.test(body.assigned_to)) return json({ error: "حساب المشرفة غير صالح." }, 400);
-      const { data: role, error: roleError } = await admin.from("baran_staff_roles")
-        .select("user_id").eq("user_id", body.assigned_to).eq("role", "moderator").eq("is_active", true).maybeSingle();
-      if (roleError) return json({ error: "تعذر التحقق من صلاحية المشرفة." }, 502);
-      if (!role) return json({ error: "الحساب المحدد ليس مشرفة نشطة." }, 403);
+      const assignedTo = body.assigned_to === null || body.assigned_to === "" ? null : body.assigned_to;
+      if (assignedTo !== null && (typeof assignedTo !== "string" || !/^[0-9a-f-]{36}$/i.test(assignedTo))) return json({ error: "حساب المشرفة غير صالح." }, 400);
+      if (assignedTo !== null) {
+        const { data: role, error: roleError } = await admin.from("baran_staff_roles")
+          .select("user_id").eq("user_id", assignedTo).eq("role", "moderator").eq("is_active", true).maybeSingle();
+        if (roleError) return json({ error: "تعذر التحقق من صلاحية المشرفة." }, 502);
+        if (!role) return json({ error: "الحساب المحدد ليس مشرفة نشطة." }, 403);
+      }
+      const { data: previous, error: previousError } = await admin.from("baran_admin_work_plan")
+        .select("id,task_code,title,assigned_to").eq("id", body.task_id).maybeSingle();
+      if (previousError) return json({ error: "تعذر قراءة إسناد المهمة الحالي." }, 502);
+      if (!previous) return json({ error: "المهمة غير موجودة." }, 404);
+      if (previous.assigned_to === assignedTo) return json({ task: previous, message: assignedTo ? "المهمة مسندة بالفعل لهذه المشرفة." : "المهمة غير مسندة أصلاً." });
       const { data: task, error: updateError } = await admin.from("baran_admin_work_plan")
-        .update({ assigned_to: body.assigned_to, updated_by: user.id, updated_at: new Date().toISOString() })
+        .update({ assigned_to: assignedTo, updated_by: user.id, updated_at: new Date().toISOString() })
         .eq("id", body.task_id).select("id,task_code,title,assigned_to").maybeSingle();
-      if (updateError) return json({ error: "تعذر إسناد المهمة." }, 502);
+      if (updateError) return json({ error: "تعذر تحديث إسناد المهمة." }, 502);
       if (!task) return json({ error: "المهمة غير موجودة." }, 404);
+      const action = assignedTo === null ? "admin_work_plan_unassigned" : "admin_work_plan_assigned";
       const { error: auditError } = await admin.from("admin_audit_log").insert({
-        admin_id: user.id, action: "admin_work_plan_assigned", entity_type: "baran_admin_work_plan",
-        entity_id: task.id, details: { task_code: task.task_code, assigned_to: task.assigned_to }
+        admin_id: user.id, action, entity_type: "baran_admin_work_plan",
+        entity_id: task.id, details: { task_code: task.task_code, previous_assigned_to: previous.assigned_to, assigned_to: task.assigned_to }
       });
       if (auditError) console.error("work plan assignment audit failed", auditError.message);
-      return json({ task, message: "تم إسناد المهمة للمشرفة وتسجيل العملية." });
+      return json({ task, message: assignedTo === null ? "تم إلغاء إسناد المهمة وتسجيل العملية." : "تم إسناد المهمة للمشرفة وتسجيل العملية." });
     }
     if (body?.action === "status_update") {
       const validStatuses = ["new", "in_review", "in_progress", "blocked", "completed"];
