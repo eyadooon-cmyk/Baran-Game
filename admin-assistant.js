@@ -41,6 +41,30 @@
       const { data: sessionData, error: sessionError } = await sb.auth.getSession();
       const session = sessionData?.session;
       if (sessionError || !session) throw new Error("انتهت جلسة الدخول. سجّل دخولك من جديد.");
+      if (!isLikelyAdminAction(clean) && isOfflineReadOnlyQuery(clean)) {
+        const offline = await fetch(SUPABASE_URL + "/functions/v1/baran-admin-offline", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + session.access_token,
+            "apikey": SUPABASE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ question: clean })
+        });
+        let offlineResult = {};
+        try { offlineResult = await offline.json(); } catch (_) {}
+        if (!offline.ok || !offlineResult.reply) {
+          throw new Error(offlineResult.error || "تعذر تجهيز التقرير المباشر من قاعدة البيانات.");
+        }
+        if (pending) pending.remove();
+        const message = "🟣 تقرير مباشر من Baran — دون استهلاك OpenAI\n" + offlineResult.reply;
+        addMessage(message, "bot");
+        history.push({ role: "assistant", content: message });
+        history = history.slice(-10);
+        const status = document.getElementById("baranAdminAssistantStatus");
+        if (status) status.textContent = "قراءة مباشرة من قاعدة البيانات — " + new Date(offlineResult.data_updated_at || Date.now()).toLocaleString("ar");
+        return;
+      }
       if (isLikelyAdminAction(clean)) {
         if (pending) pending.remove();
         await handleMainChatAction(clean);
@@ -183,6 +207,9 @@
     try { result = await response.json(); } catch (_) {}
     if (!response.ok) throw new Error(result.error || "تعذر تنفيذ طلب الإدارة الآمن.");
     return result;
+  }
+  function isOfflineReadOnlyQuery(command) {
+    return /(?:تقرير|ملخص|حالة|افحص|فحص|راجع|اعرض|قائمة|تحليل|حلل|كم عدد|عدد|مراقبة|الأولويات|التذاكر|الطلبات|المنتجات|الموردين|المورد|الربح|الأرباح|المبيعات|التقييمات|سجل التدقيق|الأمان|جاهزية المتجر|وضع المتجر)/i.test(command);
   }
   function isLikelyAdminAction(command) {
     return /(?:ضيف|أضف|اضف|نضيف|أضيف|انشئ|أنشئ|إنشاء|اضافة|إضافة|سجّل|سجل|عدّل|عدل|نعدل|غيّر|غير|اربط|نربط|فعّل|فعل|نفعّل|عطّل|عطل|اعتمد|ارفض|أغلق|اغلق|افتح|انشر|حدّث|حدث|اجعل|حوّل|حول|حط|بدّل|بدل|اكتب ملاحظة|ضيف ملاحظة|سجل ملاحظة|نفّذ|نفذ|تفعيل|تعطيل|نشر مسودة|تعديل سعر|تعديل منتج|تغيير حالة)/i.test(command) ||
