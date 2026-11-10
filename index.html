@@ -1182,6 +1182,38 @@ footer{color:#9f91aa}
 
 </style>
 
+
+<style id="baran-customer-home-refresh">
+/* BARAN GAME — customer home refresh, mobile-first */
+.home-welcome{position:relative;isolation:isolate;overflow:hidden;margin:14px 0 16px;padding:22px 18px;border:1px solid #76518f;border-radius:20px;background:radial-gradient(circle at 8% 12%,#a56bd633,transparent 35%),linear-gradient(130deg,#30203f 0%,#17121f 68%,#100d16 100%);box-shadow:0 12px 28px #0005}
+.home-welcome:after{content:"";position:absolute;z-index:-1;left:-35px;bottom:-90px;width:210px;height:210px;border-radius:50%;background:#a56bd6;filter:blur(75px);opacity:.17}
+.home-welcome-kicker{display:inline-flex;align-items:center;gap:7px;margin-bottom:9px;color:#d8b5f2;font-size:10px;font-weight:900;letter-spacing:1.5px}
+.home-welcome h2{margin:0 0 7px;color:#f3eafa;font-size:clamp(21px,5vw,28px);line-height:1.5}
+.home-welcome p{max-width:560px;margin:0;color:#cbb9d9;font-size:13px;line-height:1.9}
+.home-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0 20px}
+.home-shortcut{display:flex;align-items:center;gap:10px;min-width:0;min-height:68px;padding:11px 12px;text-align:right;background:linear-gradient(145deg,#241a30,#17121f);border:1px solid #59416d;border-radius:14px;color:#f4eafa}
+.home-shortcut:active{transform:scale(.985);border-color:#c18bed}
+.home-shortcut-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid #8b62aa;border-radius:12px;background:#a56bd622;color:#e4c8f7;font-size:19px}
+.home-shortcut-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.home-shortcut-copy strong{font-size:13px;color:#f0e5f8}
+.home-shortcut-copy small{font-size:10px;color:#bba9ca;line-height:1.5}
+.home-categories-heading{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:20px 2px 11px}
+.home-categories-heading h2{margin:0;color:#eadcf5;font-size:19px}
+.home-categories-heading span{font-size:11px;color:#b9a9c9}
+.home-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.home-category-card{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden;padding:0;text-align:right;background:linear-gradient(155deg,#21182b,#120e18);border:1px solid #59416d;border-radius:16px;color:#f3eafa;box-shadow:0 7px 18px #0004}
+.home-category-card:active{transform:scale(.985);border-color:#c18bed}
+.home-category-card img{display:block;width:100%;height:112px;object-fit:cover;filter:saturate(.9)}
+.home-category-card-body{display:flex;flex-direction:column;gap:4px;padding:12px;min-height:84px}
+.home-category-card-body strong{font-size:14px;color:#ead8fa}
+.home-category-card-body small{font-size:11px;line-height:1.6;color:#bba9ca}
+.home-category-card-body em{margin-top:3px;color:#d3a9f0;font-size:11px;font-style:normal;font-weight:800}
+.home-service-note{display:flex;align-items:flex-start;gap:9px;margin:14px 0;padding:12px;border:1px solid #665078;border-radius:13px;background:#1a1422;color:#cdbbdc;font-size:11px;line-height:1.8}
+.home-service-note b{color:#e2c8f7}
+@media(max-width:360px){.home-shortcut{padding:9px;gap:7px}.home-shortcut-icon{width:33px;height:33px;flex-basis:33px}.home-category-card img{height:94px}.home-category-card-body{padding:10px}}
+@media(min-width:650px){.home-shortcuts{grid-template-columns:repeat(4,minmax(0,1fr))}.home-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.home-category-card img{height:130px}}
+</style>
+
 </head>
 <body>
 
@@ -1337,37 +1369,37 @@ footer{color:#9f91aa}
         </div>
         <div id="storeSearchResults" class="store-search-results" aria-live="polite"></div>
       </div>
-      <div class="hero">
-        <h2>عالمك الرقمي يبدأ من هنا</h2>
-        <p>شحن ألعاب واشتراكات وخدمات رقمية بمكان واحد.</p>
+      <div class="home-welcome">
+        <span class="home-welcome-kicker">✦ BARAN GAME · DIGITAL STORE</span>
+        <h2>كل اللي بتحبه… صار أقرب 🎮</h2>
+        <p>اختار لعبتك أو خدمتك، حدّد الباقة، وراجع طلبك بخطوات واضحة. وإذا احتجت مساعدة، فريق Baran معك.</p>
       </div>
-      <h2>أقسام المتجر</h2>
-      <div class="grid">
-        <div class="item">
-          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700" alt="قسم الألعاب">
-          <div class="item-content">
-            <strong>الألعاب 🎮</strong>
-            PUBG Mobile وFree Fire
-            <button class="full" onclick="showSection('games',document.querySelectorAll('nav button')[1])">استكشف الألعاب</button>
-          </div>
-        </div>
-        <div class="item">
-          <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=700" alt="ذكاء اصطناعي">
-          <div class="item-content"><strong>AI SERVICES</strong>خدمات الذكاء الاصطناعي</div>
-        </div>
-        <div class="item">
-          <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700" alt="بطاقات رقمية">
-          <div class="item-content"><strong>GIFT CARDS</strong>بطاقات رقمية</div>
-        </div>
-        <div class="item">
-          <div class="item-content">
-            <strong>شحن رصيد الجوال 📱</strong>
-            سيريتل وMTN — بالليرة السورية الجديدة
-            <button class="full" type="button" onclick="showSection('mobileTopup',null)">استكشف فئات الشحن</button>
-            <p class="small">قريباً بعد ربط مورّد الشحن.</p>
-          </div>
-        </div>
+      <div class="home-shortcuts" aria-label="اختصارات سريعة">
+        <button class="home-shortcut" type="button" onclick="showSection('games',null)"><span class="home-shortcut-icon">🎮</span><span class="home-shortcut-copy"><strong>اشحن لعبة</strong><small>PUBG وFree Fire</small></span></button>
+        <button class="home-shortcut" type="button" onclick="showSection('services',null)"><span class="home-shortcut-icon">✦</span><span class="home-shortcut-copy"><strong>الخدمات الرقمية</strong><small>اشتراكات وبطاقات</small></span></button>
+        <button class="home-shortcut" type="button" onclick="showSection('wallet',null)"><span class="home-shortcut-icon">👛</span><span class="home-shortcut-copy"><strong>اشحن محفظتك</strong><small>الدولار والليرة</small></span></button>
+        <button class="home-shortcut" type="button" onclick="showSection('orders',null)"><span class="home-shortcut-icon">📦</span><span class="home-shortcut-copy"><strong>تابع طلبك</strong><small>اعرف حالة الشحن</small></span></button>
       </div>
+      <div class="home-categories-heading"><h2>اختار القسم المناسب</h2><span>كل قسم واضح لحاله</span></div>
+      <div class="home-category-grid">
+        <button class="home-category-card" type="button" onclick="showSection('games',null)">
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=700&q=80" alt="الألعاب الإلكترونية" loading="lazy">
+          <span class="home-category-card-body"><strong>الألعاب 🎮</strong><small>PUBG MOBILE وFREE FIRE</small><em>عرض الألعاب ←</em></span>
+        </button>
+        <button class="home-category-card" type="button" onclick="showSection('services',null)">
+          <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=700&q=80" alt="الخدمات الرقمية" loading="lazy">
+          <span class="home-category-card-body"><strong>الخدمات الرقمية ✦</strong><small>ChatGPT وVPN وتطبيقات</small><em>عرض الخدمات ←</em></span>
+        </button>
+        <button class="home-category-card" type="button" onclick="showSection('giftCardsStore',null)">
+          <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=700&q=80" alt="البطاقات الرقمية" loading="lazy">
+          <span class="home-category-card-body"><strong>البطاقات الرقمية 🎁</strong><small>Google Play وبطاقات أخرى</small><em>عرض البطاقات ←</em></span>
+        </button>
+        <button class="home-category-card" type="button" onclick="showSection('mobileTopup',null)">
+          <img src="https://images.unsplash.com/photo-1511704368843-0e7f2e4f7b2b?w=700&q=80" alt="شحن رصيد الهاتف" loading="lazy">
+          <span class="home-category-card-body"><strong>شحن رصيد الجوال 📱</strong><small>سيريتل وMTN</small><em>تفاصيل الخدمة ←</em></span>
+        </button>
+      </div>
+      <div class="home-service-note"><span>ℹ️</span><span><b>معلومة مهمة:</b> تظهر حالة توفر كل خدمة داخل قسمها. لن نعرض أسعاراً تقديرية أو نؤكد شحناً قبل تفعيل المورد المعتمد.</span></div>
     </section>
 
     <section id="games" class="hidden">
