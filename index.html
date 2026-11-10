@@ -952,6 +952,49 @@ footer{color:#9f91aa}
 .customer-detail-row>span{color:#b9a9c9;flex:0 0 auto}
 .customer-detail-row strong{color:#eee8f4;text-align:left;overflow-wrap:anywhere}
 .customer-directory-empty{padding:22px;text-align:center;color:#b9a9c9;background:#17121e;border:1px dashed #57436a;border-radius:14px}
+
+/* إصلاح تمدد قسم المستخدمين خارج عرض الهاتف */
+[data-admin-panel="users"]{
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:hidden!important;
+}
+[data-admin-panel="users"] *,
+[data-admin-panel="users"] *::before,
+[data-admin-panel="users"] *::after{box-sizing:border-box;min-width:0}
+[data-admin-panel="users"] .admin-subpanel-head,
+[data-admin-panel="users"] .finance-section,
+[data-admin-panel="users"] .finance-section-heading,
+[data-admin-panel="users"] .customer-directory-stats,
+[data-admin-panel="users"] .customer-directory-list,
+[data-admin-panel="users"] .customer-directory-item,
+[data-admin-panel="users"] .customer-directory-toggle{max-width:100%;width:100%}
+[data-admin-panel="users"] #opsCustomerSearch,
+[data-admin-panel="users"] #opsCustomerSort{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+[data-admin-panel="users"] .customer-directory-toggle{overflow:hidden}
+[data-admin-panel="users"] .customer-directory-identity,
+[data-admin-panel="users"] .customer-directory-identity strong,
+[data-admin-panel="users"] .customer-directory-identity small,
+[data-admin-panel="users"] .customer-detail-row strong{
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+[data-admin-panel="users"] .customer-directory-balance{flex:0 0 auto;max-width:42%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:520px){
+  [data-admin-panel="users"]{padding:10px!important}
+  [data-admin-panel="users"] .customer-directory-toggle{gap:7px;padding:10px}
+  [data-admin-panel="users"] .customer-detail-row{gap:8px;flex-wrap:wrap}
+  [data-admin-panel="users"] .customer-detail-row strong{flex:1 1 55%;text-align:left}
+}
 @media(max-width:520px){.customer-directory-stats{grid-template-columns:1fr}.customer-stat-card{padding:11px}.customer-stat-icon{width:39px;height:39px;flex-basis:39px}.customer-directory-toggle{gap:8px;padding:12px}.customer-directory-avatar{width:39px;height:39px;flex-basis:39px}.customer-directory-balance{font-size:11px;padding:5px 6px}.customer-detail-row{font-size:11px}}
 </style>
 
