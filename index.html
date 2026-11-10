@@ -2406,45 +2406,10 @@ async function sendBaranSectionAssistant(sectionId,input,messages,status,sendBut
 /* فهرس تنقّل داخلي تلقائي لكل قسم إداري */
 function buildAdminSectionNav(panel,id){
   if(!panel)return;
+  // لا نعرض فهرساً تلقائياً يكرر عناوين كل الأقسام أعلى الصفحة.
   const old=panel.querySelector(":scope > .admin-section-nav");
   if(old)old.remove();
-  const nav=document.createElement("nav");
-  nav.className="admin-section-nav";
-  nav.setAttribute("aria-label","التنقل داخل القسم");
-  const label=document.createElement("span");
-  label.className="admin-section-nav-label";
-  label.textContent="داخل القسم";
-  const links=document.createElement("div");
-  links.className="admin-section-nav-links";
-  const selector="h2,h3,h4,.overview-section-heading,.finance-section-heading,.security-section-title,.support-section-head";
-  const headings=Array.from(panel.querySelectorAll(selector)).filter(el=>{
-    if(el.closest(".admin-subpanel-head")||el.closest(".baran-section-assistant"))return false;
-    if(el.closest(".hidden"))return false;
-    const txt=(el.innerText||el.textContent||"").replace(/\\s+/g," ").trim();
-    return txt.length>1;
-  });
-  const used=new Set();
-  headings.forEach((heading,index)=>{
-    let title=(heading.innerText||heading.textContent||"").replace(/\\s+/g," ").trim();
-    title=title.replace(/^[0-9٠-٩]+\\s*/,"").slice(0,34);
-    if(!title||used.has(title))return;
-    used.add(title);
-    const targetId="admin-jump-"+id+"-"+index;
-    heading.id=targetId;
-    heading.classList.add("admin-section-anchor");
-    const btn=document.createElement("button");
-    btn.type="button";
-    btn.textContent=title;
-    btn.addEventListener("click",()=>document.getElementById(targetId)?.scrollIntoView({behavior:"smooth",block:"start"}));
-    links.appendChild(btn);
-  });
-  if(!links.children.length)return;
-  nav.append(label,links);
-  const head=panel.querySelector(":scope > .admin-subpanel-head");
-  if(head)head.insertAdjacentElement("afterend",nav);
-  else panel.insertBefore(nav,panel.firstChild);
 }
-
 function showAdminPanel(id){
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
@@ -3446,6 +3411,7 @@ function moveOwnerWalletToolsToAdmin(){
   const mount=document.getElementById("ownerWalletFinanceMount");
   const ownerTools=document.getElementById("walletAdminTransfers");
   if(!mount||!ownerTools)return;
+  mount.replaceChildren();
   const exchange=document.getElementById("walletExchangeAdminPanel");
   const funding=document.getElementById("ownerWalletFundingPanel");
   const sale=document.getElementById("ownerUsdSalePanel");
