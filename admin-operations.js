@@ -566,19 +566,46 @@ async function loadMyOrders(){
 async function loadMyRewards(){
   const balanceBox=document.getElementById("customerLoyaltyBalance");
   const historyBox=document.getElementById("customerLoyaltyHistory");
+  const tierBox=document.getElementById("customerLoyaltyTier");
   if(!balanceBox||!historyBox||!currentUser)return;
   balanceBox.textContent="جاري تحميل رصيد النقاط...";
+  if(tierBox)tierBox.textContent="جاري تحميل مستوى عضويتك...";
   try{
-    const [{data:account,error},{data:history,error:historyError}]=await Promise.all([
+    const [{data:account,error},{data:history,error:historyError},{data:tiers,error:tiersError}]=await Promise.all([
       sb.from("customer_loyalty").select("points_balance,lifetime_earned,updated_at").eq("user_id",currentUser.id).maybeSingle(),
       sb.from("loyalty_transactions").select("points,transaction_type,description,created_at")
-        .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50)
+        .eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50),
+      sb.from("loyalty_tiers").select("tier_code,tier_name,min_lifetime_points,sort_order,badge_emoji,benefits")
+        .eq("is_active",true).order("sort_order",{ascending:true})
     ]);
-    if(error)throw error;if(historyError)throw historyError;
+    if(error)throw error;if(historyError)throw historyError;if(tiersError)throw tiersError;
+    const lifetime=Number(account?.lifetime_earned||0);
+    const ordered=Array.isArray(tiers)?tiers:[];
+    const current=[...ordered].reverse().find(t=>lifetime>=Number(t.min_lifetime_points))||ordered[0];
+    const next=ordered.find(t=>Number(t.min_lifetime_points)>lifetime);
+    if(tierBox){
+      tierBox.replaceChildren();
+      const head=opsNode("div","ops-muted","مستوى عضويتك في BARAN VIP");
+      const name=opsNode("div","ops-value",(current?.badge_emoji||"⭐")+" "+(current?.tier_name||"برونزي"));
+      const progress=opsNode("div","ops-muted",next
+        ? "تحتاج "+Math.max(0,Number(next.min_lifetime_points)-lifetime).toLocaleString("en-US")+" نقطة مكتسبة للوصول إلى "+next.tier_name
+        : "وصلت إلى أعلى مستوى عضوية!");
+      tierBox.append(head,name,progress);
+      if(current?.benefits?.length){
+        const benefits=opsNode("div","ops-list");
+        current.benefits.forEach(item=>benefits.appendChild(opsNode("div","ops-muted","✓ "+item)));
+        tierBox.appendChild(benefits);
+      }
+      if(next){
+        const track=opsNode("div","ops-muted","التقدم: "+Math.min(100,Math.floor(lifetime/Math.max(1,Number(next.min_lifetime_points))*100))+"%");
+        tierBox.appendChild(track);
+      }
+    }
     balanceBox.replaceChildren();
     balanceBox.append(opsNode("div","ops-muted","رصيد نقاطك الحالي"),
       opsNode("div","ops-value",Number(account?.points_balance||0).toLocaleString("en-US")+" نقطة"),
-      opsNode("div","ops-muted","إجمالي النقاط المكتسبة: "+Number(account?.lifetime_earned||0).toLocaleString("en-US")));
+      opsNode("div","ops-muted","إجمالي النقاط المكتسبة: "+lifetime.toLocaleString("en-US")),
+      opsNode("div","ops-muted","كل 1,000 نقطة = مكافأة بقيمة 1$ عند تفعيل الاستبدال."));
     historyBox.replaceChildren();
     if(!history?.length){historyBox.textContent="لا توجد حركات نقاط مسجلة حتى الآن.";return;}
     history.forEach(item=>{
@@ -591,6 +618,7 @@ async function loadMyRewards(){
     });
   }catch(error){
     balanceBox.textContent="تعذر تحميل النقاط: "+error.message;
+    if(tierBox)tierBox.textContent="تعذر تحميل مستوى العضوية.";
     historyBox.replaceChildren();
   }
 }
