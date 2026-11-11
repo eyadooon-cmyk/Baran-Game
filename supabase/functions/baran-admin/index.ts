@@ -196,7 +196,7 @@ Deno.serve(async (req: Request) => {
         { data: loyaltyRows, error: loyaltyError }, { count: userCount, error: userCountError },
         { count: orderCount, error: orderCountError }] = await Promise.all([
           admin.from("suppliers").select("id,name,contact_name,contact_phone,contact_email,notes,is_active,created_at,updated_at").order("name"),
-          admin.from("supplier_products").select("id,supplier_id,product_id,supplier_sku,unit_cost,currency,is_preferred,lead_time_hours,notes,updated_at"),
+          admin.from("supplier_products").select("id,supplier_id,product_id,supplier_sku,unit_cost,currency,is_preferred,lead_time_hours,notes,input_schema,updated_at"),
           admin.from("orders").select("id,user_id,product_code,player_id,quantity,status,created_at,exchange_rate,unit_price_usd,unit_price_syp,total_price_usd,total_price_syp").order("created_at",{ascending:false}).limit(100),
           admin.from("order_fulfillment").select("order_id,supplier_id,supplier_reference,supplier_status,internal_notes,supplier_unit_cost,supplier_total_cost,supplier_cost_currency,supplier_cost_exchange_rate,updated_at"),
           admin.from("customer_loyalty").select("user_id,points_balance,lifetime_earned,updated_at").order("updated_at",{ascending:false}).limit(100),
@@ -829,13 +829,39 @@ Deno.serve(async (req: Request) => {
             (body.notes ?? "").toString().length > 1000) {
           return json({ error: "بيانات سعر المورد غير صحيحة." }, 400);
         }
+        const rawSchema=body.input_schema??[];
+        if(!Array.isArray(rawSchema)||rawSchema.length>12)return json({error:"يمكن تعريف 12 حقلاً كحد أقصى."},400);
+        const allowedFieldKeys=new Set(["key","label","type","required","placeholder","min_length","max_length","options"]);
+        const seenFieldKeys=new Set<string>();
+        const inputSchema=[];
+        for(const field of rawSchema){
+          if(!field||typeof field!=="object"||Array.isArray(field)||Object.keys(field).some((key)=>!allowedFieldKeys.has(key))||
+             typeof field.key!=="string"||!/^[a-z][a-z0-9_]{1,39}$/.test(field.key)||seenFieldKeys.has(field.key)||
+             typeof field.label!=="string"||field.label.trim().length<2||field.label.trim().length>60||
+             !["text","number","email","select"].includes(field.type)||
+             (field.required!==undefined&&typeof field.required!=="boolean")||
+             (field.placeholder!==undefined&&(typeof field.placeholder!=="string"||field.placeholder.length>80))||
+             (field.min_length!==undefined&&(!Number.isInteger(field.min_length)||field.min_length<0||field.min_length>200))||
+             (field.max_length!==undefined&&(!Number.isInteger(field.max_length)||field.max_length<1||field.max_length>200))||
+             (field.min_length!==undefined&&field.max_length!==undefined&&field.min_length>field.max_length)||
+             (field.type==="select"&&(!Array.isArray(field.options)||field.options.length<1||field.options.length>30||field.options.some((option:any)=>typeof option!=="string"||option.trim().length<1||option.length>60)))||
+             (field.type!=="select"&&field.options!==undefined)){
+            return json({error:"تعريف أحد حقول الطلب غير صالح. راجع key وlabel وtype والخيارات."},400);
+          }
+          seenFieldKeys.add(field.key);
+          inputSchema.push({key:field.key,label:field.label.trim(),type:field.type,required:field.required===true,
+            ...(field.placeholder?{placeholder:field.placeholder}:{}),
+            ...(field.min_length!==undefined?{min_length:field.min_length}:{}),
+            ...(field.max_length!==undefined?{max_length:field.max_length}:{}),
+            ...(field.type==="select"?{options:field.options.map((option:string)=>option.trim())}:{})});
+        }
         const values = { supplier_id:body.supplier_id, product_id:body.product_id,
           supplier_sku:(body.supplier_sku ?? "").toString().trim() || null,
           unit_cost:body.unit_cost, currency:body.currency, is_preferred:body.is_preferred === true,
           lead_time_hours: Number.isInteger(body.lead_time_hours) && (body.lead_time_hours ?? -1) >= 0 ? body.lead_time_hours : null,
-          notes:(body.notes ?? "").toString().trim(), updated_at:new Date().toISOString() };
+          notes:(body.notes ?? "").toString().trim(), input_schema:inputSchema, updated_at:new Date().toISOString() };
         const result = await admin.from("supplier_products").upsert(values,{onConflict:"supplier_id,product_id"})
-          .select("id,supplier_id,product_id,supplier_sku,unit_cost,currency,is_preferred,lead_time_hours,notes,updated_at").single();
+          .select("id,supplier_id,product_id,supplier_sku,unit_cost,currency,is_preferred,lead_time_hours,notes,input_schema,updated_at").single();
         if (result.error) return json({ error: "تعذر حفظ سعر المورد. تأكد من المورد والمنتج." }, 400);
         await admin.from("admin_audit_log").insert({admin_id:user.id,action:"supplier_product_save",entity_type:"product",
           entity_id:body.product_id,details:{supplier_id:body.supplier_id,unit_cost:body.unit_cost,currency:body.currency}});
