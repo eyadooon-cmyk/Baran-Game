@@ -1549,7 +1549,7 @@ footer{color:#9f91aa}
     <section id="home" class="baran-home-v2">
       <div class="store-search" role="search">
         <label for="storeSearchInput">شو حابب تشتري اليوم؟</label>
-        <div class="store-search-row"><span aria-hidden="true">🔎</span><input id="storeSearchInput" type="search" placeholder="ابحث عن PUBG أو ChatGPT أو VPN..." autocomplete="off" oninput="searchStore(this.value)"><button type="button" class="secondary" onclick="clearStoreSearch()">مسح</button></div>
+        <div class="store-search-row"><span aria-hidden="true">🔎</span><input id="storeSearchInput" type="search" placeholder="ابحث بالعربي أو English: ببجي، PUBG، شات جي بي تي، VPN..." autocomplete="off" oninput="searchStore(this.value)"><button type="button" class="secondary" onclick="clearStoreSearch()">مسح</button></div>
         <div id="storeSearchResults" class="store-search-results" aria-live="polite"></div>
       </div>
       <div class="home-welcome">
@@ -2835,7 +2835,12 @@ const BARAN_SEARCH_SECTIONS=["home","games","services","mobileTopup","pubgStore"
 let baranStoreSearchProducts=null;
 let baranStoreSearchLoad=null;
 function normalizeStoreSearch(value){
-  return String(value||"").toLocaleLowerCase("ar").normalize("NFKC").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").trim();
+  return String(value||"").toLocaleLowerCase("ar").normalize("NFKC")
+    .replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
+    .replace(/[۰-۹]/g,d=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+    .replace(/[ًٌٍَُِّْـ]/g,"")
+    .replace(/[أإآٱ]/g,"ا").replace(/[ىي]/g,"ي").replace(/ة/g,"ه")
+    .replace(/[’'`]/g,"").replace(/[^\p{L}\p{N}]+/gu," ").trim().replace(/\s+/g," ");
 }
 function baranSearchDestination(product){
   const category=String(product.category||"").toLowerCase();
@@ -2876,12 +2881,13 @@ async function searchStore(value){
     const products=await loadBaranStoreSearchProducts();
     if(normalizeStoreSearch(document.getElementById("storeSearchInput")?.value)!==query)return;
     const terms=query.split(/\s+/).filter(Boolean);
+    // قاموس بحث ثنائي اللغة: أسماء عربية وإنجليزية وطرق كتابة شائعة.
     const aliases={
-      game:["لعبة","العاب","ألعاب"],
-      ai:["ذكاء اصطناعي","شات جي بي تي","chatgpt","اشتراك"],
-      vpn:["في بي ان","vpn","حماية"],
-      gift_card:["بطاقات","بطاقة","غوغل بلاي","google play","كرت"],
-      app:["تطبيقات","تطبيق","برامج"]
+      game:["لعبة","العاب","ألعاب","games","gaming","pubg","pubg mobile","ببجي","ببجي موبايل","ببجى","شدات","شدات uc","uc","unknown cash","free fire","freefire","فري فاير","فريفاير","جواهر","diamonds"],
+      ai:["ذكاء اصطناعي","ذكاء","شات جي بي تي","شات جي بيتي","شات gpt","chatgpt","chat gpt","chat gpt plus","gpt","openai","ai","artificial intelligence","اشتراك","subscription"],
+      vpn:["في بي ان","في بي إن","vpn","virtual private network","شبكة خاصة","حماية","privacy"],
+      gift_card:["بطاقات","بطاقة","بطاقات هدايا","كرت","كروت","غوغل بلاي","جوجل بلاي","google play","google play card","gift card","gift cards","giftcard","top up card"],
+      app:["تطبيقات","تطبيق","برامج","apps","app","application","paid apps"]
     };
     const matches=products.map(product=>{
       const category=String(product.category||"").toLowerCase();
