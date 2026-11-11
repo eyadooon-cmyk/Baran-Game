@@ -2953,18 +2953,18 @@ function goBackSection(){
 }
 function showSection(id,button,options){
   if(!currentUser) return;
-  const current=document.querySelector("main > section[id]:not(.hidden)");
-  const currentId=current?.id;
-  if(!options?.fromHistory&&currentId&&currentId!==id){
-    baranSectionHistory.push(currentId);
-    if(baranSectionHistory.length>30)baranSectionHistory.shift();
-  }
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
   if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
   if(id==="staffTasks"&&!baranStaffPortalAuthorized){alert("إدارة المهام غير متاحة قبل التحقق من صلاحية المشرفة.");return;}
   if(id==="staffAssistant"&&!baranStaffPortalAuthorized){alert("مساعد المشرفة غير متاح قبل التحقق من الصلاحية.");return;}
   const target=document.getElementById(id);
   if(!target) return;
+  const current=document.querySelector("main > section[id]:not(.hidden)");
+  const currentId=current?.id;
+  if(!options?.fromHistory&&currentId&&currentId!==id){
+    baranSectionHistory.push(currentId);
+    if(baranSectionHistory.length>30)baranSectionHistory.shift();
+  }
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
   target.classList.remove("hidden");
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
