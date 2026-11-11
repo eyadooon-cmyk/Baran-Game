@@ -1,0 +1,49 @@
+name: Test Supabase Database Connection
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-db:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install PostgreSQL client
+        run: npm install pg
+
+      - name: Test database connection
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          node -e '
+          const { Client } = require("pg");
+          const url = process.env.DATABASE_URL;
+          if (!url) {
+            console.log("FAIL: Secret is missing");
+            process.exit(1);
+          }
+          const client = new Client({
+            connectionString: url,
+            ssl: { rejectUnauthorized: false },
+            connectionTimeoutMillis: 15000
+          });
+          (async () => {
+            try {
+              await client.connect();
+              await client.query("SELECT 1");
+              console.log("PASS: Database connection successful");
+            } catch (error) {
+              console.log("FAIL: Connection error - " + (error.code || "UNKNOWN"));
+              process.exitCode = 1;
+            } finally {
+              await client.end().catch(() => {});
+            }
+          })();
+          '
