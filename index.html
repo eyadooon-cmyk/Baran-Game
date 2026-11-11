@@ -1408,6 +1408,14 @@ footer{color:#9f91aa}
 .baran-unified-selection>strong{display:block;color:#e8c9ff;font-size:15px}
 .baran-unified-selection .baran-service-product-status{display:inline-block;margin-top:5px}
 </style>
+
+<style id="baran-product-detail-upgrade">
+.baran-product-detail-toggle{width:100%;margin-top:7px;padding:9px 11px;border:1px solid #684d7d;border-radius:10px;background:#21172b;color:#eadcf4;font-size:11px;font-weight:800;cursor:pointer}
+.baran-product-detail-panel{margin-top:7px;padding:10px 11px;border:1px dashed #76518f;border-radius:11px;background:#100c16;color:#cbb9d8;font-size:11px;line-height:1.9;overflow-wrap:anywhere}
+.baran-product-detail-panel strong{display:block;color:#e7d2f6;margin-bottom:4px}
+.baran-game-package-card{min-width:0;display:flex;flex-direction:column;gap:0}
+.baran-game-package-card .game-package-option{width:100%;height:100%;box-sizing:border-box}
+</style>
 </head>
 <body>
 
@@ -5184,6 +5192,7 @@ async function loadBaranGameCatalog(game){
     }
     const grid=document.createElement("div");grid.className="game-package-grid";grid.dataset.gamePackageGrid=game;
     packages.forEach(product=>{
+      const packageCard=document.createElement("div");packageCard.className="baran-game-package-card";
       const button=document.createElement("button");button.type="button";button.className="game-package-option";
       button.dataset.productCode=product.product_code;button.setAttribute("aria-pressed","false");
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
@@ -5194,7 +5203,9 @@ async function loadBaranGameCatalog(game){
       button.append(name,description,price);
       if(button.disabled){const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير متاحة للاختيار حتى اعتماد السعر";button.append(pending);}
       button.addEventListener("click",()=>baranSelectGamePackage(game,product));
-      grid.append(button);
+      packageCard.append(button);
+      baranAddProductDetails(packageCard,product,isPubg?"PUBG MOBILE":"Free Fire");
+      grid.append(packageCard);
     });
     container.append(grid);
     const note=document.createElement("p");note.className="small";
@@ -5214,7 +5225,21 @@ document.addEventListener("input",event=>{
 });
 </script>
 <script id="baran-service-catalog">
-function baranServicePrice(product){
+
+function baranAddProductDetails(parent,product,categoryLabel){
+ const toggle=document.createElement("button");toggle.type="button";toggle.className="baran-product-detail-toggle";toggle.textContent="＋ تفاصيل المنتج";toggle.setAttribute("aria-expanded","false");
+ const panel=document.createElement("div");panel.className="baran-product-detail-panel";panel.hidden=true;
+ const title=document.createElement("strong");title.textContent="تفاصيل "+(product.name||"المنتج");
+ const description=document.createElement("div");description.textContent=product.description||"لا توجد تفاصيل إضافية منشورة لهذا المنتج حالياً.";
+ const category=document.createElement("div");category.textContent="القسم: "+categoryLabel;
+ const code=document.createElement("div");code.textContent="رمز المنتج: "+(product.product_code||"غير متوفر");
+ const price=document.createElement("div");price.textContent="السعر: "+(typeof baranServicePrice==="function"?baranServicePrice(product):baranMoneyText(product));
+ const availability=document.createElement("div");availability.textContent="حالة الشراء: "+((Number(product.price_usd)>0||Number(product.price_syp)>0)?"السعر مسجل — تنفيذ الطلب غير مفعّل قبل اعتماد المورد":"بانتظار اعتماد السعر والمورد");
+ panel.append(title,description,category,code,price,availability);
+ toggle.addEventListener("click",()=>{const opening=panel.hidden;panel.hidden=!opening;toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"－ إخفاء التفاصيل":"＋ تفاصيل المنتج";});
+ parent.append(toggle,panel);
+}
+\nfunction baranServicePrice(product){
  const usd=product.price_usd==null||product.price_usd===""?null:Number(product.price_usd);
  const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
  const values=[];
@@ -5273,6 +5298,7 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    if(price.textContent==="السعر قيد التجهيز"){
     const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="بانتظار اعتماد السعر";card.append(status);
    }
+   baranAddProductDetails(card,product,title);
    const choose=document.createElement("button");choose.type="button";choose.className="baran-service-select-button";choose.textContent="اختيار للمراجعة";choose.dataset.serviceProductId=String(product.id||"");choose.setAttribute("aria-pressed","false");choose.disabled=price.textContent==="السعر قيد التجهيز"||!product.id;choose.addEventListener("click",()=>baranShowServiceSelection(product,category,containerId));card.append(choose);
    grid.append(card);
   });
