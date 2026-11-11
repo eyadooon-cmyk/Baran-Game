@@ -2018,6 +2018,7 @@ footer{color:#9f91aa}
               <button type="button" class="admin-hub-card" id="staffManagementHubCard" onclick="showAdminPanel('staff-management')"><span class="admin-hub-icon">🛡️</span><strong>إدارة المشرفين</strong><small>إضافة مشرفة بصلاحيات محدودة أو إلغاء صلاحيتها.</small><span class="admin-hub-open">للمالك فقط ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>الدعم والردود الآلية</strong><small>الردود التلقائية والتذاكر ورسائل الزبائن.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('loyalty')"><span class="admin-hub-icon">🎁</span><strong>نقاط الولاء</strong><small>متابعة النقاط وسجل المكافآت.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('promotions')"><span class="admin-hub-icon">🏷️</span><strong>العروض والكوبونات</strong><small>إنشاء مسودات العروض والكوبونات وربطها بالمنتجات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>التحقق من الملكية قبل الاستعادة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
             </div>
           </section>
@@ -2238,6 +2239,46 @@ footer{color:#9f91aa}
       <div id="opsApiEvents" class="ops-list">لا توجد أحداث مسجلة.</div>
       <div id="opsApiAttempts" class="ops-list">لا توجد محاولات تنفيذ مسجلة.</div>
       
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="promotions">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>العروض والكوبونات 🏷️</h2></div>
+        <div class="deposit-card" style="margin:12px 0;border-color:#70528a">
+          <strong>وضع آمن: مسودات فقط</strong>
+          <p class="small">يمكن تجهيز الكوبونات والعروض وربطها بمنتجات محددة. الكوبونات تُحفظ غير مفعّلة، والعروض تُحفظ كمسودات. لا يوجد خصم على الطلبات حالياً.</p>
+        </div>
+        <h3>إنشاء كوبون خصم — مسودة</h3>
+        <div class="ops-form">
+          <label for="promoCouponCode">رمز الكوبون</label><input id="promoCouponCode" maxlength="24" placeholder="مثلاً BARAN10" autocomplete="off">
+          <label for="promoCouponTitle">اسم الكوبون</label><input id="promoCouponTitle" maxlength="100" placeholder="خصم ترحيبي">
+          <label for="promoCouponDescription">وصف مختصر</label><input id="promoCouponDescription" maxlength="500" placeholder="تفاصيل العرض للزبائن">
+          <label for="promoCouponType">نوع الخصم</label><select id="promoCouponType" onchange="promoCouponTypeChanged()"><option value="percent">نسبة مئوية</option><option value="fixed">مبلغ ثابت</option></select>
+          <label for="promoCouponValue">قيمة الخصم</label><input id="promoCouponValue" type="number" min="0.01" step="0.01" placeholder="مثلاً 5">
+          <div id="promoCouponCurrencyWrap" class="hidden"><label for="promoCouponCurrency">عملة الخصم الثابت</label><select id="promoCouponCurrency"><option value="USD">دولار</option><option value="SYP">ليرة سورية</option></select></div>
+          <label for="promoCouponMin">الحد الأدنى للطلب</label><input id="promoCouponMin" type="number" min="0" step="0.01" value="0">
+          <label for="promoCouponLimit">الحد الأعلى لعدد الاستخدامات</label><input id="promoCouponLimit" type="number" min="1" step="1" placeholder="اتركه فارغاً بلا حد">
+          <label for="promoCouponUserLimit">مرات الاستخدام لكل زبون</label><input id="promoCouponUserLimit" type="number" min="1" max="100" value="1">
+          <label for="promoCouponStart">بداية العرض (اختياري)</label><input id="promoCouponStart" type="datetime-local">
+          <label for="promoCouponEnd">نهاية العرض (اختياري)</label><input id="promoCouponEnd" type="datetime-local">
+          <strong>المنتجات المشمولة</strong><div id="promoCouponProducts" class="ops-list">جاري تحميل المنتجات...</div>
+          <button class="full" type="button" onclick="saveBaranCouponDraft()">حفظ الكوبون كمسودة غير مفعّلة</button>
+          <div id="promoCouponMessage" class="ops-muted" role="status"></div>
+        </div>
+        <hr>
+        <h3>إنشاء عرض للمتجر — مسودة</h3>
+        <div class="ops-form">
+          <label for="promoCampaignTitle">عنوان العرض</label><input id="promoCampaignTitle" maxlength="120" placeholder="عروض الأسبوع">
+          <label for="promoCampaignBadge">شارة العرض</label><input id="promoCampaignBadge" maxlength="30" value="عرض" placeholder="عرض اليوم">
+          <label for="promoCampaignDescription">وصف العرض</label><textarea id="promoCampaignDescription" maxlength="500" rows="3" placeholder="اكتب تفاصيل العرض"></textarea>
+          <label for="promoCampaignStart">بداية العرض (اختياري)</label><input id="promoCampaignStart" type="datetime-local">
+          <label for="promoCampaignEnd">نهاية العرض (اختياري)</label><input id="promoCampaignEnd" type="datetime-local">
+          <label for="promoCampaignPriority">ترتيب العرض (الأقل يظهر أولاً)</label><input id="promoCampaignPriority" type="number" min="1" max="9999" value="100">
+          <strong>المنتجات المشمولة</strong><div id="promoCampaignProducts" class="ops-list">جاري تحميل المنتجات...</div>
+          <button class="full" type="button" onclick="saveBaranCampaignDraft()">حفظ العرض كمسودة</button>
+          <div id="promoCampaignMessage" class="ops-muted" role="status"></div>
+        </div>
+        <h3>الكوبونات المحفوظة</h3><div id="promoCouponsList" class="ops-list">جاري التحميل...</div>
+        <h3>العروض المحفوظة</h3><div id="promoCampaignsList" class="ops-list">جاري التحميل...</div>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="loyalty">
@@ -2827,6 +2868,7 @@ function showAdminPanel(id){
   if(id==="overview"||id==="financial-support"||id==="users"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"){
     if(typeof loadAdminPanel==="function")loadAdminPanel();
   }
+  if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")loadBaranPromotionsManager();
   if(id==="staff-management")loadBaranStaffList();
   if(id==="wallet-finance"){
     if(typeof loadWalletExchangeSettings==="function")loadWalletExchangeSettings();
