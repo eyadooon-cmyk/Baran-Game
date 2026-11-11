@@ -656,3 +656,110 @@ function renderOpsAuditLog(rows){
     box.appendChild(card);
   });
 }
+
+
+/* BARAN promotions manager — isolated from all assistant and finance workflows */
+let baranPromotionsCache={products:[],coupons:[],campaigns:[]};
+function promoSelectedProducts(prefix){
+  return Array.from(document.querySelectorAll('input[name="'+prefix+'"]:checked')).map(el=>el.value);
+}
+function promoRenderProducts(rows){
+  ["promoCouponProducts","promoCampaignProducts"].forEach((id,index)=>{
+    const box=document.getElementById(id);if(!box)return;box.replaceChildren();
+    const group=index===0?"promoCouponProduct":"promoCampaignProduct";
+    if(!rows.length){box.textContent="لا توجد منتجات فعالة حالياً.";return;}
+    rows.forEach(p=>{
+      const label=document.createElement("label");label.className="ops-muted";label.style.display="flex";label.style.gap="8px";label.style.alignItems="center";
+      const input=document.createElement("input");input.type="checkbox";input.name=group;input.value=p.product_code;
+      const span=document.createElement("span");span.textContent=(p.name||p.product_code)+" · "+p.category;
+      label.append(input,span);box.appendChild(label);
+    });
+  });
+}
+function promoDateValue(id){
+  const value=document.getElementById(id)?.value;
+  return value?new Date(value).toISOString():null;
+}
+function promoMessage(id,message,isError=false){
+  const el=document.getElementById(id);if(el){el.textContent=message;el.style.color=isError?"#ff9b9b":"#b9e8c9";}
+}
+function promoCouponTypeChanged(){
+  const fixed=document.getElementById("promoCouponType")?.value==="fixed";
+  document.getElementById("promoCouponCurrencyWrap")?.classList.toggle("hidden",!fixed);
+}
+async function baranPromotionsRpc(action,payload={}){
+  if(!window.sb||!currentUser)throw new Error("سجّل الدخول بحساب الإدارة أولاً.");
+  const {data,error}=await sb.rpc("baran_admin_promotions",{p_action:action,p_payload:payload});
+  if(error)throw error;return data||{};
+}
+async function loadBaranPromotionsManager(){
+  const couponsBox=document.getElementById("promoCouponsList");
+  if(!couponsBox)return;
+  couponsBox.textContent="جاري تحميل بيانات العروض...";
+  try{
+    const data=await baranPromotionsRpc("list");
+    baranPromotionsCache={products:data.products||[],coupons:data.coupons||[],campaigns:data.campaigns||[]};
+    promoRenderProducts(baranPromotionsCache.products);
+    promoRenderSavedLists();
+    promoCouponTypeChanged();
+  }catch(error){
+    couponsBox.textContent="تعذر تحميل القسم: "+(error.message||"تحقق من صلاحية حساب الإدارة.");
+    const campaigns=document.getElementById("promoCampaignsList");if(campaigns)campaigns.textContent="تعذر تحميل البيانات.";
+  }
+}
+function promoRenderSavedLists(){
+  const coupons=document.getElementById("promoCouponsList");
+  const campaigns=document.getElementById("promoCampaignsList");
+  if(coupons){coupons.replaceChildren();if(!baranPromotionsCache.coupons.length)coupons.textContent="لا توجد كوبونات محفوظة.";
+    baranPromotionsCache.coupons.forEach(c=>{
+      const card=opsNode("article","ops-card");
+      card.append(opsNode("strong","",c.code+" — "+c.title),opsNode("p","",c.discount_type==="percent"?(c.discount_value+"% خصم"):(c.discount_value+" "+(c.currency||""))),
+        opsNode("div","ops-muted","المنتجات: "+(c.product_codes||[]).join("، ")+" | الاستخدامات: "+c.redeemed_count+" | "+(c.is_active?"مفعّل":"مسودة غير مفعّلة")));
+      coupons.appendChild(card);
+    });
+  }
+  if(campaigns){campaigns.replaceChildren();if(!baranPromotionsCache.campaigns.length)campaigns.textContent="لا توجد عروض محفوظة.";
+    baranPromotionsCache.campaigns.forEach(c=>{
+      const card=opsNode("article","ops-card");
+      card.append(opsNode("strong","",c.title),opsNode("p","",c.description||""),
+        opsNode("div","ops-muted","المنتجات: "+(c.product_codes||[]).join("، ")+" | الحالة: "+c.status));
+      const actions=opsNode("div","ops-actions");
+      [["draft","مسودة"],["published","نشر العرض"],["paused","إيقاف"]].forEach(([status,label])=>{
+        const button=opsNode("button","secondary",label);button.type="button";button.disabled=c.status===status;
+        button.onclick=async()=>{button.disabled=true;try{await baranPromotionsRpc("campaign_status",{id:c.id,status});await loadBaranPromotionsManager();}catch(e){button.disabled=false;alert("تعذر تحديث العرض: "+(e.message||""));}};
+        actions.appendChild(button);
+      });
+      card.appendChild(actions);campaigns.appendChild(card);
+    });
+  }
+}
+async function saveBaranCouponDraft(){
+  const message="promoCouponMessage";
+  try{
+    const payload={code:document.getElementById("promoCouponCode").value.trim().toUpperCase(),title:document.getElementById("promoCouponTitle").value.trim(),
+      description:document.getElementById("promoCouponDescription").value.trim(),discount_type:document.getElementById("promoCouponType").value,
+      discount_value:document.getElementById("promoCouponValue").value,currency:document.getElementById("promoCouponCurrency").value,
+      min_order_amount:document.getElementById("promoCouponMin").value,max_redemptions:document.getElementById("promoCouponLimit").value,
+      per_user_limit:document.getElementById("promoCouponUserLimit").value,starts_at:promoDateValue("promoCouponStart"),ends_at:promoDateValue("promoCouponEnd"),
+      product_codes:promoSelectedProducts("promoCouponProduct")};
+    await baranPromotionsRpc("save_coupon",payload);
+    promoMessage(message,"تم حفظ الكوبون كمسودة غير مفعّلة. لم يُطبّق أي خصم.");
+    ["promoCouponCode","promoCouponTitle","promoCouponDescription","promoCouponValue","promoCouponLimit","promoCouponStart","promoCouponEnd"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    document.querySelectorAll('input[name="promoCouponProduct"]').forEach(el=>el.checked=false);
+    await loadBaranPromotionsManager();
+  }catch(error){promoMessage(message,error.message||"تعذر حفظ الكوبون.",true);}
+}
+async function saveBaranCampaignDraft(){
+  const message="promoCampaignMessage";
+  try{
+    const payload={title:document.getElementById("promoCampaignTitle").value.trim(),badge_text:document.getElementById("promoCampaignBadge").value.trim(),
+      description:document.getElementById("promoCampaignDescription").value.trim(),starts_at:promoDateValue("promoCampaignStart"),
+      ends_at:promoDateValue("promoCampaignEnd"),priority:document.getElementById("promoCampaignPriority").value,
+      product_codes:promoSelectedProducts("promoCampaignProduct")};
+    await baranPromotionsRpc("save_campaign",payload);
+    promoMessage(message,"تم حفظ العرض كمسودة. لا يوجد خصم مالي مرتبط به.");
+    ["promoCampaignTitle","promoCampaignDescription","promoCampaignStart","promoCampaignEnd"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    document.querySelectorAll('input[name="promoCampaignProduct"]').forEach(el=>el.checked=false);
+    await loadBaranPromotionsManager();
+  }catch(error){promoMessage(message,error.message||"تعذر حفظ العرض.",true);}
+}
