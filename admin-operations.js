@@ -688,7 +688,7 @@ function promoCouponTypeChanged(){
   document.getElementById("promoCouponCurrencyWrap")?.classList.toggle("hidden",!fixed);
 }
 async function baranPromotionsRpc(action,payload={}){
-  if(!window.sb||!currentUser)throw new Error("سجّل الدخول بحساب الإدارة أولاً.");
+  if(typeof sb==="undefined"||!currentUser)throw new Error("سجّل الدخول بحساب الإدارة أولاً.");
   const {data,error}=await sb.rpc("baran_admin_promotions",{p_action:action,p_payload:payload});
   if(error)throw error;return data||{};
 }
