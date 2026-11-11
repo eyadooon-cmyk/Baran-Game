@@ -5173,15 +5173,13 @@ async function loadBaranGameCatalog(game){
   const status=document.createElement("p");status.className="small";status.textContent="جاري تحميل الباقات المعتمدة...";
   container.append(heading,status);
   try{
-    const prefix=isPubg?"PUBG_":"FREEFIRE_";
-    const {data,error}=await sb.from("products")
-      .select("id,product_code,name,description,price_usd,price_syp,sort_order")
-      .eq("category","game").eq("is_active",true)
-      .like("product_code",prefix+"%")
-      .order("sort_order",{ascending:true});
-    if(error)throw error;
+    // استخدم نسخة الكتالوج النشط المشتركة التي يعتمد عليها بحث المتجر أيضاً،
+    // لتجنب تكرار استعلام مختلف قد يفشل في صفحة الألعاب.
+    const catalog=await loadBaranStoreSearchProducts();
     const pattern=isPubg?/^PUBG_MOBILE_\d+_UC$/:/^FREEFIRE_\d+$/;
-    const packages=(data||[]).filter(p=>pattern.test(p.product_code||""));
+    const packages=(catalog||[])
+      .filter(p=>p.category==="game"&&pattern.test(p.product_code||""))
+      .sort((a,b)=>(Number(a.sort_order)||0)-(Number(b.sort_order)||0));
     container.replaceChildren(heading);
     if(!packages.length){
       const empty=document.createElement("p");empty.className="small";
@@ -5215,8 +5213,10 @@ async function loadBaranGameCatalog(game){
     console.error("Baran game catalog:",error);
     container.replaceChildren(heading);
     const message=document.createElement("p");message.className="small";
-    message.textContent="تعذر تحميل الباقات حالياً. حاول تحديث الصفحة.";
-    container.append(message);
+    message.textContent="تعذر تحميل كتالوج المنتجات: "+(error?.message||"تحقق من اتصالك ثم أعد المحاولة.");
+    const retry=document.createElement("button");retry.type="button";retry.className="secondary";retry.textContent="إعادة تحميل الباقات";
+    retry.addEventListener("click",()=>{baranStoreSearchProducts=null;baranStoreSearchLoad=null;loadBaranGameCatalog(game);});
+    container.append(message,retry);
   }
 }
 document.addEventListener("input",event=>{
