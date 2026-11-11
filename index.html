@@ -2815,63 +2815,105 @@ function closeAdminPanel(){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-const BARAN_SEARCH_SECTIONS=["home","games","services","mobileTopup"];
+const BARAN_SEARCH_SECTIONS=["home","games","services","mobileTopup","pubgStore","freeFireStore","chatgptStore","vpnStore","giftCardsStore","appsStore"];
+let baranStoreSearchProducts=null;
+let baranStoreSearchLoad=null;
 function normalizeStoreSearch(value){
   return String(value||"").toLocaleLowerCase("ar").normalize("NFKC").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").trim();
 }
-function searchStore(value){
+function baranSearchDestination(product){
+  const category=String(product.category||"").toLowerCase();
+  if(category==="game")return "games";
+  if(["ai","vpn","gift_card","app"].includes(category))return "services";
+  return "home";
+}
+async function loadBaranStoreSearchProducts(){
+  if(Array.isArray(baranStoreSearchProducts))return baranStoreSearchProducts;
+  if(baranStoreSearchLoad)return baranStoreSearchLoad;
+  baranStoreSearchLoad=(async()=>{
+    const {data,error}=await sb.from("products")
+      .select("id,product_code,name,description,category,price_usd,price_syp,is_active")
+      .eq("is_active",true).order("sort_order",{ascending:true});
+    if(error)throw error;
+    baranStoreSearchProducts=Array.isArray(data)?data:[];
+    return baranStoreSearchProducts;
+  })();
+  try{return await baranStoreSearchLoad;}
+  finally{baranStoreSearchLoad=null;}
+}
+async function searchStore(value){
   const query=normalizeStoreSearch(value);
   const output=document.getElementById("storeSearchResults");
   if(!output)return;
   output.replaceChildren();
   if(!query){output.classList.remove("active");return;}
-  const terms=query.split(/\s+/).filter(Boolean);
-  const matches=[];
-  BARAN_SEARCH_SECTIONS.forEach(sectionId=>{
-    const section=document.getElementById(sectionId);
-    if(!section)return;
-    section.querySelectorAll(".item,.product-card").forEach(card=>{
-      const text=normalizeStoreSearch(card.innerText||card.textContent||"");
-      if(terms.every(term=>text.includes(term))){
-        const title=(card.querySelector("strong")?.textContent||"منتج من المتجر").trim();
-        const description=(card.innerText||card.textContent||"").replace(title,"").trim().replace(/\s+/g," ").slice(0,110);
-        matches.push({sectionId,card,title,description});
-      }
-    });
-  });
   output.classList.add("active");
-  if(!matches.length){
-    const empty=document.createElement("div");
-    empty.className="store-search-empty";
-    empty.textContent="ما لقينا نتائج مطابقة. جرّب اسماً آخر أو كلمة أقصر.";
-    output.appendChild(empty);
-    return;
-  }
-  const heading=document.createElement("div");
-  heading.className="small";
-  heading.textContent="نتائج البحث: "+matches.length;
-  output.appendChild(heading);
-  matches.slice(0,20).forEach(match=>{
-    const button=document.createElement("button");
-    button.type="button";
-    button.className="store-search-result";
-    const info=document.createElement("span");
-    const strong=document.createElement("strong");
-    strong.textContent=match.title;
-    const small=document.createElement("small");
-    small.textContent=match.description||"افتح القسم لمشاهدة التفاصيل";
-    info.append(strong,small);
-    const action=document.createElement("span");
-    action.textContent="فتح ←";
-    button.append(info,action);
-    button.addEventListener("click",()=>{
-      const navButton=[...document.querySelectorAll("nav button")].find(b=>b.getAttribute("onclick")?.includes("'"+match.sectionId+"'"));
-      showSection(match.sectionId,navButton||null);
-      clearStoreSearch();
-      requestAnimationFrame(()=>match.card.scrollIntoView({behavior:"smooth",block:"center"}));
+  const loading=document.createElement("div");
+  loading.className="store-search-empty";
+  loading.textContent="جاري البحث في كتالوج المتجر...";
+  output.appendChild(loading);
+  try{
+    const products=await loadBaranStoreSearchProducts();
+    if(normalizeStoreSearch(document.getElementById("storeSearchInput")?.value)!==query)return;
+    const terms=query.split(/\\s+/).filter(Boolean);
+    const aliases={
+      game:["ببجي","شدات","uc","pubg","فري فاير","جواهر","free fire"],
+      ai:["ذكاء اصطناعي","شات جي بي تي","chatgpt","اشتراك"],
+      vpn:["في بي ان","vpn","حماية"],
+      gift_card:["بطاقات","بطاقة","غوغل بلاي","google play","كرت"],
+      app:["تطبيقات","تطبيق","برامج"]
+    };
+    const matches=products.map(product=>{
+      const category=String(product.category||"").toLowerCase();
+      const code=String(product.product_code||"").toLowerCase();
+      const extra=[...(aliases[category]||[])];
+      if(code.startsWith("pubg"))extra.push("ببجي","شدات","uc");
+      if(code.startsWith("freefire"))extra.push("فري فاير","جواهر");
+      const haystack=normalizeStoreSearch([product.name,product.product_code,product.description,category,...extra].filter(Boolean).join(" "));
+      return {product,score:terms.filter(term=>haystack.includes(term)).length};
+    }).filter(item=>item.score===terms.length);
+    output.replaceChildren();
+    const heading=document.createElement("div");
+    heading.className="small";
+    heading.textContent="نتائج البحث في كتالوج المتجر: "+matches.length;
+    output.appendChild(heading);
+    if(!matches.length){
+      const empty=document.createElement("div");
+      empty.className="store-search-empty";
+      empty.textContent="ما لقينا نتائج مطابقة. جرّب اسم اللعبة أو الخدمة أو كلمة أقصر.";
+      output.appendChild(empty);
+      return;
+    }
+    matches.slice(0,20).forEach(({product})=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="store-search-result";
+      const info=document.createElement("span");
+      const strong=document.createElement("strong");
+      strong.textContent=product.name||product.product_code||"منتج رقمي";
+      const small=document.createElement("small");
+      const prices=[];
+      if(Number(product.price_usd)>0)prices.push(Number(product.price_usd).toFixed(2)+" $");
+      if(Number(product.price_syp)>0)prices.push(Number(product.price_syp).toLocaleString("en-US")+" ل.س");
+      small.textContent=(product.description||"منتج من كتالوج Baran Game")+" · "+(prices.length?prices.join(" / "):"السعر قيد التجهيز");
+      info.append(strong,small);
+      const action=document.createElement("span");
+      action.textContent="فتح القسم ←";
+      button.append(info,action);
+      button.addEventListener("click",()=>{
+        showSection(baranSearchDestination(product),null);
+        clearStoreSearch();
+      });
+      output.appendChild(button);
     });
-    output.appendChild(button);
-  });
+  }catch(error){
+    console.error("Baran store search:",error);
+    output.replaceChildren();
+    const fallback=document.createElement("div");
+    fallback.className="store-search-empty";
+    fallback.textContent="تعذر البحث في الكتالوج الآن. جرّب تحديث الصفحة.";
+    output.appendChild(fallback);
+  }
 }
 function clearStoreSearch(){
   const input=document.getElementById("storeSearchInput");
