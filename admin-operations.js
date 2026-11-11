@@ -282,7 +282,22 @@ function renderOpsSuppliers(suppliers,links,products){
       card.append(opsNode("div","", "تكلفة الوحدة: "+opsMoney(link.unit_cost,link.currency)));
       card.append(opsNode("div","ops-muted","رمز المورد: "+opsText(link.supplier_sku)+" | مدة التوريد: "+(link.lead_time_hours===null?"—":link.lead_time_hours+" ساعة")));
       if(link.is_preferred)card.append(opsNode("span","ops-pill","المورد المفضل"));
+      const schema=Array.isArray(link.input_schema)?link.input_schema:[];
+      card.append(opsNode("div","ops-muted","حقول بيانات الزبون: "+(schema.length?schema.map(f=>opsText(f.label)).join("، "):"لا توجد حقول إضافية")));
       if(link.notes)card.append(opsNode("div","ops-muted",link.notes));
+      const editFields=opsNode("button","secondary","تعديل حقول الطلب");
+      editFields.type="button";
+      editFields.onclick=()=>{
+        const set=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value??"";};
+        set("opsSupplierSelect",link.supplier_id);set("opsProductSelect",link.product_id);
+        set("opsSupplierSku",link.supplier_sku);set("opsUnitCost",link.unit_cost);
+        set("opsCostCurrency",link.currency);set("opsLeadTime",link.lead_time_hours);
+        set("opsSupplierProductNotes",link.notes);
+        const preferred=document.getElementById("opsPreferredSupplier");if(preferred)preferred.checked=link.is_preferred===true;
+        const schemaInput=document.getElementById("opsSupplierInputSchema");if(schemaInput)schemaInput.value=JSON.stringify(schema,null,2);
+        document.getElementById("opsSupplierSelect")?.scrollIntoView({behavior:"smooth",block:"center"});
+      };
+      card.append(editFields);
       linksBox.appendChild(card);
     });
   }
@@ -428,6 +443,12 @@ async function opsSaveSupplierProduct(){
   const supplier=document.getElementById("opsSupplierSelect").value;
   const product=document.getElementById("opsProductSelect").value;
   const cost=Number(document.getElementById("opsUnitCost").value);
+  let inputSchema=[];
+  try{
+    const raw=document.getElementById("opsSupplierInputSchema")?.value.trim()||"[]";
+    inputSchema=JSON.parse(raw);
+    if(!Array.isArray(inputSchema))throw new Error("يجب أن تكون الحقول قائمة JSON.");
+  }catch(error){message.textContent="صيغة حقول الطلب غير صحيحة: "+error.message;return;}
   if(!supplier||!product||!Number.isFinite(cost)||cost<0){message.textContent="اختر المورد والمنتج وأدخل تكلفة صحيحة.";return;}
   try{
     await callAdminApi("POST",{action:"supplier_product_save",supplier_id:supplier,product_id:product,
@@ -435,10 +456,11 @@ async function opsSaveSupplierProduct(){
       currency:document.getElementById("opsCostCurrency").value,
       lead_time_hours:document.getElementById("opsLeadTime").value===""?null:Number(document.getElementById("opsLeadTime").value),
       is_preferred:document.getElementById("opsPreferredSupplier").checked,
+      input_schema:inputSchema,
       notes:document.getElementById("opsSupplierProductNotes").value});
-    message.textContent="تم حفظ تكلفة المورد وربطها بالمنتج.";
+    message.textContent="تم حفظ ربط المورد وحقول البيانات المطلوبة للطلب.";
     await loadAdminPanel();
-  }catch(error){message.textContent="تعذر حفظ السعر: "+error.message;}
+  }catch(error){message.textContent="تعذر حفظ الربط: "+error.message;}
 }
 async function opsUpdateOrder(orderId){
   const status=document.getElementById("opsOrderStatus_"+orderId).value;
