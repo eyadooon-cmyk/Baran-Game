@@ -2864,9 +2864,9 @@ async function searchStore(value){
   try{
     const products=await loadBaranStoreSearchProducts();
     if(normalizeStoreSearch(document.getElementById("storeSearchInput")?.value)!==query)return;
-    const terms=query.split(/\\s+/).filter(Boolean);
+    const terms=query.split(/\s+/).filter(Boolean);
     const aliases={
-      game:["ببجي","شدات","uc","pubg","فري فاير","جواهر","free fire"],
+      game:["لعبة","العاب","ألعاب"],
       ai:["ذكاء اصطناعي","شات جي بي تي","chatgpt","اشتراك"],
       vpn:["في بي ان","vpn","حماية"],
       gift_card:["بطاقات","بطاقة","غوغل بلاي","google play","كرت"],
