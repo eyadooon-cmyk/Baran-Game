@@ -5164,6 +5164,20 @@ function baranUpdateGameSummary(game){
     summary.classList.remove("baran-unified-selection");
   }
 }
+// تعريف مبكر لأن كتالوج الألعاب قد يُحمّل قبل تنفيذ سكربت الخدمات.
+function baranAddProductDetails(parent,product,categoryLabel){
+ const toggle=document.createElement("button");toggle.type="button";toggle.className="baran-product-detail-toggle";toggle.textContent="＋ تفاصيل المنتج";toggle.setAttribute("aria-expanded","false");
+ const panel=document.createElement("div");panel.className="baran-product-detail-panel";panel.hidden=true;
+ const title=document.createElement("strong");title.textContent="تفاصيل "+(product.name||"المنتج");
+ const description=document.createElement("div");description.textContent=product.description||"لا توجد تفاصيل إضافية منشورة لهذا المنتج حالياً.";
+ const category=document.createElement("div");category.textContent="القسم: "+categoryLabel;
+ const code=document.createElement("div");code.textContent="رمز المنتج: "+(product.product_code||"غير متوفر");
+ const price=document.createElement("div");price.textContent="السعر: "+(typeof baranServicePrice==="function"?baranServicePrice(product):baranMoneyText(product));
+ const availability=document.createElement("div");availability.textContent="حالة الشراء: "+((Number(product.price_usd)>0||Number(product.price_syp)>0)?"السعر مسجل — تنفيذ الطلب غير مفعّل قبل اعتماد المورد":"بانتظار اعتماد السعر والمورد");
+ panel.append(title,description,category,code,price,availability);
+ toggle.addEventListener("click",()=>{const opening=panel.hidden;panel.hidden=!opening;toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"－ إخفاء التفاصيل":"＋ تفاصيل المنتج";});
+ parent.append(toggle,panel);
+}
 async function loadBaranGameCatalog(game){
   const isPubg=game==="PUBG";
   const container=document.getElementById(isPubg?"pubgProductCatalog":"freeFireProductCatalog");
