@@ -2832,8 +2832,12 @@ function normalizeStoreSearch(value){
 }
 function baranSearchDestination(product){
   const category=String(product.category||"").toLowerCase();
-  if(category==="game")return "games";
-  if(["ai","vpn","gift_card","app"].includes(category))return "services";
+  const code=String(product.product_code||"").toLowerCase();
+  if(category==="game")return code.startsWith("freefire")?"freeFireStore":"pubgStore";
+  if(category==="ai")return "chatgptStore";
+  if(category==="vpn")return "vpnStore";
+  if(category==="gift_card")return "giftCardsStore";
+  if(category==="app")return "appsStore";
   return "home";
 }
 async function loadBaranStoreSearchProducts(){
