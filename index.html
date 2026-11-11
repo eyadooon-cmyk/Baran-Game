@@ -93,6 +93,8 @@ footer{text-align:center;padding:25px;color:#a99ab5}
 
 /* القائمة الجانبية — تحافظ على هوية Baran Game الحالية */
 #appShell>nav{display:none}
+.section-back-button{flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #665078;border-radius:10px;background:#241a2e;color:#f4eaff;font-size:13px;font-weight:700;white-space:nowrap}
+.section-back-button:active{transform:scale(.97)}
 .store-toolbar{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#100b16;border-bottom:1px solid var(--line);box-shadow:0 5px 18px #0006}
 .menu-toggle{width:46px;height:42px;padding:7px;background:#2b1b3a;color:var(--green);border:1px solid #59456b;border-radius:11px;font-size:25px;line-height:1}
 .notification-bell{position:relative;width:42px;height:40px;padding:6px;background:#241a2e;color:#eee;border:1px solid #59456b;border-radius:11px;font-size:19px}
@@ -1483,6 +1485,7 @@ footer{color:#9f91aa}
   <div class="store-toolbar">
     <button class="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" onclick="toggleSideMenu()" id="menuToggle">☰</button>
     <div class="toolbar-brand">BARAN <span>GAME</span></div>
+    <button id="sectionBackButton" class="section-back-button hidden" type="button" onclick="goBackSection()" aria-label="رجوع إلى القسم السابق">← رجوع</button>
     <div id="currentSectionLabel" class="small">الرئيسية</div>
     <button class="notification-bell" type="button" onclick="showSection('settings',null)" aria-label="الإعدادات">⚙️</button>
     <button id="notificationBell" class="notification-bell" type="button" onclick="openCustomerNotifications()" aria-label="فتح الإشعارات">🔔<span id="notificationCount" class="notification-count hidden">0</span></button>
@@ -2937,8 +2940,25 @@ function clearStoreSearch(){
 }
 
 
-function showSection(id,button){
+let baranSectionHistory=[];
+function updateSectionBackButton(){
+  const button=document.getElementById("sectionBackButton");
+  if(!button)return;
+  button.classList.toggle("hidden",baranSectionHistory.length===0);
+}
+function goBackSection(){
+  if(!currentUser)return;
+  const previous=baranSectionHistory.pop()||"home";
+  showSection(previous,null,{fromHistory:true});
+}
+function showSection(id,button,options){
   if(!currentUser) return;
+  const current=document.querySelector("main > section[id]:not(.hidden)");
+  const currentId=current?.id;
+  if(!options?.fromHistory&&currentId&&currentId!==id){
+    baranSectionHistory.push(currentId);
+    if(baranSectionHistory.length>30)baranSectionHistory.shift();
+  }
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
   if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
   if(id==="staffTasks"&&!baranStaffPortalAuthorized){alert("إدارة المهام غير متاحة قبل التحقق من صلاحية المشرفة.");return;}
@@ -2969,6 +2989,7 @@ function showSection(id,button){
   if(id==="staffTasks")loadStaffTasks();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
   if(id==="settings"&&typeof refreshBaranPushSettingsStatus==="function")refreshBaranPushSettingsStatus();
+  updateSectionBackButton();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
