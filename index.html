@@ -2172,7 +2172,10 @@ footer{color:#9f91aa}
         <label><input id="opsPreferredSupplier" type="checkbox"> المورد المفضل لهذا المنتج</label>
         <label for="opsSupplierProductNotes">ملاحظات داخلية</label>
         <textarea id="opsSupplierProductNotes" rows="2" maxlength="1000" placeholder="تفاصيل سعر الجملة أو الاتفاق"></textarea>
-        <button class="full" type="button" onclick="opsSaveSupplierProduct()">حفظ سعر المورد</button>
+        <label for="opsSupplierInputSchema">حقول بيانات الزبون المطلوبة من هذا المورد (JSON)</label>
+        <textarea id="opsSupplierInputSchema" rows="7" maxlength="6000" dir="ltr" spellcheck="false" placeholder='[{"key":"player_id","label":"Player ID","type":"text","required":true,"min_length":5,"max_length":24}]'></textarea>
+        <p class="small">اتركها [] إذا ما في بيانات إضافية. لا نطلب اسم اللاعب إلا إذا كان المورد يحتاجه فعلاً. الأنواع المدعومة: text وnumber وemail وselect.</p>
+        <button class="full" type="button" onclick="opsSaveSupplierProduct()">حفظ ربط المورد والحقول</button>
         <div id="opsSupplierProductMessage" class="ops-muted" role="status"></div>
       </div>
       <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
