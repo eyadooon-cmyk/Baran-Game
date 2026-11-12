@@ -374,18 +374,7 @@ function renderOpsSupplierIntegration(integration,suppliers){
   }
   if(statusBox){
     statusBox.replaceChildren();
-    const shamCard=opsNode("section","ops-item");
-    shamCard.append(
-      opsNode("strong","","ربط ShamCash API — تسجيل Webhook"),
-      opsNode("p","ops-muted","ينفّذ التسجيل من جلسة المدير الحالية. لا يضيف رصيداً تلقائياً ولا ينفّذ أي حركة مالية.")
-    );
-    const shamButton=opsNode("button","primary","تسجيل Webhook الآن");
-    shamButton.type="button";
-    const shamOutput=opsNode("div","ops-muted","");
-    shamButton.onclick=()=>opsRegisterShamCashWebhook(shamButton,shamOutput);
-    shamCard.append(shamButton,shamOutput);
-    statusBox.appendChild(shamCard);
-    if(!configs.length)statusBox.textContent="لا توجد إعدادات API محفوظة. أضف مورداً أولاً.";
+    if(!configs.length)statusBox.textContent="لا توجد إعدادات API محفوظة.";
     configs.forEach(c=>{
       const supplier=suppliers.find(s=>s.id===c.supplier_id);
       const labels={not_configured:"غير مهيأ",pending_credentials:"بانتظار بيانات الاتصال",ready:"جاهز بعد التحقق",degraded:"يعمل مع تحذير",offline:"متوقف",disabled:"معطّل"};
