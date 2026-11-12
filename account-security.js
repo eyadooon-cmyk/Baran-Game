@@ -16,7 +16,6 @@ async function checkPasswordExposure(password){
   const suffix=hash.slice(5);
   const response=await fetch("https://api.pwnedpasswords.com/range/"+prefix,{
     method:"GET",
-    headers:{"Add-Padding":"true"},
     cache:"no-store",
     credentials:"omit",
     referrerPolicy:"no-referrer",
