@@ -2126,12 +2126,24 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
             <div class="admin-hub-group-title"><span>03</span><div><strong>المالية والحماية</strong><small>الأموال والإيداعات وسجلات الأمان — انتبه قبل أي إجراء.</small></div></div>
             <div class="admin-hub-grid">
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>الحسابات المالية</strong><small>الأرباح ورأس المال والمصاريف والحركات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('payment-gateway')"><span class="admin-hub-icon">💳</span><strong>بوابة الدفع والتحصيل</strong><small>إعداد ربط ShamCash API واستقبال إشعارات الحوالات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card admin-hub-card-sensitive" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>التذاكر المالية</strong><small>حالات الحوالات والأرصدة التي تحتاج مراجعتك.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card admin-hub-card-sensitive" onclick="showAdminPanel('security')"><span class="admin-hub-icon">🛡️</span><strong>الأمان والإيداعات</strong><small>طلبات الشحن وسجل الإدارة والتنبيهات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button id="ownerWalletFinanceCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" onclick="showAdminPanel('wallet-finance')"><span class="admin-hub-icon">💳</span><strong>محفظة المالك</strong><small>أرصدة المالك والتحويلات وطلبات التمويل.</small><span class="admin-hub-open">فتح القسم ←</span></button>
             </div>
           </section>
         </div>
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="payment-gateway">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>بوابة الدفع والتحصيل 💳</h2></div>
+        <section class="deposit-card" style="margin:12px 0;border-color:#70528a">
+          <h3>ربط ShamCash API</h3>
+          <p class="small">هذا الربط مستقل تماماً عن موردي الألعاب. التسجيل يعرّف عنوان Webhook لدى ShamCash فقط، ولا يضيف رصيداً للزبائن ولا ينفّذ أي حركة مالية.</p>
+          <p class="small">بعد قبول التسجيل سيظهر مفتاح توقيع سري لمرة واحدة. انسخه مباشرة إلى Supabase Edge Function Secrets باسم SHAMCASH_WEBHOOK_SIGNING_SECRET، ولا ترسله في المحادثة أو لأي شخص.</p>
+          <button type="button" class="full" onclick="opsRegisterShamCashWebhook(this,document.getElementById('shamCashRegisterOutput'))">تسجيل Webhook الآن</button>
+          <div id="shamCashRegisterOutput" class="ops-muted" role="status" aria-live="polite" style="margin-top:12px"></div>
+        </section>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="overview">
@@ -2760,7 +2772,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./profile-settings.js?v=20261107-1"></script>
 <script src="./community.js?v=20261107-2"></script>
 <script src="./baran-assistant.js"></script>
-<script src="./admin-operations.js?v=20261113-shamcash-1"></script>
+<script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261112-cost-controls-4"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
