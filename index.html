@@ -3733,7 +3733,14 @@ async function submitDepositRequest(){
     message.textContent="تم التحقق من الحوالة بنجاح وإرسال طلبك للمراجعة. لم يُضف الرصيد بعد.";
     await loadDepositRequests();
   }catch(error){
-    message.textContent=error.message||"تعذر التحقق من الحوالة حالياً.";
+    let userMessage=error?.message||"تعذر التحقق من الحوالة حالياً.";
+    try{
+      if(error?.context && typeof error.context.json==="function"){
+        const details=await error.context.json();
+        if(details?.error) userMessage=details.error;
+      }
+    }catch(_){}
+    message.textContent=userMessage;
   }finally{
     button.disabled=false;
   }
