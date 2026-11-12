@@ -179,15 +179,22 @@
         if (!client) throw new Error("تعذر تهيئة اتصال المتجر. حدّث الصفحة ثم جرّب مجدداً.");
         const { data: sessionData, error: sessionError } = await client.auth.getSession();
         if (sessionError || !sessionData?.session) throw new Error("انتهت جلسة الدخول.");
-        const since = new Date(Date.now() - 30*86400000).toISOString();
-        const { data, error } = await client.from("admin_audit_log").select("created_at,details").eq("action","baran_ai_usage").gte("created_at",since).order("created_at",{ascending:false}).limit(1000);
-        if (error) throw error;
-        const rows = data || [];
-        const openai = rows.filter(x => x.details?.route === "openai").length;
-        const offline = rows.filter(x => x.details?.route === "offline").length;
-        const total = openai + offline;
-        const saved = total ? Math.round(offline / total * 100) : 0;
-        stats.textContent = "آخر 30 يوم (منذ تفعيل العداد)\nطلبات OpenAI: " + openai + "\nتقارير مباشرة دون OpenAI: " + offline + "\nنسبة المسار المباشر: " + saved + "%\nإجمالي الاستخدام المسجل: " + total + "\n\nملاحظة: هذه نسبة الطلبات التي تجنبت OpenAI، وليست نسبة دولارات مؤكدة. قد لا تشمل السجلات الأقدم من 1000 عملية.";
+        const response = await fetch(SUPABASE_URL + "/functions/v1/baran-ai-usage-stats", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + sessionData.session.access_token,
+            "apikey": SUPABASE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({})
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || "تعذر تحميل الإحصائيات من الخادم.");
+        stats.textContent = "آخر 30 يوم (منذ تفعيل العداد)\\nمحاولات OpenAI المسجلة: " + result.openai_attempts +
+          "\\nتقارير مباشرة دون OpenAI: " + result.offline_reports +
+          "\\nنسبة المسار المباشر: " + result.direct_route_percent + "%" +
+          "\\nإجمالي الاستخدام المسجل: " + result.total_recorded +
+          "\\n\\nملاحظة: هذه نسبة الطلبات فقط وليست نسبة توفير بالدولار. السجلات تُقرأ من الخادم بصلاحية المدير فقط.";
       } catch (e) { stats.textContent = "تعذر تحميل الإحصائيات: " + (e?.message || "تحقق من صلاحية قراءة سجل التدقيق."); }
       finally { refresh.disabled = false; }
     }
