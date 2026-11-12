@@ -489,6 +489,25 @@ async function opsAdjustLoyalty(){
 }
 
 
+function filterMyOrders(){
+  const box=document.getElementById("customerOrdersList");
+  if(!box)return;
+  const query=(document.getElementById("customerOrderSearch")?.value||"").trim().toLocaleLowerCase();
+  const status=document.getElementById("customerOrderStatusFilter")?.value||"all";
+  const cards=[...box.querySelectorAll(".customer-order-card")];
+  let visible=0;
+  cards.forEach(card=>{
+    const matchesText=!query||(card.dataset.orderSearch||card.textContent.toLocaleLowerCase()).includes(query);
+    const matchesStatus=status==="all"||card.dataset.orderStatus===status;
+    card.hidden=!(matchesText&&matchesStatus);
+    if(!card.hidden)visible++;
+  });
+  const count=document.getElementById("customerOrderFilterCount");
+  if(count)count.textContent=cards.length
+    ? "عرض "+visible+" من أصل "+cards.length+" طلب"
+    : "";
+}
+
 async function loadMyOrders(){
   const box=document.getElementById("customerOrdersList");
   if(!box||!currentUser)return;
@@ -518,8 +537,21 @@ async function loadMyOrders(){
       if(!eventsByOrder.has(event.order_id))eventsByOrder.set(event.order_id,[]);
       eventsByOrder.get(event.order_id).push(event);
     });
+    const summary=document.getElementById("customerOrderSummary");
+    if(summary){
+      const active=orders.filter(order=>["pending","processing","awaiting_supplier"].includes(order.status)).length;
+      const completed=orders.filter(order=>order.status==="completed").length;
+      summary.replaceChildren();
+      [["كل الطلبات",orders.length],["قيد التنفيذ",active],["مكتملة",completed]].forEach(([label,value])=>{
+        const stat=opsNode("div","customer-order-stat");
+        stat.append(opsNode("span","",label),opsNode("strong","",String(value)));
+        summary.appendChild(stat);
+      });
+    }
     orders.forEach(order=>{
       const card=opsNode("article","ops-item customer-order-card");
+      card.dataset.orderStatus=order.status||"";
+      card.dataset.orderSearch=[order.id,order.id.slice(0,8),order.product_code,order.player_id||""].join(" ").toLocaleLowerCase();
       card.dataset.notificationEntityId=order.id;
       const top=opsNode("div","customer-order-top");
       top.append(
@@ -558,7 +590,10 @@ async function loadMyOrders(){
       card.appendChild(timeline);
       box.appendChild(card);
     });
+    filterMyOrders();
   }catch(error){
+    const summary=document.getElementById("customerOrderSummary");
+    if(summary)summary.replaceChildren();
     box.textContent="تعذر تحميل الطلبات حالياً. حاول التحديث مرة أخرى.";
     console.error("Baran order tracking:",error);
   }
