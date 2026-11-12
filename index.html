@@ -5459,7 +5459,8 @@ function baranAddProductDetails(parent,product,categoryLabel){
  toggle.addEventListener("click",()=>{const opening=panel.hidden;panel.hidden=!opening;toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"－ إخفاء التفاصيل":"＋ تفاصيل المنتج";});
  parent.append(toggle,panel);
 }
-\nfunction baranServicePrice(product){
+
+function baranServicePrice(product){
  const usd=product.price_usd==null||product.price_usd===""?null:Number(product.price_usd);
  const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
  const values=[];
