@@ -2912,7 +2912,7 @@ async function loadBaranStoreSearchProducts(){
   if(baranStoreSearchLoad)return baranStoreSearchLoad;
   baranStoreSearchLoad=(async()=>{
     const {data,error}=await sb.from("products")
-      .select("id,product_code,name,description,category,price_usd,price_syp,is_active")
+      .select("id,product_code,name,description,category,price_usd,price_syp,is_active,sort_order")
       .eq("is_active",true).order("sort_order",{ascending:true});
     if(error)throw error;
     baranStoreSearchProducts=Array.isArray(data)?data:[];
