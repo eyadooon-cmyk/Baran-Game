@@ -3402,9 +3402,14 @@ async function signUp(){
   if(password.length<8||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[!@#$%^&*()_+\-=[\]{};':"|<>?,./~]/.test(password)){
     note.textContent="كلمة المرور يجب أن تكون 8 أحرف على الأقل، وتحتوي حرفاً كبيراً وصغيراً ورقماً ورمزاً.";return;
   }
-  note.textContent="جاري إنشاء الحساب...";
+  note.textContent="جاري فحص كلمة المرور ضمن قواعد التسريبات المعروفة...";
   button.disabled=true;
   try{
+    let exposureCount;
+    try{exposureCount=await checkPasswordExposure(password);}
+    catch(checkError){note.textContent="تعذر إكمال الفحص الأمني حالياً؛ لم يتم إنشاء الحساب. حاول مرة أخرى بعد قليل.";return;}
+    if(exposureCount>0){note.textContent="كلمة المرور التي اخترتها ظهرت ضمن تسريبات سابقة ("+exposureCount.toLocaleString("en-US")+" مرة). اختر كلمة مرور جديدة لم تستخدمها في أي موقع آخر.";return;}
+    note.textContent="جاري إنشاء الحساب...";
     const redirect=window.location.origin+window.location.pathname;
     const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{baran_welcome_pending:true}}});
     if(error)throw error;
