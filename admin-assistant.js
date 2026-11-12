@@ -175,10 +175,12 @@
     async function load() {
       refresh.disabled = true; stats.textContent = "جارٍ تحميل الإحصائيات…";
       try {
-        const { data: sessionData } = await sb.auth.getSession();
-        if (!sessionData?.session) throw new Error("انتهت جلسة الدخول.");
+        const client = window.baranSupabaseClient;
+        if (!client) throw new Error("تعذر تهيئة اتصال المتجر. حدّث الصفحة ثم جرّب مجدداً.");
+        const { data: sessionData, error: sessionError } = await client.auth.getSession();
+        if (sessionError || !sessionData?.session) throw new Error("انتهت جلسة الدخول.");
         const since = new Date(Date.now() - 30*86400000).toISOString();
-        const { data, error } = await sb.from("admin_audit_log").select("created_at,details").eq("action","baran_ai_usage").gte("created_at",since).order("created_at",{ascending:false}).limit(1000);
+        const { data, error } = await client.from("admin_audit_log").select("created_at,details").eq("action","baran_ai_usage").gte("created_at",since).order("created_at",{ascending:false}).limit(1000);
         if (error) throw error;
         const rows = data || [];
         const openai = rows.filter(x => x.details?.route === "openai").length;
