@@ -185,6 +185,24 @@ input::placeholder,textarea::placeholder{color:#9d91a8;opacity:1}
 button{font-weight:700}
 
 
+/* مركز طلبات الزبون */
+.customer-orders-page{min-width:0}
+.customer-orders-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.customer-orders-heading h2{margin:5px 0}
+.customer-order-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.customer-order-stat{min-width:0;padding:12px 9px;background:linear-gradient(145deg,#241a30,#17121e);border:1px solid #57436a;border-radius:13px}
+.customer-order-stat span{display:block;color:#bdaacb;font-size:11px;line-height:1.5}
+.customer-order-stat strong{display:block;color:#eadcf6;font-size:22px;margin-top:4px}
+.customer-order-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(125px,.65fr);gap:9px;align-items:end;padding:12px;background:#17121e;border:1px solid #493b55;border-radius:14px}
+.customer-order-tools label{display:block;min-width:0;margin:0}
+.customer-order-tools label span{display:block;color:#c9b7d8;font-size:12px;margin-bottom:5px}
+.customer-order-tools input,.customer-order-tools select{width:100%;min-width:0;margin:0}
+.customer-order-refresh{grid-column:1/-1;width:100%;min-height:42px}
+.customer-order-filter-count{margin:9px 3px}
+.customer-order-card[hidden]{display:none!important}
+@media(min-width:650px){.customer-order-tools{grid-template-columns:minmax(0,1fr) minmax(180px,.5fr) auto}.customer-order-refresh{grid-column:auto;min-width:110px}}
+@media(max-width:360px){.customer-order-summary{gap:5px}.customer-order-stat{padding:10px 7px}.customer-order-stat strong{font-size:19px}.customer-order-tools{grid-template-columns:1fr}.customer-order-refresh{grid-column:auto}}
+
 /* لوحة العمليات الجديدة — أسود وبنفسجي */
 .ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
 .ops-card{padding:14px;background:#201a29;border:1px solid #57436a;border-radius:13px;line-height:1.8;min-width:0}
@@ -2456,10 +2474,24 @@ footer{color:#9f91aa}
 
     </section>
 
-    <section id="orders" class="hidden">
-      <h2>📦 طلباتي وتتبع الطلب</h2>
-      <p class="small">تابع حالة طلباتك وآخر التحديثات التي يرسلها فريق Baran Game.</p>
-      <button class="full secondary" type="button" onclick="loadMyOrders()">تحديث الطلبات</button>
+    <section id="orders" class="hidden customer-orders-page">
+      <div class="customer-orders-heading">
+        <div><span class="account-eyebrow">BARAN GAME · ORDER CENTER</span><h2>📦 طلباتي وتتبع الطلب</h2><p class="small">كل طلباتك وتحديثاتها بمكان واحد، من وقت الاستلام حتى اكتمال التنفيذ.</p></div>
+        <span class="account-heading-mark" aria-hidden="true">↗</span>
+      </div>
+      <div id="customerOrderSummary" class="customer-order-summary" aria-live="polite">
+        <div class="customer-order-stat"><span>كل الطلبات</span><strong>—</strong></div>
+        <div class="customer-order-stat"><span>قيد التنفيذ</span><strong>—</strong></div>
+        <div class="customer-order-stat"><span>مكتملة</span><strong>—</strong></div>
+      </div>
+      <div class="customer-order-tools">
+        <label class="customer-order-search"><span>ابحث ضمن طلباتك</span><input id="customerOrderSearch" type="search" placeholder="رقم الطلب أو اسم المنتج أو معرّف اللاعب" oninput="filterMyOrders()" autocomplete="off"></label>
+        <label class="customer-order-filter"><span>تصفية الحالة</span><select id="customerOrderStatusFilter" onchange="filterMyOrders()">
+          <option value="all">كل الحالات</option><option value="pending">قيد المراجعة</option><option value="processing">قيد التنفيذ</option><option value="awaiting_supplier">بانتظار المورد</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option>
+        </select></label>
+        <button class="secondary customer-order-refresh" type="button" onclick="loadMyOrders()">↻ تحديث</button>
+      </div>
+      <p id="customerOrderFilterCount" class="small customer-order-filter-count" aria-live="polite"></p>
       <div id="customerOrdersList" class="ops-list">جاري تحميل طلباتك...</div>
     </section>
 
