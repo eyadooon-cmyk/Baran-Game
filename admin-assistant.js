@@ -161,6 +161,40 @@
     ["🚀", "مخطط التطوير", "ضع خطة تطوير عملية لـ Baran Game اعتماداً على حالة المتجر الفعلية: ما الذي يمنع الإطلاق، ما الأولوية التالية، وما الذي يمكن تأجيله. قسّم الخطة إلى مراحل صغيرة مع معيار نجاح لكل مرحلة، ولا تفترض أن ميزة غير منفذة تعمل."]
   ];;
 
+  async function installAiUsagePanel() {
+    const host = document.getElementById("baranAdminAssistant");
+    if (!host || document.getElementById("baranAiUsagePanel")) return;
+    const panel = document.createElement("section");
+    panel.id = "baranAiUsagePanel";
+    panel.style.cssText = "margin-top:14px;padding:14px;border:1px solid #675078;border-radius:14px;background:#100b16";
+    const title = document.createElement("h3"); title.textContent = "📊 قياس استهلاك OpenAI والتوفير";
+    const note = document.createElement("p"); note.className = "small"; note.textContent = "عداد تقريبي للطلبات الناجحة/المحاولة المسجلة. لا يخزن نص السؤال أو الرد. يبدأ القياس من وقت تفعيل هذه الإضافة.";
+    const stats = document.createElement("div"); stats.style.cssText = "white-space:pre-wrap;line-height:1.9;margin:8px 0";
+    const refresh = document.createElement("button"); refresh.type = "button"; refresh.textContent = "تحديث الإحصائيات";
+    refresh.addEventListener("click", load);
+    async function load() {
+      refresh.disabled = true; stats.textContent = "جارٍ تحميل الإحصائيات…";
+      try {
+        const { data: sessionData } = await sb.auth.getSession();
+        if (!sessionData?.session) throw new Error("انتهت جلسة الدخول.");
+        const since = new Date(Date.now() - 30*86400000).toISOString();
+        const { data, error } = await sb.from("admin_audit_log").select("created_at,details").eq("action","baran_ai_usage").gte("created_at",since).order("created_at",{ascending:false}).limit(1000);
+        if (error) throw error;
+        const rows = data || [];
+        const openai = rows.filter(x => x.details?.route === "openai").length;
+        const offline = rows.filter(x => x.details?.route === "offline").length;
+        const total = openai + offline;
+        const saved = total ? Math.round(offline / total * 100) : 0;
+        stats.textContent = "آخر 30 يوم (منذ تفعيل العداد)\nطلبات OpenAI: " + openai + "\nتقارير مباشرة دون OpenAI: " + offline + "\nنسبة المسار المباشر: " + saved + "%\nإجمالي الاستخدام المسجل: " + total + "\n\nملاحظة: هذه نسبة الطلبات التي تجنبت OpenAI، وليست نسبة دولارات مؤكدة. قد لا تشمل السجلات الأقدم من 1000 عملية.";
+      } catch (e) { stats.textContent = "تعذر تحميل الإحصائيات: " + (e?.message || "تحقق من صلاحية قراءة سجل التدقيق."); }
+      finally { refresh.disabled = false; }
+    }
+    panel.append(title,note,stats,refresh);
+    const status = document.getElementById("baranAdminAssistantStatus");
+    if (status && status.parentNode === host) status.insertAdjacentElement("afterend", panel); else host.appendChild(panel);
+    void load();
+  }
+
   function installDepartmentTeam() {
     const host = document.getElementById("baranAdminAssistant");
     if (!host || document.getElementById("baranAiTeam")) return;
@@ -361,7 +395,7 @@
 
   function initializeAdminEnhancements() {
     try { installSafeActions(); } catch (error) { console.error("Baran safe actions UI:", error); }
-    try { installDepartmentTeam(); } catch (error) { console.error("Baran AI team UI:", error); }
+    try { installDepartmentTeam(); } catch (error) { console.error("Baran AI team UI:", error); }\n    try { installAiUsagePanel(); } catch (error) { console.error("Baran AI usage UI:", error); }
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeAdminEnhancements, { once: true });
