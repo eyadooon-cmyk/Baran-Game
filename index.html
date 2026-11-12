@@ -5532,8 +5532,10 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
  }catch(error){
   console.error("Baran service catalog:",error);
   container.replaceChildren(heading);
-  const message=document.createElement("div");message.className="baran-catalog-empty";message.textContent="تعذر تحميل المنتجات حالياً. حاول تحديث الصفحة.";
-  container.append(message);
+  const message=document.createElement("div");message.className="baran-catalog-empty";message.textContent="تعذر تحميل المنتجات حالياً. تحقق من الاتصال ثم أعد المحاولة.";
+  const retry=document.createElement("button");retry.type="button";retry.className="secondary";retry.textContent="إعادة تحميل المنتجات";
+  retry.addEventListener("click",()=>loadBaranServiceCatalog(category,containerId,title,icon));
+  container.append(message,retry);
  }
 }
 </script>
