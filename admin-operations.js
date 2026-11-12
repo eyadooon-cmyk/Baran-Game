@@ -302,6 +302,52 @@ function renderOpsSuppliers(suppliers,links,products){
     });
   }
 }
+async function opsRegisterShamCashWebhook(button,output){
+  if(!window.confirm("سيتم تسجيل عنوان Webhook الخاص بباران لدى ShamCash API. لن يتم تفعيل إضافة الرصيد تلقائياً. هل تريد المتابعة؟"))return;
+  button.disabled=true;
+  output.textContent="جارٍ التحقق من جلسة المدير والتسجيل لدى ShamCash…";
+  try{
+    const {data:{session},error:sessionError}=await sb.auth.getSession();
+    if(sessionError||!session?.access_token)throw new Error("انتهت جلسة المدير. سجّل الدخول من جديد.");
+    const response=await fetch(SUPABASE_URL+"/functions/v1/baran-shamcash-register",{
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+session.access_token,
+        "apikey":SUPABASE_KEY,
+        "Content-Type":"application/json"
+      },
+      body:"{}",
+      cache:"no-store"
+    });
+    let result={};try{result=await response.json();}catch(_){}
+    if(!response.ok||result.registered!==true)throw new Error(result.error||"رفضت ShamCash تسجيل Webhook.");
+    output.replaceChildren();
+    if(result.secret_received===true&&typeof result.signing_secret==="string"){
+      output.appendChild(opsNode("strong","","تم قبول التسجيل واستلام مفتاح التوقيع."));
+      output.appendChild(opsNode("p","ops-muted","انسخ المفتاح مباشرة إلى Supabase Edge Function Secrets بالاسم SHAMCASH_WEBHOOK_SIGNING_SECRET. لا ترسله في المحادثة."));
+      const secretInput=document.createElement("input");
+      secretInput.type="password";secretInput.readOnly=true;secretInput.autocomplete="off";
+      secretInput.value=result.signing_secret;secretInput.style.width="100%";secretInput.style.margin="8px 0";
+      const row=opsNode("div","ops-actions");
+      const reveal=opsNode("button","secondary","إظهار/إخفاء المفتاح");reveal.type="button";
+      reveal.onclick=()=>{secretInput.type=secretInput.type==="password"?"text":"password";};
+      const copy=opsNode("button","primary","نسخ المفتاح");copy.type="button";
+      copy.onclick=async()=>{
+        try{await navigator.clipboard.writeText(secretInput.value);copy.textContent="تم النسخ";copy.disabled=true;}
+        catch(_){output.appendChild(opsNode("p","ops-muted","تعذر النسخ التلقائي؛ أظهر المفتاح وانسخه يدوياً من هذه الصفحة فقط."));}
+      };
+      row.append(reveal,copy);
+      output.append(secretInput,row);
+    }else{
+      output.appendChild(opsNode("strong","","قبلت ShamCash طلب التسجيل، لكن لم يصل مفتاح التوقيع المتوقع."));
+      output.appendChild(opsNode("p","ops-muted",result.warning||"لا تعتبر استقبال Webhook جاهزاً بعد. راجع استجابة مزود الخدمة."));
+    }
+  }catch(error){
+    output.textContent="لم يكتمل التسجيل: "+(error?.message||"خطأ غير معروف");
+  }finally{
+    button.disabled=false;
+  }
+}
 function renderOpsSupplierIntegration(integration,suppliers){
   const select=document.getElementById("opsApiSupplierSelect");
   const statusBox=document.getElementById("opsApiStatus");
@@ -328,6 +374,17 @@ function renderOpsSupplierIntegration(integration,suppliers){
   }
   if(statusBox){
     statusBox.replaceChildren();
+    const shamCard=opsNode("section","ops-item");
+    shamCard.append(
+      opsNode("strong","","ربط ShamCash API — تسجيل Webhook"),
+      opsNode("p","ops-muted","ينفّذ التسجيل من جلسة المدير الحالية. لا يضيف رصيداً تلقائياً ولا ينفّذ أي حركة مالية.")
+    );
+    const shamButton=opsNode("button","primary","تسجيل Webhook الآن");
+    shamButton.type="button";
+    const shamOutput=opsNode("div","ops-muted","");
+    shamButton.onclick=()=>opsRegisterShamCashWebhook(shamButton,shamOutput);
+    shamCard.append(shamButton,shamOutput);
+    statusBox.appendChild(shamCard);
     if(!configs.length)statusBox.textContent="لا توجد إعدادات API محفوظة. أضف مورداً أولاً.";
     configs.forEach(c=>{
       const supplier=suppliers.find(s=>s.id===c.supplier_id);
