@@ -67,6 +67,11 @@ async function saveRecoveredPassword(){
     return;
   }
   if(password!==confirmPassword){message.textContent="كلمتا المرور غير متطابقتين.";return;}
+  message.textContent="جاري فحص كلمة المرور ضمن قواعد التسريبات المعروفة...";
+  try{
+    const exposureCount=await checkPasswordExposure(password);
+    if(exposureCount>0){message.textContent="هذه كلمة المرور ظهرت ضمن تسريبات سابقة ("+exposureCount.toLocaleString("en-US")+" مرة). اختر كلمة مرور جديدة لم تستخدمها في أي موقع آخر.";return;}
+  }catch(checkError){message.textContent="لم نتمكن من إكمال الفحص الأمني. لم يتم تغيير كلمة المرور؛ حاول مرة أخرى بعد قليل.";return;}
   message.textContent="جاري تحديث كلمة المرور بأمان...";
   try{
     const {data,error}=await sb.auth.updateUser({password});
@@ -97,6 +102,11 @@ async function changeAccountPassword(){
   try{
     const {error:verifyError}=await sb.auth.signInWithPassword({email:currentUser.email,password:current});
     if(verifyError)throw new Error("كلمة المرور الحالية غير صحيحة.");
+    message.textContent="تم التحقق من هويتك. جاري فحص كلمة المرور الجديدة...";
+    let exposureCount;
+    try{exposureCount=await checkPasswordExposure(next);}
+    catch(checkError){message.textContent="تعذر فحص التسريبات حالياً؛ لم يتم تغيير كلمة المرور. حاول لاحقاً.";return;}
+    if(exposureCount>0){message.textContent="كلمة المرور الجديدة ظهرت ضمن تسريبات سابقة ("+exposureCount.toLocaleString("en-US")+" مرة). اختر كلمة مختلفة.";return;}
     const {error}=await sb.auth.updateUser({password:next});
     if(error)throw error;
     ["currentAccountPassword","newAccountPassword","confirmAccountPassword"].forEach(id=>document.getElementById(id).value="");
