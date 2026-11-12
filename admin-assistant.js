@@ -212,16 +212,16 @@
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || "تعذر تحميل الإحصائيات من الخادم.");
         const highUsageWarning = Number(result.openai_attempts_24h || 0) >= 15
-          ? "\\n⚠️ تنبيه: تجاوز الاستخدام 15 محاولة OpenAI خلال آخر 24 ساعة. راجع الأسئلة المتكررة ووجّه التقارير للمسار المباشر."
+          ? "\n⚠️ تنبيه: تجاوز الاستخدام 15 محاولة OpenAI خلال آخر 24 ساعة. راجع الأسئلة المتكررة ووجّه التقارير للمسار المباشر."
           : "";
-        stats.textContent = "آخر 30 يوم (منذ تفعيل العداد)\\nمحاولات OpenAI المسجلة: " + result.openai_attempts +
-          "\\nتقارير مباشرة دون OpenAI: " + result.offline_reports +
-          "\\nنسبة المسار المباشر: " + result.direct_route_percent + "%" +
-          "\\n\\nآخر 24 ساعة\\nمحاولات OpenAI: " + Number(result.openai_attempts_24h || 0) +
-          "\\nتقارير مباشرة: " + Number(result.offline_reports_24h || 0) + highUsageWarning +
-          "\\n\\nإجمالي الاستخدام المسجل: " + result.total_recorded +
-          "\\nآخر فحص: " + new Date(result.checked_at || Date.now()).toLocaleString("ar") +
-          "\\n\\nملاحظة: هذه أعداد طلبات وليست تكلفة بالدولار. التنبيه محلي داخل اللوحة؛ لا يرسل إشعاراً خارجياً.";
+        stats.textContent = "آخر 30 يوم (منذ تفعيل العداد)\nمحاولات OpenAI المسجلة: " + result.openai_attempts +
+          "\nتقارير مباشرة دون OpenAI: " + result.offline_reports +
+          "\nنسبة المسار المباشر: " + result.direct_route_percent + "%" +
+          "\n\nآخر 24 ساعة\nمحاولات OpenAI: " + Number(result.openai_attempts_24h || 0) +
+          "\nتقارير مباشرة: " + Number(result.offline_reports_24h || 0) + highUsageWarning +
+          "\n\nإجمالي الاستخدام المسجل: " + result.total_recorded +
+          "\nآخر فحص: " + new Date(result.checked_at || Date.now()).toLocaleString("ar") +
+          "\n\nملاحظة: هذه أعداد طلبات وليست تكلفة بالدولار. التنبيه محلي داخل اللوحة؛ لا يرسل إشعاراً خارجياً.";
       } catch (e) { stats.textContent = "تعذر تحميل الإحصائيات: " + (e?.message || "تحقق من صلاحية قراءة سجل التدقيق."); }
       finally { refresh.disabled = false; }
     }
