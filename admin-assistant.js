@@ -395,7 +395,8 @@
 
   function initializeAdminEnhancements() {
     try { installSafeActions(); } catch (error) { console.error("Baran safe actions UI:", error); }
-    try { installDepartmentTeam(); } catch (error) { console.error("Baran AI team UI:", error); }\n    try { installAiUsagePanel(); } catch (error) { console.error("Baran AI usage UI:", error); }
+    try { installDepartmentTeam(); } catch (error) { console.error("Baran AI team UI:", error); }
+    try { installAiUsagePanel(); } catch (error) { console.error("Baran AI usage UI:", error); }
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeAdminEnhancements, { once: true });
