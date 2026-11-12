@@ -2955,10 +2955,10 @@ async function searchStore(value){
     }).filter(item=>item.score===terms.length);
     // أخفِ بطاقات التصنيف العامة عندما تكون الباقات التفصيلية موجودة،
     // حتى لا تظهر نتيجة عامة مكررة بجانب الباقات الفعلية.
-    const hasPubgPackages=products.some(p=>/^PUBG_MOBILE_\\d+_UC$/i.test(String(p.product_code||"")));
-    const hasFreeFirePackages=products.some(p=>/^FREEFIRE_\\d+$/i.test(String(p.product_code||"")));
+    const hasPubgPackages=products.some(p=>/^PUBG_MOBILE_\d+_UC$/i.test(String(p.product_code||"")));
+    const hasFreeFirePackages=products.some(p=>/^FREEFIRE_\d+$/i.test(String(p.product_code||"")));
     const hasChatGptMonthly=products.some(p=>String(p.product_code||"").toUpperCase()==="CHATGPT_PLUS_1_MONTH");
-    const hasGooglePlayCards=products.some(p=>/^GOOGLE_PLAY_CARD_\\d+_USD$/i.test(String(p.product_code||"")));
+    const hasGooglePlayCards=products.some(p=>/^GOOGLE_PLAY_CARD_\d+_USD$/i.test(String(p.product_code||"")));
     const visibleMatches=matches.filter(({product})=>{
       const code=String(product.product_code||"").toUpperCase();
       if(code==="PUBG_UC"&&hasPubgPackages)return false;
@@ -2972,7 +2972,7 @@ async function searchStore(value){
     heading.className="small";
     heading.textContent="نتائج البحث في كتالوج المتجر: "+visibleMatches.length;
     output.appendChild(heading);
-    if(!matches.length){
+    if(!visibleMatches.length){
       const empty=document.createElement("div");
       empty.className="store-search-empty";
       empty.textContent="ما لقينا نتائج مطابقة. جرّب اسم اللعبة أو الخدمة أو كلمة أقصر.";
@@ -5353,7 +5353,7 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
   if(category==="ai"&&products.some(p=>p.product_code==="CHATGPT_PLUS_1_MONTH")){
    products=products.filter(p=>p.product_code!=="CHATGPT_PLUS");
   }
-  if(category==="gift_card"&&products.some(p=>/^GOOGLE_PLAY_CARD_\\d+_USD$/i.test(String(p.product_code||"")))){
+  if(category==="gift_card"&&products.some(p=>/^GOOGLE_PLAY_CARD_\d+_USD$/i.test(String(p.product_code||"")))){
    products=products.filter(p=>p.product_code!=="GOOGLE_PLAY");
   }
   if(!products.length){
