@@ -6,6 +6,32 @@ function passwordMeetsPolicy(value){
     /[0-9]/.test(value) &&
     Array.from(symbols).some(symbol=>value.includes(symbol));
 }
+async function checkPasswordExposure(password){
+  if(typeof password!=="string"||!password)throw new Error("أدخل كلمة المرور أولاً.");
+  if(!window.crypto?.subtle)throw new Error("المتصفح لا يدعم فحص كلمة المرور الآمن.");
+  const bytes=new TextEncoder().encode(password);
+  const digest=await crypto.subtle.digest("SHA-1",bytes);
+  const hash=Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,"0")).join("").toUpperCase();
+  const prefix=hash.slice(0,5);
+  const suffix=hash.slice(5);
+  const response=await fetch("https://api.pwnedpasswords.com/range/"+prefix,{
+    method:"GET",
+    headers:{"Add-Padding":"true"},
+    cache:"no-store",
+    credentials:"omit",
+    referrerPolicy:"no-referrer",
+    signal:AbortSignal.timeout(12000)
+  });
+  if(!response.ok)throw new Error("تعذر الاتصال بخدمة فحص التسريبات.");
+  const rows=(await response.text()).split(/\r?\n/);
+  for(const row of rows){
+    const parts=row.trim().split(":");
+    if(parts.length!==2||parts[0].toUpperCase()!==suffix)continue;
+    const count=Number(parts[1]);
+    if(Number.isFinite(count)&&count>0)return count;
+  }
+  return 0;
+}
 
 function showPasswordRecovery(){
   document.getElementById("authScreen").classList.add("hidden");
