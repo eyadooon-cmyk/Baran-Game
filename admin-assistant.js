@@ -4,6 +4,11 @@
   "use strict";
   let history = [];
   let busy = false;
+  const aiResponseCache = new Map();
+  function canCacheAiResponse(q) {
+    return q.length <= 300 && !isLikelyAdminAction(q) &&
+      !/(باران|متجر|طلب|رصيد|محفظ|إيداع|دفع|ربح|مبيعات|زبون|تذكرة|مورد|منتج|سعر|أمان|مشكلة|حالة|اليوم|الشهر|مراقب|تقرير|فحص|تحديث|ذاكرة|المؤجل|المؤجلة)/i.test(q);
+  }
 
   function addMessage(value, role, isError) {
     const box = document.getElementById("baranAdminAssistantMessages");
@@ -71,6 +76,18 @@
         await handleMainChatAction(clean);
         return;
       }
+      const cacheable = canCacheAiResponse(clean);
+      const cached = cacheable ? aiResponseCache.get(clean.toLocaleLowerCase()) : null;
+      if (cached && Date.now() - cached.at < 5 * 60 * 1000) {
+        if (pending) pending.remove();
+        const message = cached.reply + "\n\n(إجابة محفوظة مؤقتاً لتجنب طلب مكرر — " + new Date(cached.at).toLocaleTimeString("ar") + ")";
+        addMessage(message, "bot");
+        history.push({ role: "assistant", content: cached.reply });
+        history = history.slice(-10);
+        const status = document.getElementById("baranAdminAssistantStatus");
+        if (status) status.textContent = "إجابة عامة من الذاكرة المؤقتة — لا تتضمن قراءة بيانات المتجر.";
+        return;
+      }
       const response = await fetch(SUPABASE_URL + "/functions/v1/baran-admin-assistant", {
         method: "POST",
         headers: {
@@ -114,6 +131,10 @@
       }
       if (!result.reply) throw new Error("وصل رد غير مكتمل من المساعد.");
       if (pending) pending.remove();
+      if (cacheable && !result.sent && !result.memory_saved) {
+        aiResponseCache.set(clean.toLocaleLowerCase(), { reply: result.reply, at: Date.now() });
+        if (aiResponseCache.size > 30) aiResponseCache.delete(aiResponseCache.keys().next().value);
+      }
       addMessage((result.sent ? "✅ تم إرسال الرد إلى صاحب التذكرة " + result.ticket_code + " ووصل إشعار داخل المتجر.\n\n" : "") + result.reply, "bot");
       history.push({ role: "assistant", content: result.reply });
       history = history.slice(-10);
@@ -190,11 +211,17 @@
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || "تعذر تحميل الإحصائيات من الخادم.");
+        const highUsageWarning = Number(result.openai_attempts_24h || 0) >= 15
+          ? "\\n⚠️ تنبيه: تجاوز الاستخدام 15 محاولة OpenAI خلال آخر 24 ساعة. راجع الأسئلة المتكررة ووجّه التقارير للمسار المباشر."
+          : "";
         stats.textContent = "آخر 30 يوم (منذ تفعيل العداد)\\nمحاولات OpenAI المسجلة: " + result.openai_attempts +
           "\\nتقارير مباشرة دون OpenAI: " + result.offline_reports +
           "\\nنسبة المسار المباشر: " + result.direct_route_percent + "%" +
-          "\\nإجمالي الاستخدام المسجل: " + result.total_recorded +
-          "\\n\\nملاحظة: هذه نسبة الطلبات فقط وليست نسبة توفير بالدولار. السجلات تُقرأ من الخادم بصلاحية المدير فقط.";
+          "\\n\\nآخر 24 ساعة\\nمحاولات OpenAI: " + Number(result.openai_attempts_24h || 0) +
+          "\\nتقارير مباشرة: " + Number(result.offline_reports_24h || 0) + highUsageWarning +
+          "\\n\\nإجمالي الاستخدام المسجل: " + result.total_recorded +
+          "\\nآخر فحص: " + new Date(result.checked_at || Date.now()).toLocaleString("ar") +
+          "\\n\\nملاحظة: هذه أعداد طلبات وليست تكلفة بالدولار. التنبيه محلي داخل اللوحة؛ لا يرسل إشعاراً خارجياً.";
       } catch (e) { stats.textContent = "تعذر تحميل الإحصائيات: " + (e?.message || "تحقق من صلاحية قراءة سجل التدقيق."); }
       finally { refresh.disabled = false; }
     }
