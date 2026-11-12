@@ -203,6 +203,32 @@ button{font-weight:700}
 @media(min-width:650px){.customer-order-tools{grid-template-columns:minmax(0,1fr) minmax(180px,.5fr) auto}.customer-order-refresh{grid-column:auto;min-width:110px}}
 @media(max-width:360px){.customer-order-summary{gap:5px}.customer-order-stat{padding:10px 7px}.customer-order-stat strong{font-size:19px}.customer-order-tools{grid-template-columns:1fr}.customer-order-refresh{grid-column:auto}}
 
+/* تنظيم مركز دعم الزبائن */
+.customer-support-page{min-width:0}
+.customer-support-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:13px}
+.customer-support-heading h2{margin:5px 0}
+.support-step-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 18px}
+.support-step-strip>div{display:flex;align-items:center;gap:7px;min-width:0;padding:9px 7px;background:#1b1423;border:1px solid #493b55;border-radius:11px}
+.support-step-strip strong{display:grid;place-items:center;flex:0 0 23px;height:23px;border-radius:50%;background:#654783;color:#fff;font-size:12px}
+.support-step-strip span{font-size:11px;line-height:1.4;color:#d8c8e5}
+.support-block{margin:18px 0 22px;min-width:0}
+.support-block-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.support-block-heading h3{margin:0 0 3px}
+.support-live-label{flex:0 0 auto;padding:5px 9px;border:1px solid #695184;border-radius:20px;color:#d8c2ec;font-size:11px}
+.support-chat-block .ai-assistant-panel{margin:8px 0 0;height:440px;max-height:62vh}
+.support-ticket-block .deposit-card{margin-top:0}
+.support-history-block #myFeedbackList{display:grid;gap:9px}
+.support-history-block #myFeedbackList>.deposit-row{margin:0}
+.support-accordion{margin:9px 0;border:1px solid #493b55;border-radius:13px;background:#17121e;overflow:hidden}
+.support-accordion>summary{padding:14px 13px;color:#e1d2ee;font-weight:700;cursor:pointer;list-style:none}
+.support-accordion>summary::-webkit-details-marker{display:none}
+.support-accordion>summary:after{content:"＋";float:left;color:#c8a7e2}
+.support-accordion[open]>summary:after{content:"−"}
+.support-accordion[open]>summary{border-bottom:1px solid #493b55;background:#21182b}
+.support-accordion>.deposit-card{margin:0;border:0;border-radius:0;background:#17121e}
+.support-security-note{padding:11px 12px;border:1px solid #51405f;border-radius:11px;background:#17121e;color:#c9b8d8;font-size:12px;line-height:1.7}
+@media(max-width:360px){.support-step-strip{gap:4px}.support-step-strip>div{gap:4px;padding:8px 4px}.support-step-strip span{font-size:10px}.support-live-label{font-size:10px;padding:4px 6px}}
+
 /* لوحة العمليات الجديدة — أسود وبنفسجي */
 .ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
 .ops-card{padding:14px;background:#201a29;border:1px solid #57436a;border-radius:13px;line-height:1.8;min-width:0}
@@ -2538,65 +2564,96 @@ footer{color:#9f91aa}
       </div>
     </section>
 
-    <section id="support" class="hidden">
-      <h2>🛟 الدعم الفني ومساعد باران</h2>
-      <p class="small">مساعد باران متاح للرد الفوري على استفساراتك ومحاولة حل المشكلة. لا ترسل كلمات مرور أو رموز تحقق أو بيانات دفع سرية.</p>
-      <div id="myNotifications" class="notification-box" aria-live="polite">جاري تحميل إشعاراتك...</div>
-      <div id="aiAssistantPanel" class="ai-assistant-panel" role="region" aria-label="محادثة الدعم الفني مع مساعد باران">
-        <div class="ai-assistant-head"><strong>🤖 مساعد Baran Game — دعم فوري</strong></div>
-        <div class="ai-assistant-notice">اسألني عن حسابك أو طلباتك أو الإيداعات أو استخدام المتجر. إذا احتجت تدخّل الإدارة، بفتح لك تذكرة.</div>
-        <div id="aiAssistantMessages" class="ai-assistant-messages" aria-live="polite">
-          <div class="ai-chat-message bot">أهلاً فيك! أنا مساعد باران 🤖 موجود لمساعدتك مباشرة. شو المشكلة اللي عم تواجهها؟</div>
+    <section id="support" class="hidden customer-support-page">
+      <div class="customer-support-heading">
+        <div><span class="account-eyebrow">BARAN GAME · HELP CENTER</span><h2>🛟 مركز الدعم والمساعدة</h2><p class="small">ابدأ بمساعد باران، أو افتح تذكرة إذا احتجت مساعدة من فريق الدعم.</p></div>
+        <span class="account-heading-mark" aria-hidden="true">?</span>
+      </div>
+
+      <div class="support-step-strip" aria-label="طريقة الحصول على المساعدة">
+        <div><strong>1</strong><span>اسأل المساعد</span></div>
+        <div><strong>2</strong><span>افتح تذكرة عند الحاجة</span></div>
+        <div><strong>3</strong><span>تابع الرد من رسائلك</span></div>
+      </div>
+
+      <section class="support-block support-notifications" aria-labelledby="supportNotificationsTitle">
+        <div class="support-block-heading"><div><h3 id="supportNotificationsTitle">🔔 إشعاراتك</h3><p class="small">تحديثات الطلبات والإيداعات ورسائل الدعم.</p></div></div>
+        <div id="myNotifications" class="notification-box" aria-live="polite">جاري تحميل إشعاراتك...</div>
+      </section>
+
+      <section class="support-block support-chat-block" aria-labelledby="supportChatTitle">
+        <div class="support-block-heading"><div><h3 id="supportChatTitle">🤖 مساعد Baran Game</h3><p class="small">اسأله عن الحساب والطلبات والإيداعات وطريقة استخدام المتجر.</p></div><span class="support-live-label">مساعدة فورية</span></div>
+        <div id="aiAssistantPanel" class="ai-assistant-panel" role="region" aria-label="محادثة الدعم الفني مع مساعد باران">
+          <div class="ai-assistant-head"><strong>🤖 مساعد باران — دعم فوري</strong></div>
+          <div class="ai-assistant-notice">إذا احتجت تدخّل الإدارة، بيساعدك المساعد بفتح تذكرة. لا ترسل كلمات مرور أو رموز تحقق أو بيانات دفع سرية.</div>
+          <div id="aiAssistantMessages" class="ai-assistant-messages" aria-live="polite">
+            <div class="ai-chat-message bot">أهلاً فيك! أنا مساعد باران 🤖 موجود لمساعدتك مباشرة. شو المشكلة اللي عم تواجهها؟</div>
+          </div>
+          <form class="ai-assistant-form" onsubmit="sendBaranAssistantMessage(event)">
+            <input id="aiAssistantInput" type="text" maxlength="1200" autocomplete="off" placeholder="اكتب سؤالك أو مشكلتك هون..." aria-label="رسالتك للمساعد">
+            <button id="aiAssistantSend" type="submit">إرسال</button>
+          </form>
         </div>
-        <form class="ai-assistant-form" onsubmit="sendBaranAssistantMessage(event)">
-          <input id="aiAssistantInput" type="text" maxlength="1200" autocomplete="off" placeholder="اكتب سؤالك أو مشكلتك هون..." aria-label="رسالتك للمساعد">
-          <button id="aiAssistantSend" type="submit">إرسال</button>
-        </form>
-      </div>
-      <h3>آراء العملاء والاقتراحات</h3>
-      <div class="deposit-card">
-        <h3>⭐ قيّم تجربتك</h3>
-        <label for="reviewOrder">الطلب المكتمل</label>
-        <select id="reviewOrder"><option value="">جاري تحميل طلباتك المكتملة...</option></select>
-        <p id="reviewAvailability" class="small">التقييم متاح بعد اكتمال الطلب.</p>
-        <label for="reviewRating">التقييم</label>
-        <select id="reviewRating">
-          <option value="5">5 نجوم — ممتاز</option>
-          <option value="4">4 نجوم — جيد جداً</option>
-          <option value="3">3 نجوم — جيد</option>
-          <option value="2">نجمتان — يحتاج تحسين</option>
-          <option value="1">نجمة — غير راضٍ</option>
-        </select>
-        <label for="reviewMessage">اكتب رأيك</label>
-        <textarea id="reviewMessage" rows="3" maxlength="2000" placeholder="شاركنا تجربتك بعد اكتمال الطلب"></textarea>
-        <button id="reviewSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('review')">إرسال التقييم</button>
-        <div id="reviewMessageStatus" class="small" role="status"></div>
-      </div>
-      <div class="deposit-card">
-        <h3>💡 اقترح ميزة جديدة</h3>
-        <label for="suggestionSubject">عنوان الاقتراح</label>
-        <input id="suggestionSubject" type="text" maxlength="120" placeholder="مثلاً: إضافة لعبة جديدة">
-        <label for="suggestionMessage">تفاصيل الاقتراح</label>
-        <textarea id="suggestionMessage" rows="3" maxlength="2000" placeholder="شو الميزة اللي بتحب نشوفها بالمتجر؟"></textarea>
-        <button id="suggestionSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('suggestion')">إرسال الاقتراح</button>
-        <div id="suggestionMessageStatus" class="small" role="status"></div>
-      </div>
-      <div class="deposit-card">
-        <h3>🛟 تواصل مع الدعم</h3>
-        <label for="supportSubject">موضوع الرسالة</label>
-        <input id="supportSubject" type="text" maxlength="120" placeholder="مثلاً: مشكلة بطلب أو إيداع">
-        <label for="supportMessage">تفاصيل المشكلة أو الاستفسار</label>
-        <textarea id="supportMessage" rows="3" maxlength="2000" placeholder="اكتب تفاصيل طلب المساعدة"></textarea>
-        <button id="supportSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('support')">إرسال للدعم</button>
-        <div id="supportMessageStatus" class="small" role="status"></div>
-      </div>
-      <h3>⭐ آراء العملاء المنشورة</h3>
-      <div id="publicReviews" class="small">جاري تحميل التقييمات...</div>
-      <h3>طلباتي ورسائلي السابقة</h3>
-      <div id="myFeedbackList" class="small">جاري تحميل الرسائل...</div>
+      </section>
+
+      <section class="support-block support-ticket-block" aria-labelledby="supportTicketTitle">
+        <div class="support-block-heading"><div><h3 id="supportTicketTitle">🎫 تواصل مع فريق الدعم</h3><p class="small">إذا ما انحلت المشكلة، اكتب تفاصيلها وافتح تذكرة لمتابعتها.</p></div></div>
+        <div class="deposit-card support-form-card">
+          <label for="supportSubject">موضوع الرسالة</label>
+          <input id="supportSubject" type="text" maxlength="120" placeholder="مثلاً: مشكلة بطلب أو إيداع">
+          <label for="supportMessage">تفاصيل المشكلة أو الاستفسار</label>
+          <textarea id="supportMessage" rows="3" maxlength="2000" placeholder="اكتب تفاصيل المشكلة، ورقم الطلب إن وجد. لا تكتب كلمة مرور أو رمز تحقق."></textarea>
+          <button id="supportSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('support')">إرسال للدعم</button>
+          <div id="supportMessageStatus" class="small" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="support-block support-history-block" aria-labelledby="supportHistoryTitle">
+        <div class="support-block-heading"><div><h3 id="supportHistoryTitle">📨 طلباتي ورسائلي السابقة</h3><p class="small">تابع حالة كل رسالة ورد الإدارة عليها.</p></div></div>
+        <div id="myFeedbackList" class="small">جاري تحميل الرسائل...</div>
+      </section>
+
+      <section class="support-block support-extras-block" aria-label="التقييمات والاقتراحات">
+        <details class="support-accordion">
+          <summary>⭐ قيّم تجربتك بعد اكتمال الطلب</summary>
+          <div class="deposit-card">
+            <label for="reviewOrder">الطلب المكتمل</label>
+            <select id="reviewOrder"><option value="">جاري تحميل طلباتك المكتملة...</option></select>
+            <p id="reviewAvailability" class="small">التقييم متاح بعد اكتمال الطلب.</p>
+            <label for="reviewRating">التقييم</label>
+            <select id="reviewRating">
+              <option value="5">5 نجوم — ممتاز</option>
+              <option value="4">4 نجوم — جيد جداً</option>
+              <option value="3">3 نجوم — جيد</option>
+              <option value="2">نجمتان — يحتاج تحسين</option>
+              <option value="1">نجمة — غير راضٍ</option>
+            </select>
+            <label for="reviewMessage">اكتب رأيك</label>
+            <textarea id="reviewMessage" rows="3" maxlength="2000" placeholder="شاركنا تجربتك بعد اكتمال الطلب"></textarea>
+            <button id="reviewSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('review')">إرسال التقييم</button>
+            <div id="reviewMessageStatus" class="small" role="status" aria-live="polite"></div>
+          </div>
+        </details>
+        <details class="support-accordion">
+          <summary>💡 اقترح ميزة جديدة للمتجر</summary>
+          <div class="deposit-card">
+            <label for="suggestionSubject">عنوان الاقتراح</label>
+            <input id="suggestionSubject" type="text" maxlength="120" placeholder="مثلاً: إضافة لعبة جديدة">
+            <label for="suggestionMessage">تفاصيل الاقتراح</label>
+            <textarea id="suggestionMessage" rows="3" maxlength="2000" placeholder="شو الميزة اللي بتحب نشوفها بالمتجر؟"></textarea>
+            <button id="suggestionSubmitButton" class="full" type="button" onclick="submitCustomerFeedback('suggestion')">إرسال الاقتراح</button>
+            <div id="suggestionMessageStatus" class="small" role="status" aria-live="polite"></div>
+          </div>
+        </details>
+        <details class="support-accordion">
+          <summary>🌟 آراء العملاء المنشورة</summary>
+          <div id="publicReviews" class="small">جاري تحميل التقييمات...</div>
+        </details>
+      </section>
+      <p class="support-security-note">🔒 للحفاظ على أمان حسابك: فريق الدعم لا يحتاج كلمة مرورك أو رمز التحقق أو PIN الخاص بمحفظتك.</p>
     </section>
 
-    <section id="staffPortal" class="hidden" dir="rtl">
+        <section id="staffPortal" class="hidden" dir="rtl">
       <div class="admin-subpanel-head"><h2>🛡️ بوابة المشرفة</h2><button type="button" class="secondary" onclick="loadStaffPortal()">🔄 تحديث البيانات</button></div>
       <p class="small">صلاحيات محدودة لمتابعة الدعم والطلبات والعملاء فقط. لا تتضمن هذه البوابة المحافظ أو الأرصدة أو الأسعار أو الموردين أو إعدادات المتجر.</p>
       <div id="staffPortalStatus" class="ops-list" role="status" aria-live="polite">جاري التحقق من الصلاحية...</div>
