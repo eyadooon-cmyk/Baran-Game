@@ -523,7 +523,18 @@ async function loadMyOrders(){
     if(error)throw error;
     box.replaceChildren();
     if(!orders?.length){
-      box.textContent="ما عندك طلبات مسجلة حالياً.";
+      const summary=document.getElementById("customerOrderSummary");
+      if(summary){
+        summary.replaceChildren();
+        [["كل الطلبات","0"],["قيد التنفيذ","0"],["مكتملة","0"]].forEach(([label,value])=>{
+          const stat=opsNode("div","customer-order-stat");
+          stat.append(opsNode("span","",label),opsNode("strong","",value));
+          summary.appendChild(stat);
+        });
+      }
+      const count=document.getElementById("customerOrderFilterCount");
+      if(count)count.textContent="";
+      box.textContent="ما عندك طلبات مسجلة حالياً. لما تنشئ أول طلب، رح تلاقي تفاصيله وتحديثاته هون.";
       return;
     }
     const orderIds=orders.map(order=>order.id);
