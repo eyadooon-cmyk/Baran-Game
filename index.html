@@ -2395,6 +2395,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <button type="button" class="secondary" onclick="askBaranAdminPrompt('راجع الطلبات المعلقة والمتأخرة والفاشلة، واذكر أرقامها وأسباب التأخير والخطوات المقترحة.')">📦 متابعة الطلبات</button>
           <button type="button" class="secondary" onclick="askBaranAdminPrompt('راجع الإيداعات المعلقة وتذاكر الدعم المفتوحة، وصنّف الحالات حسب الأولوية واقترح طريقة معالجتها دون تنفيذ أي تغيير.')">🎧 الدعم والإيداعات</button>
           <button type="button" class="secondary" onclick="runBaranAdminHealthCheck()">🛡️ فحص حالة المتجر</button>
+          <button type="button" class="secondary" onclick="refreshBaranAiUsageStats()">🔄 تحديث الإحصائيات</button>
         </div>
         <div style="margin:10px 0"><a href="./baran-ai-control-center.html" class="secondary" style="display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border:1px solid #8b6ba8;border-radius:10px;text-decoration:none;color:#fff;background:#3a2850;font-weight:700;width:100%">🧠 فتح مركز تحكم Baran AI الموحد</a></div>
         <div style="margin:12px 0"><a href="./admin-work-plan.html" class="secondary" style="display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border:1px solid #675078;border-radius:10px;text-decoration:none;color:#eee8f4;background:#2a2231;font-weight:700">🗂️ فتح خطة العمل اليومية ومتابعة المهام</a></div>
@@ -3015,7 +3016,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./community.js?v=20261107-2"></script>
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
-<script src="./admin-assistant.js?v=20261112-cost-controls-4"></script>
+<script src="./admin-assistant.js?v=20261113-stats-refresh-1"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
@@ -3030,6 +3031,9 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
   }
 });
 window.baranSupabaseClient = sb;
+if (typeof window.initializeBaranAdminEnhancements === "function") {
+  window.initializeBaranAdminEnhancements();
+}
 
 let currentUser=null;
 let passwordRecoveryActive=window.location.hash.includes("type=recovery") ||
