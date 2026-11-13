@@ -220,8 +220,13 @@
           "\n\nآخر 24 ساعة\nمحاولات OpenAI: " + Number(result.openai_attempts_24h || 0) +
           "\nتقارير مباشرة: " + Number(result.offline_reports_24h || 0) + highUsageWarning +
           "\n\nإجمالي الاستخدام المسجل: " + result.total_recorded +
-          "\nآخر فحص: " + new Date(result.checked_at || Date.now()).toLocaleString("ar") +
-          "\n\nملاحظة: هذه أعداد طلبات وليست تكلفة بالدولار. التنبيه محلي داخل اللوحة؛ لا يرسل إشعاراً خارجياً.";
+          "\n\n📉 قياس الرموز من الطلبات الجديدة" +
+          "\nرموز الإدخال: " + Number(result.openai_input_tokens || 0).toLocaleString("en-US") +
+          "\nرموز الإخراج: " + Number(result.openai_output_tokens || 0).toLocaleString("en-US") +
+          "\nإجمالي الرموز: " + Number(result.openai_total_tokens || 0).toLocaleString("en-US") +
+          "\nالطلبات المقاسة بالرموز: " + Number(result.openai_successful_with_token_data || 0) +
+          "\n\nآخر فحص: " + new Date(result.checked_at || Date.now()).toLocaleString("ar") +
+          "\n\n🟢 التقارير المباشرة تعمل دون استدعاء OpenAI. العداد مجاني ولا ينفذ أي استدعاء إضافي. قياس الرموز يبدأ من التحديث الحالي، والطلبات القديمة لا تتوفر لها بيانات رموز. لا نحسب تكلفة بالدولار ولا ندّعي أن استدعاءات OpenAI مجانية؛ هدفنا تقليلها لأدنى حد.";
       } catch (e) { stats.textContent = "تعذر تحميل الإحصائيات: " + (e?.message || "تحقق من صلاحية قراءة سجل التدقيق."); }
       finally { refresh.disabled = false; }
     }
