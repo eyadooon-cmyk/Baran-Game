@@ -2167,6 +2167,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
             <article class="shamcash-control-status"><span>حساب الاختبار</span><strong id="shamCashTestScopeStatus">جارٍ التحقق...</strong></article>
           </div>
           <button class="full secondary" type="button" onclick="loadAdminPanel()">↻ تحديث حالة الربط</button>
+          <button id="shamCashConnectionTestButton" class="full" type="button" onclick="testShamCashConnection()">اختبار اتصال ShamCash API</button>
+          <div id="shamCashConnectionTestResult" class="small" role="status" aria-live="polite">يفحص الاتصال وحالة الحسابات فقط، دون تنفيذ أي عملية مالية.</div>
           <div id="shamCashControlUpdated" class="small" role="status" aria-live="polite">بانتظار قراءة الحالة من الخادم.</div>
         </section>
         <section class="deposit-card">
@@ -4884,6 +4886,35 @@ function renderShamCashAutoControl(control){
   put("shamCashLastError",control.last_error_code||"لا يوجد");
   put("shamCashControlUpdated","آخر تحديث للإعدادات: "+shamCashControlDate(control.updated_at));
 }
+async function testShamCashConnection(){
+  const button=document.getElementById("shamCashConnectionTestButton");
+  const output=document.getElementById("shamCashConnectionTestResult");
+  if(!button||!output)return;
+  button.disabled=true;
+  button.textContent="جارٍ فحص الاتصال...";
+  output.textContent="نتحقق من ShamCash API وحالة الحسابات النشطة. لن يتم إنشاء حوالة أو تعديل أي رصيد.";
+  output.style.color="";
+  try{
+    const result=await callAdminApi("POST",{action:"shamcash_connection_test"});
+    if(result.success){
+      output.textContent="✓ "+result.message+" عدد الحسابات: "+Number(result.account_count||0)+
+        " — الحسابات النشطة: "+Number(result.active_account_count||0)+
+        " — وقت الفحص: "+shamCashControlDate(result.checked_at);
+      output.style.color="#8fe0ad";
+    }else{
+      output.textContent="تعذر الاتصال: "+(result.message||"فشل الاختبار.")+
+        (result.code?" ("+result.code+")":"");
+      output.style.color="#ffbd8a";
+    }
+  }catch(error){
+    output.textContent="فشل الاختبار: "+(error?.message||"تعذر تنفيذ الطلب.");
+    output.style.color="#ffbd8a";
+  }finally{
+    button.disabled=false;
+    button.textContent="إعادة اختبار اتصال ShamCash API";
+  }
+}
+
 async function loadAdminPanel(){
   if(!baranAdminNotificationPoll){
     baranAdminNotificationPoll=setInterval(()=>{
