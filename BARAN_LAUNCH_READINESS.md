@@ -124,3 +124,13 @@ Supabase Security Advisor reports **Leaked Password Protection Disabled**. This 
 - Verification: a read-only test for `PUBG_MOBILE_60_UC` returned PRODUCT_ACTIVE and PLAYER_ID_VALID, while correctly blocking on PRICE_NOT_APPROVED, SUPPLIER_NOT_READY, and FULFILLMENT_GATE_CLOSED. The result confirmed `charged=false`, `order_created=false`, and `can_purchase=false`.
 - Supabase Security Advisor still reports Leaked Password Protection Disabled. Performance Advisor findings on backup tables and unused indexes remain informational and were not changed.
 - No customer order, wallet balance, payment control, supplier execution flag, or live supplier credential was changed.
+
+## Implementation update — admin catalogue readiness report (2026-11-13)
+
+- Added public.baran_admin_catalog_readiness() as a read-only JSON report for the full product catalogue. It reports price readiness, supplier mapping, active supplier, SKU/cost presence, API configuration readiness, recent supplier balance, supplier balance coverage, and launch blockers for each product.
+- EXECUTE on the report function is revoked from PUBLIC, anon, and authenticated; only service_role can call it.
+- Upgraded baran-order-gateway to version 3. The new catalog_report action verifies the signed-in user against public.admin_users before returning the report. It does not trust user metadata and does not expose the service-role key.
+- Added an administration-only report panel under لوحة الإدارة ← الموردون والأسعار. It renders summary counts and the blockers for each product. The customer-facing product review no longer contains the technical preflight control.
+- Verification against the live database: 17 active catalogue products; 0 products with an approved positive USD price; 0 supplier-product mappings; 0 active suppliers; 0 supplier APIs marked ready; 1 admin account. The report returns 0 launch-ready products because fulfilment remains deliberately closed.
+- The report is read-only. It does not set prices, activate suppliers, alter API settings, create orders, or debit wallets.
+- Live authenticated UI invocation still requires a manual test from the owner's signed-in admin session. The database report function, its EXECUTE ACL, deployed Edge Function version 3, and committed frontend wiring were independently verified.
