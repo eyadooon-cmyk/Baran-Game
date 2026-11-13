@@ -5437,7 +5437,36 @@ function baranRenderUnifiedSelection(target,product,priceText,detailText){
  const detail=document.createElement("p");detail.className="small";detail.textContent=detailText||"راجع البيانات قبل المتابعة.";
  const note=document.createElement("p");note.className="small";note.textContent="معاينة فقط: لم يتم إنشاء طلب أو حجز المنتج أو خصم أي رصيد.";
  const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="الشراء والشحن غير مفعّلين حالياً حتى التحقق من المورد ومسار التنفيذ.";
- target.append(heading,name,price,detail,note,status);
+ const controls=document.createElement("div");controls.className="baran-order-preflight-controls";
+ const currencyLabel=document.createElement("label");currencyLabel.textContent="عملة فحص الرصيد";
+ const currency=document.createElement("select");currency.className="baran-order-preflight-currency";
+ [["SYP","الليرة السورية"],["USD","الدولار الأمريكي"]].forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;currency.append(option);});
+ currencyLabel.append(currency);
+ const check=document.createElement("button");check.type="button";check.className="secondary";check.textContent="فحص جاهزية الطلب";
+ const result=document.createElement("p");result.className="small";result.setAttribute("aria-live","polite");
+ check.addEventListener("click",async()=>{
+   if(!currentUser){result.textContent="سجّل الدخول أولاً.";return;}
+   check.disabled=true;check.textContent="جاري الفحص...";result.textContent="يتم التحقق من السعر والمورد والرصيد. لن يتم إنشاء طلب أو خصم أي مبلغ.";
+   try{
+     let playerId="";
+     if(product.category==="game"){
+       const input=/^FREEFIRE_/i.test(product.product_code||"")?document.getElementById("freeFirePlayerId"):document.getElementById("pubgPlayerId");
+       playerId=input?.value?.trim()||"";
+     }
+     const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{
+       action:"preflight",product_code:product.product_code,quantity:1,
+       payment_currency:currency.value,player_id:playerId
+     }});
+     if(error)throw error;
+     const checks=Array.isArray(data?.checks)?data.checks:[];
+     result.textContent=(data?.message||"اكتمل الفحص.")+" "+checks.map(item=>(item.ok?"✓ ":"✕ ")+item.message).join(" ");
+   }catch(error){
+     result.textContent="تعذر فحص الطلب الآن. لم يتم إنشاء طلب ولم يُخصم أي رصيد.";
+     console.error("Baran order preflight:",error);
+   }finally{check.disabled=false;check.textContent="إعادة فحص الجاهزية";}
+ });
+ controls.append(currencyLabel,check,result);
+ target.append(heading,name,price,detail,note,status,controls);
 }
 const baranGameSelections={PUBG:null,FREEFIRE:null};
 function baranHasApprovedGamePrice(product){
