@@ -2308,6 +2308,18 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
+      <section class="deposit-card" id="baranAdminOrderPreflight" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
+        <h2>🛡️ فحص جاهزية الطلب — للإدارة</h2>
+        <p class="small">أداة داخلية لفحص السعر والمورد والرصيد. لا تنشئ طلباً ولا تخصم رصيداً ولا ترسل أي عملية للمورد.</p>
+        <label for="baranPreflightProductCode">رمز المنتج</label>
+        <input id="baranPreflightProductCode" maxlength="120" placeholder="مثال: PUBG_MOBILE_60_UC" autocomplete="off">
+        <label for="baranPreflightCurrency">عملة فحص الرصيد</label>
+        <select id="baranPreflightCurrency"><option value="SYP">الليرة السورية</option><option value="USD">الدولار الأمريكي</option></select>
+        <label for="baranPreflightPlayerId">معرّف اللاعب (للألعاب فقط)</label>
+        <input id="baranPreflightPlayerId" maxlength="100" placeholder="اتركه فارغاً للخدمات غير المرتبطة بلاعب" autocomplete="off">
+        <button class="full secondary" type="button" id="baranPreflightRunButton" onclick="baranRunAdminOrderPreflight()">فحص الجاهزية</button>
+        <p id="baranPreflightResult" class="small" role="status" aria-live="polite">أدخل رمز المنتج ثم ابدأ الفحص.</p>
+      </section>
       <section class="deposit-card" id="supplierManagerAi" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span style="font-size:28px">🤖</span>
@@ -5427,6 +5439,28 @@ sb.auth.onAuthStateChange((event,session)=>{
 restoreSession();
 </script>
 <script id="baran-game-package-selection">
+async function baranRunAdminOrderPreflight(){
+ const code=document.getElementById("baranPreflightProductCode")?.value.trim();
+ const currency=document.getElementById("baranPreflightCurrency")?.value||"SYP";
+ const playerId=document.getElementById("baranPreflightPlayerId")?.value.trim()||"";
+ const button=document.getElementById("baranPreflightRunButton");
+ const result=document.getElementById("baranPreflightResult");
+ if(!currentUser){if(result)result.textContent="سجّل الدخول أولاً.";return;}
+ if(!code){if(result)result.textContent="أدخل رمز المنتج أولاً.";return;}
+ if(button){button.disabled=true;button.textContent="جاري الفحص...";}
+ if(result)result.textContent="يتم فحص السعر والمورد والرصيد. لن يتم إنشاء طلب أو خصم أي مبلغ.";
+ try{
+   const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{
+     action:"preflight",product_code:code,quantity:1,payment_currency:currency,player_id:playerId
+   }});
+   if(error)throw error;
+   const checks=Array.isArray(data?.checks)?data.checks:[];
+   if(result)result.textContent=(data?.message||"اكتمل الفحص.")+" "+checks.map(item=>(item.ok?"✓ ":"✕ ")+item.message).join(" ");
+ }catch(error){
+   if(result)result.textContent="تعذر فحص الطلب. لم يتم إنشاء طلب ولم يُخصم أي رصيد.";
+   console.error("Baran admin order preflight:",error);
+ }finally{if(button){button.disabled=false;button.textContent="إعادة فحص الجاهزية";}}
+}
 function baranRenderUnifiedSelection(target,product,priceText,detailText){
  if(!target)return;
  target.replaceChildren();
@@ -5437,36 +5471,7 @@ function baranRenderUnifiedSelection(target,product,priceText,detailText){
  const detail=document.createElement("p");detail.className="small";detail.textContent=detailText||"راجع البيانات قبل المتابعة.";
  const note=document.createElement("p");note.className="small";note.textContent="معاينة فقط: لم يتم إنشاء طلب أو حجز المنتج أو خصم أي رصيد.";
  const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="الشراء والشحن غير مفعّلين حالياً حتى التحقق من المورد ومسار التنفيذ.";
- const controls=document.createElement("div");controls.className="baran-order-preflight-controls";
- const currencyLabel=document.createElement("label");currencyLabel.textContent="عملة فحص الرصيد";
- const currency=document.createElement("select");currency.className="baran-order-preflight-currency";
- [["SYP","الليرة السورية"],["USD","الدولار الأمريكي"]].forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;currency.append(option);});
- currencyLabel.append(currency);
- const check=document.createElement("button");check.type="button";check.className="secondary";check.textContent="فحص جاهزية الطلب";
- const result=document.createElement("p");result.className="small";result.setAttribute("aria-live","polite");
- check.addEventListener("click",async()=>{
-   if(!currentUser){result.textContent="سجّل الدخول أولاً.";return;}
-   check.disabled=true;check.textContent="جاري الفحص...";result.textContent="يتم التحقق من السعر والمورد والرصيد. لن يتم إنشاء طلب أو خصم أي مبلغ.";
-   try{
-     let playerId="";
-     if(product.category==="game"){
-       const input=/^FREEFIRE_/i.test(product.product_code||"")?document.getElementById("freeFirePlayerId"):document.getElementById("pubgPlayerId");
-       playerId=input?.value?.trim()||"";
-     }
-     const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{
-       action:"preflight",product_code:product.product_code,quantity:1,
-       payment_currency:currency.value,player_id:playerId
-     }});
-     if(error)throw error;
-     const checks=Array.isArray(data?.checks)?data.checks:[];
-     result.textContent=(data?.message||"اكتمل الفحص.")+" "+checks.map(item=>(item.ok?"✓ ":"✕ ")+item.message).join(" ");
-   }catch(error){
-     result.textContent="تعذر فحص الطلب الآن. لم يتم إنشاء طلب ولم يُخصم أي رصيد.";
-     console.error("Baran order preflight:",error);
-   }finally{check.disabled=false;check.textContent="إعادة فحص الجاهزية";}
- });
- controls.append(currencyLabel,check,result);
- target.append(heading,name,price,detail,note,status,controls);
+ target.append(heading,name,price,detail,note,status);
 }
 const baranGameSelections={PUBG:null,FREEFIRE:null};
 function baranHasApprovedGamePrice(product){
