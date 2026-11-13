@@ -112,3 +112,15 @@ Supabase Security Advisor reports **Leaked Password Protection Disabled**. This 
 - Never debit a customer's wallet until the full fulfilment path is ready, or until a safe reservation mechanism is in place.
 - Keep payment mismatches, duplicates, and uncertain supplier outcomes in a review/reconciliation path.
 - Do not activate a supplier or publish a product for purchase until its price, mapping, and fulfilment path are verified.
+
+## Implementation update — secure order preflight (2026-11-13)
+
+- Deployed Edge Function `baran-order-gateway` version 2 with `verify_jwt=true`.
+- The endpoint validates the Supabase user session server-side and accepts only the `preflight` action. It does not create orders, reserve stock, call suppliers, or debit wallets.
+- Added `public.baran_order_preflight(uuid,text,integer,text,text)` as a read-only SECURITY DEFINER database function. It uses an empty search_path and EXECUTE is granted only to `service_role`; PUBLIC, anon, and authenticated are revoked.
+- The preflight checks active product, game Player ID format, approved USD price, exchange rate, wallet sufficiency, active supplier mapping/SKU, enabled and ready supplier API configuration, and a successful supplier balance snapshot no older than 10 minutes.
+- A deliberate `FULFILLMENT_GATE_CLOSED` check keeps purchase disabled until supplier dispatch, verified result reconciliation, and safe refund handling are implemented and tested end-to-end.
+- Frontend product review now includes a currency selector and “فحص جاهزية الطلب” action that calls the preflight endpoint.
+- Verification: a read-only test for `PUBG_MOBILE_60_UC` returned PRODUCT_ACTIVE and PLAYER_ID_VALID, while correctly blocking on PRICE_NOT_APPROVED, SUPPLIER_NOT_READY, and FULFILLMENT_GATE_CLOSED. The result confirmed `charged=false`, `order_created=false`, and `can_purchase=false`.
+- Supabase Security Advisor still reports Leaked Password Protection Disabled. Performance Advisor findings on backup tables and unused indexes remain informational and were not changed.
+- No customer order, wallet balance, payment control, supplier execution flag, or live supplier credential was changed.
