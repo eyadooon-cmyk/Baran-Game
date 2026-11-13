@@ -431,12 +431,24 @@
 
   function initializeAdminEnhancements() {
     // The admin host can be inserted before the main inline script creates
-    // the Supabase client. Wait for the client; DOMContentLoaded will retry.
+    // the Supabase client. Wait for the client; the main page calls this again
+    // immediately after assigning window.baranSupabaseClient.
     if (!window.baranSupabaseClient) return;
     try { installSafeActions(); } catch (error) { console.error("Baran safe actions UI:", error); }
     try { installDepartmentTeam(); } catch (error) { console.error("Baran AI team UI:", error); }
     try { installAiUsagePanel(); } catch (error) { console.error("Baran AI usage UI:", error); }
   }
+  window.initializeBaranAdminEnhancements = initializeAdminEnhancements;
+  window.refreshBaranAiUsageStats = function () {
+    initializeAdminEnhancements();
+    const panel = document.getElementById("baranAiUsagePanel");
+    const button = panel && panel.querySelector("button");
+    if (button) button.click();
+    else {
+      const status = document.getElementById("baranAdminAssistantStatus");
+      if (status) status.textContent = "تعذر إظهار عدّاد الإحصائيات. تحقق من اتصال الإدارة ثم حدّث الصفحة.";
+    }
+  };
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initializeAdminEnhancements, { once: true });
   } else {
@@ -446,7 +458,7 @@
   const adminUiObserver = new MutationObserver(() => {
     const assistantHost = document.getElementById("baranAdminAssistant");
     const safeHost = document.getElementById("baranSafeActionsHost");
-    if ((assistantHost && !document.getElementById("baranAiTeam")) || (safeHost && !document.getElementById("baranSafeActions"))) initializeAdminEnhancements();
+    if ((assistantHost && (!document.getElementById("baranAiTeam") || !document.getElementById("baranAiUsagePanel"))) || (safeHost && !document.getElementById("baranSafeActions"))) initializeAdminEnhancements();
   });
   adminUiObserver.observe(document.documentElement, { childList: true, subtree: true });
 
