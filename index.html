@@ -2308,6 +2308,14 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
+      <section class="deposit-card" id="baranCatalogReadinessReport" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
+        <h2>📋 تقرير جاهزية كتالوج المنتجات</h2>
+        <p class="small">يفحص جميع المنتجات دفعة واحدة: الأسعار، ربط المورد، SKU، إعداد API، رصيد المورد، وبوابة التنفيذ. التقرير للقراءة فقط.</p>
+        <button class="full secondary" type="button" id="baranCatalogReportButton" onclick="baranLoadCatalogReadinessReport()">إنشاء تقرير جاهزية الـ17 منتجاً</button>
+        <div id="baranCatalogReportStatus" class="small" role="status" aria-live="polite" style="margin-top:10px">لم يتم إنشاء التقرير بعد.</div>
+        <div id="baranCatalogReportSummary"></div>
+        <div id="baranCatalogReportList" style="display:grid;gap:10px;margin-top:12px"></div>
+      </section>
       <section class="deposit-card" id="baranAdminOrderPreflight" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>🛡️ فحص جاهزية الطلب — للإدارة</h2>
         <p class="small">أداة داخلية لفحص السعر والمورد والرصيد. لا تنشئ طلباً ولا تخصم رصيداً ولا ترسل أي عملية للمورد.</p>
@@ -5439,6 +5447,47 @@ sb.auth.onAuthStateChange((event,session)=>{
 restoreSession();
 </script>
 <script id="baran-game-package-selection">
+async function baranLoadCatalogReadinessReport(){
+ const button=document.getElementById("baranCatalogReportButton");
+ const status=document.getElementById("baranCatalogReportStatus");
+ const summary=document.getElementById("baranCatalogReportSummary");
+ const list=document.getElementById("baranCatalogReportList");
+ if(!currentUser){if(status)status.textContent="سجّل الدخول أولاً.";return;}
+ if(button){button.disabled=true;button.textContent="جاري فحص الكتالوج...";}
+ if(status)status.textContent="يتم فحص المنتجات الـ17 من قاعدة البيانات مباشرة. التقرير لا يغيّر أي بيانات.";
+ if(summary)summary.replaceChildren();
+ if(list)list.replaceChildren();
+ try{
+   const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{action:"catalog_report"}});
+   if(error)throw error;
+   if(!data?.success||!data?.report)throw new Error(data?.error||"لم تصل نتيجة التقرير.");
+   const report=data.report;
+   const products=Array.isArray(report.products)?report.products:[];
+   if(summary){
+     const grid=document.createElement("div");
+     grid.style.cssText="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px";
+     [["إجمالي المنتجات",report.total_products??products.length],["أسعار معتمدة",report.price_ready_products??0],["موردون جاهزون",report.supplier_ready_products??0],["جاهز للإطلاق",report.launch_ready_products??0]].forEach(([label,value])=>{
+       const card=document.createElement("div");card.style.cssText="padding:12px;border:1px solid #514064;border-radius:11px;background:#100d15";
+       const strong=document.createElement("strong");strong.style.cssText="display:block;font-size:22px;color:#c5a5ef";strong.textContent=String(value);
+       const caption=document.createElement("span");caption.className="small";caption.textContent=label;card.append(strong,caption);grid.append(card);
+     });
+     summary.append(grid);
+     const gate=document.createElement("p");gate.className="small";gate.textContent="بوابة تنفيذ الشحن: "+(report.fulfillment_gate_open?"مفتوحة":"مغلقة — لا يوجد تنفيذ أو خصم حالياً.");summary.append(gate);
+   }
+   products.forEach(product=>{
+     const card=document.createElement("article");card.style.cssText="padding:12px;border:1px solid #40334b;border-radius:12px;background:#17121e;overflow-wrap:anywhere";
+     const title=document.createElement("strong");title.style.cssText="display:block;color:#eee8f4";title.textContent=(product.name||product.product_code||"منتج")+" · "+(product.product_code||"");
+     const state=document.createElement("p");state.className="small";state.textContent="السعر: "+(product.price_ready?"معتمد":"ناقص")+" | المورد: "+(product.supplier_ready?"جاهز":"غير جاهز")+" | الحالة: "+(product.launch_ready?"جاهز للإطلاق":"غير جاهز");
+     const blockers=document.createElement("ul");blockers.style.cssText="margin:7px 0 0;padding-right:20px;color:#c5b4d6;font-size:13px;line-height:1.7";
+     (Array.isArray(product.blockers)?product.blockers:[]).forEach(reason=>{const li=document.createElement("li");li.textContent=reason;blockers.append(li);});
+     card.append(title,state,blockers);list?.append(card);
+   });
+   if(status)status.textContent="اكتمل التقرير بنجاح · "+products.length+" منتجاً · "+(report.generated_at?new Date(report.generated_at).toLocaleString("ar"):"");
+ }catch(error){
+   if(status)status.textContent=error?.message||"تعذر إنشاء التقرير. تحقق من صلاحية حساب الإدارة والاتصال.";
+   console.error("Baran catalog readiness report:",error);
+ }finally{if(button){button.disabled=false;button.textContent="تحديث تقرير الجاهزية";}}
+}
 async function baranRunAdminOrderPreflight(){
  const code=document.getElementById("baranPreflightProductCode")?.value.trim();
  const currency=document.getElementById("baranPreflightCurrency")?.value||"SYP";
