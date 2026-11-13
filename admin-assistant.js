@@ -430,6 +430,9 @@
   }
 
   function initializeAdminEnhancements() {
+    // The admin host can be inserted before the main inline script creates
+    // the Supabase client. Wait for the client; DOMContentLoaded will retry.
+    if (!window.baranSupabaseClient) return;
     try { installSafeActions(); } catch (error) { console.error("Baran safe actions UI:", error); }
     try { installDepartmentTeam(); } catch (error) { console.error("Baran AI team UI:", error); }
     try { installAiUsagePanel(); } catch (error) { console.error("Baran AI usage UI:", error); }
