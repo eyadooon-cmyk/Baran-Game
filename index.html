@@ -4073,7 +4073,11 @@ async function submitDepositRequest(){
     if(!data?.success)throw new Error(data?.error||"لم يتم تأكيد الحوالة.");
     document.getElementById("depositAmount").value="";
     document.getElementById("depositReference").value="";
-    message.textContent="تم التحقق من الحوالة بنجاح وإرسال طلبك للمراجعة. لم يُضف الرصيد بعد.";
+    message.textContent=data.wallet_credited===true
+      ? "تم التحقق من الحوالة وإضافة الرصيد تلقائياً إلى محفظتك."
+      : data.request?.status==="pending"
+        ? "تم التحقق من الحوالة وتسجيل طلبك للمراجعة. لم يُضف الرصيد بعد."
+        : "تم التحقق من الحوالة. راجع حالة طلب الإيداع في سجل المحفظة.";
     await loadDepositRequests();
   }catch(error){
     let userMessage=error?.message||"تعذر التحقق من الحوالة حالياً.";
