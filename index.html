@@ -1127,6 +1127,16 @@ footer{color:#9f91aa}
 .account-page button:active{transform:scale(.985)}
 @media(max-width:390px){.account-page .account-identity-card{gap:10px;padding:12px}.account-page .account-avatar-wrap{width:58px;height:58px;flex-basis:58px}.account-page .account-identity-details strong{font-size:15px}.account-member-code{gap:6px}.account-member-code strong{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.account-page button,.account-security-chevron{transition:none}}
+/* مركز تحكم ShamCash المستقل */
+.shamcash-control-hero{background:linear-gradient(145deg,#21182b,#120e18);border-color:#765b91}
+.shamcash-control-status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:15px 0}
+.shamcash-control-status,.shamcash-control-facts>div{min-width:0;padding:12px;background:#211a2a;border:1px solid #554165;border-radius:12px}
+.shamcash-control-status span,.shamcash-control-facts span{display:block;color:#bdaacb;font-size:12px}
+.shamcash-control-status strong,.shamcash-control-facts strong{display:block;margin-top:5px;color:#e7d8f4;font-size:16px;overflow-wrap:anywhere}
+.shamcash-control-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.shamcash-control-checklist{padding-right:22px;line-height:2;color:#ddd1e8}
+.shamcash-control-warning{padding:12px;border:1px solid #795a37;border-radius:12px;background:#302318;color:#f0d7b5;line-height:1.8}
+@media(max-width:380px){.shamcash-control-status-grid,.shamcash-control-facts{grid-template-columns:1fr}.shamcash-control-status strong,.shamcash-control-facts strong{font-size:15px}}
 </style>
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
@@ -2124,6 +2134,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
             <div class="admin-hub-grid">
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>الحسابات المالية</strong><small>الأرباح ورأس المال والمصاريف والحركات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('payment-gateway')"><span class="admin-hub-icon">💳</span><strong>بوابة الدفع والتحصيل</strong><small>إعداد ربط ShamCash API واستقبال إشعارات الحوالات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button id="shamCashAutoControlCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" onclick="showAdminPanel('shamcash-control')"><span class="admin-hub-icon">⚡</span><strong>تحكم الشحن التلقائي</strong><small>حالة ShamCash وحدود الإيداع ونطاق الاختبار.</small><span class="admin-hub-open">للمالك فقط ←</span></button>
               <button type="button" class="admin-hub-card admin-hub-card-sensitive" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>التذاكر المالية</strong><small>حالات الحوالات والأرصدة التي تحتاج مراجعتك.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card admin-hub-card-sensitive" onclick="showAdminPanel('security')"><span class="admin-hub-icon">🛡️</span><strong>الأمان والإيداعات</strong><small>طلبات الشحن وسجل الإدارة والتنبيهات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button id="ownerWalletFinanceCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" onclick="showAdminPanel('wallet-finance')"><span class="admin-hub-icon">💳</span><strong>محفظة المالك</strong><small>أرصدة المالك والتحويلات وطلبات التمويل.</small><span class="admin-hub-open">فتح القسم ←</span></button>
@@ -2140,6 +2151,54 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <p class="small">بعد قبول التسجيل سيظهر مفتاح توقيع سري لمرة واحدة. انسخه مباشرة إلى Supabase Edge Function Secrets باسم SHAMCASH_WEBHOOK_SIGNING_SECRET، ولا ترسله في المحادثة أو لأي شخص.</p>
           <button type="button" class="full" onclick="opsRegisterShamCashWebhook(this,document.getElementById('shamCashRegisterOutput'))">تسجيل Webhook الآن</button>
           <div id="shamCashRegisterOutput" class="ops-muted" role="status" aria-live="polite" style="margin-top:12px"></div>
+        </section>
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="shamcash-control">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>تحكم الشحن التلقائي ⚡</h2></div>
+        <section class="deposit-card shamcash-control-hero">
+          <span class="overview-kicker">BARAN GAME · SHAMCASH CONTROL</span>
+          <h3>مركز تحكم ShamCash</h3>
+          <p class="small">كل معلومات الربط والشحن التلقائي والاختبارات في صفحة واحدة. هذه الصفحة تعرض الحالة الفعلية من الخادم ولا تكشف أي مفاتيح سرية.</p>
+          <div class="shamcash-control-status-grid">
+            <article class="shamcash-control-status"><span>حالة التكامل</span><strong id="shamCashIntegrationStatus">جارٍ التحقق...</strong></article>
+            <article class="shamcash-control-status"><span>إضافة الرصيد التلقائية</span><strong id="shamCashAutoCreditStatus">جارٍ التحقق...</strong></article>
+            <article class="shamcash-control-status"><span>بيئة التشغيل</span><strong id="shamCashEnvironmentStatus">جارٍ التحقق...</strong></article>
+            <article class="shamcash-control-status"><span>حساب الاختبار</span><strong id="shamCashTestScopeStatus">جارٍ التحقق...</strong></article>
+          </div>
+          <button class="full secondary" type="button" onclick="loadAdminPanel()">↻ تحديث حالة الربط</button>
+          <div id="shamCashControlUpdated" class="small" role="status" aria-live="polite">بانتظار قراءة الحالة من الخادم.</div>
+        </section>
+        <section class="deposit-card">
+          <h3>حدود الحماية</h3>
+          <div class="shamcash-control-facts">
+            <div><span>الحد اليومي SYP</span><strong id="shamCashSypLimit">—</strong></div>
+            <div><span>الحد اليومي USD</span><strong id="shamCashUsdLimit">—</strong></div>
+            <div><span>الحد الأقصى للعملية</span><strong id="shamCashSingleLimit">—</strong></div>
+            <div><span>آخر تحقق موثق</span><strong id="shamCashLastVerified">—</strong></div>
+          </div>
+          <p class="small">حتى عند تفعيل الشحن التلقائي، يظل التنفيذ مقيداً بحساب الاختبار المحدد في الخادم. بقية الحسابات تبقى ضمن المراجعة اليدوية.</p>
+        </section>
+        <section class="deposit-card">
+          <h3>استقبال Webhook</h3>
+          <div class="shamcash-control-facts">
+            <div><span>الأحداث المستلمة</span><strong id="shamCashWebhookCount">—</strong></div>
+            <div><span>بانتظار المراجعة</span><strong id="shamCashReviewCount">—</strong></div>
+            <div><span>آخر حدث مستلم</span><strong id="shamCashLastWebhook">—</strong></div>
+            <div><span>آخر رمز خطأ</span><strong id="shamCashLastError">—</strong></div>
+          </div>
+          <p class="small" id="shamCashWebhookNote">يتم عرض بيانات الاستقبال المسجلة فقط. عدم وجود أحداث لا يعني فشل التسجيل ولا يثبت وصول حوالة فعلية.</p>
+          <button class="full secondary" type="button" onclick="showAdminPanel('payment-gateway')">فتح إعداد تسجيل Webhook ←</button>
+        </section>
+        <section class="deposit-card">
+          <h3>حالة الاختبار والتشغيل</h3>
+          <ul class="shamcash-control-checklist">
+            <li>اختبار قاعدة البيانات داخل معاملة تراجعت بالكامل: نجح، ولم يبقَ طلب أو تغيير رصيد.</li>
+            <li>قيد حساب الاختبار فقط: موجود ومفحوص.</li>
+            <li>اختبار Webhook حيّ من ShamCash: لم يصل حدث فعلي موثق حتى آخر قراءة.</li>
+            <li>إضافة الرصيد التلقائية: متوقفة حالياً.</li>
+          </ul>
+          <div class="shamcash-control-warning">تنبيه: لا تفعّل الشحن التلقائي قبل مطابقة حوالة حقيقية غير مستخدمة. التفعيل يضيف رصيداً حقيقياً إلى محفظة الزبون.</div>
         </section>
       </div>
 
@@ -3014,13 +3073,13 @@ function buildAdminSectionNav(panel,id){
 function showAdminPanel(id){
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
-  if((id==="wallet-finance"||id==="staff-management")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}
+  if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}
   const hub=document.getElementById("adminHub");
   if(hub)hub.classList.add("hidden");
   admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!==id));
   buildAdminSectionNav(admin.querySelector('.admin-subpanel[data-admin-panel="'+id+'"]'),id);
   if(BARAN_SECTION_ASSISTANTS[id])ensureBaranSectionAssistant(id);
-  if(id==="overview"||id==="financial-support"||id==="users"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"){
+  if(id==="overview"||id==="financial-support"||id==="users"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"||id==="shamcash-control"){
     if(typeof loadAdminPanel==="function")loadAdminPanel();
   }
   if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")loadBaranPromotionsManager();
@@ -4051,6 +4110,7 @@ function moveOwnerWalletToolsToAdmin(){
   if(sale){sale.classList.remove("hidden");mount.appendChild(sale);}
   ownerTools.remove();
   document.getElementById("ownerWalletFinanceCard")?.classList.remove("hidden");
+  document.getElementById("shamCashAutoControlCard")?.classList.remove("hidden");
 }
 
 
@@ -4798,6 +4858,32 @@ async function baranSupplierAiAsk(mode){
   }
 }
 
+function shamCashControlDate(value){
+  if(!value)return "لا يوجد سجل";
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?"غير متاح":date.toLocaleString("ar-SY",{dateStyle:"medium",timeStyle:"short"});
+}
+function renderShamCashAutoControl(control){
+  const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  if(!control){
+    ["shamCashIntegrationStatus","shamCashAutoCreditStatus","shamCashEnvironmentStatus","shamCashTestScopeStatus"].forEach(id=>put(id,"تعذر التحميل"));
+    put("shamCashControlUpdated","لم تصل بيانات حالة الربط من الخادم.");
+    return;
+  }
+  put("shamCashIntegrationStatus",control.integration_enabled===true?"مفعّل":"متوقف");
+  put("shamCashAutoCreditStatus",control.auto_credit_enabled===true?"مفعّل":"مغلق");
+  put("shamCashEnvironmentStatus",control.environment==="live"?"LIVE — مباشر":control.environment||"غير مضبوط");
+  put("shamCashTestScopeStatus",control.test_account_only===true?"حساب الاختبار فقط":"غير مؤكد");
+  put("shamCashSypLimit",Number(control.daily_syp_limit||0).toLocaleString("en-US")+" ل.س");
+  put("shamCashUsdLimit",Number(control.daily_usd_limit||0).toLocaleString("en-US")+" $");
+  put("shamCashSingleLimit",Number(control.max_single_amount||0)>0?Number(control.max_single_amount).toLocaleString("en-US"):"غير محدد");
+  put("shamCashLastVerified",shamCashControlDate(control.last_verified_at));
+  put("shamCashWebhookCount",String(control.webhook_event_count??0));
+  put("shamCashReviewCount",String(control.review_required_count??0));
+  put("shamCashLastWebhook",shamCashControlDate(control.last_webhook_received_at));
+  put("shamCashLastError",control.last_error_code||"لا يوجد");
+  put("shamCashControlUpdated","آخر تحديث للإعدادات: "+shamCashControlDate(control.updated_at));
+}
 async function loadAdminPanel(){
   if(!baranAdminNotificationPoll){
     baranAdminNotificationPoll=setInterval(()=>{
@@ -4814,6 +4900,7 @@ async function loadAdminPanel(){
   message.textContent="";
   try{
     const result=await callAdminApi("GET");
+    renderShamCashAutoControl(result.shamcash_control||null);
     // Render the customer directory first so an unrelated dashboard renderer
     // cannot leave the customer list stuck on its initial loading message.
     renderBaranCustomerDirectory(result.customers||[]);
