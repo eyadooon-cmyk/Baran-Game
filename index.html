@@ -5599,14 +5599,19 @@ async function loadBaranGameCatalog(game){
     const grid=document.createElement("div");grid.className="game-package-grid";grid.dataset.gamePackageGrid=game;
     packages.forEach(product=>{
       const packageCard=document.createElement("div");packageCard.className="baran-game-package-card";
-      const button=document.createElement("button");button.type="button";button.className="game-package-option";
+      packageCard.dataset.packageCode=product.product_code;
+      const button=document.createElement("button");button.type="button";button.className="game-package-option baran-package-button";
       button.dataset.productCode=product.product_code;button.setAttribute("aria-pressed","false");
+      const code=String(product.product_code||"");
+      const amount=(code.match(isPubg?/_(\d+)_UC$/i:/_(\d+)$/i)||[])[1]||"";
+      const art=document.createElement("span");art.className="baran-package-art";art.textContent=isPubg?"UC":"💎";
+      const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=amount?(isPubg?amount+" UC":amount+" جوهرة"):(isPubg?"شدات UC":"جواهر");
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
       const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
       button.disabled=!baranHasApprovedGamePrice(product);
       if(button.disabled){button.setAttribute("aria-label",(product.name||product.product_code)+" — بانتظار اعتماد السعر");}
-      button.append(name,description,price);
+      button.append(art,quantity,name,description,price);
       if(button.disabled){const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير متاحة للاختيار حتى اعتماد السعر";button.append(pending);}
       button.addEventListener("click",()=>baranSelectGamePackage(game,product));
       packageCard.append(button);
@@ -5699,14 +5704,17 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
   intro.textContent="المنتجات المعروضة من كتالوج Baran Game النشط. راجع السعر والتفاصيل قبل طلب الخدمة.";
   const grid=document.createElement("div");grid.className="baran-service-product-grid";
   products.forEach(product=>{
-   const card=document.createElement("article");card.className="baran-service-product";
+   const card=document.createElement("article");card.className="baran-service-product baran-service-product-polished";
+   card.dataset.productCode=product.product_code||"";
+   const availability=document.createElement("span");availability.className="baran-service-product-kicker";
+   availability.textContent=(Number(product.price_usd)>0||Number(product.price_syp)>0)?"السعر مسجل · الشراء غير مفعّل":"قيد التجهيز";
    const head=document.createElement("div");head.className="baran-service-product-head";
    const symbol=document.createElement("span");symbol.className="baran-service-product-icon";symbol.textContent=icon;
    const name=document.createElement("strong");name.textContent=product.name||product.product_code||"منتج رقمي";
    head.append(symbol,name);
    const description=document.createElement("p");description.textContent=product.description||"خدمة رقمية من Baran Game.";
    const price=document.createElement("div");price.className="baran-service-product-price";price.textContent=baranServicePrice(product);
-   card.append(head,description,price);
+   card.append(availability,head,description,price);
    if(price.textContent==="السعر قيد التجهيز"){
     const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="بانتظار اعتماد السعر";card.append(status);
    }
@@ -5740,5 +5748,32 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
  document.addEventListener("visibilitychange",()=>document.hidden?stop():start());show(0);start();
 })();
 </script>
+
+<style id="baran-catalog-polish-20261113">
+/* Catalog refresh: clearer game packages and service cards */
+.game-package-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.baran-game-package-card{min-width:0}
+.baran-package-button{position:relative;isolation:isolate;min-height:190px;align-items:flex-start;justify-content:flex-start;gap:7px;padding:13px;border-radius:16px;overflow:hidden;background:linear-gradient(150deg,#30203f 0%,#1a1422 58%,#100d16 100%);box-shadow:0 8px 20px #0003;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.baran-package-button:before{content:"";position:absolute;z-index:-1;inset:auto -24px -52px auto;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,#a879c944,transparent 70%)}
+.baran-package-art{display:grid;place-items:center;width:42px;height:42px;border:1px solid #a879c966;border-radius:13px;background:#a879c922;color:#ead9f6;font-size:17px;font-weight:1000;letter-spacing:.5px}
+.baran-package-quantity{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border:1px solid #a879c955;border-radius:999px;background:#a879c91a;color:#ead9f6;font-size:11px;font-weight:900}
+.baran-package-button strong{font-size:14px;line-height:1.5}
+.baran-package-button .game-package-price{margin-top:auto;padding-top:8px;width:100%;border-top:1px solid #ffffff18;font-size:14px}
+.baran-package-button:disabled{opacity:1;background:linear-gradient(150deg,#292330,#17131c);border:1px dashed #665773}
+.baran-package-button:disabled .baran-package-art{filter:saturate(.55);opacity:.8}
+.baran-package-button:disabled .game-package-price{color:#d0bfd9}
+.baran-package-button[aria-pressed="true"]{transform:translateY(-2px);border-color:#d5a7f4;box-shadow:0 0 0 2px #a879c933,0 12px 24px #0005}
+.baran-service-product-polished{position:relative;overflow:hidden;min-height:210px;border-color:#624b75;background:linear-gradient(150deg,#2a2035,#17121e 68%);box-shadow:0 8px 20px #0003}
+.baran-service-product-kicker{align-self:flex-start;padding:4px 8px;border:1px solid #a879c944;border-radius:999px;background:#a879c91b;color:#d9c4e8;font-size:9px;font-weight:900}
+.baran-service-product-polished .baran-service-product-icon{width:44px;height:44px;flex-basis:44px;border:1px solid #a879c944;background:linear-gradient(145deg,#a879c933,#4a315f55)}
+.baran-service-product-polished .baran-service-product-price{font-size:13px}
+.baran-service-product-polished .baran-service-select-button{width:100%;min-height:40px;border:1px solid #8f6aaa;background:#352542;color:#f4eafa;border-radius:11px;font-size:12px;font-weight:900}
+.baran-service-product-polished .baran-service-select-button:disabled{opacity:.55;border-style:dashed}
+@media(min-width:620px){.game-package-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:900px){.game-package-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:360px){.baran-package-button{min-height:178px;padding:10px}.baran-package-button strong{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.baran-package-button{transition:none}}
+</style>
+
 </body>
 </html>
