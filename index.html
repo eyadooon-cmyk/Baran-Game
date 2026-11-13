@@ -185,6 +185,31 @@ input::placeholder,textarea::placeholder{color:#9d91a8;opacity:1}
 button{font-weight:700}
 
 
+
+/* بطاقات تتبع الطلبات */
+.customer-order-empty{padding:22px 16px;text-align:center;background:#17121e;border:1px dashed #59466b;border-radius:15px;color:#d9cce4}
+.customer-order-empty p{margin:7px 0 0;color:#a99ab5;font-size:13px}
+.customer-order-card{margin:11px 0;padding:14px;background:linear-gradient(150deg,#21182b,#17121e);border:1px solid #493b55;border-radius:16px;min-width:0}
+.customer-order-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.customer-order-card-top h3{font-size:16px;margin:5px 0;color:#f0e8f6;overflow-wrap:anywhere}
+.customer-order-id{font-size:11px;color:#bdaacb;direction:ltr;display:inline-block}
+.customer-order-status{flex:0 0 auto;padding:6px 9px;border-radius:999px;background:#352b40;color:#e6d8f0;border:1px solid #665276;font-size:11px}
+.customer-order-status.status-completed{background:#18352d;border-color:#326c56;color:#b9f0d6}
+.customer-order-status.status-rejected,.customer-order-status.status-cancelled{background:#3b2028;border-color:#75404c;color:#ffd0d5}
+.customer-order-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;padding:11px 0;border-top:1px solid #3d3048;border-bottom:1px solid #3d3048}
+.customer-order-meta{min-width:0}
+.customer-order-meta span{display:block;color:#aa9ab6;font-size:11px}
+.customer-order-meta strong{display:block;color:#eee5f5;font-size:13px;margin-top:3px;overflow-wrap:anywhere}
+.customer-order-tracking{font-size:13px}
+.customer-order-tracking summary{cursor:pointer;color:#d6c0e8;font-weight:700;padding:4px 0}
+.customer-order-tracking ol{list-style:none;margin:10px 0 0;padding:0 12px 0 0;border-right:2px solid #59436e}
+.customer-order-tracking li{position:relative;display:flex;gap:10px;padding:0 0 14px}
+.customer-order-event-dot{position:absolute;right:-18px;top:4px;width:9px;height:9px;border-radius:50%;background:#b993db;box-shadow:0 0 0 3px #30243b}
+.customer-order-tracking li strong{color:#eee3f7}
+.customer-order-tracking li p{margin:3px 0;color:#c0b2cb}
+.customer-order-tracking li time{font-size:11px;color:#95869f}
+@media(max-width:360px){.customer-order-card{padding:11px}.customer-order-card-top{flex-direction:column}.customer-order-status{align-self:flex-start}}
+
 /* مركز طلبات الزبون */
 .customer-orders-page{min-width:0}
 .customer-orders-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
@@ -3403,6 +3428,100 @@ function goBackSection(){
   const previous=baranSectionHistory.pop()||"home";
   showSection(previous,null,{fromHistory:true});
 }
+
+/* تتبع طلبات الزبون — قراءة فقط من قاعدة البيانات */
+let baranCustomerOrdersCache=[];
+let baranCustomerOrderEvents={};
+const BARAN_ORDER_STATUS_LABELS={
+  pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار المورد",
+  completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"
+};
+function baranOrderEscape(value){
+  return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+function baranOrderDate(value){
+  if(!value)return "غير متوفر";
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return "غير متوفر";
+  return date.toLocaleString("ar",{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+function baranOrderStatus(status){
+  const key=String(status||"").toLowerCase();
+  return BARAN_ORDER_STATUS_LABELS[key]||"حالة قيد التحقق";
+}
+function filterMyOrders(){
+  const search=(document.getElementById("customerOrderSearch")?.value||"").trim().toLocaleLowerCase();
+  const status=document.getElementById("customerOrderStatusFilter")?.value||"all";
+  let visible=0;
+  document.querySelectorAll("#customerOrdersList .customer-order-card").forEach(card=>{
+    const matchesStatus=status==="all"||card.dataset.status===status;
+    const matchesSearch=!search||(card.dataset.search||"").includes(search);
+    card.hidden=!(matchesStatus&&matchesSearch);
+    if(!card.hidden)visible++;
+  });
+  const count=document.getElementById("customerOrderFilterCount");
+  if(count)count.textContent=baranCustomerOrdersCache.length?("عرض "+visible+" من "+baranCustomerOrdersCache.length+" طلب"): "لا توجد طلبات لعرضها";
+}
+function renderMyOrders(){
+  const list=document.getElementById("customerOrdersList");
+  const summary=document.getElementById("customerOrderSummary");
+  if(!list)return;
+  const orders=baranCustomerOrdersCache;
+  if(summary){
+    const active=orders.filter(o=>["processing","awaiting_supplier"].includes(String(o.status||"").toLowerCase())).length;
+    const completed=orders.filter(o=>String(o.status||"").toLowerCase()==="completed").length;
+    summary.innerHTML='<div class="customer-order-stat"><span>كل الطلبات</span><strong>'+orders.length+'</strong></div><div class="customer-order-stat"><span>قيد التنفيذ</span><strong>'+active+'</strong></div><div class="customer-order-stat"><span>مكتملة</span><strong>'+completed+'</strong></div>';
+  }
+  if(!orders.length){
+    list.innerHTML='<div class="customer-order-empty"><strong>📦 ما عندك طلبات لحد الآن</strong><p>لما تنشئ طلباً معتمداً رح يظهر هون مع تحديثات حالته.</p></div>';
+    filterMyOrders();return;
+  }
+  list.innerHTML=orders.map(order=>{
+    const id=String(order.id||"");
+    const shortId=id? id.slice(0,8).toUpperCase():"—";
+    const status=String(order.status||"").toLowerCase();
+    const events=baranCustomerOrderEvents[id]||[];
+    const product=order.product_name||order.product_code||"منتج";
+    const amount=order.payment_currency==="SYP"&&order.total_price_syp!=null
+      ? Number(order.total_price_syp).toLocaleString("en-US")+" ل.س"
+      : order.total_price_usd!=null ? "$"+Number(order.total_price_usd).toFixed(2) : "السعر غير مسجل";
+    const eventMarkup=events.length?events.map(ev=>'<li><span class="customer-order-event-dot"></span><div><strong>'+baranOrderEscape(baranOrderStatus(ev.new_status))+'</strong>'+(ev.customer_message?'<p>'+baranOrderEscape(ev.customer_message)+'</p>':'')+'<time>'+baranOrderEscape(baranOrderDate(ev.created_at))+'</time></div></li>').join(""):'<li><span class="customer-order-event-dot"></span><div><strong>'+baranOrderEscape(baranOrderStatus(status))+'</strong><p>هذه آخر حالة مسجلة للطلب.</p><time>'+baranOrderEscape(baranOrderDate(order.created_at))+'</time></div></li>';
+    const player=order.player_id?'<div class="customer-order-meta"><span>معرّف اللاعب</span><strong>'+baranOrderEscape(order.player_id)+'</strong></div>':"";
+    return '<article class="customer-order-card" data-status="'+baranOrderEscape(status)+'" data-search="'+baranOrderEscape((id+" "+shortId+" "+product+" "+(order.product_code||"")+" "+(order.player_id||"")).toLocaleLowerCase())+'"><div class="customer-order-card-top"><div><span class="customer-order-id">طلب #'+baranOrderEscape(shortId)+'</span><h3>'+baranOrderEscape(product)+'</h3></div><span class="customer-order-status status-'+baranOrderEscape(status)+'">'+baranOrderEscape(baranOrderStatus(status))+'</span></div><div class="customer-order-details"><div class="customer-order-meta"><span>تاريخ الطلب</span><strong>'+baranOrderEscape(baranOrderDate(order.created_at))+'</strong></div><div class="customer-order-meta"><span>الكمية</span><strong>'+baranOrderEscape(order.quantity||1)+'</strong></div><div class="customer-order-meta"><span>الإجمالي المسجل</span><strong>'+baranOrderEscape(amount)+'</strong></div>'+player+'</div><details class="customer-order-tracking"><summary>عرض سجل التحديثات</summary><ol>'+eventMarkup+'</ol></details></article>';
+  }).join("");
+  filterMyOrders();
+}
+async function loadMyOrders(){
+  const list=document.getElementById("customerOrdersList");
+  if(!list)return;
+  if(!currentUser?.id){list.innerHTML='<div class="customer-order-empty">سجّل الدخول لعرض طلباتك.</div>';return;}
+  list.innerHTML='<div class="customer-order-empty">جاري تحميل طلباتك بأمان...</div>';
+  const {data:orders,error}=await sb.from("orders").select("id,user_id,product_code,player_id,quantity,status,created_at,total_price_usd,total_price_syp,payment_currency").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(100);
+  if(error){
+    console.error("Baran customer orders load failed",error);
+    list.innerHTML='<div class="customer-order-empty">تعذر تحميل الطلبات حالياً. حدّث الصفحة أو حاول مرة ثانية.</div>';
+    const count=document.getElementById("customerOrderFilterCount");if(count)count.textContent="";
+    return;
+  }
+  baranCustomerOrdersCache=orders||[];
+  baranCustomerOrderEvents={};
+  if(baranCustomerOrdersCache.length){
+    const ids=baranCustomerOrdersCache.map(o=>o.id);
+    const [productsResult,eventsResult]=await Promise.all([
+      sb.from("products").select("product_code,name").in("product_code",[...new Set(baranCustomerOrdersCache.map(o=>o.product_code).filter(Boolean))]),
+      sb.from("order_status_events").select("order_id,old_status,new_status,customer_message,created_at").in("order_id",ids).order("created_at",{ascending:true})
+    ]);
+    const productNames={};
+    if(!productsResult.error)(productsResult.data||[]).forEach(p=>productNames[p.product_code]=p.name);
+    baranCustomerOrdersCache=baranCustomerOrdersCache.map(o=>({...o,product_name:productNames[o.product_code]||o.product_code}));
+    if(!eventsResult.error)(eventsResult.data||[]).forEach(ev=>{
+      (baranCustomerOrderEvents[ev.order_id] ||= []).push(ev);
+    });
+    else console.warn("Baran order events unavailable; showing current status only",eventsResult.error);
+  }
+  renderMyOrders();
+}
+
 function showSection(id,button,options){
   if(!currentUser) return;
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
