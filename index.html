@@ -2463,7 +2463,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>متابعة الطلبات</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
       <h2>متابعة الطلبات 📦</h2>
-      <p class="small">تابع حالة كل طلب، بيانات الزبون واللاعب، وسجّل رسالة حالة تظهر للزبون.</p>
+      <p class="small">عرض إداري لطلبات الزبائن وبياناتها وحالتها. تحديث الحالات سيبقى عبر إجراء إداري موثّق.</p>
+      <div class="ops-actions" style="margin:10px 0"><button class="secondary" type="button" onclick="loadAdminPanel()">↻ تحديث الطلبات</button><span id="opsOrdersSummary" class="small" aria-live="polite">بانتظار التحميل...</span></div>
       <div id="opsOrders" class="ops-list">جاري تحميل الطلبات...</div>
       
       </div>
@@ -5192,6 +5193,46 @@ async function testShamCashConnection(){
   }
 }
 
+function renderBaranAdminOrders(orders){
+  const container=document.getElementById("opsOrders");
+  const summary=document.getElementById("opsOrdersSummary");
+  if(!container)return;
+  const rows=Array.isArray(orders)?orders:[];
+  if(summary)summary.textContent="إجمالي الطلبات المعروضة: "+rows.length;
+  if(!rows.length){
+    container.innerHTML='<div class="ops-item"><strong>لا توجد طلبات حتى الآن</strong><p class="small">ستظهر طلبات الزبائن هنا بعد إنشاء أول طلب حقيقي من النظام. لم ننشئ بيانات تجريبية.</p></div>';
+    return;
+  }
+  container.innerHTML=rows.map(order=>{
+    const id=baranOrderEscape(order.id||"");
+    const customer=baranOrderEscape(order.customer_name||order.customer_email||"زبون");
+    const email=baranOrderEscape(order.customer_email||"");
+    const phone=baranOrderEscape(order.customer_phone||"غير مسجل");
+    const product=baranOrderEscape(order.product_code||"غير محدد");
+    const player=baranOrderEscape(order.player_id||"غير مطلوب");
+    const status=baranOrderEscape(baranOrderStatus(order.status));
+    const created=baranOrderEscape(baranOrderDate(order.created_at));
+    const quantity=Math.max(1,Number(order.quantity)||1);
+    const totalUsd=order.total_price_usd==null?"—":Number(order.total_price_usd).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" $";
+    const totalSyp=order.total_price_syp==null?"—":Number(order.total_price_syp).toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س";
+    const fulfillment=order.fulfillment||{};
+    const supplier=baranOrderEscape(fulfillment.supplier_reference||"لم يُسجّل مرجع مورد");
+    const supplierStatus=baranOrderEscape(fulfillment.supplier_status||"غير متوفر");
+    return '<article class="ops-item" style="margin:10px 0;padding:14px;border:1px solid #59446b;border-radius:14px;background:#191321;overflow-wrap:anywhere">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>طلب #'+id.slice(0,8)+'</strong><span class="status-chip">'+status+'</span></div>'+
+      '<div class="small" style="margin-top:8px">الزبون: '+customer+'</div>'+
+      (email?'<div class="small" dir="ltr" style="text-align:right">'+email+'</div>':"")+
+      '<div class="small">الهاتف: '+phone+'</div>'+
+      '<div class="small">المنتج: '+product+' · الكمية: '+quantity+'</div>'+
+      '<div class="small">معرّف اللاعب: '+player+'</div>'+
+      '<div class="small">الإجمالي: '+totalUsd+' / '+totalSyp+'</div>'+
+      '<div class="small">تاريخ الطلب: '+created+'</div>'+
+      '<div class="small">مرجع المورد: '+supplier+' · حالة المورد: '+supplierStatus+'</div>'+
+      '<div class="small" style="margin-top:8px;color:#cdb8df">رقم الطلب الكامل: <span dir="ltr">'+id+'</span></div>'+
+      '</article>';
+  }).join("");
+}
+
 async function loadAdminPanel(){
   if(!baranAdminNotificationPoll){
     baranAdminNotificationPoll=setInterval(()=>{
@@ -5208,6 +5249,7 @@ async function loadAdminPanel(){
   message.textContent="";
   try{
     const result=await callAdminApi("GET");
+    renderBaranAdminOrders(result.orders||[]);
     renderShamCashAutoControl(result.shamcash_control||null);
     // Render the customer directory first so an unrelated dashboard renderer
     // cannot leave the customer list stuck on its initial loading message.
