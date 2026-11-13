@@ -1562,6 +1562,66 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 @media(min-width:650px){.baran-clean-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.baran-clean-category{min-height:105px;flex-direction:column;align-items:flex-start;padding:14px}.baran-clean-arrow{align-self:flex-end}.baran-clean-hero{min-height:190px;padding:25px 30px}}
 </style>
 
+
+<style id="baran-store-pages-polish-20261113">
+/* توحيد صفحات الأقسام والمتاجر الداخلية */
+#games,#services{display:block}
+#games:not(.hidden),#services:not(.hidden),
+.game-store-page:not(.hidden),
+#chatgptStore:not(.hidden),#vpnStore:not(.hidden),
+#giftCardsStore:not(.hidden),#appsStore:not(.hidden){
+  padding:clamp(13px,3vw,20px)!important;
+  border:1px solid #493653!important;border-radius:19px!important;
+  background:linear-gradient(155deg,#1d1627,#120f18 72%)!important;
+}
+#games>h2,#services>h2{margin:13px 0 4px;color:#f4eafa;font-size:21px}
+#games>.small,#services>.small{display:block;margin:0 0 16px;color:#b9a9c6;font-size:11px;line-height:1.8}
+#games>.grid,#services>.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:14px}
+#games .item,#services .item{
+  position:relative;display:flex;flex-direction:column;min-width:0;min-height:170px;
+  overflow:hidden;text-align:right;border:1px solid #574267;border-radius:16px;
+  background:linear-gradient(150deg,#2a2035,#17121f 78%);color:#f4eafa;
+  box-shadow:0 7px 18px #0003;transition:transform .18s ease,border-color .18s ease
+}
+#games .item:active,#services .item:active{transform:scale(.985)}
+#games .item img{width:100%;height:105px;object-fit:cover;display:block;background:#241a30}
+#games .item-content{display:flex;flex:1;flex-direction:column;align-items:flex-start;gap:5px;width:100%;padding:11px}
+#games .item-content strong,#services .item-content strong{color:#f2e5fc;font-size:13px;font-weight:900}
+#games .item-content>span:not(.small),#services .item-content>span:not(.small){color:#bbaac9;font-size:10px;line-height:1.7}
+#games .item-content .small,#services .item-content .small{margin-top:auto;padding-top:7px;color:#d4b0f0;font-size:10px;font-weight:800}
+#services .item{min-height:145px;justify-content:flex-end;padding-top:48px}
+#services .item:before{position:absolute;top:13px;right:13px;display:grid;place-items:center;width:40px;height:40px;border:1px solid #9d72ba66;border-radius:13px;background:#a56bd626;font-size:22px}
+#services .item:nth-child(1):before{content:"✦"}
+#services .item:nth-child(2):before{content:"◉"}
+#services .item:nth-child(3):before{content:"🎁"}
+#services .item:nth-child(4):before{content:"▣"}
+#services .item-content{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:10px 12px 12px}
+.games-back-button,.game-store-page>button:first-child,
+#chatgptStore>button:first-child,#vpnStore>button:first-child,
+#giftCardsStore>button:first-child,#appsStore>button:first-child{
+  min-height:38px;margin:0 0 12px;padding:8px 12px;border:1px solid #604878;
+  border-radius:10px;background:#241a30;color:#e8d7f4;font-size:11px;font-weight:800
+}
+.game-store-page .hero,#chatgptStore .hero,#vpnStore .hero,#giftCardsStore .hero,#appsStore .hero{
+  position:relative;overflow:hidden;margin:0 0 14px;padding:17px 15px!important;
+  border:1px solid #63477a!important;border-radius:16px!important;
+  background:radial-gradient(circle at 100% 0%,#a56bd633,transparent 48%),linear-gradient(120deg,#2a1d37,#17111f 78%)!important
+}
+.game-store-page .hero h2,#chatgptStore .hero h2,#vpnStore .hero h2,#giftCardsStore .hero h2,#appsStore .hero h2{margin:0 0 5px;color:#f7edff;font-size:20px}
+.game-store-page .hero p,#chatgptStore .hero p,#vpnStore .hero p,#giftCardsStore .hero p,#appsStore .hero p{margin:0;color:#c5b3d2;font-size:11px;line-height:1.8}
+.game-catalog,.baran-service-catalog{margin:0 0 14px!important;padding:14px!important;border:1px solid #4d395c!important;border-radius:15px!important;background:#191420!important}
+.game-checkout{margin-top:14px;padding:15px;border:1px solid #624776;border-radius:16px;background:linear-gradient(145deg,#241a30,#17121f)}
+.game-checkout h3{margin:0 0 5px;color:#f1e5fa;font-size:16px}
+.game-checkout>p.small{color:#bbaac8;font-size:10px;line-height:1.8}
+.game-checkout label{display:block;margin:12px 0 6px;color:#e4d5ef;font-size:11px;font-weight:800}
+.game-checkout input{min-height:44px;border:1px solid #604878;border-radius:11px;background:#100d15;color:#fff}
+.game-selection-summary{margin:12px 0;padding:11px;border:1px dashed #705388;border-radius:11px;background:#17111f;color:#d6c4e4;font-size:11px;line-height:1.7}
+.game-checkout button:disabled{opacity:.72;cursor:not-allowed;background:#493b52;color:#d5c9dc}
+.game-availability-note{margin:9px 0 0;color:#ad9dbb;font-size:10px;line-height:1.8}
+@media(max-width:360px){#games>.grid,#services>.grid{gap:8px}#games .item img{height:88px}#games .item-content,#services .item-content{padding:9px}.game-store-page .hero,#chatgptStore .hero,#vpnStore .hero,#giftCardsStore .hero,#appsStore .hero{padding:14px 12px!important}}
+@media(min-width:650px){#games>.grid,#services>.grid{grid-template-columns:repeat(4,minmax(0,1fr))}#games .item,#services .item{min-height:190px}#games .item img{height:125px}}
+</style>
+
 </head>
 <body>
 
