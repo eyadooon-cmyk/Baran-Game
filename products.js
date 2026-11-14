@@ -191,3 +191,6 @@ function updateProductPricePreview(){
   const usd=Number(document.getElementById("productPriceUsd")?.value||0);
   preview.textContent=usd>0?"السعر بالليرة: "+Math.round(usd*currentExchangeRate).toLocaleString("en-US")+" ل.س":"اترك السعر فارغاً إذا لم يُحدد بعد؛ سيظهر للزبائن: السعر غير محدد.";
 }
+
+// Load the Free Fire ID checker without exposing provider credentials.
+import("./freefire-check.js").catch(error=>console.error("Baran Free Fire checker could not load",error));
