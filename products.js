@@ -194,3 +194,6 @@ function updateProductPricePreview(){
 
 // Load the Free Fire ID checker without exposing provider credentials.
 import("./freefire-check.js").catch(error=>console.error("Baran Free Fire checker could not load",error));
+
+// Load the PUBG Mobile ID checker without exposing provider credentials.
+import("./pubg-check.js").catch(error=>console.error("Baran PUBG checker could not load",error));
