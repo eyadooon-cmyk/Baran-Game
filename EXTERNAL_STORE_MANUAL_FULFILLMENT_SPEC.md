@@ -136,7 +136,12 @@ Suggested statuses: pending, in_progress, awaiting_admin_confirmation, completed
 - Supabase contains 32 active game products matching the reviewed catalogue: 20 PUBG Mobile, 6 Free Fire Robot, and 6 Jawaker.
 - All 32 game products currently have no approved BARAN selling price. They are catalogue entries only; this is not authorization to charge customers.
 - Older Free Fire package rows that did not match the screenshots have been deactivated. Unrelated service categories were left unchanged.
-- The customer catalogue grouping change exists on this feature branch only and has not been deployed to the live GitHub Pages site.
-- Database preflight currently hard-blocks order creation and wallet charging. Manual fulfilment, refund safety, and finance posting still require a dedicated end-to-end implementation and tests.
+- The customer catalogue grouping and admin manual-fulfilment interface changes exist on this feature branch only and have not been deployed to the live GitHub Pages site.
+- The admin order panel now uses neutral manual-execution language, has no external-store assignment field, and requires an actual purchase cost plus a transaction reference or a documented reason before it accepts a completed manual fulfilment.
+- The `baran-admin` Edge Function source has the same server-side validation on this branch; it has not been deployed yet.
+- A production database migration now guards the `admin_update_order_status` RPC: an order cannot be marked completed without a recorded successful manual fulfilment, purchase cost, currency, exchange rate, and sale-price snapshots. This preserves the existing finance-posting and loyalty triggers.
+- Internal legacy database column names remain unchanged to avoid breaking existing finance, refund, and audit dependencies. They are not shown in the manual-fulfilment interface.
+- Current live database check: 0 orders, 32 active game products, and all 32 have no approved BARAN selling price. The order creation and wallet-charging preflight remains closed.
+- Because there are no orders, a complete end-to-end order, payment, fulfilment, refund, and profit test cannot yet be performed. Refund handling still needs a dedicated review before launch.
 
-This document records the reviewed catalogue and current state. It does not claim that manual order fulfilment or customer purchasing is operational.
+This document records the reviewed catalogue and implementation state. It does not claim that the live storefront or Edge Function has been deployed, or that customer purchasing is operational.
