@@ -171,7 +171,8 @@ function renderOpsOrders(orders){
     card.append(opsNode("strong","","طلب رقم "+order.id.slice(0,8)));
     card.append(opsNode("div","","الزبون: "+opsText(order.customer_name||order.customer_email)));
     card.append(opsNode("div","","البريد: "+opsText(order.customer_email)+" | الهاتف: "+opsText(order.customer_phone)));
-    card.append(opsNode("div","","المنتج: "+opsText(order.product_code)+" | اللاعب/المعرّف: "+opsText(order.player_id)));
+    const productLabel=(latestBaranOperations.products||[]).find(p=>p.product_code===order.product_code)?.name||order.product_code;
+    card.append(opsNode("div","","المنتج: "+opsText(productLabel)+" | اللاعب/المعرّف: "+opsText(order.player_id)));
     card.append(opsNode("div","","الكمية: "+order.quantity+" | التاريخ: "+opsDate(order.created_at)));
     card.append(opsNode("div","","السعر: "+(order.total_price_usd!==null?opsMoney(order.total_price_usd,"USD"):"—")+" | "+(order.total_price_syp!==null?opsMoney(order.total_price_syp,"SYP"):"—")));
     const fulfillment=order.fulfillment;
