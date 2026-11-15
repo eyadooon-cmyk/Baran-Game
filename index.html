@@ -2492,6 +2492,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <button class="secondary" type="button" onclick="baranSyriaMarketFetch('profile')">🔌 اختبار الاتصال والحساب</button>
           <button class="secondary" type="button" onclick="baranSyriaMarketFetch('products')">📦 جلب المنتجات</button>
           <button class="secondary" type="button" onclick="baranSyriaMarketFetch('games_catalog')">🎮 جلب كتالوج الألعاب والخدمات (V2)</button>
+          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('freefire_catalog')">🔥 فحص باقات Free Fire فقط</button>
           <button class="secondary" type="button" onclick="baranSyriaMarketFetch('categories')">🗂️ جلب التصنيفات</button>
           <button class="secondary" type="button" onclick="baranSyriaMarketFetch('docs')">📘 قراءة وثائق API</button>
           <button class="secondary" type="button" onclick="baranSyriaMarketFetch('openapi')">🧩 قراءة OpenAPI</button>
@@ -5133,7 +5134,7 @@ async function baranSyriaMarketFetch(action){
   const rawWrap=document.getElementById("syriaMarketCatalogRawWrap");
   const buttons=[...document.querySelectorAll("#syriaMarketCatalogPanel button")];
   if(!status||!summary||!raw)return;
-  const labels={profile:"فحص اتصال الحساب",products:"جلب المنتجات",games_catalog:"جلب كتالوج الألعاب والخدمات V2",categories:"جلب التصنيفات",docs:"قراءة وثائق API",openapi:"قراءة OpenAPI"};
+  const labels={profile:"فحص اتصال الحساب",products:"جلب المنتجات",games_catalog:"جلب كتالوج الألعاب والخدمات V2",freefire_catalog:"فحص باقات Free Fire فقط",categories:"جلب التصنيفات",docs:"قراءة وثائق API",openapi:"قراءة OpenAPI"};
   buttons.forEach(button=>button.disabled=true);
   status.textContent="جارٍ "+(labels[action]||"قراءة بيانات المورد")+"... لن يتم إرسال أي طلب شراء.";
   summary.replaceChildren();
@@ -5164,6 +5165,10 @@ async function baranSyriaMarketFetch(action){
     card("المورد",result.provider||"Syria Market");
     card("نوع القراءة",labels[action]||action);
     card("وقت الفحص",new Date(result.fetched_at||Date.now()).toLocaleString("ar"));
+    if(action==="freefire_catalog"&&data&&typeof data==="object"){
+      card("كل منتجات كتالوج الألعاب والخدمات",data.total_catalog_products??"غير معروف");
+      card("منتجات Free Fire المطابقة",data.freefire_matches??0);
+    }
     if(action==="products"){
       const list=Array.isArray(data)?data:(data?.data&&Array.isArray(data.data)?data.data:(data?.products&&Array.isArray(data.products)?data.products:null));
       if(list)card("عدد العناصر المستلمة",list.length);
