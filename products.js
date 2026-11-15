@@ -124,8 +124,8 @@ async function toggleProduct(product){
 async function loadCatalog(){
   if(!currentUser)return;
   const catalogTargets=[
-    {id:"pubgProductCatalog",title:"كتالوج PUBG MOBILE — سوريا ماركت",match:p=>p.category==="game"&&p.product_code.startsWith("PUBG_")},
-    {id:"freeFireProductCatalog",title:"كتالوج Free Fire — سوريا ماركت",match:p=>p.category==="game"&&p.product_code.startsWith("FREEFIRE_ROBOT_")},
+    {id:"pubgProductCatalog",title:"كتالوج PUBG MOBILE",match:p=>p.category==="game"&&p.product_code.startsWith("PUBG_")},
+    {id:"freeFireProductCatalog",title:"كتالوج Free Fire",match:p=>p.category==="game"&&p.product_code.startsWith("FREEFIRE_ROBOT_")},
     {id:"chatgptProductCatalog",title:"باقات ChatGPT",match:p=>p.category==="ai"},
     {id:"vpnProductCatalog",title:"باقات VPN",match:p=>p.category==="vpn"},
     {id:"giftCardProductCatalog",title:"البطاقات الرقمية",match:p=>p.category==="gift_card"},
