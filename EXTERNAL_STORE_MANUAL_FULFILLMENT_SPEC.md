@@ -133,7 +133,7 @@ Suggested statuses: pending, in_progress, awaiting_admin_confirmation, completed
 
 ## 7. Current implementation state (2026-11-15)
 
-- Supabase contains 32 active game products matching the reviewed catalogue: 20 PUBG Mobile, 6 Free Fire, and 6 Jawaker.
+- Supabase contains 32 active game products matching the reviewed catalogue: 20 PUBG Mobile, 6 Free Fire, and 6 Jawaker. A later live check on 2026-11-16 found 35 active products total (32 game products and 3 other existing products); all 35 active products currently have no approved positive USD sale price.
 - All 32 game products currently have no approved BARAN selling price. They are catalogue entries only; this is not authorization to charge customers.
 - Older Free Fire package rows that did not match the screenshots have been deactivated. Unrelated service categories were left unchanged.
 - The customer catalogue grouping and admin manual-fulfilment interface changes exist on this feature branch only and have not been deployed to the live GitHub Pages site.
@@ -142,7 +142,7 @@ Suggested statuses: pending, in_progress, awaiting_admin_confirmation, completed
 - Supplier management, product-to-supplier mapping, API configuration save, and safe API simulation are available in the separate supplier admin panel on this branch. They are not part of the manual fulfilment flow. The legacy supplier refund action remains disabled pending a separate safe-refund test.
 - A production database migration now guards the `admin_update_order_status` RPC: an order cannot be marked completed without a recorded successful manual fulfilment, purchase cost, currency, exchange rate, and sale-price snapshots. This preserves the existing finance-posting and loyalty triggers.
 - Internal legacy database column names remain unchanged to avoid breaking existing finance, refund, and audit dependencies. They are not shown in the manual-fulfilment interface.
-- Current live database check: 0 orders, 32 active game products, and all 32 have no approved BARAN selling price. The order creation and wallet-charging preflight remains closed.
+- Current live database check (2026-11-16): 0 orders, 32 active game products, all 32 game products without approved USD sale prices; 35 active products total across all categories, all 35 without approved USD sale prices. The order creation and wallet-charging preflight remains closed. The order creation and wallet-charging preflight remains closed.
 - Because there are no orders, a complete end-to-end order, payment, fulfilment, refund, and profit test cannot yet be performed. Refund handling still needs a dedicated review before launch.
 
 This document records the reviewed catalogue and implementation state. It does not claim that the live storefront or Edge Function has been deployed, or that customer purchasing is operational.
@@ -156,3 +156,31 @@ This document records the reviewed catalogue and implementation state. It does n
 - supplier_order_refund remains disabled. Refunds require their own safe review and end-to-end test.
 - The manual order panel remains a manual-only process and must not display or depend on supplier selection.
 - All changes described in this section are branch-only until reviewed, tested, and deliberately deployed.
+
+## 9. Supplier API dispatch audit (2026-11-16)
+
+### What exists in the live database
+- Supplier framework tables and protected functions exist, including API configuration, supplier balance snapshots, health events, order attempts, `baran_supplier_prepare_order`, and `baran_supplier_finalize_order`.
+- `baran_supplier_prepare_order` selects the preferred active supplier mapping, checks API configuration and a balance snapshot no older than 10 minutes, then records a prepared attempt and idempotency key. Its own result explicitly says an external API connector is still required to send the request.
+- `baran_supplier_finalize_order` can reconcile a known success, failure, or unknown result after a supplier attempt exists. This is database finalization logic, not an HTTP connector.
+- Supplier configuration save always writes `execution_enabled=false`; saving settings cannot turn on live dispatch.
+- Supplier preparation/finalization and admin supplier configuration/simulation RPCs are executable by `service_role` only; anon and authenticated execute were verified false.
+- The supplier simulation is local validation only and explicitly records `real_connection=false`.
+
+### What is missing or blocks launch
+- No deployed Edge Function dedicated to supplier HTTP dispatch was found. The deployed `baran-supplier-manager` is an AI analysis/management assistant, not a dispatch connector. `baran-order-gateway` currently performs preflight only.
+- No active scheduled supplier-dispatch job was found in `cron.job`.
+- The live project currently has 2 supplier records, 0 active suppliers, 0 supplier-product mappings, 0 API configs, 0 enabled integrations, 0 enabled executions, 0 supplier order attempts, and 0 orders.
+- The current `baran_order_preflight` only evaluates supplier readiness and appends `FULFILLMENT_GATE_CLOSED`; it returns `can_create_order=false` and `can_purchase=false` unconditionally. Therefore the manual path cannot currently pass preflight either.
+- There is no explicit per-order fulfilment route selection in the current preflight contract. The supplier preparation RPC chooses a preferred supplier based on product mapping; the manual workflow records a null supplier ID. A deliberate route discriminator is required before both paths can safely coexist.
+
+### Required design before implementation
+1. Add an explicit fulfilment mode, selected server-side for each order: `manual` or `supplier_api`. Never infer the mode from the presence of a supplier mapping alone.
+2. Manual mode must not require an active supplier, supplier SKU, API config, supplier balance, or supplier attempt. It must enter the manual admin queue and use only the manual fulfilment RPC.
+3. Supplier API mode must require an active supplier mapping, product SKU/input schema, enabled and ready API config, recent healthy balance snapshot, and a working provider-specific adapter.
+4. Persist the chosen mode on the order/fulfilment record and make it immutable after the first dispatch attempt, except for an explicit audited admin switch while no external request has been sent.
+5. Implement the external HTTP adapter as a separate server-side Edge Function/worker. It must use server-side secrets, timeouts, strict HTTPS/host validation, idempotency keys, provider-specific request/response mapping, status polling, and unknown-outcome reconciliation. Never send API secrets to the browser.
+6. Only a verified provider success may call supplier finalization. A timeout or ambiguous response must remain `unknown`/review; never blindly retry or refund.
+7. Keep purchase creation and wallet debit closed until manual and API paths each pass their own end-to-end tests, including refunds and finance posting.
+
+No live schema, supplier record, API credential, execution flag, order, wallet, or payment state was changed during this audit. All branch code changes remain undeployed.
