@@ -191,11 +191,10 @@ No live schema, supplier record, API credential, execution flag, order, wallet, 
 These are two independent product and fulfilment projects inside BARAN GAME. Do not combine their catalogues, prices, order queues, fulfilment actions, or provider settings.
 
 ### Project A — Syria Market supplier/API catalogue
-- Existing PUBG MOBILE and Free Fire supplier catalogue remains the Syria Market/API track.
-- The customer catalogue reads active products from `public.products` and renders PUBG and Free Fire into their dedicated store pages.
-- The Free Fire product-code family used by this supplier catalogue is `FREEFIRE_ROBOT_*`; the historical `FREEFIRE_*` rows are not silently reactivated.
-- Product prices remain unset until separately verified and approved. Missing prices must display as “السعر غير محدد”; they must not be fabricated.
-- No purchase, wallet debit, API execution, supplier activation, or production deployment is enabled by this catalogue-display repair.
+- Syria Market is a separate API-provider integration. Its admin-only catalogue panel (`syriaMarketCatalogPanel`) exposes read-only actions such as `games_catalog` and `freefire_catalog`; these actions inspect upstream data and do not create orders or import/activate products.
+- The existing customer-facing `public.products` catalogue is a separate local store catalogue. Its product-code prefix is not, by itself, proof that an item is connected to Syria Market or to Leo. Provider/source ownership must be explicit before products are routed for fulfilment.
+- The current storefront loader renders the existing PUBG and Free Fire local catalogue records into their dedicated pages, and renders services into their own pages. Missing prices display as “السعر غير محدد”; they are not fabricated.
+- The Syria Market API catalogue must remain read-only until its real product response has been inspected and deliberately mapped. No order creation, wallet debit, API execution, supplier activation, or production deployment is enabled by this display repair.
 
 ### Project B — Leo manual fulfilment catalogue (separate build)
 - Leo is a mobile app used by the owner to perform the top-up manually; it has no API connection in this design.
