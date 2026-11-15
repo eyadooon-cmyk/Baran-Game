@@ -2482,6 +2482,26 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <div id="baranCatalogReportSummary"></div>
         <div id="baranCatalogReportList" style="display:grid;gap:10px;margin-top:12px"></div>
       </section>
+      <section class="deposit-card" id="syriaMarketCatalogPanel" style="border:1px solid #9a70bb;background:linear-gradient(145deg,rgba(65,38,91,.42),rgba(16,13,24,.98));">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:28px">🇸🇾</span>
+          <div><h2 style="margin:0">Syria Market — استيراد الكتالوج</h2><p class="small" style="margin:4px 0 0">اتصال إداري محمي لقراءة بيانات المورد فقط. لا ينشئ طلبات ولا يخصم رصيداً.</p></div>
+        </div>
+        <div class="small" style="margin:12px 0;padding:10px;border:1px solid #514064;border-radius:10px;background:#100b16">المفتاح محفوظ في Supabase Secrets ولا يظهر في المتصفح. كل العمليات أدناه قراءة فقط.</div>
+        <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('profile')">🔌 اختبار الاتصال والحساب</button>
+          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('products')">📦 جلب المنتجات</button>
+          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('categories')">🗂️ جلب التصنيفات</button>
+          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('docs')">📘 قراءة وثائق API</button>
+          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('openapi')">🧩 قراءة OpenAPI</button>
+        </div>
+        <div id="syriaMarketCatalogStatus" class="small" role="status" aria-live="polite" style="margin-top:12px">لم يتم الاتصال بالمورد بعد. اختر إحدى عمليات القراءة أعلاه.</div>
+        <div id="syriaMarketCatalogSummary" style="display:grid;gap:8px;margin-top:10px"></div>
+        <details id="syriaMarketCatalogRawWrap" style="margin-top:12px">
+          <summary style="cursor:pointer;color:#d7c4e8;font-weight:800;padding:8px 0">عرض البيانات المستلمة</summary>
+          <pre id="syriaMarketCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#09080d;border:1px solid #40334b;border-radius:10px;padding:12px;font-size:11px;direction:ltr;text-align:left">ستظهر نتيجة القراءة هنا.</pre>
+        </details>
+      </section>
       <section class="deposit-card" id="baranAdminOrderPreflight" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>🛡️ فحص جاهزية الطلب — للإدارة</h2>
         <p class="small">أداة داخلية لفحص السعر والمورد والرصيد. لا تنشئ طلباً ولا تخصم رصيداً ولا ترسل أي عملية للمورد.</p>
@@ -5104,6 +5124,68 @@ function filterBaranCustomerDirectory(){
   });
 }
 
+
+async function baranSyriaMarketFetch(action){
+  const status=document.getElementById("syriaMarketCatalogStatus");
+  const summary=document.getElementById("syriaMarketCatalogSummary");
+  const raw=document.getElementById("syriaMarketCatalogRaw");
+  const rawWrap=document.getElementById("syriaMarketCatalogRawWrap");
+  const buttons=[...document.querySelectorAll("#syriaMarketCatalogPanel button")];
+  if(!status||!summary||!raw)return;
+  const labels={profile:"فحص اتصال الحساب",products:"جلب المنتجات",categories:"جلب التصنيفات",docs:"قراءة وثائق API",openapi:"قراءة OpenAPI"};
+  buttons.forEach(button=>button.disabled=true);
+  status.textContent="جارٍ "+(labels[action]||"قراءة بيانات المورد")+"... لن يتم إرسال أي طلب شراء.";
+  summary.replaceChildren();
+  raw.textContent="بانتظار استجابة Syria Market...";
+  if(rawWrap)rawWrap.open=true;
+  try{
+    if(!window.sb?.auth)throw new Error("جلسة Baran غير جاهزة. حدّث الصفحة وسجّل الدخول مجدداً.");
+    const {data:{session},error:sessionError}=await sb.auth.getSession();
+    if(sessionError||!session?.access_token)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
+    const response=await fetch(SUPABASE_URL+"/functions/v1/baran-syrimarket-catalog",{
+      method:"POST",
+      headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({action})
+    });
+    const result=await response.json().catch(()=>({error:"استجابة غير مفهومة من الخادم."}));
+    if(!response.ok||result.success!==true){
+      const detail=result.upstream_status?" (رمز المورد: "+result.upstream_status+")":"";
+      throw new Error((result.error||"فشل الاتصال.")+detail);
+    }
+    const data=result.data;
+    const card=(label,value)=>{
+      const el=document.createElement("div");
+      el.style.cssText="padding:10px;border:1px solid #514064;border-radius:10px;background:#100b16;overflow-wrap:anywhere";
+      const title=document.createElement("strong");title.textContent=label+" — ";
+      const valueEl=document.createElement("span");valueEl.textContent=String(value);
+      el.append(title,valueEl);summary.append(el);
+    };
+    card("المورد",result.provider||"Syria Market");
+    card("نوع القراءة",labels[action]||action);
+    card("وقت الفحص",new Date(result.fetched_at||Date.now()).toLocaleString("ar"));
+    if(action==="products"){
+      const list=Array.isArray(data)?data:(data?.data&&Array.isArray(data.data)?data.data:(data?.products&&Array.isArray(data.products)?data.products:null));
+      if(list)card("عدد العناصر المستلمة",list.length);
+    }
+    if(action==="categories"){
+      const list=Array.isArray(data)?data:(data?.data&&Array.isArray(data.data)?data.data:null);
+      if(list)card("عدد التصنيفات المستلمة",list.length);
+    }
+    if(action==="profile"&&data&&typeof data==="object"){
+      const profile=data.data&&typeof data.data==="object"?data.data:data;
+      for(const key of ["name","username","email","balance","currency","status"]){
+        if(profile[key]!==undefined&&profile[key]!==null)card(({name:"اسم الحساب",username:"اسم المستخدم",email:"البريد",balance:"الرصيد",currency:"العملة",status:"الحالة"})[key],profile[key]);
+      }
+    }
+    raw.textContent=JSON.stringify(data,null,2).slice(0,30000)+(JSON.stringify(data,null,2).length>30000?"\n… تم اختصار العرض إلى 30 ألف حرف.":"");
+    status.textContent="✓ نجحت القراءة من Syria Market — "+(labels[action]||action)+". لم يتم تنفيذ أي عملية مالية.";
+  }catch(error){
+    status.textContent="تعذر إكمال القراءة: "+(error?.message||"خطأ غير معروف");
+    raw.textContent="لم تكتمل القراءة. راجع رسالة الخطأ أعلاه. لا تشارك مفتاح API في المحادثة.";
+  }finally{
+    buttons.forEach(button=>button.disabled=false);
+  }
+}
 
 let baranSupplierAiBusy=false;
 async function baranSupplierAiAsk(mode){
