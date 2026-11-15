@@ -128,7 +128,7 @@ function renderOperationsDashboard(data){
       ["المستخدمون",stats.users||0],
       ["إجمالي الطلبات",stats.orders||0],
       ["المنتجات",stats.products||0],
-      ["عمليات التنفيذ اليدوي",stats.orders||0]
+      ["طلبات قيد التنفيذ",stats.order_statuses?.processing||0]
     ];
     cards.forEach(([label,value])=>{
       const card=opsNode("div","ops-card");
