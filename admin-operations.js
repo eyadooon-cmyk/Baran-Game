@@ -128,7 +128,7 @@ function renderOperationsDashboard(data){
       ["المستخدمون",stats.users||0],
       ["إجمالي الطلبات",stats.orders||0],
       ["المنتجات",stats.products||0],
-      ["الموردون",stats.suppliers||0]
+      ["عمليات التنفيذ اليدوي",stats.orders||0]
     ];
     cards.forEach(([label,value])=>{
       const card=opsNode("div","ops-card");
@@ -136,7 +136,7 @@ function renderOperationsDashboard(data){
       statBox.appendChild(card);
     });
     Object.entries(stats.order_statuses||{}).forEach(([status,count])=>{
-      const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار المورد",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
+      const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار التنفيذ",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
       const card=opsNode("div","ops-card");
       card.append(opsNode("div","ops-muted",labels[status]||status),opsNode("div","ops-value",String(count)));
       statBox.appendChild(card);
@@ -164,7 +164,7 @@ function renderOpsCustomers(customers){
 function renderOpsOrders(orders){
   const box=document.getElementById("opsOrders");if(!box)return;box.replaceChildren();
   if(!orders.length){box.textContent="لا توجد طلبات مسجلة حالياً.";return;}
-  const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار المورد",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
+  const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار التنفيذ",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
   orders.forEach(order=>{
     const card=opsNode("div","ops-item");
     card.dataset.notificationEntityId=order.id;
@@ -176,10 +176,11 @@ function renderOpsOrders(orders){
     card.append(opsNode("div","","السعر: "+(order.total_price_usd!==null?opsMoney(order.total_price_usd,"USD"):"—")+" | "+(order.total_price_syp!==null?opsMoney(order.total_price_syp,"SYP"):"—")));
     const fulfillment=order.fulfillment;
     if(fulfillment){
-      card.append(opsNode("div","ops-muted","المورد: "+opsText((latestBaranOperations.suppliers||[]).find(s=>s.id===fulfillment.supplier_id)?.name)+" | حالة المورد: "+opsText(fulfillment.supplier_status)));
+      const statusLabels={not_sent:"لم يبدأ التنفيذ",sent:"تم بدء التنفيذ",accepted:"تم استلام الطلب",processing:"قيد التنفيذ",completed:"تم الشحن",failed:"تعذر التنفيذ"};
+      card.append(opsNode("div","ops-muted","حالة التنفيذ اليدوي: "+(statusLabels[fulfillment.supplier_status]||opsText(fulfillment.supplier_status))));
       if(fulfillment.supplier_total_cost!==null&&fulfillment.supplier_total_cost!==undefined){
         const costCurrency=fulfillment.supplier_cost_currency||"USD";
-        card.append(opsNode("div","ops-muted","تكلفة المورد الفعلية: "+opsMoney(fulfillment.supplier_total_cost,costCurrency)));
+        card.append(opsNode("div","ops-muted","تكلفة الشراء الفعلية: "+opsMoney(fulfillment.supplier_total_cost,costCurrency)));
         const costUsd=costCurrency==="USD"?Number(fulfillment.supplier_total_cost):Number(fulfillment.supplier_total_cost)/Number(fulfillment.supplier_cost_exchange_rate||0);
         if(Number.isFinite(costUsd)&&Number(fulfillment.supplier_cost_exchange_rate)>0&&order.total_price_usd!==null){
           card.append(opsNode("div","ops-muted","الربح الإجمالي التقديري: "+opsMoney(Number(order.total_price_usd)-costUsd,"USD")+" (قبل المصاريف الأخرى)"));
@@ -199,48 +200,43 @@ function renderOpsOrders(orders){
     save.type="button";save.onclick=()=>opsUpdateOrder(order.id);
     row.append(select,save);
     card.append(row,note);
-    const supplierPanel=opsNode("div","ops-form");
-    supplierPanel.append(opsNode("strong","","متابعة تنفيذ المورد (داخلية)"));
-    const supplierSelect=document.createElement("select");
-    supplierSelect.id="opsFulfillmentSupplier_"+order.id;
-    opsOption(supplierSelect,"","لم يتم تعيين مورد");
-    (latestBaranOperations.suppliers||[]).forEach(s=>opsOption(supplierSelect,s.id,s.name));
-    supplierSelect.value=fulfillment?.supplier_id||"";
-    const supplierReference=document.createElement("input");
-    supplierReference.id="opsFulfillmentRef_"+order.id;
-    supplierReference.maxLength=160;supplierReference.placeholder="رقم الطلب لدى المورد";
-    supplierReference.value=fulfillment?.supplier_reference||"";
-    const supplierStatus=document.createElement("select");
-    supplierStatus.id="opsFulfillmentStatus_"+order.id;
-    [["not_sent","لم يُرسل"],["sent","تم الإرسال"],["accepted","قبله المورد"],["processing","قيد التنفيذ"],["completed","اكتمل"],["failed","تعذر التنفيذ"]]
-      .forEach(([v,l])=>opsOption(supplierStatus,v,l));
-    supplierStatus.value=fulfillment?.supplier_status||"not_sent";
+    const manualPanel=opsNode("div","ops-form");
+    manualPanel.append(opsNode("strong","","تنفيذ الشحن اليدوي (داخلي)"));
+    const manualReference=document.createElement("input");
+    manualReference.id="opsFulfillmentRef_"+order.id;
+    manualReference.maxLength=160;manualReference.placeholder="رقم العملية أو مرجع الشراء (إن وجد)";
+    manualReference.value=fulfillment?.supplier_reference||"";
+    const manualStatus=document.createElement("select");
+    manualStatus.id="opsFulfillmentStatus_"+order.id;
+    [["not_sent","بانتظار التنفيذ"],["processing","قيد التنفيذ"],["completed","تم الشحن بنجاح"],["failed","تعذر التنفيذ"]]
+      .forEach(([v,l])=>opsOption(manualStatus,v,l));
+    manualStatus.value=fulfillment?.supplier_status||"not_sent";
+    const manualUnitCost=document.createElement("input");
+    manualUnitCost.id="opsFulfillmentCost_"+order.id;
+    manualUnitCost.type="number";manualUnitCost.min="0";manualUnitCost.step="0.0001";
+    manualUnitCost.placeholder="تكلفة الشراء الفعلية للوحدة";
+    manualUnitCost.value=fulfillment?.supplier_unit_cost??"";
+    const manualCostCurrency=document.createElement("select");
+    manualCostCurrency.id="opsFulfillmentCostCurrency_"+order.id;
+    opsOption(manualCostCurrency,"USD","تكلفة الشراء بالدولار");
+    opsOption(manualCostCurrency,"SYP","تكلفة الشراء بالليرة");
+    manualCostCurrency.value=fulfillment?.supplier_cost_currency||"USD";
     const internalNotes=document.createElement("textarea");
     internalNotes.id="opsFulfillmentNotes_"+order.id;
     internalNotes.maxLength=2000;internalNotes.rows=2;
-    internalNotes.placeholder="ملاحظات داخلية لا تظهر للزبون";
+    internalNotes.placeholder="ملاحظة داخلية. إذا لم يتوفر رقم مرجع، اذكر السبب هنا (10 أحرف على الأقل).";
     internalNotes.value=fulfillment?.internal_notes||"";
-    const supplierUnitCost=document.createElement("input");
-    supplierUnitCost.id="opsFulfillmentCost_"+order.id;
-    supplierUnitCost.type="number";supplierUnitCost.min="0";supplierUnitCost.step="0.0001";
-    supplierUnitCost.placeholder="تكلفة الوحدة الفعلية لدى المورد (اختياري)";
-    supplierUnitCost.value=fulfillment?.supplier_unit_cost??"";
-    const supplierCostCurrency=document.createElement("select");
-    supplierCostCurrency.id="opsFulfillmentCostCurrency_"+order.id;
-    opsOption(supplierCostCurrency,"USD","تكلفة المورد بالدولار");
-    opsOption(supplierCostCurrency,"SYP","تكلفة المورد بالليرة");
-    supplierCostCurrency.value=fulfillment?.supplier_cost_currency||"USD";
-    const fulfillmentSave=opsNode("button","","حفظ متابعة المورد");
+    const fulfillmentSave=opsNode("button","","حفظ بيانات التنفيذ اليدوي");
     fulfillmentSave.type="button";fulfillmentSave.onclick=()=>opsSaveFulfillment(order.id);
-    supplierPanel.append(supplierSelect,supplierReference,supplierStatus,supplierUnitCost,supplierCostCurrency,internalNotes,fulfillmentSave);
-    card.appendChild(supplierPanel);
+    manualPanel.append(manualReference,manualStatus,manualUnitCost,manualCostCurrency,internalNotes,fulfillmentSave);
+    card.appendChild(manualPanel);
     if(fulfillment?.supplier_status==="failed" && fulfillment?.refund_status!=="completed"){
-      const refundButton=opsNode("button","secondary","إعادة رصيد الزبون بعد تأكيد الفشل");
+      const refundButton=opsNode("button","secondary","إعادة رصيد الزبون بعد تأكيد فشل الشحن");
       refundButton.type="button";
       refundButton.onclick=async()=>{
-        const reason=prompt("اكتب سبب فشل المورد بعد التأكد من أن العملية لم تنفذ:");
+        const reason=prompt("اكتب سبب فشل الشحن بعد التأكد من أن العملية لم تنفذ:");
         if(!reason||reason.trim().length<3)return;
-        if(!confirm("سيتم إعادة مبلغ الطلب إلى محفظة الزبون مرة واحدة فقط. هل تأكدت من فشل العملية لدى المورد؟"))return;
+        if(!confirm("سيتم إعادة مبلغ الطلب إلى محفظة الزبون مرة واحدة فقط. هل تأكدت من فشل الشحن؟"))return;
         refundButton.disabled=true;
         try{
           const result=await callAdminApi("POST",{action:"supplier_order_refund",order_id:order.id,failure_reason:reason.trim()});
@@ -558,7 +554,7 @@ async function loadMyOrders(){
   const box=document.getElementById("customerOrdersList");
   if(!box||!currentUser)return;
   box.textContent="جاري تحميل طلباتك...";
-  const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار المورد",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
+  const labels={pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار التنفيذ",completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"};
   const statusTone={pending:"pending",processing:"active",awaiting_supplier:"active",completed:"done",rejected:"failed",cancelled:"failed"};
   try{
     const {data:orders,error}=await sb.from("orders")
@@ -716,24 +712,28 @@ async function loadMyRewards(){
 }
 
 async function opsSaveFulfillment(orderId){
-  const supplier=document.getElementById("opsFulfillmentSupplier_"+orderId).value||null;
   const reference=document.getElementById("opsFulfillmentRef_"+orderId).value.trim();
   const status=document.getElementById("opsFulfillmentStatus_"+orderId).value;
   const notes=document.getElementById("opsFulfillmentNotes_"+orderId).value.trim();
   const costInput=document.getElementById("opsFulfillmentCost_"+orderId).value;
   const cost=costInput===""?null:Number(costInput);
   const costCurrency=document.getElementById("opsFulfillmentCostCurrency_"+orderId).value;
+  const message=document.getElementById("adminMessage");
   if(cost!==null&&(!Number.isFinite(cost)||cost<0)){
-    document.getElementById("adminMessage").textContent="أدخل تكلفة مورد صحيحة أو اتركها فارغة.";
+    message.textContent="أدخل تكلفة شراء فعلية صحيحة أو اتركها فارغة أثناء التنفيذ.";
+    return;
+  }
+  if(status==="completed"&&(cost===null||(!reference&&notes.length<10))){
+    message.textContent="لا يمكن تأكيد الشحن قبل تسجيل تكلفة الشراء، ورقم العملية أو سبب واضح لعدم توفره.";
     return;
   }
   try{
     await callAdminApi("POST",{action:"order_fulfillment_update",order_id:orderId,
-      supplier_id:supplier,supplier_reference:reference,supplier_status:status,internal_notes:notes,
+      supplier_reference:reference,supplier_status:status,internal_notes:notes,
       supplier_unit_cost:cost,supplier_cost_currency:costCurrency});
-    document.getElementById("adminMessage").textContent="تم حفظ متابعة المورد (معلومات داخلية).";
+    message.textContent="تم حفظ بيانات التنفيذ اليدوي. أكمل حالة الطلب بعد التحقق من نجاح الشحن.";
     await loadAdminPanel();
-  }catch(error){document.getElementById("adminMessage").textContent="تعذر حفظ متابعة المورد: "+error.message;}
+  }catch(error){message.textContent="تعذر حفظ بيانات التنفيذ: "+error.message;}
 }
 
 function renderOpsAuditLog(rows){
