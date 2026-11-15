@@ -150,8 +150,8 @@ Supabase Security Advisor reports **Leaked Password Protection Disabled**. This 
 ## Catalogue repair — separate supplier catalogue and Leo project (2026-11-16)
 
 - Identified a frontend loader mismatch: `products.js` required a generic `gameProductCatalog` element that is absent from the current storefront HTML, so it returned before rendering the dedicated PUBG and Free Fire catalogue elements.
-- Updated the branch loader to render active `PUBG_*` and `FREEFIRE_ROBOT_*` products into their respective dedicated store pages and non-game products into the services catalogue.
+- Updated the branch loader to render active `PUBG_*` and `FREEFIRE_ROBOT_*` local catalogue records into their respective dedicated store pages and service categories into their own pages. The product-code prefixes are not treated as proof of provider ownership.
 - The Syria Market catalogue remains display-only: missing prices remain explicitly unset and no purchase or dispatch is enabled.
-- Jawaker and the future Leo manual catalogue are deliberately excluded from the Syria Market catalogue renderer. The separate Leo project structure is documented in `EXTERNAL_STORE_MANUAL_FULFILLMENT_SPEC.md`, including Jawaker sibling categories for tokens and boosters.
+- Jawaker and the future Leo manual catalogue are deliberately excluded from this existing local PUBG/Free Fire catalogue renderer. The Syria Market read-only API inspection panel remains separate. The separate Leo project structure is documented in `EXTERNAL_STORE_MANUAL_FULFILLMENT_SPEC.md`, including Jawaker sibling categories for tokens and boosters.
 - Historical inactive `FREEFIRE_*` products were not reactivated or modified. No live product prices, active flags, orders, wallets, supplier settings, API credentials, or execution flags were changed.
 - Branch-only change; not deployed to production.
