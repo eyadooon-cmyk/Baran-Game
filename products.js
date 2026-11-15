@@ -123,9 +123,11 @@ async function toggleProduct(product){
 
 async function loadCatalog(){
   if(!currentUser)return;
-  const gameBox=document.getElementById("gameProductCatalog");
+  const pubgBox=document.getElementById("pubgProductCatalog");
+  const freeFireBox=document.getElementById("freeFireProductCatalog");
   const serviceBox=document.getElementById("serviceProductCatalog");
-  if(!gameBox||!serviceBox)return;
+  if(!pubgBox||!freeFireBox||!serviceBox)return;
+  const boxes=[pubgBox,freeFireBox,serviceBox];
   try{
     const [{data:settings,error:settingsError},{data,error}]=await Promise.all([
       sb.from("store_settings").select("exchange_rate").eq("id","main").single(),
@@ -139,44 +141,61 @@ async function loadCatalog(){
     if(error)throw error;
     applyExchangeRate(settings.exchange_rate);
     const products=data||[];
-    const renderGroup=(box,title,items)=>{
+    const renderCatalog=(box,title,items)=>{
       box.replaceChildren();
-      box.classList.toggle("hidden",items.length===0);
-      if(!items.length)return;
-      const heading=document.createElement("h3");heading.textContent=title;box.appendChild(heading);
+      box.classList.remove("hidden");
+      const heading=document.createElement("h3");
+      heading.textContent=title;
+      box.appendChild(heading);
+      if(!items.length){
+        const empty=document.createElement("p");
+        empty.className="small";
+        empty.textContent="لا توجد منتجات معتمدة للعرض حالياً.";
+        box.appendChild(empty);
+        return;
+      }
       items.forEach(product=>{
-        const card=document.createElement("div");card.className="product-card";
-        const productTitle=document.createElement("strong");productTitle.textContent=product.name;
-        const description=document.createElement("p");description.textContent=product.description||"";
-        const prices=document.createElement("div");prices.className="product-prices";prices.textContent=productPriceText(product);
-        const note=document.createElement("div");note.className="small";note.textContent=product.price_usd==null||Number(product.price_usd)<=0?"قيد التجهيز — السعر غير محدد، والطلب غير متاح حالياً.":"الطلب والشحن غير مفعّلين بعد.";
-        card.append(productTitle,description,prices,note);box.appendChild(card);
+        const card=document.createElement("div");
+        card.className="product-card";
+        const productTitle=document.createElement("strong");
+        productTitle.textContent=product.name;
+        const description=document.createElement("p");
+        description.textContent=product.description||"";
+        const prices=document.createElement("div");
+        prices.className="product-prices";
+        prices.textContent=productPriceText(product);
+        const note=document.createElement("div");
+        note.className="small";
+        note.textContent=product.price_usd==null||Number(product.price_usd)<=0
+          ?"الكتالوج محفوظ — السعر غير محدد حالياً، والشراء غير متاح."
+          :"السعر معروض للمراجعة فقط — الشراء والشحن غير مفعّلين بعد.";
+        card.append(productTitle,description,prices,note);
+        box.appendChild(card);
       });
     };
-    const games=products.filter(p=>p.category==="game");
-    const gameGroups=[
-      {title:"PUBG Mobile",items:games.filter(p=>p.product_code.startsWith("PUBG_"))},
-      {title:"Free Fire",items:games.filter(p=>p.product_code.startsWith("FREEFIRE_ROBOT_"))},
-      {title:"Jawaker",items:games.filter(p=>p.product_code.startsWith("JAWAKER_"))},
-      {title:"ألعاب أخرى",items:games.filter(p=>!p.product_code.startsWith("PUBG_")&&!p.product_code.startsWith("FREEFIRE_ROBOT_")&&!p.product_code.startsWith("JAWAKER_"))}
-    ];
-    gameBox.replaceChildren();
-    gameBox.classList.toggle("hidden",games.length===0);
-    gameGroups.forEach(group=>{
-      if(!group.items.length)return;
-      const heading=document.createElement("h3");heading.textContent=group.title;gameBox.appendChild(heading);
-      group.items.forEach(product=>{
-        const card=document.createElement("div");card.className="product-card";
-        const productTitle=document.createElement("strong");productTitle.textContent=product.name;
-        const description=document.createElement("p");description.textContent=product.description||"";
-        const prices=document.createElement("div");prices.className="product-prices";prices.textContent=productPriceText(product);
-        const note=document.createElement("div");note.className="small";note.textContent=product.price_usd==null||Number(product.price_usd)<=0?"قيد التجهيز — السعر غير محدد، والطلب غير متاح حالياً.":"الطلب والشحن غير مفعّلين بعد.";
-        card.append(productTitle,description,prices,note);gameBox.appendChild(card);
-      });
-    });
-    renderGroup(serviceBox,"المنتجات والخدمات المتاحة",products.filter(p=>p.category!=="game"));
+    // Supplier/API catalogue: keep its PUBG and Free Fire lists separate.
+    // Jawaker and the future Leo manual catalogue are intentionally not rendered here.
+    renderCatalog(
+      pubgBox,
+      "كتالوج PUBG MOBILE — سوريا ماركت",
+      products.filter(p=>p.category==="game"&&p.product_code.startsWith("PUBG_"))
+    );
+    renderCatalog(
+      freeFireBox,
+      "كتالوج Free Fire — سوريا ماركت",
+      products.filter(p=>p.category==="game"&&p.product_code.startsWith("FREEFIRE_ROBOT_"))
+    );
+    renderCatalog(
+      serviceBox,
+      "المنتجات والخدمات المتاحة",
+      products.filter(p=>p.category!=="game")
+    );
   }catch(error){
-    [gameBox,serviceBox].forEach(box=>{box.classList.remove("hidden");box.textContent="تعذر تحميل المنتجات حالياً.";});
+    boxes.forEach(box=>{
+      box.classList.remove("hidden");
+      box.textContent="تعذر تحميل الكتالوج حالياً. حاول تحديث الصفحة لاحقاً.";
+    });
+    console.error("Baran product catalog load failed",error);
   }
 }
 
