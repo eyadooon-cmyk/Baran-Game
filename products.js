@@ -156,7 +156,7 @@ async function loadCatalog(){
     const games=products.filter(p=>p.category==="game");
     const gameGroups=[
       {title:"PUBG Mobile",items:games.filter(p=>p.product_code.startsWith("PUBG_"))},
-      {title:"Free Fire Robot",items:games.filter(p=>p.product_code.startsWith("FREEFIRE_ROBOT_"))},
+      {title:"Free Fire",items:games.filter(p=>p.product_code.startsWith("FREEFIRE_ROBOT_"))},
       {title:"Jawaker",items:games.filter(p=>p.product_code.startsWith("JAWAKER_"))},
       {title:"ألعاب أخرى",items:games.filter(p=>!p.product_code.startsWith("PUBG_")&&!p.product_code.startsWith("FREEFIRE_ROBOT_")&&!p.product_code.startsWith("JAWAKER_"))}
     ];
