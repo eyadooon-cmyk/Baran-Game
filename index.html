@@ -6186,7 +6186,7 @@ async function baranRunFreeFireRegionTest(){
   const button=document.getElementById("baranFreeFireTestButton");
   const result=document.getElementById("baranFreeFireTestResult");
   const id=(input?.value||"").trim();
-  if(!/^\\d{5,20}$/.test(id)){
+  if(!/^\d{5,20}$/.test(id)){
     result.textContent="أدخل Player ID صحيحاً من 5 إلى 20 رقماً.";
     return;
   }
