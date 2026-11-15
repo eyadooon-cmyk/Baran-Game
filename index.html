@@ -2854,7 +2854,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       <div class="customer-order-tools">
         <label class="customer-order-search"><span>ابحث ضمن طلباتك</span><input id="customerOrderSearch" type="search" placeholder="رقم الطلب أو اسم المنتج أو معرّف اللاعب" oninput="filterMyOrders()" autocomplete="off"></label>
         <label class="customer-order-filter"><span>تصفية الحالة</span><select id="customerOrderStatusFilter" onchange="filterMyOrders()">
-          <option value="all">كل الحالات</option><option value="pending">قيد المراجعة</option><option value="processing">قيد التنفيذ</option><option value="awaiting_supplier">بانتظار المورد</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option>
+          <option value="all">كل الحالات</option><option value="pending">قيد المراجعة</option><option value="processing">قيد التنفيذ</option><option value="awaiting_supplier">بانتظار التنفيذ</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option>
         </select></label>
         <button class="secondary customer-order-refresh" type="button" onclick="loadMyOrders()">↻ تحديث</button>
       </div>
@@ -3469,7 +3469,7 @@ function goBackSection(){
 let baranCustomerOrdersCache=[];
 let baranCustomerOrderEvents={};
 const BARAN_ORDER_STATUS_LABELS={
-  pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار المورد",
+  pending:"قيد المراجعة",processing:"قيد التنفيذ",awaiting_supplier:"بانتظار التنفيذ",
   completed:"مكتمل",rejected:"مرفوض",cancelled:"ملغي"
 };
 function baranOrderEscape(value){
