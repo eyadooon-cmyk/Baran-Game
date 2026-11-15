@@ -8,7 +8,7 @@ Fulfilment mode: the owner purchases top-ups manually from a separate external s
 
 BARAN's games catalogue is limited to these three games only:
 - PUBG Mobile
-- Free Fire Robot
+- Free Fire
 - Jawaker
 
 Do not add unrelated games, VPN products, coupons, or other categories from the external store.
@@ -49,7 +49,7 @@ The external-store order screen requests a PUBG ID and shows an ID verification 
 | Prime Plus (6 أشهر) | $53.44 |
 | Prime Plus (12 شهر) | $107.10 |
 
-### Free Fire Robot
+### Free Fire
 
 **Diamonds**
 | Package | Displayed external-store price (USD) |
@@ -133,7 +133,7 @@ Suggested statuses: pending, in_progress, awaiting_admin_confirmation, completed
 
 ## 7. Current implementation state (2026-11-15)
 
-- Supabase contains 32 active game products matching the reviewed catalogue: 20 PUBG Mobile, 6 Free Fire Robot, and 6 Jawaker.
+- Supabase contains 32 active game products matching the reviewed catalogue: 20 PUBG Mobile, 6 Free Fire, and 6 Jawaker.
 - All 32 game products currently have no approved BARAN selling price. They are catalogue entries only; this is not authorization to charge customers.
 - Older Free Fire package rows that did not match the screenshots have been deactivated. Unrelated service categories were left unchanged.
 - The customer catalogue grouping and admin manual-fulfilment interface changes exist on this feature branch only and have not been deployed to the live GitHub Pages site.
