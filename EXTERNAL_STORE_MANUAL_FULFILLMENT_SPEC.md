@@ -184,3 +184,26 @@ This document records the reviewed catalogue and implementation state. It does n
 7. Keep purchase creation and wallet debit closed until manual and API paths each pass their own end-to-end tests, including refunds and finance posting.
 
 No live schema, supplier record, API credential, execution flag, order, wallet, or payment state was changed during this audit. All branch code changes remain undeployed.
+
+
+## 10. Strict separation: Syria Market catalogue vs. Leo manual project (2026-11-16)
+
+These are two independent product and fulfilment projects inside BARAN GAME. Do not combine their catalogues, prices, order queues, fulfilment actions, or provider settings.
+
+### Project A — Syria Market supplier/API catalogue
+- Existing PUBG MOBILE and Free Fire supplier catalogue remains the Syria Market/API track.
+- The customer catalogue reads active products from `public.products` and renders PUBG and Free Fire into their dedicated store pages.
+- The Free Fire product-code family used by this supplier catalogue is `FREEFIRE_ROBOT_*`; the historical `FREEFIRE_*` rows are not silently reactivated.
+- Product prices remain unset until separately verified and approved. Missing prices must display as “السعر غير محدد”; they must not be fabricated.
+- No purchase, wallet debit, API execution, supplier activation, or production deployment is enabled by this catalogue-display repair.
+
+### Project B — Leo manual fulfilment catalogue (separate build)
+- Leo is a mobile app used by the owner to perform the top-up manually; it has no API connection in this design.
+- Its catalogue, products, cost/sale-price model, order queue, manual completion records, and admin UI must be kept separate from Syria Market.
+- Initial product structure:
+  - PUBG MOBILE: 6 UC packages and 14 Growth bundles.
+  - Free Fire: diamond packages and memberships; exact package list must be taken from the user's Leo screenshots/archive, not guessed from old database rows.
+  - Jawaker: one parent category with two sibling subcategories: “جواكر توكنز” (Server 1 and Server 2) and “مسرّعات جواكر” (red, blue, black, gold).
+- Jawaker boosters are not nested under tokens. They are a separate sibling category next to tokens within Jawaker.
+- Do not expose Leo/manual products in the Syria Market supplier/API catalogue, and do not move or rename Syria Market product records to create the Leo catalogue.
+- The Leo project is not implemented by this catalogue repair; it is the next separate build phase after verification of this fix.
