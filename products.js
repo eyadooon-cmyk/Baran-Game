@@ -123,11 +123,16 @@ async function toggleProduct(product){
 
 async function loadCatalog(){
   if(!currentUser)return;
-  const pubgBox=document.getElementById("pubgProductCatalog");
-  const freeFireBox=document.getElementById("freeFireProductCatalog");
-  const serviceBox=document.getElementById("serviceProductCatalog");
-  if(!pubgBox||!freeFireBox||!serviceBox)return;
-  const boxes=[pubgBox,freeFireBox,serviceBox];
+  const catalogTargets=[
+    {id:"pubgProductCatalog",title:"كتالوج PUBG MOBILE — سوريا ماركت",match:p=>p.category==="game"&&p.product_code.startsWith("PUBG_")},
+    {id:"freeFireProductCatalog",title:"كتالوج Free Fire — سوريا ماركت",match:p=>p.category==="game"&&p.product_code.startsWith("FREEFIRE_ROBOT_")},
+    {id:"chatgptProductCatalog",title:"باقات ChatGPT",match:p=>p.category==="ai"},
+    {id:"vpnProductCatalog",title:"باقات VPN",match:p=>p.category==="vpn"},
+    {id:"giftCardProductCatalog",title:"البطاقات الرقمية",match:p=>p.category==="gift_card"},
+    {id:"appsProductCatalog",title:"التطبيقات المتاحة",match:p=>p.category==="app"}
+  ];
+  const targets=catalogTargets.map(target=>({...target,box:document.getElementById(target.id)})).filter(target=>target.box);
+  if(!targets.length)return;
   try{
     const [{data:settings,error:settingsError},{data,error}]=await Promise.all([
       sb.from("store_settings").select("exchange_rate").eq("id","main").single(),
@@ -141,11 +146,13 @@ async function loadCatalog(){
     if(error)throw error;
     applyExchangeRate(settings.exchange_rate);
     const products=data||[];
-    const renderCatalog=(box,title,items)=>{
+    targets.forEach(target=>{
+      const items=products.filter(target.match);
+      const box=target.box;
       box.replaceChildren();
       box.classList.remove("hidden");
       const heading=document.createElement("h3");
-      heading.textContent=title;
+      heading.textContent=target.title;
       box.appendChild(heading);
       if(!items.length){
         const empty=document.createElement("p");
@@ -172,26 +179,9 @@ async function loadCatalog(){
         card.append(productTitle,description,prices,note);
         box.appendChild(card);
       });
-    };
-    // Supplier/API catalogue: keep its PUBG and Free Fire lists separate.
-    // Jawaker and the future Leo manual catalogue are intentionally not rendered here.
-    renderCatalog(
-      pubgBox,
-      "كتالوج PUBG MOBILE — سوريا ماركت",
-      products.filter(p=>p.category==="game"&&p.product_code.startsWith("PUBG_"))
-    );
-    renderCatalog(
-      freeFireBox,
-      "كتالوج Free Fire — سوريا ماركت",
-      products.filter(p=>p.category==="game"&&p.product_code.startsWith("FREEFIRE_ROBOT_"))
-    );
-    renderCatalog(
-      serviceBox,
-      "المنتجات والخدمات المتاحة",
-      products.filter(p=>p.category!=="game")
-    );
+    });
   }catch(error){
-    boxes.forEach(box=>{
+    targets.forEach(({box})=>{
       box.classList.remove("hidden");
       box.textContent="تعذر تحميل الكتالوج حالياً. حاول تحديث الصفحة لاحقاً.";
     });
