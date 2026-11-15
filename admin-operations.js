@@ -231,20 +231,7 @@ function renderOpsOrders(orders){
     manualPanel.append(manualReference,manualStatus,manualUnitCost,manualCostCurrency,internalNotes,fulfillmentSave);
     card.appendChild(manualPanel);
     if(fulfillment?.supplier_status==="failed" && fulfillment?.refund_status!=="completed"){
-      const refundButton=opsNode("button","secondary","إعادة رصيد الزبون بعد تأكيد فشل الشحن");
-      refundButton.type="button";
-      refundButton.onclick=async()=>{
-        const reason=prompt("اكتب سبب فشل الشحن بعد التأكد من أن العملية لم تنفذ:");
-        if(!reason||reason.trim().length<3)return;
-        if(!confirm("سيتم إعادة مبلغ الطلب إلى محفظة الزبون مرة واحدة فقط. هل تأكدت من فشل الشحن؟"))return;
-        refundButton.disabled=true;
-        try{
-          const result=await callAdminApi("POST",{action:"supplier_order_refund",order_id:order.id,failure_reason:reason.trim()});
-          alert(result.refund?.already_refunded?"تم اكتشاف أن المبلغ مسترد سابقاً، ولم تتم إضافة رصيد جديد.":"تمت إعادة المبلغ إلى محفظة الزبون مرة واحدة.");
-          await loadAdminPanel();
-        }catch(error){alert("تعذر الاسترداد: "+error.message);refundButton.disabled=false;}
-      };
-      card.appendChild(refundButton);
+      card.append(opsNode("div","ops-muted","حالة الطلب فاشلة. إعادة الرصيد غير متاحة من هذه الشاشة إلى أن يكتمل اختبار الاسترداد اليدوي الآمن."));
     }
     if(fulfillment?.refund_status==="completed")card.appendChild(opsNode("div","ops-pill","تمت إعادة المبلغ للزبون"));
     box.appendChild(card);
