@@ -2503,6 +2503,14 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <summary style="cursor:pointer;color:#d7c4e8;font-weight:800;padding:8px 0">عرض البيانات المستلمة</summary>
           <pre id="syriaMarketCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#09080d;border:1px solid #40334b;border-radius:10px;padding:12px;font-size:11px;direction:ltr;text-align:left">ستظهر نتيجة القراءة هنا.</pre>
         </details>
+      <section class="deposit-card" id="baranFreeFireRegionTest" style="border:1px solid #80619a;background:linear-gradient(145deg,rgba(65,38,91,.32),rgba(16,13,24,.98));">
+        <h2>🧭 فحص منطقة حساب Free Fire</h2>
+        <p class="small">فحص آيدي اللاعب عبر Volsever MENA Checker. يعرض اسم اللاعب والمنطقة التي ترجعها الخدمة. هذا الفحص لا يشحن ولا ينشئ طلباً ولا يثبت وحده توافق باقة المورد.</p>
+        <label for="baranFreeFireTestId">Player ID لحساب تجريبي</label>
+        <input id="baranFreeFireTestId" type="text" inputmode="numeric" maxlength="20" autocomplete="off" placeholder="أدخل آيدي Free Fire" dir="ltr">
+        <button class="full secondary" type="button" id="baranFreeFireTestButton" onclick="baranRunFreeFireRegionTest()">🔎 فحص اسم اللاعب والمنطقة</button>
+        <div id="baranFreeFireTestResult" class="small" role="status" aria-live="polite" style="margin-top:10px;padding:12px;border:1px solid #514064;border-radius:10px;background:#100b16">أدخل آيدي حساب تجريبي ثم اضغط فحص.</div>
+      </section>
       </section>
       <section class="deposit-card" id="baranAdminOrderPreflight" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>🛡️ فحص جاهزية الطلب — للإدارة</h2>
@@ -6170,6 +6178,52 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
 @media(max-width:360px){.baran-package-button{min-height:178px;padding:10px}.baran-package-button strong{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.baran-package-button{transition:none}}
 </style>
+
+
+<script id="baran-freefire-region-test">
+async function baranRunFreeFireRegionTest(){
+  const input=document.getElementById("baranFreeFireTestId");
+  const button=document.getElementById("baranFreeFireTestButton");
+  const result=document.getElementById("baranFreeFireTestResult");
+  const id=(input?.value||"").trim();
+  if(!/^\\d{5,20}$/.test(id)){
+    result.textContent="أدخل Player ID صحيحاً من 5 إلى 20 رقماً.";
+    return;
+  }
+  if(!currentUser){
+    result.textContent="سجّل الدخول بحساب الإدارة أولاً.";
+    return;
+  }
+  button.disabled=true;
+  result.textContent="جاري فحص الحساب عبر Volsever MENA Checker...";
+  try{
+    const {data,error}=await sb.functions.invoke("baran-freefire-check",{body:{id}});
+    if(error)throw new Error(error.message||"تعذر الاتصال بخدمة الفحص.");
+    if(!data?.ok){
+      result.textContent=data?.message||(
+        data?.error==="PLAYER_NOT_FOUND"?"لم يتم العثور على اللاعب. تأكد من الآيدي.":"تعذر إكمال الفحص: "+(data?.error||"خطأ غير معروف")
+      );
+      return;
+    }
+    const player=data.player||{};
+    const region=String(player.region||"غير محددة");
+    result.replaceChildren();
+    const title=document.createElement("strong");
+    title.textContent="✓ تم العثور على اللاعب: "+String(player.username||"—");
+    const idLine=document.createElement("div");idLine.textContent="Player ID: "+String(player.id||id);
+    const regionLine=document.createElement("div");regionLine.textContent="المنطقة حسب Volsever: "+region;
+    const note=document.createElement("p");note.className="small";
+    note.textContent=/^mena$/i.test(region)
+      ?"الحساب مصنّف MENA حسب نتيجة الفحص. بقي اختبار توافق باقة Syria Market نفسها قبل اعتماد الشحن."
+      :"ظهور اسم اللاعب لا يعني أن الحساب MENA. نعتمد رمز المنطقة كما أعادته الخدمة، ولا نفعّل باقة المورد بناءً على هذا الفحص وحده.";
+    result.append(title,idLine,regionLine,note);
+  }catch(error){
+    result.textContent="تعذر الفحص: "+(error?.message||"حاول مرة أخرى.");
+  }finally{
+    button.disabled=false;
+  }
+}
+</script>
 
 </body>
 </html>
