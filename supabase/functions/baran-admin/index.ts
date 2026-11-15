@@ -869,27 +869,30 @@ Deno.serve(async (req: Request) => {
       }
 
       if (body.action === "order_fulfillment_update") {
-        const allowedSupplierStatuses = ["not_sent","sent","accepted","processing","completed","failed"];
+        const allowedStatuses = ["not_sent","processing","completed","failed"];
+        const reference = (body.supplier_reference ?? "").toString().trim();
+        const notes = (body.internal_notes ?? "").toString().trim();
         if (typeof body.order_id !== "string" ||
             !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.order_id) ||
-            (body.supplier_id !== null && body.supplier_id !== undefined &&
-              (typeof body.supplier_id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.supplier_id))) ||
-            !allowedSupplierStatuses.includes(body.supplier_status ?? "") ||
-            (body.supplier_reference ?? "").toString().length > 160 ||
-            (body.internal_notes ?? "").toString().length > 2000 ||
+            !allowedStatuses.includes(body.supplier_status ?? "") ||
+            reference.length > 160 || notes.length > 2000 ||
             (body.supplier_unit_cost !== null && body.supplier_unit_cost !== undefined &&
               (typeof body.supplier_unit_cost !== "number" || !Number.isFinite(body.supplier_unit_cost) || body.supplier_unit_cost < 0)) ||
             (body.supplier_unit_cost !== null && body.supplier_unit_cost !== undefined &&
               !["USD","SYP"].includes(body.supplier_cost_currency ?? ""))) {
-          return json({ error:"بيانات متابعة المورد غير صحيحة." },400);
+          return json({ error:"بيانات التنفيذ اليدوي غير صحيحة." },400);
         }
         const { data: orderRow, error: orderLookupError } = await admin.from("orders")
           .select("id,quantity,exchange_rate").eq("id",body.order_id).maybeSingle();
         if (orderLookupError || !orderRow) return json({error:"الطلب غير موجود أو تعذر قراءته."},404);
-        let costRate: number | null = null;
-        let totalCost: number | null = null;
         const unitCost = body.supplier_unit_cost === null || body.supplier_unit_cost === undefined
           ? null : body.supplier_unit_cost;
+        if (body.supplier_status === "completed" &&
+            (unitCost === null || (!reference && notes.length < 10))) {
+          return json({error:"تأكيد الشحن يتطلب تكلفة شراء فعلية ورقم عملية، أو سبباً واضحاً لعدم توفر الرقم."},400);
+        }
+        let costRate: number | null = null;
+        let totalCost: number | null = null;
         const costCurrency = unitCost === null ? null : body.supplier_cost_currency!;
         if (unitCost !== null) {
           costRate = Number(orderRow.exchange_rate || 0);
@@ -897,29 +900,30 @@ Deno.serve(async (req: Request) => {
             const { data: rateRow, error: rateLookupError } = await admin.from("store_settings")
               .select("exchange_rate").eq("id","main").single();
             if (rateLookupError || !rateRow || Number(rateRow.exchange_rate) <= 0)
-              return json({error:"تعذر تحديد سعر الصرف لحفظ تكلفة المورد."},500);
+              return json({error:"تعذر تحديد سعر الصرف لحفظ تكلفة الشراء."},500);
             costRate = Number(rateRow.exchange_rate);
           }
           totalCost = Number((unitCost * Number(orderRow.quantity)).toFixed(4));
         }
         const result = await admin.from("order_fulfillment").upsert({
-          order_id:body.order_id,supplier_id:body.supplier_id ?? null,
-          supplier_reference:(body.supplier_reference ?? "").toString().trim() || null,
+          order_id:body.order_id,supplier_id:null,
+          supplier_reference:reference || null,
           supplier_status:body.supplier_status,
-          internal_notes:(body.internal_notes ?? "").toString().trim(),
+          internal_notes:notes,
           supplier_unit_cost:unitCost,supplier_total_cost:totalCost,
           supplier_cost_currency:costCurrency,supplier_cost_exchange_rate:costRate,
           dispatch_state:body.supplier_status==="failed"?"failed":body.supplier_status==="completed"?"succeeded":body.supplier_status==="not_sent"?"not_queued":"awaiting_result",
           refund_status:body.supplier_status==="failed"?"pending":"not_required",
-          failure_reason:body.supplier_status==="failed"?(body.internal_notes||"تم تأكيد فشل التنفيذ") : null,
+          failure_reason:body.supplier_status==="failed"?(notes||"تم تأكيد فشل الشحن") : null,
           updated_by:user.id,updated_at:new Date().toISOString()
-        },{onConflict:"order_id"}).select("order_id,supplier_id,supplier_reference,supplier_status,internal_notes,supplier_unit_cost,supplier_total_cost,supplier_cost_currency,supplier_cost_exchange_rate,updated_at").single();
-        if(result.error) return json({error:"تعذر حفظ متابعة المورد."},400);
-        await admin.from("admin_audit_log").insert({admin_id:user.id,action:"order_fulfillment_update",
-          entity_type:"order",entity_id:body.order_id,details:{supplier_id:body.supplier_id ?? null,
-          supplier_status:body.supplier_status,supplier_unit_cost:unitCost,
+        },{onConflict:"order_id"}).select("order_id,supplier_reference,supplier_status,internal_notes,supplier_unit_cost,supplier_total_cost,supplier_cost_currency,supplier_cost_exchange_rate,updated_at").single();
+        if(result.error) return json({error:"تعذر حفظ بيانات التنفيذ اليدوي."},400);
+        const { error:auditError } = await admin.from("admin_audit_log").insert({admin_id:user.id,action:"manual_order_fulfillment_update",
+          entity_type:"order",entity_id:body.order_id,details:{supplier_status:body.supplier_status,
+          supplier_reference:reference || null, supplier_unit_cost:unitCost,
           supplier_total_cost:totalCost,supplier_cost_currency:costCurrency,
-          supplier_cost_exchange_rate:costRate}});
+          supplier_cost_exchange_rate:costRate, reference_exception_reason:!reference?notes:null}});
+        if(auditError) return json({error:"تم حفظ التنفيذ لكن تعذر تسجيل سجل التدقيق. أوقف أي إجراء إضافي وراجع السجل."},500);
         return json({fulfillment:result.data, refund_available:body.supplier_status==="failed"});
       }
 
