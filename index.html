@@ -5139,7 +5139,7 @@ async function baranSyriaMarketFetch(action){
   raw.textContent="بانتظار استجابة Syria Market...";
   if(rawWrap)rawWrap.open=true;
   try{
-    if(!window.sb?.auth)throw new Error("جلسة Baran غير جاهزة. حدّث الصفحة وسجّل الدخول مجدداً.");
+    if(typeof sb==="undefined"||!sb?.auth)throw new Error("جلسة Baran غير جاهزة. حدّث الصفحة وسجّل الدخول مجدداً.");
     const {data:{session},error:sessionError}=await sb.auth.getSession();
     if(sessionError||!session?.access_token)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
     const response=await fetch(SUPABASE_URL+"/functions/v1/baran-syrimarket-catalog",{
