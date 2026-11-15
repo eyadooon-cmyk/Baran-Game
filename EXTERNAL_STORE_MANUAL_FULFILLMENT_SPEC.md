@@ -205,4 +205,6 @@ These are two independent product and fulfilment projects inside BARAN GAME. Do 
   - Jawaker: one parent category with two sibling subcategories: “جواكر توكنز” (Server 1 and Server 2; each screenshot shows a 10,000-token minimum) and “مسرّعات جواكر” (red, blue, black, gold).
 - Jawaker boosters are not nested under tokens. They are a separate sibling category next to tokens within Jawaker.
 - Do not expose Leo/manual products in the Syria Market supplier/API catalogue, and do not move or rename Syria Market product records to create the Leo catalogue.
-- The Leo project is not implemented by this catalogue repair; it is the next separate build phase after verification of this fix.
+- Added `leo-manual-catalog.js` as a standalone, branch-only data module for the Leo project. It contains the 6 UC packs, 14 Growth/Prime bundles, 5 Free Fire diamond packs, the weekly membership shown in the archive, 2 Jawaker token server products, and 4 Jawaker boosters.
+- Prices in that module are an internal USD cost snapshot transcribed from the user's Leo screenshots, dated 2026-11-15. They are not customer sale prices and are not approved as current supplier prices. All entries have purchase disabled and `salePriceUsd: null`.
+- The Leo project remains separate from the Syria Market API panel and is not yet connected to the customer order flow or database.
