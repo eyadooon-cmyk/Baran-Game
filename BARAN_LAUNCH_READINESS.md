@@ -145,3 +145,13 @@ Supabase Security Advisor reports **Leaked Password Protection Disabled**. This 
 - The current preflight checks supplier readiness and unconditionally returns `FULFILLMENT_GATE_CLOSED`, `can_create_order=false`, and `can_purchase=false`. It therefore blocks manual orders as well as API orders. A server-side route selector is required so manual orders do not depend on supplier configuration.
 - Required next engineering step: introduce an explicit per-order fulfilment mode (`manual` or `supplier_api`), persist it, and make supplier readiness checks conditional on `supplier_api` only. Then implement a provider-specific server-side HTTP adapter and safe status reconciliation. Keep all purchasing and wallet debit closed until both paths pass end-to-end tests.
 - No production schema, supplier records, credentials, execution flags, orders, wallets, or payment state were changed during this audit.
+
+
+## Catalogue repair — separate supplier catalogue and Leo project (2026-11-16)
+
+- Identified a frontend loader mismatch: `products.js` required a generic `gameProductCatalog` element that is absent from the current storefront HTML, so it returned before rendering the dedicated PUBG and Free Fire catalogue elements.
+- Updated the branch loader to render active `PUBG_*` and `FREEFIRE_ROBOT_*` products into their respective dedicated store pages and non-game products into the services catalogue.
+- The Syria Market catalogue remains display-only: missing prices remain explicitly unset and no purchase or dispatch is enabled.
+- Jawaker and the future Leo manual catalogue are deliberately excluded from the Syria Market catalogue renderer. The separate Leo project structure is documented in `EXTERNAL_STORE_MANUAL_FULFILLMENT_SPEC.md`, including Jawaker sibling categories for tokens and boosters.
+- Historical inactive `FREEFIRE_*` products were not reactivated or modified. No live product prices, active flags, orders, wallets, supplier settings, API credentials, or execution flags were changed.
+- Branch-only change; not deployed to production.
