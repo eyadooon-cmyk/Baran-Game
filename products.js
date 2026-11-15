@@ -139,23 +139,42 @@ async function loadCatalog(){
     if(error)throw error;
     applyExchangeRate(settings.exchange_rate);
     const products=data||[];
-    [
-      {box:gameBox,title:"باقات الألعاب المتاحة",items:products.filter(p=>p.category==="game")},
-      {box:serviceBox,title:"المنتجات والخدمات المتاحة",items:products.filter(p=>p.category!=="game")}
-    ].forEach(group=>{
-      group.box.replaceChildren();
-      group.box.classList.toggle("hidden",group.items.length===0);
-      if(!group.items.length)return;
-      const heading=document.createElement("h3");heading.textContent=group.title;group.box.appendChild(heading);
-      group.items.forEach(product=>{
+    const renderGroup=(box,title,items)=>{
+      box.replaceChildren();
+      box.classList.toggle("hidden",items.length===0);
+      if(!items.length)return;
+      const heading=document.createElement("h3");heading.textContent=title;box.appendChild(heading);
+      items.forEach(product=>{
         const card=document.createElement("div");card.className="product-card";
-        const title=document.createElement("strong");title.textContent=product.name;
+        const productTitle=document.createElement("strong");productTitle.textContent=product.name;
         const description=document.createElement("p");description.textContent=product.description||"";
         const prices=document.createElement("div");prices.className="product-prices";prices.textContent=productPriceText(product);
         const note=document.createElement("div");note.className="small";note.textContent=product.price_usd==null||Number(product.price_usd)<=0?"قيد التجهيز — السعر غير محدد، والطلب غير متاح حالياً.":"الطلب والشحن غير مفعّلين بعد.";
-        card.append(title,description,prices,note);group.box.appendChild(card);
+        card.append(productTitle,description,prices,note);box.appendChild(card);
+      });
+    };
+    const games=products.filter(p=>p.category==="game");
+    const gameGroups=[
+      {title:"PUBG Mobile",items:games.filter(p=>p.product_code.startsWith("PUBG_"))},
+      {title:"Free Fire Robot",items:games.filter(p=>p.product_code.startsWith("FREEFIRE_ROBOT_"))},
+      {title:"Jawaker",items:games.filter(p=>p.product_code.startsWith("JAWAKER_"))},
+      {title:"ألعاب أخرى",items:games.filter(p=>!p.product_code.startsWith("PUBG_")&&!p.product_code.startsWith("FREEFIRE_ROBOT_")&&!p.product_code.startsWith("JAWAKER_"))}
+    ];
+    gameBox.replaceChildren();
+    gameBox.classList.toggle("hidden",games.length===0);
+    gameGroups.forEach(group=>{
+      if(!group.items.length)return;
+      const heading=document.createElement("h3");heading.textContent=group.title;gameBox.appendChild(heading);
+      group.items.forEach(product=>{
+        const card=document.createElement("div");card.className="product-card";
+        const productTitle=document.createElement("strong");productTitle.textContent=product.name;
+        const description=document.createElement("p");description.textContent=product.description||"";
+        const prices=document.createElement("div");prices.className="product-prices";prices.textContent=productPriceText(product);
+        const note=document.createElement("div");note.className="small";note.textContent=product.price_usd==null||Number(product.price_usd)<=0?"قيد التجهيز — السعر غير محدد، والطلب غير متاح حالياً.":"الطلب والشحن غير مفعّلين بعد.";
+        card.append(productTitle,description,prices,note);gameBox.appendChild(card);
       });
     });
+    renderGroup(serviceBox,"المنتجات والخدمات المتاحة",products.filter(p=>p.category!=="game"));
   }catch(error){
     [gameBox,serviceBox].forEach(box=>{box.classList.remove("hidden");box.textContent="تعذر تحميل المنتجات حالياً.";});
   }
