@@ -139,6 +139,7 @@ Suggested statuses: pending, in_progress, awaiting_admin_confirmation, completed
 - The customer catalogue grouping and admin manual-fulfilment interface changes exist on this feature branch only and have not been deployed to the live GitHub Pages site.
 - The admin order panel now uses neutral manual-execution language, has no external-store assignment field, and requires an actual purchase cost plus a transaction reference or a documented reason before it accepts a completed manual fulfilment.
 - The `baran-admin` Edge Function source has the same server-side validation on this branch; it has not been deployed yet.
+- Obsolete supplier-management, API-configuration, API-simulation, and legacy refund actions are explicitly rejected by the updated Edge Function source on this branch. The admin refund button is hidden pending a separate safe-refund test.
 - A production database migration now guards the `admin_update_order_status` RPC: an order cannot be marked completed without a recorded successful manual fulfilment, purchase cost, currency, exchange rate, and sale-price snapshots. This preserves the existing finance-posting and loyalty triggers.
 - Internal legacy database column names remain unchanged to avoid breaking existing finance, refund, and audit dependencies. They are not shown in the manual-fulfilment interface.
 - Current live database check: 0 orders, 32 active game products, and all 32 have no approved BARAN selling price. The order creation and wallet-charging preflight remains closed.
