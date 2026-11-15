@@ -155,3 +155,12 @@ Supabase Security Advisor reports **Leaked Password Protection Disabled**. This 
 - Jawaker and the future Leo manual catalogue are deliberately excluded from this existing local PUBG/Free Fire catalogue renderer. The Syria Market read-only API inspection panel remains separate. The separate Leo project structure is documented in `EXTERNAL_STORE_MANUAL_FULFILLMENT_SPEC.md`, including Jawaker sibling categories for tokens and boosters.
 - Historical inactive `FREEFIRE_*` products were not reactivated or modified. No live product prices, active flags, orders, wallets, supplier settings, API credentials, or execution flags were changed.
 - Branch-only change; not deployed to production.
+
+
+## Leo manual catalogue foundation (2026-11-16)
+
+- Inspected the user's `ليو.zip` archive and transcribed the visible catalogue into a new isolated branch file: `leo-manual-catalog.js`.
+- Catalogue snapshot: PUBG 6 UC packs + 14 Growth/Prime/Prime Plus bundles; Free Fire 5 diamond packs + the weekly membership shown in the screenshots; Jawaker tokens on Server 1 and Server 2, plus four sibling booster products (red, blue, black, gold).
+- The USD values are screenshot-observed internal costs only (archive dated 2026-11-15). They are not sale prices and must be rechecked in Leo before purchase. Customer sale prices are null; all products remain disabled.
+- The data module marks every product with `source: leo_app`, `fulfilmentMode: manual`, and `purchaseEnabled: false`. It is not imported into `public.products`, not wired to Syria Market, and does not create or debit orders.
+- This is the initial data foundation only. The separate customer catalogue, manual order queue, admin fulfilment workflow integration, and finance posting still need implementation and testing.
