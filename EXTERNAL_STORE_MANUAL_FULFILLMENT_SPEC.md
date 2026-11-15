@@ -131,4 +131,12 @@ Suggested statuses: pending, in_progress, awaiting_admin_confirmation, completed
 6. Test authorization, missing cost/reference, duplicate confirmation, failed/unknown fulfilment, refunds, and profit calculations.
 7. Run mobile acceptance tests; only then consider enabling customer purchases.
 
-This document records the reviewed catalogue and safety requirements. It does not claim that the database, live storefront, or payment flow has already been changed or tested.
+## 7. Current implementation state (2026-11-15)
+
+- Supabase contains 32 active game products matching the reviewed catalogue: 20 PUBG Mobile, 6 Free Fire Robot, and 6 Jawaker.
+- All 32 game products currently have no approved BARAN selling price. They are catalogue entries only; this is not authorization to charge customers.
+- Older Free Fire package rows that did not match the screenshots have been deactivated. Unrelated service categories were left unchanged.
+- The customer catalogue grouping change exists on this feature branch only and has not been deployed to the live GitHub Pages site.
+- Database preflight currently hard-blocks order creation and wallet charging. Manual fulfilment, refund safety, and finance posting still require a dedicated end-to-end implementation and tests.
+
+This document records the reviewed catalogue and current state. It does not claim that manual order fulfilment or customer purchasing is operational.
