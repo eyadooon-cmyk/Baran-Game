@@ -3517,7 +3517,8 @@ function renderMyOrders(){
     const shortId=id? id.slice(0,8).toUpperCase():"—";
     const status=String(order.status||"").toLowerCase();
     const events=baranCustomerOrderEvents[id]||[];
-    const product=order.product_name||order.product_code||"منتج";
+    const productNames={FREEFIRE_ROBOT_110:"Free Fire — 110 جوهرة",FREEFIRE_ROBOT_210:"Free Fire — 210 جوهرة",FREEFIRE_ROBOT_583:"Free Fire — 583 جوهرة",FREEFIRE_ROBOT_1188:"Free Fire — 1188 جوهرة",FREEFIRE_ROBOT_2420:"Free Fire — 2420 جوهرة",FREEFIRE_ROBOT_MEMBERSHIP_WEEKLY:"Free Fire — عضوية أسبوعية"};
+    const product=order.product_name||productNames[order.product_code]||order.product_code||"منتج";
     const amount=order.payment_currency==="SYP"&&order.total_price_syp!=null
       ? Number(order.total_price_syp).toLocaleString("en-US")+" ل.س"
       : order.total_price_usd!=null ? "$"+Number(order.total_price_usd).toFixed(2) : "السعر غير مسجل";
