@@ -201,8 +201,8 @@ These are two independent product and fulfilment projects inside BARAN GAME. Do 
 - Its catalogue, products, cost/sale-price model, order queue, manual completion records, and admin UI must be kept separate from Syria Market.
 - Initial product structure:
   - PUBG MOBILE: 6 UC packages and 14 Growth bundles.
-  - Free Fire: diamond packages and memberships; exact package list must be taken from the user's Leo screenshots/archive, not guessed from old database rows.
-  - Jawaker: one parent category with two sibling subcategories: “جواكر توكنز” (Server 1 and Server 2) and “مسرّعات جواكر” (red, blue, black, gold).
+  - Free Fire: 110, 210, 583, 1188, and 2420 diamonds, plus the weekly membership shown in the Leo archive. Do not add a monthly membership unless the user supplies a confirming Leo screenshot.
+  - Jawaker: one parent category with two sibling subcategories: “جواكر توكنز” (Server 1 and Server 2; each screenshot shows a 10,000-token minimum) and “مسرّعات جواكر” (red, blue, black, gold).
 - Jawaker boosters are not nested under tokens. They are a separate sibling category next to tokens within Jawaker.
 - Do not expose Leo/manual products in the Syria Market supplier/API catalogue, and do not move or rename Syria Market product records to create the Leo catalogue.
 - The Leo project is not implemented by this catalogue repair; it is the next separate build phase after verification of this fix.
