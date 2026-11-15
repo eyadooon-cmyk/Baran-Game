@@ -1,8 +1,8 @@
-# BARAN GAME — External Store Manual Fulfilment Specification
+# BARAN GAME — Manual Fulfilment and Separate Supplier API Specification
 
 Status: catalogue review baseline  
 Branch: `feature/external-store-manual-fulfillment`  
-Fulfilment mode: the owner purchases top-ups manually from a separate external store. No API integration or automatic top-up is available or assumed.
+Fulfilment modes: (1) manual fulfilment, where the owner purchases a top-up separately and records the actual cost; and (2) a distinct supplier API workflow for genuine API-capable providers. The separate shop used for manual purchases is not an API supplier and must never be represented as one. Supplier API configuration is preparatory only until a real provider, credentials, order submission, status polling, duplicate protection, and end-to-end tests are implemented.
 
 ## 1. Scope lock
 
@@ -119,7 +119,7 @@ Suggested statuses: pending, in_progress, awaiting_admin_confirmation, completed
 - A status change alone must not create a finance entry. Finance posting must be idempotent and based on a validated completed-order snapshot.
 - Never expose purchase cost, profit, internal notes, or external-store credentials to customers.
 - Do not enable customer purchasing or wallet debit until the order lifecycle, duplicate protection, refund/unknown-outcome handling, and mobile tests pass.
-- Do not change the existing Syria Market workflow as part of this workstream.
+- Keep the manual external-shop purchase process separate from all API supplier records and integrations. Do not treat the manual shop as an API provider. Preserve existing API/provider workflows, including the separate Syria Market workflow, without assuming that any API order dispatch is live.
 
 ## 6. Implementation sequence
 
@@ -139,10 +139,20 @@ Suggested statuses: pending, in_progress, awaiting_admin_confirmation, completed
 - The customer catalogue grouping and admin manual-fulfilment interface changes exist on this feature branch only and have not been deployed to the live GitHub Pages site.
 - The admin order panel now uses neutral manual-execution language, has no external-store assignment field, and requires an actual purchase cost plus a transaction reference or a documented reason before it accepts a completed manual fulfilment.
 - The `baran-admin` Edge Function source calls a new atomic, admin-authorized database RPC for manual fulfilment and audit logging. The RPC is executable by `service_role` only; the `authenticated` role was verified not to have execute permission. The Edge Function source has not been deployed yet.
-- Obsolete supplier-management, API-configuration, API-simulation, and legacy refund actions are explicitly rejected by the updated Edge Function source on this branch. The admin refund button is hidden pending a separate safe-refund test.
+- Supplier management, product-to-supplier mapping, API configuration save, and safe API simulation are available in the separate supplier admin panel on this branch. They are not part of the manual fulfilment flow. The legacy supplier refund action remains disabled pending a separate safe-refund test.
 - A production database migration now guards the `admin_update_order_status` RPC: an order cannot be marked completed without a recorded successful manual fulfilment, purchase cost, currency, exchange rate, and sale-price snapshots. This preserves the existing finance-posting and loyalty triggers.
 - Internal legacy database column names remain unchanged to avoid breaking existing finance, refund, and audit dependencies. They are not shown in the manual-fulfilment interface.
 - Current live database check: 0 orders, 32 active game products, and all 32 have no approved BARAN selling price. The order creation and wallet-charging preflight remains closed.
 - Because there are no orders, a complete end-to-end order, payment, fulfilment, refund, and profit test cannot yet be performed. Refund handling still needs a dedicated review before launch.
 
 This document records the reviewed catalogue and implementation state. It does not claim that the live storefront or Edge Function has been deployed, or that customer purchasing is operational.
+
+## 8. Separate supplier API workflow (2026-11-16)
+
+- The manual fulfilment flow and supplier API flow are separate operational paths; neither replaces the other.
+- The supplier admin panel has been restored in the feature branch and is reachable from the admin hub.
+- Supplier record management, product-to-supplier mapping, API configuration storage, and the existing database-backed simulation action are re-enabled in the branch Edge Function source.
+- The configuration UI explicitly states that it is preparatory: it does not submit real top-up orders. No claim is made that an API provider is connected or that automatic fulfilment is operational.
+- supplier_order_refund remains disabled. Refunds require their own safe review and end-to-end test.
+- The manual order panel remains a manual-only process and must not display or depend on supplier selection.
+- All changes described in this section are branch-only until reviewed, tested, and deliberately deployed.
