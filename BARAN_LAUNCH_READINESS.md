@@ -60,7 +60,7 @@ This is an administrator-only route, not an unauthenticated customer exploit, bu
 
 ### 5. Product price model needs a clear currency rule — BLOCKER
 
-- 17 catalogue products are marked active; all 17 currently have null USD and SYP prices.
+- 35 products are marked active in the live database as of 2026-11-16 (32 game products and 3 other existing products); all 35 currently lack an approved positive USD sale price.
 - The order snapshot trigger requires a positive `price_usd` and a valid store exchange rate. It derives SYP from USD and the exchange rate; it does not use the product's `price_syp` value.
 - The storefront can display either currency when populated, but the order backend currently requires the USD base price.
 
@@ -131,6 +131,17 @@ Supabase Security Advisor reports **Leaked Password Protection Disabled**. This 
 - EXECUTE on the report function is revoked from PUBLIC, anon, and authenticated; only service_role can call it.
 - Upgraded baran-order-gateway to version 3. The new catalog_report action verifies the signed-in user against public.admin_users before returning the report. It does not trust user metadata and does not expose the service-role key.
 - Added an administration-only report panel under لوحة الإدارة ← الموردون والأسعار. It renders summary counts and the blockers for each product. The customer-facing product review no longer contains the technical preflight control.
-- Verification against the live database: 17 active catalogue products; 0 products with an approved positive USD price; 0 supplier-product mappings; 0 active suppliers; 0 supplier APIs marked ready; 1 admin account. The report returns 0 launch-ready products because fulfilment remains deliberately closed.
+- Verification against the live database: 35 active products (32 game products); 0 products with an approved positive USD price; 0 supplier-product mappings; 0 active suppliers; 0 supplier API configs; 0 supplier APIs marked ready; 0 enabled supplier executions; 1 admin account. The report returns 0 launch-ready products because fulfilment remains deliberately closed.
 - The report is read-only. It does not set prices, activate suppliers, alter API settings, create orders, or debit wallets.
 - Live authenticated UI invocation still requires a manual test from the owner's signed-in admin session. The database report function, its EXECUTE ACL, deployed Edge Function version 3, and committed frontend wiring were independently verified.
+
+## Implementation update — separate manual and supplier API route audit (2026-11-16)
+
+- Confirmed that manual fulfilment and supplier API fulfilment must be two distinct routes; the separate shop used for manual purchases is not an API supplier.
+- Restored the supplier management/API preparation panel and the related supplier management, product mapping, API configuration save, and local simulation actions on branch `feature/external-store-manual-fulfillment`. These branch changes are not deployed.
+- The live database already contains the supplier framework: protected preparation/finalization functions, balance snapshots, health events, and idempotent supplier-attempt records.
+- The live preparation RPC only prepares an attempt and idempotency key; its result explicitly says an external API connector is still required to send the request. The local simulation never connects to a real provider. No dedicated supplier-dispatch Edge Function or active supplier dispatch cron job was found.
+- Supplier API configuration writes `execution_enabled=false`; settings cannot enable real dispatch. The live database currently has 2 supplier records (0 active), 0 product mappings, 0 API configurations, 0 enabled executions, 0 supplier attempts, and 0 orders.
+- The current preflight checks supplier readiness and unconditionally returns `FULFILLMENT_GATE_CLOSED`, `can_create_order=false`, and `can_purchase=false`. It therefore blocks manual orders as well as API orders. A server-side route selector is required so manual orders do not depend on supplier configuration.
+- Required next engineering step: introduce an explicit per-order fulfilment mode (`manual` or `supplier_api`), persist it, and make supplier readiness checks conditional on `supplier_api` only. Then implement a provider-specific server-side HTTP adapter and safe status reconciliation. Keep all purchasing and wallet debit closed until both paths pass end-to-end tests.
+- No production schema, supplier records, credentials, execution flags, orders, wallets, or payment state were changed during this audit.
