@@ -402,14 +402,11 @@ Deno.serve(async (req: Request) => {
       if (body.action === "admin_check") return json({ success: true });
 
       const disabledExternalProviderActions = new Set([
-        "supplier_api_config_save",
-        "supplier_api_simulate",
+        // Refund remains disabled until its own end-to-end safety review is complete.
         "supplier_order_refund",
-        "supplier_save",
-        "supplier_product_save",
       ]);
       if (disabledExternalProviderActions.has(body.action ?? "")) {
-        return json({ error: "هذا المسار القديم غير مستخدم. التنفيذ في BARAN يتم يدوياً، والاسترداد غير متاح حتى اكتمال اختباره." }, 410);
+        return json({ error: "استرداد الطلبات غير متاح حالياً حتى اكتمال اختباره الآمن." }, 410);
       }
 
 
