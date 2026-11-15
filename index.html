@@ -2279,6 +2279,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
             <div class="admin-hub-grid">
               <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المراقبة ومساعد الإدارة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🔌</span><strong>الموردون وربط API</strong><small>إدارة الموردين وتجهيز إعدادات الربط وفحصها، بشكل مستقل عن الشحن اليدوي.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               
             </div>
           </section>
@@ -2471,8 +2472,9 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       
       </div>
 
-      <div class="admin-subpanel hidden" data-admin-panel="suppliers" aria-hidden="true" style="display:none!important">
+      <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
+      <div class="deposit-card" style="border:1px solid #70558b"><strong>مسار مستقل: الشحن عبر الموردين API</strong><p class="small">هذا القسم لإدارة الموردين وتجهيز إعدادات الربط وفحصها. لا يغيّر مسار الشحن اليدوي، ولا يرسل طلبات شحن حقيقية تلقائياً حالياً. لا تُدخل مفاتيح API هنا؛ تحفظ لاحقاً في Supabase Secrets.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
       <section class="deposit-card" id="baranCatalogReadinessReport" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>📋 تقرير جاهزية كتالوج المنتجات</h2>
@@ -2582,7 +2584,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
       <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
       <hr style="border-color:#40334b;margin:24px 0">
-      <h3>إعداد ربط API المورد</h3>
+      <h3>إعداد ربط API المورد — مستقل عن التنفيذ اليدوي</h3>
       <p class="small">هذه إعدادات تحضيرية فقط. لا يتم الاتصال بالمورد أو إرسال طلبات حقيقية من هذه الصفحة. مفاتيح API تحفظ لاحقاً في Supabase Secrets، ولا تكتبها هنا.</p>
       <div class="ops-form">
         <label for="opsApiSupplierSelect">المورد</label>
