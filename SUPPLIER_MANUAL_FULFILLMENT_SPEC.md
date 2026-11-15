@@ -1,7 +1,7 @@
 # BARAN GAME — Manual Supplier Fulfilment Specification
 
 Status: implementation baseline  
-Branch: `feature/supplier-manual-fulfillment`  
+Branch: `feature/manual-supplier-fulfillment`  
 Supplier mode: manual fulfilment through the supplier platform app; no supplier platform API or automatic top-up is assumed.
 
 ## 1. Scope lock
