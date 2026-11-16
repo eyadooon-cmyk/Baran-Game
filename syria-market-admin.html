@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09080d"><title>Syria Market | إدارة الموردين</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#09080d;--panel:#17121e;--line:#493b55;--accent:#b99ad2;--text:#f3edf7;--muted:#b9a9c9;--ok:#a9e2c5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#261832 0,transparent 34%),var(--bg);color:var(--text);font-family:Arial,Tahoma,sans-serif;line-height:1.65}
+header{padding:18px 12px;background:#100b16ed;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3;backdrop-filter:blur(12px)}
+.wrap{width:min(980px,100%);margin:auto;padding:0 12px}.brand{font-size:22px;font-weight:900;color:#e9dcf4}.brand span{color:var(--accent)}.sub{font-size:12px;color:var(--muted);margin:3px 0}
+main{padding:16px 0 40px}.notice{padding:13px;margin:12px 0;border:1px solid #765d8b;border-radius:13px;background:#20172a;color:#e8d9f2;font-size:13px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}a,button{border:1px solid #80649a;border-radius:10px;background:#30213d;color:#fff;padding:10px 13px;font-weight:700;text-decoration:none;cursor:pointer;font-size:13px}
+button.primary{background:var(--accent);color:#1b1222;border-color:var(--accent)}
+#status{padding:10px 12px;background:#17121e;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;white-space:pre-wrap}
+#status.ok{color:var(--ok)}#status.err{color:#ffb8c2}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.panel{background:linear-gradient(145deg,#1b1522,#110d17);border:1px solid var(--line);border-radius:15px;padding:14px;margin:13px 0}
+.panel h2{font-size:17px;color:#dfcbed;margin:0 0 10px}.stat{background:#21182b;border:1px solid #493b55;border-radius:11px;padding:10px}.stat b{display:block;font-size:20px;color:#e7d4f4}.stat span{font-size:11px;color:var(--muted)}
+.card{background:#191320;border:1px solid #40334b;border-radius:13px;padding:12px;margin:9px 0;overflow-wrap:anywhere}
+.card h3{font-size:15px;margin:0;color:#f0e7f7}.meta{font-size:12px;color:var(--muted);margin-top:6px}.pill{display:inline-block;padding:3px 8px;border-radius:99px;background:#342642;color:#e7d7f2;border:1px solid #59466b;font-size:10px}
+input,select{width:100%;background:#0e0a13;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px;font:inherit}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed #59466b;border-radius:12px}
+.small{font-size:11px;color:var(--muted)}footer{text-align:center;color:#8e809a;font-size:11px;padding:20px}
+@media(max-width:560px){.wrap{padding:0 10px}.grid{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><div class="wrap"><div class="brand">🇸🇾 SYRIA <span>MARKET</span></div><p class="sub">مساحة مستقلة لإدارة الموردين وربط أسعارهم — قراءة فقط في هذه المرحلة</p></div></header>
+<main class="wrap">
+<div class="notice"><strong>حدود الفصل:</strong> هذه الصفحة مخصصة للموردين وروابط أسعارهم فقط. لا تعرض طلبات الزبائن أو طلبات BARO LEO اليدوية أو المحافظ أو الأرباح. جميع الوظائف هنا للقراءة فقط؛ لا حفظ ولا شراء ولا اتصال API بالمورد.</div>
+<div class="toolbar"><a href="./index.html">العودة إلى BARAN GAME</a><a href="./baro-leo-manual.html">فتح BARO LEO اليدوي</a><button id="refresh" class="primary">تحديث البيانات</button></div>
+<div id="status" role="status" aria-live="polite">جارٍ التحقق من جلسة المدير...</div>
+<section class="panel"><h2>ملخص سوريا ماركت</h2><div class="grid">
+<div class="stat"><b id="supplierCount">—</b><span>مورد مسجل</span></div>
+<div class="stat"><b id="linkCount">—</b><span>ربط منتج بسعر مورد</span></div>
+<div class="stat"><b id="productCount">—</b><span>منتج في الكتالوج العام</span></div>
+<div class="stat"><b>مغلق</b><span>تنفيذ طلبات الموردين</span></div>
+</div></section>
+<section class="panel"><h2>الموردون المسجلون</h2><div id="suppliers"><div class="empty">بانتظار التحميل...</div></div></section>
+<section class="panel"><h2>روابط المنتجات وأسعار الموردين</h2><div id="links"><div class="empty">بانتظار التحميل...</div></div></section>
+<section class="panel"><h2>كتالوج المنتجات المتاحة للربط</h2><input id="search" type="search" placeholder="ابحث باسم المنتج أو رمزه"><div id="products" style="margin-top:10px"><div class="empty">بانتظار التحميل...</div></div></section>
+<footer>SYRIA MARKET • منفصل عن BARO LEO • قراءة فقط</footer>
+</main>
+<script>
+"use strict";
+const URL="https://yabpmdzsiuyxxkcqakfs.supabase.co",KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+const client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let session=null,data={suppliers:[],supplier_products:[],products:[]};
+const el=id=>document.getElementById(id);
+function status(s,c){el("status").textContent=s;el("status").className=c||""}
+function node(tag,cls,txt){const x=document.createElement(tag);if(cls)x.className=cls;if(txt!==undefined)x.textContent=txt;return x}
+function usd(v,c){if(v===null||v===undefined)return "غير محدد";const n=Number(v);return Number.isFinite(n)?(c==="USD"?"$":"")+n.toLocaleString("en-US",{maximumFractionDigits:2})+(c==="SYP"?" ل.س":""):"—"}
+function supplierName(id){return data.suppliers.find(x=>x.id===id)?.name||"مورد غير معروف"}
+function productName(id){const p=data.products.find(x=>x.id===id);return p?p.name+" ("+p.product_code+")":"منتج غير معروف"}
+async function load(){
+ if(!session?.access_token)throw new Error("لا توجد جلسة. سجّل الدخول من BARAN GAME بحساب المدير أولاً.");
+ status("جارٍ تحميل بيانات الموردين فقط...");
+ const response=await fetch(URL+"/functions/v1/baran-syria-market-read",{method:"GET",headers:{Authorization:"Bearer "+session.access_token,apikey:KEY}});
+ const body=await response.json().catch(()=>({}));
+ if(!response.ok||body.success!==true)throw new Error(body.error||"تعذر تحميل سوريا ماركت.");
+ if(body.mode!=="read_only"||body.writes_enabled!==false||body.supplier_orders_enabled!==false||body.finance_enabled!==false)throw new Error("فشل تحقق وضع القراءة الآمنة.");
+ data={suppliers:Array.isArray(body.suppliers)?body.suppliers:[],supplier_products:Array.isArray(body.supplier_products)?body.supplier_products:[],products:Array.isArray(body.products)?body.products:[]};
+ el("supplierCount").textContent=data.suppliers.length;el("linkCount").textContent=data.supplier_products.length;el("productCount").textContent=data.products.length;
+ renderSuppliers();renderLinks();renderProducts();status("تم تحميل بيانات سوريا ماركت بوضع القراءة فقط. لا توجد كتابة أو طلبات موردين.","ok");
+}
+function renderSuppliers(){
+ const box=el("suppliers");box.replaceChildren();
+ if(!data.suppliers.length){box.append(node("div","empty","لا يوجد موردون مسجلون."));return}
+ data.suppliers.forEach(s=>{const card=node("article","card");const top=node("div","");top.style.cssText="display:flex;justify-content:space-between;gap:8px;align-items:center";top.append(node("h3","",s.name),node("span","pill",s.is_active?"نشط في السجل":"غير نشط"));card.append(top);
+ const contact=[s.contact_name,s.contact_phone,s.contact_email].filter(Boolean).join(" • ")||"لا توجد بيانات تواصل";card.append(node("div","meta",contact));if(s.notes)card.append(node("div","meta","ملاحظات: "+s.notes));box.append(card)});
+}
+function renderLinks(){
+ const box=el("links");box.replaceChildren();
+ if(!data.supplier_products.length){box.append(node("div","empty","لا توجد روابط أسعار موردين مسجلة."));return}
+ data.supplier_products.forEach(p=>{const card=node("article","card");card.append(node("h3","",productName(p.product_id)));card.append(node("div","meta","المورد: "+supplierName(p.supplier_id)));card.append(node("div","meta","SKU: "+(p.supplier_sku||"غير محدد")+" • التكلفة: "+usd(p.unit_cost,p.currency)+" • زمن التوريد: "+(p.lead_time_hours??"غير محدد")+" ساعة"));card.append(node("div","meta",p.is_preferred?"مورد مفضل لهذا المنتج":"ليس المورد المفضل"));if(p.notes)card.append(node("div","meta","ملاحظات: "+p.notes));box.append(card)});
+}
+function renderProducts(){
+ const box=el("products"),q=el("search").value.trim().toLocaleLowerCase("ar");box.replaceChildren();
+ const rows=data.products.filter(p=>(p.name+" "+p.product_code+" "+p.category).toLocaleLowerCase("ar").includes(q));
+ if(!rows.length){box.append(node("div","empty","لا توجد نتائج."));return}
+ rows.forEach(p=>{const card=node("article","card");const top=node("div","");top.style.cssText="display:flex;justify-content:space-between;gap:8px;align-items:center";top.append(node("h3","",p.name),node("span","pill",p.is_active?"نشط في الكتالوج":"غير نشط"));card.append(top);card.append(node("div","meta",p.product_code+" • "+p.category+" • سعر البيع USD: "+usd(p.price_usd,"USD")+" • SYP: "+usd(p.price_syp,"SYP")));box.append(card)});
+}
+async function init(){try{const r=await client.auth.getSession();if(r.error)throw r.error;session=r.data.session;if(!session){status("سجّل الدخول أولاً من BARAN GAME بحساب المدير.","err");return}await load()}catch(e){status(e.message||"تعذر بدء الصفحة.","err")}}
+el("refresh").addEventListener("click",()=>load().catch(e=>status(e.message,"err")));
+el("search").addEventListener("input",renderProducts);init();
+</script></body></html>
