@@ -192,3 +192,24 @@ This is a new isolated read-only path, not yet a complete replacement of the leg
 Do not use the legacy supplier controls for ongoing work. Do not claim end-to-end isolation until the legacy supplier UI/API dependencies are removed or restricted after a dedicated regression review. The new page is branch-only and is not linked from the live storefront or deployed to GitHub Pages. Runtime acceptance using a real administrator session and a non-admin session remains pending; ACTIVE deployment status is not proof of successful browser authorization.
 
 No production resources, database records, general orders, manual orders, wallets, supplier requests, or finance records were changed.
+
+
+## Legacy supplier UI dependency map — 2026-11-16
+
+A follow-up source inventory confirms the remaining shared surface:
+
+- `index.html` embeds the supplier panel inside the general admin navigation. It includes supplier records, supplier-product links, supplier API configuration, Syria Market external catalogue reads, product/supplier preflight, Free Fire region checking, and Supplier Manager AI.
+- `admin-operations.js` sends supplier mutations to the legacy `baran-admin` endpoint using actions `supplier_save`, `supplier_product_save`, `supplier_api_config_save`, `supplier_api_simulate`, and `order_fulfillment_update`. It also contains `supplier_order_refund`, which is a sensitive general-order/refund operation and must not be exposed in the independent Syria Market surface.
+- `baran-admin` GET combines deposits, support, finance reports, products, suppliers, supplier-product links, general orders, fulfillment, loyalty, profiles, and notifications. Its POST handler also combines customer, finance, product, supplier, and general-order actions. This endpoint is unsuitable as the data source for either isolated subsystem.
+- The legacy frontend calls `baran-syrimarket-catalog` and `baran-supplier-manager`; neither function appears in the current test project's deployed Edge Function inventory. Their runtime behavior therefore remains unverified in the test project. Do not reconnect them to the new page without recovering and reviewing their source.
+- The standalone Syria Market page intentionally does not use these legacy functions. Its only endpoint is the new read-only `baran-syria-market-read`.
+
+### Safe migration sequence
+
+1. Keep the legacy combined dashboard untouched until every dependency and owner-facing workflow has a replacement.
+2. Recover and review source for the missing supplier catalogue/AI functions before any reuse.
+3. Create separate Syria Market write actions only after defining atomic audit behavior and explicit supplier-only permissions. Until then, the new page remains read-only.
+4. Move legacy supplier controls out of the combined dashboard only after a regression matrix proves that customer support, wallet/finance, general order management, and manual BARO LEO screens remain functional and isolated.
+5. Keep refund, wallet, payment, and general order actions outside Syria Market permanently.
+
+No legacy endpoint or frontend control was removed or modified in this step. No supplier write, supplier order, refund, finance action, or wallet operation was performed.
