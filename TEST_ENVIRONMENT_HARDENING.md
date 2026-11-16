@@ -159,3 +159,16 @@ The two deployed test function sources have now been recovered verbatim into the
 - `supabase/functions/baran-leo-manual/index.ts` — deployed version 1; source SHA-256 `f50dd3e1c9e985a466dbcff34bdf66e0fdcdeffaefa1d7114ad44608488f90a8`.
 
 These are source-recovery commits only; they do not deploy or change either function. The older `baran-leo-manual` endpoint remains deployed but must not be used for writes until its non-atomic update/audit behavior is resolved. The RPC-backed `baran-baro-manual` is the safer candidate for the canonical manual endpoint, but it is not yet connected to a dedicated frontend and has not been UI-acceptance tested. No endpoint has been disabled, no records have been modified, and no order or financial action has been performed.
+
+
+## Isolated BARO LEO admin page prototype — 2026-11-16
+
+Added `baro-leo-manual.html` to the test branch as a standalone, mobile-first admin page. It uses only the deployed `baran-baro-manual` endpoint for its data path:
+
+- GET loads only the manual product and manual order datasets.
+- Product price/cost/notes edits call the RPC-backed `product_update` action.
+- Existing manual order status updates call the RPC-backed `order_update` action.
+- The UI does not create orders, submit supplier requests, debit wallets, post finance, or call the legacy `baran-admin`, `baran-admin-safe-actions`, or Syria Market endpoints.
+- The server-side endpoint still verifies the user's JWT and `admin_is_user`; hiding the page URL is not treated as an authorization control.
+
+This is a branch-only prototype. It has not been deployed, linked from the production storefront, or tested in a live browser session. Do not merge it or expose it to customers yet. Before any UI acceptance, inspect the rendered page on a phone and verify admin access, customer denial, successful atomic audit behavior in a controlled test record, and absence of writes outside `leo_manual_*` plus the expected audit/event records. No manual order or financial transaction was created as part of this page work.
