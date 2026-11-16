@@ -1,5 +1,5 @@
 name: BARO manual safety checks
-# Includes order idempotency, legacy RPC removal, and BARO table access regressions
+# Includes order idempotency, retry recovery, legacy RPC removal, and BARO table access regressions
 on:
   pull_request:
     branches: [main]
