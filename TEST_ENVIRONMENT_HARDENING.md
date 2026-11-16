@@ -86,17 +86,30 @@ Observed on 2026-11-16 in the test project:
 - Attempts to synchronize the sequence with `setval` through both `execute_sql` and `apply_migration` were rejected with `permission denied for sequence runid_seq`.
 - Do not change sequence ownership, bypass Supabase-managed permissions, or repeatedly retry SQL. Escalate this precise pg_cron internal sequence mismatch to Supabase support or use a Supabase-provided administrative repair. Recheck cron run history and launcher logs after repair before declaring the schedules operational.
 
+## Newly confirmed separation gap — legacy admin APIs
+
+A read-only review of the current `main` branch source found that the legacy `baran-admin` dashboard API returns supplier records, supplier-product mappings, general `orders`, and `order_fulfillment` in the same response as the general store administration data. The `baran-admin-safe-actions` source also contains mutation paths for supplier records, supplier-product links, and general order status. These are not the dedicated `leo_manual_*` tables.
+
+This does **not** prove that BARO LEO manual orders currently call those legacy paths, but it means the codebase still has a shared legacy admin surface and the architectural separation is not yet fully demonstrated. Do not claim full end-to-end separation until:
+- BARO LEO manual UI reads and writes only through its dedicated manual endpoint and `leo_manual_*` tables.
+- Syria Market supplier management has a separate endpoint, permissions, and audit path.
+- The legacy combined admin API is either split safely or explicitly prevented from managing either new system's data.
+- Owner and customer UI acceptance tests confirm the separation.
+
+No source code or live function was changed as part of this read-only finding.
+
 ## Remaining blockers — do not treat this project as launch-ready
 
 1. **Leaked-password protection:** disabled and unavailable under the current plan per the project warning. Do not upgrade. Keep this as a documented plan limitation and apply the available password/session protections.
 2. **pg_cron:** scheduled worker and monitor are not executing due to the run-id sequence mismatch above.
-3. **Push notifications:** push registration and dispatch functions have not been deployed to this test project because VAPID/webhook secrets have not been verified here. Do not claim push delivery is tested.
-4. **Game ID validation:** PUBG/Free Fire checker functions are not deployed here because the required Volsever API secret has not been verified in this test project.
-5. **Supplier integration:** Syria Market supplier automation is a separate future system. Supplier manager and external supplier catalog functions remain intentionally undeployed. Supplier credentials and a separately approved supplier integration test are still required.
-6. **ShamCash:** registration, verification, and webhook functions remain intentionally undeployed. No payment provider has been connected or activated.
-7. **UI acceptance testing:** a real owner/admin session and a normal customer session must still test the frontend flows on a phone. In particular, verify admin access succeeds, a customer is denied, safe admin changes are audited, support replies appear correctly, and the wallet UI reaches only the owner-only Edge Function.
-8. **OpenAI key availability in the test project:** the automatic support worker's empty-queue path passed. A real safe support ticket has not been submitted, so OpenAI reply generation and customer-facing delivery have not yet been verified.
-9. **Frontend deployment:** this branch is not merged into `main`; the GitHub Pages site has not been changed by this work.
+3. **System separation:** legacy `baran-admin` and `baran-admin-safe-actions` still expose shared supplier/general-order administration paths; dedicated BARO LEO end-to-end isolation has not yet been proven.
+4. **Push notifications:** push registration and dispatch functions have not been deployed to this test project because VAPID/webhook secrets have not been verified here. Do not claim push delivery is tested.
+5. **Game ID validation:** PUBG/Free Fire checker functions are not deployed here because the required Volsever API secret has not been verified in this test project.
+6. **Supplier integration:** Syria Market supplier automation is a separate future system. Supplier manager and external supplier catalog functions remain intentionally undeployed. Supplier credentials and a separately approved supplier integration test are still required.
+7. **ShamCash:** registration, verification, and webhook functions remain intentionally undeployed. No payment provider has been connected or activated.
+8. **UI acceptance testing:** a real owner/admin session and a normal customer session must still test the frontend flows on a phone. In particular, verify admin access succeeds, a customer is denied, safe admin changes are audited, support replies appear correctly, and the wallet UI reaches only the owner-only Edge Function.
+9. **OpenAI key availability in the test project:** the automatic support worker's empty-queue path passed. A real safe support ticket has not been submitted, so OpenAI reply generation and customer-facing delivery have not yet been verified.
+10. **Frontend deployment:** this branch is not merged into `main`; the GitHub Pages site has not been changed by this work.
 
 ## Release rule
 
