@@ -7,6 +7,14 @@ const syriaPage = read("../syria-market-admin.html");
 const baroPage = read("../baro-leo-manual.html");
 const syriaApi = read("../supabase/functions/baran-syria-market-read/index.ts");
 const baroApi = read("../supabase/functions/baran-baro-manual/index.ts");
+const storefront = read("../index.html");
+
+test("Admin hub routes supplier and manual work to separate pages", () => {
+  assert.match(storefront, /window\.location\.href='\.\/syria-market-admin\.html'/);
+  assert.match(storefront, /window\.location\.href='\.\/baro-leo-manual\.html'/);
+  assert.match(storefront, /if\(id==="suppliers"\)\{window\.location\.href="\.\/syria-market-admin\.html";return;\}/);
+  assert.doesNotMatch(storefront, /onclick="showAdminPanel\('suppliers'\)"/);
+});
 
 test("Syria Market endpoint requires JWT and administrator authorization", () => {
   assert.match(syriaApi, /auth\.getUser\(token\)/);
