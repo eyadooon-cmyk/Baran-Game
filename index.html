@@ -2546,7 +2546,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 
       <div class="admin-subpanel hidden" data-admin-panel="baro">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>BARO – الشحن اليدوي</h2></div>
-        <div class="deposit-card"><strong>مسار BARO منفصل عن الشحن الآلي</strong><p class="small">إدارة كتالوج ليو، فتح استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا توجد عملية شراء تلقائية أو خصم محفظة أو ترحيل مالي.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
+        <div class="deposit-card"><strong>مسار BARO منفصل عن الشحن الآلي</strong><p class="small">إدارة كتالوج ليو، فتح استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا توجد عملية شراء تلقائية أو خصم محفظة أو ترحيل مالي.</p><button id="baroManualToggle" class="secondary" type="button" onclick="toggleBaroManualEnabled()" aria-pressed="false">تحميل حالة BARO...</button><p id="baroManualToggleStatus" class="small" role="status" aria-live="polite">جاري التحقق من حالة استقبال الطلبات.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
         <h3>كتالوج BARO والمنتجات المتاحة للزبائن</h3><p class="small">فعّل إظهار المنتج والسماح بالطلبات فقط بعد مراجعة تفاصيله وأسعاره.</p><div id="baroAdminProducts" class="ops-list">جاري تحميل المنتجات...</div>
         <h3>طلبات BARO اليدوية</h3><p class="small">حدّد السعر أولاً، ثم حالة الدفع. لا نعتبر الطلب مدفوعاً إلا بعد تأكيد استلام المبلغ يدوياً.</p><div id="baroAdminOrders" class="ops-list">جاري تحميل الطلبات...</div>
       </div>
@@ -3127,7 +3127,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
-<script src="./baro.js?v=20261116-baro-4"></script>
+<script src="./baro.js?v=20261116-baro-5"></script>
 <script>
 // TEST-ONLY configuration. Never point this branch at production.
 const SUPABASE_URL="https://tjvuqgcyvbowyfenrpau.supabase.co";
