@@ -147,3 +147,18 @@ test("Automatic supplier pending and unknown states keep the cross-channel claim
   assert.match(channelStatus, /'needs_review'/);
   assert.match(channelStatus, /'failed','rejected'/);
 });
+
+
+const triggerGrantHardening = read("../supabase/migrations/20261116183000_revoke_public_execute_from_channel_trigger_functions.sql");
+test("Channel SECURITY DEFINER trigger functions are not callable through the Data API", () => {
+  for (const fn of [
+    "baran_guard_manual_order_insert",
+    "baran_link_manual_order_channel",
+    "baran_sync_manual_order_guard_status",
+    "baran_guard_automatic_order_insert",
+    "baran_link_automatic_order_channel",
+    "baran_sync_automatic_order_guard_status"
+  ]) {
+    assert.match(triggerGrantHardening, new RegExp("revoke all on function public\\."+fn+"\\(\\) from public, anon, authenticated"));
+  }
+});
