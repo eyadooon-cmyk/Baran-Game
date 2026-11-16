@@ -60,7 +60,7 @@ test("BARO customer order retries are idempotent and serialized per user", () =>
   assert.match(migration, /pg_advisory_xact_lock/);
   assert.match(migration, /where user_id=p_user_id and idempotency_key=p_idempotency_key/);
   assert.match(migration, /replayed',true/);
-  assert.match(migration, /baro_manual_create_customer_order_without_global_gate/);
+  assert.doesNotMatch(migration, /baro_manual_create_customer_order_without_global_gate\(/);
   assert.match(edge, /p_idempotency_key:idempotencyKey/);
   assert.match(edge, /uuidPattern\.test\(idempotencyKey\)/);
   assert.match(ui, /baroPendingSubmission/);
