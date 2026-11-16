@@ -9,6 +9,27 @@ const syriaApi = read("../supabase/functions/baran-syria-market-read/index.ts");
 const baroApi = read("../supabase/functions/baran-baro-manual/index.ts");
 const storefront = read("../index.html");
 
+test("Test storefront is isolated from production Supabase", () => {
+  assert.match(storefront, /https:\/\/tjvuqgcyvbowyfenrpau\.supabase\.co/);
+  assert.doesNotMatch(storefront, /https:\/\/yabpmdzsiuyxxkcqakfs\.supabase\.co/);
+  assert.match(storefront, /const BARAN_AUTH_REDIRECT=window\.location\.origin\+window\.location\.pathname/);
+  assert.match(storefront, /options:\{redirectTo:BARAN_AUTH_REDIRECT\}/);
+});
+
+test("Jawaker customer section exposes only the six approved disabled categories", () => {
+  const start = storefront.indexOf('<section id="jawakerStore"');
+  const end = storefront.indexOf('<section id="services"', start);
+  assert.ok(start >= 0 && end > start, "Jawaker customer section must exist");
+  const jawaker = storefront.slice(start, end);
+  assert.match(storefront, /showSection\('jawakerStore',null\)/);
+  assert.match(storefront, /if\(code\.startsWith\("jawaker"\)\)return "jawakerStore"/);
+  for (const label of ["جواكر سيرفر 1", "جواكر سيرفر 2", "المسرّع الأحمر", "المسرّع الأزرق", "المسرّع الأسود", "المسرّع الذهبي"]) {
+    assert.ok(jawaker.includes(label), "Missing Jawaker category: " + label);
+  }
+  assert.equal((jawaker.match(/<button\\b[^>]*disabled/g) || []).length, 6);
+  assert.doesNotMatch(jawaker, /onclick=|create_order|order_create|wallet|checkout/i);
+});
+
 test("Admin hub routes supplier and manual work to separate pages", () => {
   assert.match(storefront, /window\.location\.href='\.\/syria-market-admin\.html'/);
   assert.match(storefront, /window\.location\.href='\.\/baro-leo-manual\.html'/);
