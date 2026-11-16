@@ -105,9 +105,10 @@ function baroProductCard(p){
  const save=document.createElement("button");save.type="button";save.textContent="حفظ المنتج والإتاحة";
  save.onclick=async()=>{save.disabled=true;try{
   const n=v=>v.value.trim()===""?null:Number(v.value);
-  await baroApi("POST",{action:"product_update",product_code:p.product_code,supplier_cost_usd:n(usd),sale_price_usd:n(saleUsd),sale_price_syp:n(saleSyp),admin_notes:notes.value});
-  await baroApi("POST",{action:"product_configure",product_code:p.product_code,catalog_visible:visible.checked,purchase_enabled:enabled.checked});
-  await loadBaroAdmin();baroAdminMessage("تم حفظ المنتج والإتاحة وتسجيل التدقيق.");
+  if(enabled.checked&&!visible.checked)throw new Error("يجب إظهار المنتج قبل فتح استقبال الطلبات.");
+  if(enabled.checked&&n(saleUsd)===null&&n(saleSyp)===null)throw new Error("حدد سعر بيع بالدولار أو الليرة قبل إتاحة المنتج للطلب.");
+  await baroApi("POST",{action:"product_save",product_code:p.product_code,supplier_cost_usd:n(usd),sale_price_usd:n(saleUsd),sale_price_syp:n(saleSyp),admin_notes:notes.value,catalog_visible:visible.checked,purchase_enabled:enabled.checked});
+  await loadBaroAdmin();baroAdminMessage("تم حفظ بيانات المنتج وإتاحته معاً وتسجيل التدقيق.");
  }catch(e){baroAdminMessage(e.message);}finally{save.disabled=false;}};
  form.append(usd,saleUsd,saleSyp,notes,visibility,enable,save);
  card.append(title,code,state,cost,sale,form);return card;
@@ -126,7 +127,9 @@ function renderBaroAdmin(){
   const h=document.createElement("strong");h.textContent=o.product_name_snapshot||o.product_code;
   const info=document.createElement("div");info.className="small";info.textContent="الزبون: "+(o.customer_email||o.user_id)+" | اللاعب: "+o.player_id+" | الكمية: "+Number(o.quantity||1).toLocaleString("en-US");
   const id=document.createElement("div");id.className="small";id.textContent="رقم الطلب: "+o.id;
-  const status=document.createElement("select");Object.entries(BARO_STATUS).forEach(([v,label])=>{const op=document.createElement("option");op.value=v;op.textContent=label;status.append(op);});status.value=o.status;
+  const status=document.createElement("select");
+  const nextStates={pending:["awaiting_payment","needs_review","failed","cancelled"],awaiting_payment:["paid","needs_review","failed","cancelled"],paid:["in_progress","needs_review","failed"],in_progress:["completed","needs_review","failed"],needs_review:["awaiting_payment","paid","in_progress","failed","cancelled"],failed:["needs_review"],completed:[],cancelled:[]};
+  [o.status,...(nextStates[o.status]||[])].forEach(v=>{const op=document.createElement("option");op.value=v;op.textContent=BARO_STATUS[v]||v;status.append(op);});status.value=o.status;
   const payment=document.createElement("select");Object.entries(BARO_PAYMENT).forEach(([v,label])=>{const op=document.createElement("option");op.value=v;op.textContent=label;payment.append(op);});payment.value=o.payment_status||"awaiting_quote";
   const quote=document.createElement("input");quote.type="number";quote.min="0.01";quote.step="0.01";quote.placeholder="السعر الذي سيدفعه الزبون";quote.value=o.customer_price_usd??o.customer_price_syp??"";
   const currency=document.createElement("select");[["USD","دولار"],["SYP","ليرة سورية"]].forEach(([v,l])=>{const op=document.createElement("option");op.value=v;op.textContent=l;currency.append(op);});currency.value=o.customer_price_syp!==null?"SYP":"USD";
