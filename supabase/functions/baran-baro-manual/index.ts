@@ -93,14 +93,8 @@ Deno.serve(async(req:Request)=>{
    const {data,error}=await admin.rpc("baro_manual_order_admin_update_atomic",{p_admin_id:user.id,p_order_id:id,p_status:status,p_quote_amount:quote,p_quote_currency:currency,p_payment_method:method,p_payment_status:payment,p_customer_message:customerMessage,p_supplier_cost_usd:cost,p_supplier_reference:reference,p_exception_reason:exception,p_internal_notes:notes});
    if(error||!data?.order)return json({error:error?.message||"تعذر تحديث طلب BARO."},400);return json(data);
   }
-  if(body.action==="order_update"){
-   const id=typeof body.order_id==="string"?body.order_id:"",status=typeof body.status==="string"?body.status:"",cost=amount(body.supplier_cost_usd,1000000);
-   const reference=typeof body.supplier_reference==="string"?body.supplier_reference.trim():"",exception=typeof body.exception_reason==="string"?body.exception_reason.trim():"",notes=typeof body.internal_notes==="string"?body.internal_notes.trim():"";
-   if(!uuidPattern.test(id)||!["pending","in_progress","awaiting_admin_confirmation","completed","failed","needs_review","cancelled"].includes(status)||cost===undefined||reference.length>160||exception.length>500||notes.length>2000)return json({error:"بيانات الطلب غير صحيحة."},400);
-   if(status==="completed"&&(!(cost!==null&&cost>0)||!(reference.length>=2||exception.length>=5)))return json({error:"يتطلب إكمال الطلب تكلفة فعلية ومرجعاً أو استثناء موثقاً."},400);
-   const {data,error}=await admin.rpc("baro_manual_order_update_atomic",{p_admin_id:user.id,p_order_id:id,p_status:status,p_supplier_cost_usd:cost,p_supplier_reference:reference||null,p_exception_reason:exception||null,p_internal_notes:notes});
-   if(error||!data?.order)return json({error:"لم يتم تحديث الطلب."},400);return json(data);
-  }
+  // Legacy order_update is intentionally disabled. All order changes must use
+  // order_admin_update and its strict payment/state-transition RPC.
   return json({error:"الإجراء غير معروف."},400);
  }catch(error){console.error("baro-manual error",error);return json({error:"حدث خطأ داخلي أثناء معالجة BARO."},500);}
 });
