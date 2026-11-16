@@ -172,3 +172,23 @@ Added `baro-leo-manual.html` to the test branch as a standalone, mobile-first ad
 - The server-side endpoint still verifies the user's JWT and `admin_is_user`; hiding the page URL is not treated as an authorization control.
 
 This is a branch-only prototype. It has not been deployed, linked from the production storefront, or tested in a live browser session. Do not merge it or expose it to customers yet. Before any UI acceptance, inspect the rendered page on a phone and verify admin access, customer denial, successful atomic audit behavior in a controlled test record, and absence of writes outside `leo_manual_*` plus the expected audit/event records. No manual order or financial transaction was created as part of this page work.
+
+
+## Syria Market read-only boundary — 2026-11-16
+
+Added a separate read-only Syria Market path in the test environment:
+
+- New Edge Function source: `supabase/functions/baran-syria-market-read/index.ts`.
+- Deployed test function: `baran-syria-market-read`, version 1, ACTIVE, `verify_jwt=true`, source SHA-256 `0ba68c724417dea52595580f31eeca12389de90ce7e04f4e53e3be5b4f000bcd`.
+- New standalone mobile page: `syria-market-admin.html`.
+- The endpoint independently validates the JWT and `admin_is_user`, and only reads `suppliers`, `supplier_products`, and the product catalogue fields needed for supplier mapping. It returns explicit `mode=read_only`, `writes_enabled=false`, `supplier_orders_enabled=false`, and `finance_enabled=false`.
+- The page calls only `baran-syria-market-read`. It contains no calls to the legacy `baran-admin`, `baran-admin-safe-actions`, `baran-order-gateway`, or BARO manual endpoint. It provides no edit, purchase, or supplier-order controls.
+- Current read-only counts after this work: `suppliers=1`, `supplier_products=0`, `orders=0`, `order_fulfillment=0`, `leo_manual_orders=0`. No rows were created or changed.
+
+### Remaining separation gap
+
+This is a new isolated read-only path, not yet a complete replacement of the legacy combined admin surface. The existing `index.html` still embeds supplier management, Syria Market catalogue reads, preflight, and supplier AI inside the general admin dashboard. The legacy `baran-admin` and `baran-admin-safe-actions` functions still contain combined customer, finance, supplier, and general-order capabilities. They have not been modified or disabled because dependencies and rollback have not yet been fully mapped.
+
+Do not use the legacy supplier controls for ongoing work. Do not claim end-to-end isolation until the legacy supplier UI/API dependencies are removed or restricted after a dedicated regression review. The new page is branch-only and is not linked from the live storefront or deployed to GitHub Pages. Runtime acceptance using a real administrator session and a non-admin session remains pending; ACTIVE deployment status is not proof of successful browser authorization.
+
+No production resources, database records, general orders, manual orders, wallets, supplier requests, or finance records were changed.
