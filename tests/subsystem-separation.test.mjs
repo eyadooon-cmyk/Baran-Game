@@ -17,7 +17,7 @@ test("Test storefront is isolated from production Supabase", () => {
   assert.match(storefront, /options:\{redirectTo:BARAN_AUTH_REDIRECT\}/);
 });
 
-test("Jawaker customer section exposes only the six approved disabled categories", () => {
+test("Jawaker tokens are manual and Server 1 / Server 2 inputs are independent", () => {
   const start = storefront.indexOf('<section id="jawakerStore"');
   const end = storefront.indexOf('<section id="services"', start);
   assert.ok(start >= 0 && end > start, "Jawaker customer section must exist");
@@ -27,9 +27,20 @@ test("Jawaker customer section exposes only the six approved disabled categories
   for (const label of ["جواكر سيرفر 1", "جواكر سيرفر 2", "المسرّع الأحمر", "المسرّع الأزرق", "المسرّع الأسود", "المسرّع الذهبي"]) {
     assert.ok(jawaker.includes(label), "Missing Jawaker category: " + label);
   }
-  assert.equal((jawaker.match(/<button\b[^>]*disabled/g) || []).length, 6);
+  for (const id of ["jawakerServer1PlayerId", "jawakerServer1Quantity", "jawakerServer2PlayerId", "jawakerServer2Quantity"]) {
+    assert.equal((jawaker.match(new RegExp('id="' + id + '"', "g")) || []).length, 1, "Expected one independent field: " + id);
+  }
+  for (const id of ["jawakerServer1Quantity", "jawakerServer2Quantity"]) {
+    const field = jawaker.match(new RegExp('<input id="' + id + '"[^>]*>'))?.[0] || "";
+    assert.match(field, /min="10000"/);
+    assert.match(field, /max="1000000"/);
+  }
+  assert.equal((jawaker.match(/<button\b[^>]*disabled/g) || []).length, 4, "Only the four accelerators remain disabled");
+  assert.match(jawaker, /الشحن غير مفعّل حالياً/);
+  assert.match(jawaker, /لا نطلب كلمة مرور/);
   assert.match(jawaker, /onclick="showSection\('games',null\)"/);
   assert.doesNotMatch(jawaker, /create_order|order_create|wallet|checkout/i);
+  assert.doesNotMatch(jawaker, /functions\.invoke|fetch\(/i, "Jawaker section must not trigger automatic charging");
 });
 
 test("Admin hub routes supplier and manual work to separate pages", () => {
