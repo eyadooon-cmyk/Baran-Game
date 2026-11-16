@@ -1,13 +1,13 @@
-# BARAN GAME — Leo Manual Fulfilment
+# BARAN GAME — Baro Manual Fulfilment
 
 Status: feature-branch implementation baseline  
 Branch: `feature/lio-manual-fulfillment`  
-Provider: Leo mobile application  
+Provider: Leo mobile application (source app)  
 Fulfilment mode: manual by the store administrator; Leo has no API integration in this workflow.
 
 ## 1. Strict separation
 
-Leo is a standalone manual fulfilment route. It must never be routed through, or share operational records with:
+Leo is a Baro standalone manual fulfilment route. It must never be routed through, or share operational records with:
 - Syria Market API catalogue and supplier dispatcher.
 - Existing `products`, `orders`, `supplier_products`, or `order_fulfillment` workflows.
 - Existing supplier API credentials, mappings, execution gates, or automated order dispatch.
@@ -22,7 +22,7 @@ Leo has its own `leo_manual_products`, `leo_manual_orders`, and `leo_manual_orde
   - `جواكر توكنز`: Server 1 and Server 2.
   - `مسرّعات جواكر`: red, blue, black, and gold; a sibling group beside Tokens, not nested under it.
 
-The 32 reference costs were transcribed from the owner's Leo screenshots dated 2026-11-15. They are historic observations only, not confirmed current costs. They are stored in `reference_cost_usd`; actual current supplier cost remains null until the owner verifies it in Leo.
+The 32 reference costs were transcribed from the owner's Leo app screenshots dated 2026-11-15. They are historic observations only, not confirmed current costs. They are stored in `reference_cost_usd`; actual current supplier cost remains null until the owner verifies it in Leo.
 
 ## 3. Commercial controls
 
@@ -49,7 +49,7 @@ No screenshot cost is copied into the actual cost or sale-price fields. No sale 
 ## 5. Financial and security boundaries
 
 - No customer order creation is exposed yet.
-- No wallet debit, credit, refund, payment confirmation, or finance ledger posting is implemented in the Leo route.
+- No wallet debit, credit, refund, payment confirmation, or finance ledger posting is implemented in the Baro route.
 - The function does not call the Syria Market dispatcher or the generic order gateway.
 - Direct `anon` and `authenticated` table access is revoked; RLS is enabled. The Edge Function uses a server key only after verifying the user's session and administrator role.
 - Unknown or uncertain manual fulfilment outcomes must be marked `needs_review`; never auto-retry or auto-refund.
