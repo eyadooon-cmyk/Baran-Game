@@ -3375,6 +3375,7 @@ function buildAdminSectionNav(panel,id){
 }
 function showAdminPanel(id){
   if(id==="suppliers"){window.location.href="./syria-market-admin.html";return;}
+  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return;}
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
   if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}
