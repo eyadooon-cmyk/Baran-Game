@@ -92,3 +92,25 @@ test("Customer catalogue does not expose internal supplier cost or unquoted sale
   assert.match(catalogBlock, /select\("product_code,category_id,group_id,product_name,input_label,purchase_enabled"\)/);
   assert.doesNotMatch(catalogBlock, /supplier_cost_usd|sale_price_usd|sale_price_syp/);
 });
+
+
+test("BARO is embedded inside the existing BARAN customer app and admin panel", () => {
+  const app = read("../index.html");
+  assert.match(app, /<section id="baroManual" class="hidden">/);
+  assert.match(app, /onclick="showSection\('baroManual',this\);loadBaroCustomer\(\)"/);
+  assert.match(app, /data-admin-panel="baro"/);
+  assert.match(app, /onclick="showAdminPanel\('baro'\)"/);
+  assert.match(app, /loadBaroAdmin\(\)/);
+  assert.match(app, /loadBaranAutomaticControl\(\)/);
+});
+
+test("BARO and automatic fulfilment remain separate client modules and controls", () => {
+  const app = read("../index.html");
+  const automatic = read("../automatic-fulfillment.js");
+  assert.match(app, /src="\.\/automatic-fulfillment\.js/);
+  assert.match(app, /src="\.\/baro\.js/);
+  assert.match(automatic, /baranAutomaticEnabled/);
+  assert.match(automatic, /baran-automatic-fulfillment-control/);
+  assert.doesNotMatch(automatic, /baroEndpoint|baro_manual/);
+  assert.doesNotMatch(ui, /baranAutomaticControlUrl|baran_supplier_prepare_order/);
+});
