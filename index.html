@@ -2279,7 +2279,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
             <div class="admin-hub-grid">
               <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المراقبة ومساعد الإدارة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والمنتجات</strong><small>الموردون والربط والأسعار والتكاليف.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="window.location.href='./syria-market-admin.html'"><span class="admin-hub-icon">🇸🇾</span><strong>سوريا ماركت</strong><small>إدارة الموردين وروابط المنتجات — قراءة فقط حالياً.</small><span class="admin-hub-open">فتح المساحة المستقلة ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="window.location.href='./baro-leo-manual.html'"><span class="admin-hub-icon">🟣</span><strong>BARO LEO اليدوي</strong><small>كتالوج BARO والطلبات اليدوية فقط.</small><span class="admin-hub-open">فتح المساحة المستقلة ←</span></button>
             </div>
           </section>
           <section class="admin-hub-group">
@@ -3292,6 +3293,7 @@ function buildAdminSectionNav(panel,id){
   if(old)old.remove();
 }
 function showAdminPanel(id){
+  if(id==="suppliers"){window.location.href="./syria-market-admin.html";return;}
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
   if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}
