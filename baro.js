@@ -68,7 +68,7 @@ async function submitBaroOrder(){
  const player=baroEl("baroPlayerId").value.trim(),note=baroEl("baroCustomerNote").value.trim();
  const tokens=p.category_id==="jawaker"&&p.group_id==="tokens";
  const quantity=Number(tokens?baroEl("baroQuantity").value:1);
- if(player.length<3||player.length>100){message.textContent="أدخل معرّف اللاعب بشكل صحيح وتأكد منه قبل الإرسال.";return;}
+ if(player.length<3||player.length>80){message.textContent="أدخل معرّف اللاعب بشكل صحيح وتأكد منه قبل الإرسال.";return;}
  if(tokens&&(!Number.isInteger(quantity)||quantity<10000||quantity>1000000)){message.textContent="كمية جواكر يجب أن تكون بين 10,000 و1,000,000.";return;}
  if(note.length>500){message.textContent="الملاحظات طويلة جداً.";return;}
  if(!confirm("تأكيد إرسال طلب BARO؟ لن يتم خصم أي مبلغ الآن. ستراجع الإدارة الطلب وترسل السعر وطريقة الدفع."))return;
