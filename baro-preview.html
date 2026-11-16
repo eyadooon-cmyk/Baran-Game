@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09070e">
+<title>BARO | معاينة آمنة</title>
+<style>
+:root{color-scheme:dark;--bg:#09070e;--panel:#17111f;--panel2:#21182c;--line:#49365d;--purple:#b98add;--text:#f6effb;--muted:#c3b3d0;--warn:#f3c77b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -10%,#39234e 0,transparent 48%),var(--bg);color:var(--text);font-family:system-ui,"Noto Sans Arabic",Tahoma,sans-serif}
+.wrap{max-width:760px;margin:auto;padding:16px 14px 40px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px 18px}
+.brand{font-weight:950;letter-spacing:2px;font-size:25px}.brand span{color:var(--purple)}
+.pill{border:1px solid #8867a1;color:#e7d4f6;background:#241a30;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:800}
+.notice{border:1px solid #80623b;background:#2a2117;color:#ffe1ad;border-radius:14px;padding:13px 14px;line-height:1.75;font-size:13px}
+.hero{margin:16px 0;padding:24px 18px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,#2b1d3a,#15101d 75%);box-shadow:0 16px 38px #0006}
+.eyebrow{color:var(--purple);font-size:12px;font-weight:900;letter-spacing:2px}.hero h1{font-size:clamp(26px,7vw,38px);margin:7px 0}.hero p{margin:0;color:var(--muted);line-height:1.8;font-size:14px}
+.section-title{margin:23px 2px 11px;font-size:17px;color:#e8d7f4}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tab{padding:12px 7px;border-radius:12px;border:1px solid var(--line);background:#17111f;color:#e9dff1;font-weight:800}
+.tab.active{background:#4a3260;border-color:#bd91df;box-shadow:0 0 0 1px #bd91df33 inset}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.product{padding:14px 12px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(155deg,#21182c,#15101c);text-align:right;min-width:0}
+.product strong{display:block;font-size:14px;line-height:1.6}.product small{display:block;color:var(--muted);margin-top:5px;font-size:11px}
+.product button{width:100%;margin-top:11px;padding:10px;border-radius:10px;border:1px solid #75558e;background:#2d203a;color:#f5eafa;font-weight:800}
+.product button.selected{background:#69468a;border-color:#d1a9f0}
+.form{margin-top:17px;padding:16px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}
+label{display:block;color:#d9c8e5;font-size:13px;font-weight:750;margin:12px 0 6px}
+input,textarea{width:100%;padding:13px;border:1px solid #59456b;border-radius:11px;background:#0d0a12;color:#fff;font:inherit;font-size:16px}
+input::placeholder,textarea::placeholder{color:#887b92}
+.submit{width:100%;margin-top:15px;padding:14px;border:0;border-radius:12px;background:#72518b;color:white;font-weight:900;font-size:15px}
+.submit:disabled{opacity:.55}
+.result{display:none;margin-top:12px;padding:12px;border:1px solid #80623b;background:#2a2117;color:#ffe1ad;border-radius:11px;line-height:1.7;font-size:13px}
+.foot{text-align:center;color:#9f90ab;font-size:11px;line-height:1.8;margin-top:24px}
+@media(max-width:390px){.wrap{padding-inline:11px}.cards{grid-template-columns:1fr}.brand{font-size:22px}.hero{padding:20px 15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><div class="brand">BAR<span>O</span></div><div class="pill">وضع المعاينة فقط</div></header>
+<div class="notice"><strong>🔒 استقبال الطلبات مغلق</strong><br>هذه نسخة اختبار مستقلة. يمكنك التنقل واختيار منتج وتجربة إدخال المعرّف، لكن لا يتم إنشاء طلب أو إرسال بيانات أو خصم أي رصيد.</div>
+<section class="hero"><div class="eyebrow">BARAN GAME · MANUAL TOP-UP</div><h1>BARO للشحن اليدوي</h1><p>واجهة معاينة لقسم الشحن اليدوي. اختر اللعبة ثم المنتج، وراجع شكل نموذج الطلب على هاتفك.</p></section>
+<h2 class="section-title">1. اختر اللعبة</h2>
+<div class="tabs" role="tablist">
+<button class="tab active" data-cat="pubg">PUBG MOBILE</button><button class="tab" data-cat="freefire">FREE FIRE</button><button class="tab" data-cat="jawaker">JAWAKER</button>
+</div>
+<h2 class="section-title">2. اختر المنتج</h2>
+<div class="cards" id="products"></div>
+<section class="form">
+<h2 class="section-title" style="margin-top:0">3. بيانات المعاينة</h2>
+<div id="chosen" style="color:var(--purple);font-weight:850">لم يتم اختيار منتج بعد</div>
+<label for="player">معرّف اللاعب / الحساب</label>
+<input id="player" maxlength="80" placeholder="أدخل معرّفاً تجريبياً فقط" dir="ltr" autocomplete="off">
+<div id="quantityWrap" hidden><label for="quantity">كمية جواكر (10,000 إلى 1,000,000)</label><input id="quantity" type="number" min="10000" max="1000000" step="1000" value="10000"></div>
+<label for="note">ملاحظة (اختياري)</label><textarea id="note" rows="2" maxlength="300" placeholder="تجربة شكل الحقل فقط"></textarea>
+<button class="submit" id="send" disabled>إرسال طلب تجريبي — معطّل</button>
+<div class="result" id="result" role="status"></div>
+</section>
+<div class="foot">BARO Preview · لا اتصال بقاعدة البيانات · لا تسجيل دخول · لا دفع · لا طلبات حقيقية<br>نسخة مستقلة لمراجعة التصميم وتجربة الهاتف فقط.</div>
+</div>
+<script>
+const catalog={
+ pubg:[["60 UC","PUBG MOBILE"],["325 UC","PUBG MOBILE"],["660 UC","PUBG MOBILE"],["1800 UC","PUBG MOBILE"],["Prime — شهر واحد","اشتراك"],["Prime Plus — شهر واحد","اشتراك"],["حزمة الشراء الأول","حزمة"],["حزمة الشعار الخرافي","حزمة"],["حزمة الصفقة الأسبوعية 1","حزمة"],["حزمة الصفقة الأسبوعية 2","حزمة"],["حزمة ترقية الأسلحة النارية","حزمة"]],
+ freefire:[["110 جوهرة","Free Fire"],["210 جوهرة","Free Fire"],["583 جوهرة","Free Fire"],["1188 جوهرة","Free Fire"],["2420 جوهرة","Free Fire"],["عضوية أسبوعية","اشتراك"]],
+ jawaker:[["جواكر سيرفر 1 — الحد الأدنى 10,000 توكن","توكنز"],["جواكر سيرفر 2 — الحد الأدنى 10,000 توكن","توكنز"],["المسرّع الأحمر","مسرّعات"],["المسرّع الأزرق","مسرّعات"],["المسرّع الأسود","مسرّعات"],["المسرّع الذهبي","مسرّعات"]]
+};
+let category="pubg",selected=null;
+const products=document.getElementById("products"),chosen=document.getElementById("chosen"),send=document.getElementById("send");
+function render(){products.replaceChildren();catalog[category].forEach(([name,type])=>{const card=document.createElement("article");card.className="product";const strong=document.createElement("strong");strong.textContent=name;const small=document.createElement("small");small.textContent=type+" · معاينة";const btn=document.createElement("button");btn.textContent=selected===name?"تم الاختيار ✓":"اختيار المنتج";if(selected===name)btn.className="selected";btn.onclick=()=>{selected=name;chosen.textContent="المنتج المختار: "+name;send.disabled=false;send.textContent="إرسال طلب تجريبي — معطّل";document.getElementById("quantityWrap").hidden=!(category==="jawaker"&&name.includes("توكنز"));render()};card.append(strong,small,btn);products.append(card)})}
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{category=btn.dataset.cat;selected=null;chosen.textContent="لم يتم اختيار منتج بعد";send.disabled=true;document.getElementById("quantityWrap").hidden=true;document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b===btn));render()}));
+send.addEventListener("click",()=>{const box=document.getElementById("result");box.style.display="block";box.textContent="هذه معاينة فقط: لم يتم إرسال أي طلب، ولم يتم الاتصال بالمورد أو بقاعدة البيانات."});
+render();
+</script>
+</body></html>
