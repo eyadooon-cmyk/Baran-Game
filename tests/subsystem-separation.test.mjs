@@ -26,8 +26,9 @@ test("Jawaker customer section exposes only the six approved disabled categories
   for (const label of ["جواكر سيرفر 1", "جواكر سيرفر 2", "المسرّع الأحمر", "المسرّع الأزرق", "المسرّع الأسود", "المسرّع الذهبي"]) {
     assert.ok(jawaker.includes(label), "Missing Jawaker category: " + label);
   }
-  assert.equal((jawaker.match(/<button\\b[^>]*disabled/g) || []).length, 6);
-  assert.doesNotMatch(jawaker, /onclick=|create_order|order_create|wallet|checkout/i);
+  assert.equal((jawaker.match(/<button\b[^>]*disabled/g) || []).length, 6);
+  assert.match(jawaker, /onclick="showSection\('games',null\)"/);
+  assert.doesNotMatch(jawaker, /create_order|order_create|wallet|checkout/i);
 });
 
 test("Admin hub routes supplier and manual work to separate pages", () => {
