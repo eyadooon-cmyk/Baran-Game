@@ -67,7 +67,7 @@ const $=id=>document.getElementById(id);
 function node(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
 function money(v){return v===null||v===undefined?"غير محدد":Number(v).toLocaleString("en-US",{maximumFractionDigits:4})+" $";}
 async function api(method,body){
- const response=await fetch(SUPABASE_URL+"/functions/v1/baran-leo-manual",{method,headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+ const response=await fetch(SUPABASE_URL+"/functions/v1/baran-baro-manual",{method,headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
  const data=await response.json().catch(()=>({}));
  if(!response.ok)throw new Error(data.error||"تعذر الاتصال بخدمة إدارة بارو.");
  return data;
