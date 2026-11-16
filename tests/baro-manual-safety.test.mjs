@@ -139,3 +139,11 @@ test("Product route candidates are not executable until reviewed and approved", 
   assert.match(channelGuard, /مرشح فقط/);
   assert.ok(channelGuard.includes("route_enabled = false"));
 });
+
+const channelStatus = read("../supabase/migrations/20261116181000_sync_channel_guard_order_statuses.sql");
+test("Automatic supplier pending and unknown states keep the cross-channel claim reserved", () => {
+  assert.match(channelStatus, /awaiting_supplier/);
+  assert.match(channelStatus, /'processing'/);
+  assert.match(channelStatus, /'needs_review'/);
+  assert.match(channelStatus, /'failed','rejected'/);
+});
