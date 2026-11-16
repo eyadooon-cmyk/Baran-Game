@@ -75,8 +75,8 @@ test("Legacy BARO order update endpoint is disabled", () => {
 
 test("BARO data tables remain private and legacy update RPC is removed", () => {
   for (const table of ["leo_manual_products","leo_manual_orders","leo_manual_order_events"]) {
-    assert.match(schema, new RegExp("alter table public\\\\."+table+" enable row level security"));
-    assert.match(schema, new RegExp("revoke all on public\\\\."+table+" from anon, authenticated"));
+    assert.ok(schema.includes("alter table public."+table+" enable row level security"));
+    assert.ok(schema.includes("revoke all on public."+table+" from anon, authenticated"));
   }
   const dropLegacy = read("../supabase/migrations/20261116153300_remove_legacy_baro_order_update_rpc.sql");
   assert.match(dropLegacy, /drop function if exists public\\.baro_manual_order_update_atomic/);
