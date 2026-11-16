@@ -112,5 +112,5 @@ test("Free Fire diamonds and memberships have separate customer catalogs", () =>
   assert.doesNotMatch(storefront, /id="freeFireProductCatalog"/);
   assert.match(storefront, /kind==="diamonds"\)return \/\^FREEFIRE_\\d\+\$\//);
   assert.match(storefront, /FREEFIRE_MEMBERSHIP_\(\?:WEEKLY\|MONTHLY\)/);
-  assert.match(storefront, /data-game-package-grid=item\.kind==="pubg"\?"PUBG":\("FREEFIRE_"\+item\.kind\.toUpperCase\(\)\)/);
+  assert.match(storefront, /grid\.dataset\.gamePackageGrid=item\.kind==="pubg"\?"PUBG":\("FREEFIRE_"\+item\.kind\.toUpperCase\(\)\);/);
 });
