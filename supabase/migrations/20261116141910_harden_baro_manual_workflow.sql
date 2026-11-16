@@ -1,6 +1,10 @@
 -- BARO hardening: atomic product configuration and strict order-state transitions.
 -- Branch-only migration; do not apply to production until reviewed and staged.
 
+-- Remove PUBG UC packages that are not part of the user-approved BARO catalogue.
+delete from public.leo_manual_products
+where product_code in ('LEO_PUBG_UC_3850','LEO_PUBG_UC_8100');
+
 -- Deactivate any previously exposed test catalogue entries that lack an approved sale price.
 update public.leo_manual_products
 set catalog_visible=false,purchase_enabled=false,updated_at=pg_catalog.now()
