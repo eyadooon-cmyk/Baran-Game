@@ -18,6 +18,12 @@ async function baroApi(method="GET",body=null,view="admin"){
  if(!response.ok)throw new Error(data.error||"تعذر الاتصال بقسم BARO.");
  return data;
 }
+let baroPendingSubmission=null;
+function baroIdempotencyKey(){
+ if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();
+ if(globalThis.crypto?.getRandomValues){const b=new Uint8Array(16);globalThis.crypto.getRandomValues(b);b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(x=>x.toString(16).padStart(2,"0")).join("");return h.slice(0,8)+"-"+h.slice(8,12)+"-"+h.slice(12,16)+"-"+h.slice(16,20)+"-"+h.slice(20);}
+ throw new Error("تعذر إنشاء رقم آمن لمحاولة الطلب. حدّث المتصفح وحاول مجدداً.");
+}
 function baroSelectedProduct(){return baroCustomerProducts.find(p=>p.product_code===baroEl("baroProductSelect")?.value)||null;}
 function baroUpdateQuantityField(){
  const p=baroSelectedProduct(),wrap=baroEl("baroQuantityWrap"),input=baroEl("baroQuantity");
@@ -87,13 +93,19 @@ async function submitBaroOrder(){
  if(tokens&&(!Number.isInteger(quantity)||quantity<10000||quantity>1000000)){message.textContent="كمية جواكر يجب أن تكون بين 10,000 و1,000,000.";return;}
  if(note.length>500){message.textContent="الملاحظات طويلة جداً.";return;}
  if(!confirm("تأكيد إرسال طلب BARO؟ لن يتم خصم أي مبلغ الآن. ستراجع الإدارة الطلب وترسل السعر وطريقة الدفع."))return;
+ const request={product_code:p.product_code,player_id:player,quantity,customer_note:note};
+ const fingerprint=JSON.stringify(request);
+ if(!baroPendingSubmission||baroPendingSubmission.fingerprint!==fingerprint){
+  baroPendingSubmission={fingerprint,idempotency_key:baroIdempotencyKey()};
+ }
  button.disabled=true;message.textContent="جاري إرسال الطلب...";
  try{
-  const result=await baroApi("POST",{action:"create_order",product_code:p.product_code,player_id:player,quantity,customer_note:note});
+  const result=await baroApi("POST",{action:"create_order",...request,idempotency_key:baroPendingSubmission.idempotency_key});
+  baroPendingSubmission=null;
   message.textContent="وصل طلبك للإدارة بنجاح. رقم الطلب: "+String(result.order_id||"").slice(0,8)+" — لا يوجد خصم من المحفظة.";
   baroEl("baroPlayerId").value="";baroEl("baroCustomerNote").value="";
   await loadBaroCustomer();
- }catch(e){message.textContent=e.message;}
+ }catch(e){message.textContent=e.message+" إذا لم يتأكد وصول الطلب، أعد إرسال نفس البيانات لتجنب إنشاء طلب مكرر.";}
  finally{button.disabled=!baroManualEnabled;}
 }
 function baroProductCard(p){
