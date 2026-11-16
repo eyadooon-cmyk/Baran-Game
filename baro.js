@@ -124,9 +124,10 @@ async function submitBaroOrder(){
  try{
   const result=await baroApi("POST",{action:"create_order",...request,idempotency_key:pending.idempotency_key});
   baroClearPendingSubmission();
-  message.textContent="وصل طلبك للإدارة بنجاح. رقم الطلب: "+String(result.order_id||"").slice(0,8)+" — لا يوجد خصم من المحفظة.";
+  const successMessage="وصل طلبك للإدارة بنجاح. رقم الطلب: "+String(result.order_id||"").slice(0,8)+" — لا يوجد خصم من المحفظة.";
+  message.textContent=successMessage;
   baroEl("baroPlayerId").value="";baroEl("baroCustomerNote").value="";
-  await loadBaroCustomer();
+  try{await loadBaroCustomer();}catch{message.textContent=successMessage+" تعذر تحديث قائمة الطلبات؛ حدّث الصفحة لرؤية الطلب.";}
  }catch(e){message.textContent=e.message+" إذا لم يتأكد وصول الطلب، أعد إرسال نفس البيانات لتجنب إنشاء طلب مكرر.";}
  finally{button.disabled=!baroManualEnabled;}
 }
