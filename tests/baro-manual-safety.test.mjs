@@ -137,5 +137,5 @@ test("Product route candidates are not executable until reviewed and approved", 
   assert.match(channelGuard, /route_enabled boolean not null default false/);
   assert.match(channelGuard, /check \(route_enabled = false or mapping_status = 'approved'\)/);
   assert.match(channelGuard, /مرشح فقط/);
-  assert.match(channelGuard, /route_enabled\\s*=\\s*false/);
+  assert.ok(channelGuard.includes("route_enabled = false"));
 });
