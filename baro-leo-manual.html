@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09080d">
+<title>BARO LEO | الإدارة اليدوية</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{color-scheme:dark;--bg:#09080d;--panel:#17121e;--panel2:#21182b;--line:#493b55;--accent:#b99ad2;--text:#f3edf7;--muted:#b9a9c9;--ok:#a9e2c5;--warn:#f2d39b;--bad:#ffb8c2}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#261832 0,transparent 34%),var(--bg);color:var(--text);font-family:Arial,Tahoma,sans-serif;line-height:1.65}
+header{padding:20px 14px 14px;background:#100b16eF;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+.wrap{width:min(980px,100%);margin:auto;padding:0 12px}
+.brand{font-size:22px;font-weight:900;color:#e9dcf4;letter-spacing:.5px}.brand span{color:var(--accent)}
+.sub{font-size:12px;color:var(--muted);margin:3px 0 0}
+main{padding:16px 0 40px}.notice{padding:13px 14px;margin:12px 0;border:1px solid #765d8b;border-radius:13px;background:#20172a;color:#e8d9f2;font-size:13px}
+.notice strong{color:#fff}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+button,a.btn{border:1px solid #80649a;border-radius:10px;background:#30213d;color:#fff;padding:10px 13px;font-weight:700;text-decoration:none;cursor:pointer;font-size:13px}
+button.primary{background:var(--accent);color:#1b1222;border-color:var(--accent)}button:disabled{opacity:.55;cursor:wait}
+input,select,textarea{width:100%;background:#0e0a13;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px;font:inherit;font-size:14px}
+label{display:block;color:var(--muted);font-size:12px;margin:9px 0 4px}
+.panel{background:linear-gradient(145deg,#1b1522,#110d17);border:1px solid var(--line);border-radius:15px;padding:14px;margin:13px 0}
+.panel h2{font-size:17px;color:#dfcbed;margin:0 0 9px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:#21182b;border:1px solid #493b55;border-radius:11px;padding:10px;min-width:0}.stat b{display:block;font-size:20px;color:#e7d4f4}.stat span{font-size:11px;color:var(--muted)}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.card{background:#191320;border:1px solid #40334b;border-radius:13px;padding:12px;margin:9px 0;overflow-wrap:anywhere}
+.card-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.card h3{font-size:15px;margin:0;color:#f0e7f7}.code{font-size:10px;color:#a998b7;direction:ltr;display:block;text-align:right}
+.pill{display:inline-block;padding:3px 8px;border-radius:99px;background:#342642;color:#e7d7f2;border:1px solid #59466b;font-size:10px;white-space:nowrap}
+.meta{font-size:12px;color:var(--muted);margin-top:7px}.price-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}
+.price{background:#21182b;padding:8px;border-radius:9px;border:1px solid #40334b}.price small{display:block;color:var(--muted);font-size:10px}.price b{font-size:13px;overflow-wrap:anywhere}
+details{border-top:1px solid #40334b;margin-top:10px;padding-top:8px}summary{cursor:pointer;color:#d8c4e8;font-weight:700;font-size:13px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.form-grid .wide{grid-column:1/-1}
+.empty{padding:18px;text-align:center;color:var(--muted);border:1px dashed #59466b;border-radius:12px}
+#status{padding:9px 11px;background:#17121e;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;white-space:pre-wrap}
+#status.ok{color:var(--ok)}#status.err{color:var(--bad)}
+footer{text-align:center;color:#8e809a;font-size:11px;padding:20px}
+@media(max-width:520px){.wrap{padding:0 10px}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.filters,.form-grid{grid-template-columns:1fr}.price-grid{grid-template-columns:1fr 1fr}.card-top{flex-direction:column}.pill{align-self:flex-start}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand">BARO <span>LEO</span></div><p class="sub">لوحة الإدارة اليدوية المستقلة — إدارة الكتالوج ومتابعة التنفيذ اليدوي</p></div></header>
+<main class="wrap">
+<div class="notice"><strong>وضع آمن:</strong> هذه الصفحة تستخدم وظيفة BARO اليدوية فقط. لا يوجد شراء أو شحن مورد أو خصم محفظة أو تسجيل حركة مالية. لا تنشئ هذه الصفحة طلبات جديدة.</div>
+<div class="toolbar"><a class="btn" href="./index.html">العودة إلى BARAN GAME</a><button id="refreshBtn" class="primary" type="button">تحديث البيانات</button></div>
+<div id="status" role="status" aria-live="polite">جارٍ التحقق من جلسة المدير...</div>
+<section class="panel"><h2>ملخص BARO LEO</h2><div class="stats">
+<div class="stat"><b id="productCount">—</b><span>منتجات يدوية</span></div>
+<div class="stat"><b id="orderCount">—</b><span>طلبات يدوية</span></div>
+<div class="stat"><b id="purchaseState">مغلق</b><span>بوابة الشراء</span></div>
+</div></section>
+<section class="panel"><h2>كتالوج المنتجات اليدوي</h2>
+<div class="filters"><input id="search" type="search" placeholder="ابحث باسم المنتج أو الرمز"><select id="category"><option value="all">كل الأقسام</option><option value="pubg">PUBG</option><option value="freefire">Free Fire</option><option value="jawaker">Jawaker</option></select></div>
+<div id="products"><div class="empty">بانتظار تحميل المنتجات...</div></div>
+</section>
+<section class="panel"><h2>طلبات BARO اليدوية</h2><p class="sub">تحديث حالة طلب يدوي موجود فقط. لا يوجد زر لإنشاء طلب أو إرسال طلب إلى مورد.</p>
+<div id="orders"><div class="empty">بانتظار تحميل الطلبات...</div></div>
+</section>
+<footer>BARO LEO • صلاحية المدير مطلوبة • جميع التعديلات تمر عبر الوظيفة اليدوية المحمية</footer>
+</main>
+<script>
+"use strict";
+const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
+const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+const ENDPOINT=SUPABASE_URL+"/functions/v1/baran-baro-manual";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let session=null,products=[],orders=[];
+const el=id=>document.getElementById(id);
+const categoryNames={pubg:"PUBG MOBILE",freefire:"Free Fire",jawaker:"Jawaker"};
+const groupNames={uc:"شدات UC",growth:"باقات Prime والتطوير",diamonds:"الجواهر",memberships:"العضويات",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
+const statusNames={pending:"قيد المراجعة",in_progress:"قيد التنفيذ",awaiting_admin_confirmation:"بانتظار تأكيد الإدارة",completed:"مكتمل",failed:"متعذر",needs_review:"يحتاج مراجعة",cancelled:"ملغي"};
+function setStatus(message,kind){el("status").textContent=message;el("status").className=kind||"";}
+function escapeText(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function money(value,currency){if(value===null||value===undefined||value==="")return "غير محدد";const n=Number(value);return Number.isFinite(n)?(currency==="USD"?"$"+n.toFixed(2):n.toLocaleString("en-US")+" ل.س"):"غير صالح";}
+async function api(method,body){
+ if(!session?.access_token)throw new Error("انتهت الجلسة. ارجع إلى المتجر وسجّل الدخول كمدير.");
+ const response=await fetch(ENDPOINT,{method,headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:method==="GET"?undefined:JSON.stringify(body||{})});
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(data.error||"تعذر الاتصال بوظيفة BARO اليدوية.");
+ return data;
+}
+function renderProducts(){
+ const box=el("products"),query=el("search").value.trim().toLocaleLowerCase("ar"),category=el("category").value;
+ box.replaceChildren();
+ const rows=products.filter(p=>(category==="all"||p.category_id===category)&&(!query||[p.product_name,p.product_code,p.category_id,p.group_id].join(" ").toLocaleLowerCase("ar").includes(query)));
+ if(!rows.length){box.innerHTML='<div class="empty">لا توجد منتجات مطابقة.</div>';return;}
+ rows.forEach(p=>{
+  const card=document.createElement("article");card.className="card";
+  const top=document.createElement("div");top.className="card-top";
+  const title=document.createElement("div");const h=document.createElement("h3");h.textContent=p.product_name;const code=document.createElement("span");code.className="code";code.textContent=p.product_code;title.append(h,code);
+  const badge=document.createElement("span");badge.className="pill";badge.textContent=(p.catalog_visible?"ظاهر بالكتالوج":"مخفي عن الكتالوج")+" • الشراء مغلق";
+  top.append(title,badge);
+  const meta=document.createElement("div");meta.className="meta";meta.textContent=(categoryNames[p.category_id]||p.category_id)+" / "+(groupNames[p.group_id]||p.group_id)+" • حقل الإدخال: "+p.input_label;
+  const prices=document.createElement("div");prices.className="price-grid";
+  [["تكلفة المورد",money(p.supplier_cost_usd,"USD")],["سعر البيع USD",money(p.sale_price_usd,"USD")],["سعر البيع SYP",money(p.sale_price_syp,"SYP")]].forEach(([label,value])=>{const d=document.createElement("div");d.className="price";const s=document.createElement("small");s.textContent=label;const b=document.createElement("b");b.textContent=value;d.append(s,b);prices.append(d);});
+  const details=document.createElement("details");const summary=document.createElement("summary");summary.textContent="تعديل أسعار وملاحظات المنتج";
+  const form=document.createElement("form");form.className="form-grid";
+  const fields=[["supplier_cost_usd","تكلفة المورد بالدولار",p.supplier_cost_usd],["sale_price_usd","سعر البيع بالدولار",p.sale_price_usd],["sale_price_syp","سعر البيع بالليرة",p.sale_price_syp]];
+  fields.forEach(([name,label,value])=>{const wrap=document.createElement("div");const l=document.createElement("label");l.textContent=label;const input=document.createElement("input");input.name=name;input.type="number";input.min="0";input.step="0.01";input.inputMode="decimal";input.placeholder="اتركه فارغاً إذا غير محدد";input.value=value??"";wrap.append(l,input);form.append(wrap);});
+  const notesWrap=document.createElement("div");notesWrap.className="wide";const nl=document.createElement("label");nl.textContent="ملاحظات الإدارة";const notes=document.createElement("textarea");notes.name="admin_notes";notes.rows=2;notes.maxLength=1000;notes.value=p.admin_notes||"";notesWrap.append(nl,notes);form.append(notesWrap);
+  const save=document.createElement("button");save.type="submit";save.className="primary wide";save.textContent="حفظ التعديل عبر المسار الذري";form.append(save);
+  form.addEventListener("submit",async ev=>{
+   ev.preventDefault();save.disabled=true;save.textContent="جارٍ الحفظ...";
+   const numeric=name=>{const value=form.elements[name].value.trim();return value===""?null:Number(value);};
+   try{await api("POST",{action:"product_update",product_code:p.product_code,supplier_cost_usd:numeric("supplier_cost_usd"),sale_price_usd:numeric("sale_price_usd"),sale_price_syp:numeric("sale_price_syp"),admin_notes:notes.value.trim()});setStatus("تم حفظ بيانات المنتج وتسجيل التدقيق. الشراء ما زال مغلقاً.","ok");await loadData();}
+   catch(error){setStatus(error.message,"err");save.disabled=false;save.textContent="إعادة المحاولة";}
+  });
+  details.append(summary,form);card.append(top,meta,prices,details);box.append(card);
+ });
+}
+function renderOrders(){
+ const box=el("orders");box.replaceChildren();
+ if(!orders.length){box.innerHTML='<div class="empty">لا توجد طلبات BARO يدوية حالياً. لم يتم إنشاء أي طلب تجريبي.</div>';return;}
+ orders.forEach(o=>{
+  const card=document.createElement("article");card.className="card";
+  const h=document.createElement("h3");h.textContent=o.product_name_snapshot||o.product_code;
+  const code=document.createElement("span");code.className="code";code.textContent=o.id;
+  const meta=document.createElement("div");meta.className="meta";meta.textContent="Player ID: "+o.player_id+" • "+(statusNames[o.status]||o.status);
+  const form=document.createElement("form");form.className="form-grid";
+  const add=(label,name,value,type="text")=>{const w=document.createElement("div");const l=document.createElement("label");l.textContent=label;const input=document.createElement("input");input.name=name;input.type=type;input.value=value??"";w.append(l,input);form.append(w);};
+  const sw=document.createElement("div");const sl=document.createElement("label");sl.textContent="حالة الطلب";const select=document.createElement("select");select.name="status";Object.entries(statusNames).forEach(([v,n])=>{const op=document.createElement("option");op.value=v;op.textContent=n;select.append(op);});select.value=o.status;sw.append(sl,select);form.append(sw);
+  add("التكلفة الفعلية بالدولار","supplier_cost_usd",o.supplier_cost_usd,"number");
+  add("مرجع التنفيذ اليدوي","supplier_reference",o.supplier_reference);
+  const ew=document.createElement("div");ew.className="wide";const elb=document.createElement("label");elb.textContent="سبب الاستثناء عند عدم وجود مرجع";const exception=document.createElement("textarea");exception.name="exception_reason";exception.rows=2;exception.value=o.exception_reason||"";ew.append(elb,exception);form.append(ew);
+  const nw=document.createElement("div");nw.className="wide";const nl=document.createElement("label");nl.textContent="ملاحظات داخلية";const notes=document.createElement("textarea");notes.name="internal_notes";notes.rows=2;notes.value=o.internal_notes||"";nw.append(nl,notes);form.append(nw);
+  const save=document.createElement("button");save.type="submit";save.className="primary wide";save.textContent="حفظ حالة الطلب والتدقيق";form.append(save);
+  form.addEventListener("submit",async ev=>{ev.preventDefault();save.disabled=true;try{
+   const cost=form.elements.supplier_cost_usd.value.trim();
+   await api("POST",{action:"order_update",order_id:o.id,status:select.value,supplier_cost_usd:cost===""?null:Number(cost),supplier_reference:form.elements.supplier_reference.value.trim(),exception_reason:exception.value.trim(),internal_notes:notes.value.trim()});
+   setStatus("تم تحديث الطلب وتسجيل الحدث والتدقيق. لا يوجد ترحيل مالي أو تغيير محفظة.","ok");await loadData();
+  }catch(error){setStatus(error.message,"err");save.disabled=false;}});
+  card.append(h,code,meta,form);box.append(card);
+ });
+}
+async function loadData(){
+ setStatus("جارٍ تحميل بيانات BARO اليدوية...");
+ const data=await api("GET");
+ products=Array.isArray(data.products)?data.products:[];
+ orders=Array.isArray(data.orders)?data.orders:[];
+ el("productCount").textContent=String(products.length);
+ el("orderCount").textContent=String(orders.length);
+ el("purchaseState").textContent=data.purchase_enabled===true?"مفتوح":"مغلق";
+ renderProducts();renderOrders();
+ setStatus("تم تحميل كتالوج BARO اليدوي والطلبات من الوظيفة المستقلة. لا توجد عملية شراء أو خصم.","ok");
+}
+async function init(){
+ try{
+  const result=await sb.auth.getSession();
+  if(result.error)throw result.error;
+  session=result.data.session;
+  if(!session){setStatus("لا توجد جلسة دخول. سجّل الدخول من صفحة BARAN GAME ثم افتح لوحة BARO LEO.","err");el("products").innerHTML='<div class="empty">بانتظار تسجيل دخول المدير.</div>';return;}
+  await loadData();
+ }catch(error){setStatus(error.message||"تعذر بدء لوحة BARO LEO.","err");}
+}
+el("refreshBtn").addEventListener("click",()=>loadData().catch(e=>setStatus(e.message,"err")));
+el("search").addEventListener("input",renderProducts);
+el("category").addEventListener("change",renderProducts);
+init();
+</script>
+</body>
+</html>
