@@ -93,7 +93,8 @@ function baroProductCard(p){
  const title=document.createElement("strong");title.textContent=p.product_name;
  const code=document.createElement("div");code.className="small";code.textContent=p.product_code;
  const state=document.createElement("div");state.className="small";state.textContent=(p.catalog_visible?"ظاهر للزبائن":"مخفي عن الزبائن")+" | "+(p.purchase_enabled?"استقبال الطلبات مفتوح":"استقبال الطلبات متوقف");
- const cost=document.createElement("div");cost.className="small";cost.textContent="تكلفة ليو الداخلية: "+baroMoney(p.supplier_cost_usd,"USD");
+ const referenceCost=document.createElement("div");referenceCost.className="small";referenceCost.textContent="تكلفة مرجعية تاريخية من ليو ("+(p.reference_cost_date||"تاريخ غير محدد")+"): "+baroMoney(p.reference_cost_usd,"USD")+" — ليست سعراً حالياً مؤكداً";
+ const cost=document.createElement("div");cost.className="small";cost.textContent="تكلفة المورد المؤكدة حالياً: "+baroMoney(p.supplier_cost_usd,"USD");
  const sale=document.createElement("div");sale.className="small";sale.textContent="سعر البيع USD: "+baroMoney(p.sale_price_usd,"USD")+" | SYP: "+baroMoney(p.sale_price_syp,"SYP");
  const form=document.createElement("div");form.className="ops-form";
  const usd=document.createElement("input");usd.type="number";usd.min="0";usd.step="0.01";usd.placeholder="تكلفة ليو USD";usd.value=p.supplier_cost_usd??"";
@@ -111,7 +112,7 @@ function baroProductCard(p){
   await loadBaroAdmin();baroAdminMessage("تم حفظ بيانات المنتج وإتاحته معاً وتسجيل التدقيق.");
  }catch(e){baroAdminMessage(e.message);}finally{save.disabled=false;}};
  form.append(usd,saleUsd,saleSyp,notes,visibility,enable,save);
- card.append(title,code,state,cost,sale,form);return card;
+ card.append(title,code,state,referenceCost,cost,sale,form);return card;
 }
 function baroAdminMessage(text){const el=baroEl("baroAdminMessage");if(el)el.textContent=text;}
 function renderBaroAdmin(){
