@@ -1,5 +1,5 @@
 "use strict";
-const BARO_ENDPOINT=SUPABASE_URL+"/functions/v1/baran-baro-manual";
+function baroEndpoint(){return SUPABASE_URL+"/functions/v1/baran-baro-manual";}
 const BARO_STATUS={pending:"طلب جديد بانتظار المراجعة",awaiting_payment:"بانتظار الدفع",paid:"تم تأكيد الدفع",in_progress:"قيد التنفيذ اليدوي",completed:"مكتمل",failed:"تعذر التنفيذ",needs_review:"يحتاج مراجعة",cancelled:"ملغي"};
 const BARO_PAYMENT={awaiting_quote:"بانتظار عرض السعر",awaiting_payment:"بانتظار الدفع",verified:"تم تأكيد الدفع",failed:"تعذر تأكيد الدفع"};
 let baroCustomerProducts=[],baroAdminProducts=[],baroAdminOrders=[];
@@ -9,7 +9,7 @@ function baroMoney(value,currency){if(value===null||value===undefined||value==="
 async function baroApi(method="GET",body=null,view="admin"){
  const {data:{session},error}=await sb.auth.getSession();
  if(error||!session)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
- const response=await fetch(BARO_ENDPOINT+(method==="GET"?"?view="+encodeURIComponent(view):""),{
+ const response=await fetch(baroEndpoint()+(method==="GET"?"?view="+encodeURIComponent(view):""),{
   method,headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
   body:body?JSON.stringify(body):undefined
  });
@@ -38,7 +38,7 @@ async function loadBaroCustomer(){
   }else{
    select.disabled=false;
    baroCustomerProducts.forEach(p=>{const op=document.createElement("option");op.value=p.product_code;op.textContent=p.product_name+(p.purchase_enabled?"":" — متوقف مؤقتاً");op.disabled=!p.purchase_enabled;select.append(op);});
-   select.addEventListener("change",baroUpdateQuantityField);baroUpdateQuantityField();
+   select.onchange=baroUpdateQuantityField;baroUpdateQuantityField();
    catalog.textContent=baroCustomerProducts.filter(p=>p.purchase_enabled).length+" منتج متاح للطلب اليدوي. السعر النهائي يؤكده فريق BARAN قبل الدفع.";
   }
   renderBaroCustomerOrders(o.orders||[]);
