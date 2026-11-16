@@ -11,7 +11,7 @@ create table if not exists public.leo_manual_products (
   supplier_cost_usd numeric(12,4) check (supplier_cost_usd is null or supplier_cost_usd >= 0),
   sale_price_usd numeric(12,4) check (sale_price_usd is null or sale_price_usd >= 0),
   sale_price_syp numeric(18,2) check (sale_price_syp is null or sale_price_syp >= 0),
-  catalog_visible boolean not null default false,
+  catalog_visible boolean not null default false check (catalog_visible = false),
   purchase_enabled boolean not null default false check (purchase_enabled = false),
   admin_notes text not null default '' check (char_length(admin_notes) <= 1000),
   created_at timestamptz not null default now(),
