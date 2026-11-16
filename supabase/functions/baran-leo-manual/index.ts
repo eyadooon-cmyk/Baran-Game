@@ -64,14 +64,13 @@ Deno.serve(async (req: Request) => {
       const saleSyp = optionalAmount(body.sale_price_syp, 100000000000);
       const notes = typeof body.admin_notes === "string" ? body.admin_notes.trim() : "";
       if (!/^LEO_[A-Z0-9_]{3,56}$/.test(code) || supplierCost === undefined || saleUsd === undefined ||
-          saleSyp === undefined || notes.length > 1000 || typeof body.catalog_visible !== "boolean") {
+          saleSyp === undefined || notes.length > 1000) {
         return json({ error: "تحقق من رمز المنتج والأسعار والملاحظات." }, 400);
       }
       const { data: product, error } = await admin.from("leo_manual_products").update({
         supplier_cost_usd: supplierCost,
         sale_price_usd: saleUsd,
         sale_price_syp: saleSyp,
-        catalog_visible: body.catalog_visible,
         admin_notes: notes,
         purchase_enabled: false,
         updated_at: new Date().toISOString(),
@@ -82,7 +81,7 @@ Deno.serve(async (req: Request) => {
         action: "leo_manual_product_update",
         entity_type: "leo_manual_product",
         entity_id: code,
-        details: { supplier_cost_usd: supplierCost, sale_price_usd: saleUsd, sale_price_syp: saleSyp, catalog_visible: body.catalog_visible, purchase_enabled: false },
+        details: { supplier_cost_usd: supplierCost, sale_price_usd: saleUsd, sale_price_syp: saleSyp, purchase_enabled: false },
       });
       if (auditError) {
         console.error("leo-manual product audit failed", auditError.message);
