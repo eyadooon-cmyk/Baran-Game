@@ -64,7 +64,9 @@ test("BARO customer order retries are idempotent and serialized per user", () =>
   assert.match(edge, /p_idempotency_key:idempotencyKey/);
   assert.match(edge, /uuidPattern\.test\(idempotencyKey\)/);
   assert.match(ui, /baroPendingSubmission/);
-  assert.match(ui, /idempotency_key:baroPendingSubmission\.idempotency_key/);
+  assert.match(ui, /sessionStorage\?\.setItem\("baro_pending_order_retry"/);
+  assert.match(ui, /sessionStorage\?\.getItem\("baro_pending_order_retry"/);
+  assert.match(ui, /idempotency_key:pending\.idempotency_key/);
 });
 
 test("Legacy BARO order update endpoint is disabled", () => {
