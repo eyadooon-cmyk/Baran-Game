@@ -9,9 +9,9 @@ const schema = read("../supabase/migrations/20261116000100_leo_manual_fulfillmen
 const gates = read("../supabase/migrations/20261116125528_baro_manual_global_switch_and_order_gate.sql");
 const hardening = read("../supabase/migrations/20261116141910_harden_baro_manual_workflow.sql");
 
-test("Leo catalogue contains exactly the reviewed 32 products and remains hidden by default", () => {
+test("Leo catalogue contains exactly the reviewed 30 products and remains hidden by default", () => {
   const seeded = schema.match(/\('LEO_[A-Z0-9_]+',/g) ?? [];
-  assert.equal(seeded.length, 32);
+  assert.equal(seeded.length, 30);
   assert.match(schema, /catalog_visible boolean not null default false/);
   assert.match(schema, /purchase_enabled boolean not null default false/);
 });
@@ -44,8 +44,8 @@ test("Order status transitions prevent reopening terminal orders", () => {
 });
 
 test("BARO remains isolated from wallet debit and automatic dispatch", () => {
-  assert.match(schema, /wallet_changed',false/);
-  assert.match(schema, /finance_posted',false/);
+  assert.match(hardening, /'wallet_changed',false/);
+  assert.match(hardening, /'finance_posted',false/);
   assert.match(gates, /public\.baro_manual_settings/);
   assert.doesNotMatch(gates, /baran_supplier_prepare_order/);
   assert.doesNotMatch(edge, /wallet_(?:debit|charge)|dispatch_supplier_order/i);
