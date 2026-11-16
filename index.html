@@ -1894,7 +1894,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       <div id="baroCustomerCatalog" class="deposit-card" aria-live="polite">جاري تحميل كتالوج BARO...</div>
       <div class="game-checkout"><h3>إنشاء طلب يدوي</h3>
         <label for="baroProductSelect">المنتج</label><select id="baroProductSelect"><option value="">جاري تحميل المنتجات...</option></select>
-        <label for="baroPlayerId">معرّف اللاعب / الحساب</label><input id="baroPlayerId" maxlength="100" autocomplete="off" placeholder="تأكد من المعرّف قبل الإرسال" dir="ltr">
+        <label for="baroPlayerId">معرّف اللاعب / الحساب</label><input id="baroPlayerId" maxlength="80" autocomplete="off" placeholder="تأكد من المعرّف قبل الإرسال" dir="ltr">
         <div id="baroQuantityWrap" class="hidden"><label for="baroQuantity">كمية جواكر (10,000 إلى 1,000,000)</label><input id="baroQuantity" type="number" min="10000" max="1000000" step="1000" value="10000"></div>
         <label for="baroCustomerNote">ملاحظة إضافية (اختياري)</label><textarea id="baroCustomerNote" rows="2" maxlength="500" placeholder="أي تفاصيل تساعدنا على تنفيذ طلبك"></textarea>
         <button id="baroSubmitOrder" class="full" type="button" onclick="submitBaroOrder()">إرسال طلب BARO للمراجعة</button>
@@ -3127,7 +3127,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
-<script src="./baro.js?v=20261116-baro-2"></script>
+<script src="./baro.js?v=20261116-baro-3"></script>
 <script>
 // TEST-ONLY configuration. Never point this branch at production.
 const SUPABASE_URL="https://tjvuqgcyvbowyfenrpau.supabase.co";
