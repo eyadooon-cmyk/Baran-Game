@@ -12,6 +12,8 @@ const hardening = read("../supabase/migrations/20261116141910_harden_baro_manual
 test("Leo catalogue contains exactly the reviewed 30 products and remains hidden by default", () => {
   const seeded = schema.match(/\('LEO_[A-Z0-9_]+',/g) ?? [];
   assert.equal(seeded.length, 30);
+  assert.doesNotMatch(schema, /LEO_PUBG_UC_(?:3850|8100)/);
+  assert.match(hardening, /delete from public\.leo_manual_products[\s\S]*LEO_PUBG_UC_3850[\s\S]*LEO_PUBG_UC_8100/);
   assert.match(schema, /catalog_visible boolean not null default false/);
   assert.match(schema, /purchase_enabled boolean not null default false/);
 });
