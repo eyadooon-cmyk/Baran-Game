@@ -119,7 +119,6 @@ function renderProducts(){
   card.append(fields);
   const notes=node("textarea");notes.rows=2;notes.maxLength=1000;notes.placeholder="ملاحظات داخلية عن السعر أو التوفر";notes.dataset.field="admin_notes";notes.value=product.admin_notes||"";
   const noteLabel=node("label","","ملاحظات داخلية");card.append(noteLabel,notes);
-  const visible=node("label","checkbox");const check=node("input");check.type="checkbox";check.checked=product.catalog_visible===true;check.dataset.field="catalog_visible";visible.append(check,node("span","","إظهار المنتج بالكتالوج (لا يفعّل الشراء)"));card.append(visible);
   const save=node("button","","حفظ الأسعار");save.type="button";save.onclick=()=>saveProduct(card,save);card.append(save);
   host.append(card);
  });
