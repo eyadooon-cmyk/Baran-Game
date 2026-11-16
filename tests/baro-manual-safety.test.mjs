@@ -53,6 +53,12 @@ test("BARO remains isolated from wallet debit and automatic dispatch", () => {
   assert.doesNotMatch(edge, /wallet_(?:debit|charge)|dispatch_supplier_order/i);
 });
 
+test("Legacy BARO order update endpoint is disabled", () => {
+  assert.doesNotMatch(edge, /body\\.action===\"order_update\"/);
+  assert.doesNotMatch(edge, /baro_manual_order_update_atomic/);
+  assert.match(edge, /order_admin_update/);
+});
+
 test("Customer catalogue does not expose internal supplier cost or unquoted sale prices", () => {
   const catalogBlock = edge.split('if(req.method==="GET"&&view==="catalog")')[1]?.split('if(req.method==="GET"&&view==="my_orders")')[0] ?? "";
   assert.match(catalogBlock, /select\("product_code,category_id,group_id,product_name,input_label,purchase_enabled"\)/);
