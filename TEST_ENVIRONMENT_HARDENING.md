@@ -114,3 +114,15 @@ No source code or live function was changed as part of this read-only finding.
 ## Release rule
 
 Keep BARO LEO manual fulfillment and Syria Market supplier integration separate. Keep purchasing, wallet debits, and fulfillment disabled until the relevant system has its own successful owner/customer UI acceptance tests, idempotency checks, audit verification, and enablement approval. Supplier execution, payment-provider verification, refund handling, and external integrations must be tested independently before they are enabled.
+
+
+## Additional UI/source inventory check — 2026-11-16
+
+A read-only inventory of the complete Git tree at commit `9178877a48c8a040b5b6765f8a9c3565417cc905` and inspection of the current frontend files found:
+
+- The repository tree contains no tracked frontend page or Edge Function source directory named `baran-leo-manual` or `baran-baro-manual`. The test project has deployed functions with those names, but their deployed source is not represented in this branch's tracked tree. This makes the manual workflow difficult to reproduce and review from Git.
+- The tracked `manage-products.html` calls the legacy `baran-admin` endpoint for product listing and writes.
+- The tracked `admin-operations.js` renders supplier records and supplier fulfillment controls alongside general order administration, and calls the legacy admin API for these operations.
+- The tracked `baran-ai-control-center.html` includes a supplier-analysis action that calls `baran-supplier-manager`; this is a legacy combined administration surface, not proof of an isolated Syria Market supplier application.
+
+This inventory strengthens the earlier finding that end-to-end separation is not yet demonstrated. Do not infer that the deployed manual functions are absent from the test project; the finding is specifically that their source and a dedicated manual UI are not tracked in this repository branch. Before any UI acceptance test or release, obtain and review the exact deployed manual function sources, add reproducible source to a dedicated branch, and confirm the frontend's manual workflow calls only the manual endpoint and `leo_manual_*` tables. Keep supplier-management pages and endpoints separate. No source code, database, deployment, or production resource was changed during this inventory check.
