@@ -35,7 +35,7 @@ Deno.serve(async(req:Request)=>{
    const player=typeof body.player_id==="string"?body.player_id.trim():"";
    const qty=typeof body.quantity==="number"?body.quantity:Number(body.quantity??1);
    const note=typeof body.customer_note==="string"?body.customer_note.trim():"";
-   if(!/^LEO_[A-Z0-9_]{3,56}$/.test(code)||player.length<3||player.length>100||!Number.isInteger(qty)||qty<1||qty>1000000||note.length>500)return json({error:"تحقق من المنتج ومعرّف اللاعب والكمية."},400);
+   if(!/^LEO_[A-Z0-9_]{3,56}$/.test(code)||player.length<3||player.length>80||!Number.isInteger(qty)||qty<1||qty>1000000||note.length>500)return json({error:"تحقق من المنتج ومعرّف اللاعب والكمية."},400);
    const {data,error}=await admin.rpc("baro_manual_create_customer_order",{p_user_id:user.id,p_product_code:code,p_player_id:player,p_quantity:qty,p_customer_note:note});
    if(error)return json({error:error.message||"تعذر تسجيل طلب BARO."},400);
    return json(data??{success:true});
