@@ -7,7 +7,7 @@ const ui = read("../baro.js");
 const edge = read("../supabase/functions/baran-baro-manual/index.ts");
 const schema = read("../supabase/migrations/20261116000100_leo_manual_fulfillment.sql");
 const gates = read("../supabase/migrations/20261116125528_baro_manual_global_switch_and_order_gate.sql");
-const hardening = read("../supabase/migrations/20261116130000_harden_baro_manual_workflow.sql");
+const hardening = read("../supabase/migrations/20261116141910_harden_baro_manual_workflow.sql");
 
 test("Leo catalogue contains exactly the reviewed 32 products and remains hidden by default", () => {
   const seeded = schema.match(/\('LEO_[A-Z0-9_]+',/g) ?? [];
