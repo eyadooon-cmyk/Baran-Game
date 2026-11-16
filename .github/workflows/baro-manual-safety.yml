@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "baro.js"
+      - "automatic-fulfillment.js"
+      - "index.html"
       - "supabase/functions/baran-baro-manual/**"
       - "supabase/migrations/**"
       - "tests/baro-manual-safety.test.mjs"
