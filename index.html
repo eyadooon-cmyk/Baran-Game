@@ -1877,6 +1877,9 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE">
           <span class="item-content"><strong>FREE FIRE</strong><span>ادخل إلى متجر جواهر Free Fire والطلبات الخاصة باللعبة</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
+        <button class="item" type="button" onclick="showSection('jawakerStore',null)" style="text-align:right;cursor:pointer">
+          <span class="item-content"><strong>JAWAKER · جواكر</strong><span>توكنز السيرفر الأول والثاني ومسرّعات جواكر</span><span class="small">فتح متجر جواكر ←</span></span>
+        </button>
       </div>
     </section>
 
@@ -1903,6 +1906,34 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <div class="game-selection-summary" id="freeFireSelectionSummary">لم يتم اختيار باقة بعد.</div>
         <button class="full" type="button" disabled>الشحن غير متاح حالياً</button>
         <p class="small game-availability-note">لن يتم إنشاء طلب أو خصم رصيد قبل تفعيل مورد معتمد واختبار الشحن والاسترجاع.</p>
+      </div>
+    </section>
+
+    <section id="jawakerStore" class="hidden game-store-page">
+      <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <div class="hero">
+        <h2>JAWAKER · جواكر</h2>
+        <p>اختر نوع المنتج. نعرض هنا تصنيفات جواكر المعتمدة فقط، من دون أسعار أو طلبات قبل ربط كتالوج الزبائن والتحقق منه.</p>
+      </div>
+      <div class="deposit-card">
+        <h3>جواكر توكنز</h3>
+        <div class="grid">
+          <button class="item" type="button" disabled><span class="item-content"><strong>جواكر سيرفر 1</strong><span class="small">الكتالوج قيد الربط والتحقق</span></span></button>
+          <button class="item" type="button" disabled><span class="item-content"><strong>جواكر سيرفر 2</strong><span class="small">الكتالوج قيد الربط والتحقق</span></span></button>
+        </div>
+      </div>
+      <div class="deposit-card">
+        <h3>مسرّعات جواكر</h3>
+        <div class="grid">
+          <button class="item" type="button" disabled><span class="item-content"><strong>المسرّع الأحمر</strong><span class="small">غير متاح للطلب حالياً</span></span></button>
+          <button class="item" type="button" disabled><span class="item-content"><strong>المسرّع الأزرق</strong><span class="small">غير متاح للطلب حالياً</span></span></button>
+          <button class="item" type="button" disabled><span class="item-content"><strong>المسرّع الأسود</strong><span class="small">غير متاح للطلب حالياً</span></span></button>
+          <button class="item" type="button" disabled><span class="item-content"><strong>المسرّع الذهبي</strong><span class="small">غير متاح للطلب حالياً</span></span></button>
+        </div>
+      </div>
+      <div class="deposit-card" role="note">
+        <strong>تنبيه قبل الإطلاق</strong>
+        <p class="small">هذا القسم واجهة تحضيرية فقط. لا يوجد اختيار باقة أو إنشاء طلب أو خصم رصيد. سنفعّل التصنيفات بعد ربط كتالوج عام آمن خاص بالزبائن والتأكد من السيرفر والأسعار.</p>
       </div>
     </section>
 
@@ -3342,6 +3373,7 @@ function baranSearchDestination(product){
   if(category==="game"){
     if(code.startsWith("freefire"))return "freeFireStore";
     if(code.startsWith("pubg"))return "pubgStore";
+    if(code.startsWith("jawaker"))return "jawakerStore";
     // Jawaker and any future game must never be misrouted to PUBG.
     return "games";
   }
@@ -3394,6 +3426,7 @@ async function searchStore(value){
       const extra=[...(aliases[category]||[])];
       if(code.startsWith("pubg"))extra.push("ببجي","شدات","uc");
       if(code.startsWith("freefire"))extra.push("فري فاير","جواهر");
+      if(code.startsWith("jawaker"))extra.push("جواكر","توكنز","مسرعات");
       const haystack=normalizeStoreSearch([product.name,product.product_code,product.description,category,...extra].filter(Boolean).join(" "));
       return {product,score:terms.filter(term=>haystack.includes(term)).length};
     }).filter(item=>item.score===terms.length);
@@ -3591,7 +3624,7 @@ function showSection(id,button,options){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
+  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
