@@ -79,7 +79,7 @@ test("BARO data tables remain private and legacy update RPC is removed", () => {
     assert.ok(schema.includes("revoke all on public."+table+" from anon, authenticated"));
   }
   const dropLegacy = read("../supabase/migrations/20261116153300_remove_legacy_baro_order_update_rpc.sql");
-  assert.match(dropLegacy, /drop function if exists public\\.baro_manual_order_update_atomic/);
+  assert.ok(dropLegacy.includes("drop function if exists public.baro_manual_order_update_atomic"));
   const settingsIndex = read("../supabase/migrations/20261116153200_index_baro_manual_settings_updated_by.sql");
   assert.match(settingsIndex, /baro_manual_settings_updated_by_idx/);
 });
