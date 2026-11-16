@@ -241,3 +241,17 @@ No endpoint or database changes were made during this contract review.
 ### Acceptance limitations
 
 The automated checks are source-level boundary tests. They do not replace browser testing with an authenticated owner/admin account and a non-admin account. The GitHub Actions workflow must report success before considering these checks passed. No live UI session, supplier write, manual order creation, payment, wallet debit, production deployment, or merge has been performed.
+
+
+### Automated CI result
+
+The GitHub Actions workflow completed successfully on 2026-11-16:
+
+- Run ID: `43787570383`
+- Workflow: `BARAN subsystem separation checks`
+- Job: `subsystem-separation`
+- Static boundary test step: `success`
+
+Run details: https://github.com/eyadooon-cmyk/Baran-Game/actions/runs/43787570383
+
+This confirms the source-level assertions passed. It does not constitute browser/session acceptance or prove the legacy combined backend has been fully decommissioned.
