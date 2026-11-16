@@ -54,7 +54,7 @@ test("BARO remains isolated from wallet debit and automatic dispatch", () => {
 });
 
 test("Legacy BARO order update endpoint is disabled", () => {
-  assert.doesNotMatch(edge, /body\\.action===\"order_update\"/);
+  assert.equal(edge.includes('body.action==="order_update"'), false);
   assert.doesNotMatch(edge, /baro_manual_order_update_atomic/);
   assert.match(edge, /order_admin_update/);
 });
