@@ -1877,9 +1877,31 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE">
           <span class="item-content"><strong>FREE FIRE</strong><span>ادخل إلى متجر جواهر Free Fire والطلبات الخاصة باللعبة</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
+        <button class="item" type="button" onclick="showSection('jawakerStore',null)" style="text-align:right;cursor:pointer">
+          <span class="item-content"><strong>JAWAKER · جواكر</strong><span>توكنز السيرفر الأول والثاني ومسرّعات جواكر</span><span class="small">فتح متجر جواكر ←</span></span>
+        </button>
+        <button class="item" type="button" onclick="showSection('baroManual',this);loadBaroCustomer()" style="text-align:right;cursor:pointer;border-color:#8c66ad">
+          <span class="item-content"><strong>BARO · الشحن اليدوي</strong><span>اطلب الشحن اليدوي وتابع السعر والتنفيذ من حسابك</span><span class="small">فتح BARO ←</span></span>
+        </button>
       </div>
     </section>
 
+
+    <section id="baroManual" class="hidden">
+      <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <div class="hero"><h2>BARO · الشحن اليدوي</h2><p>أرسل طلبك، وستراجع الإدارة السعر وطريقة الدفع قبل بدء الشحن اليدوي.</p></div>
+      <div class="deposit-card"><strong>كيف يعمل BARO؟</strong><p class="small">1. اختر المنتج وأدخل معرّف اللاعب. 2. تستلم عرض السعر وطريقة الدفع من الإدارة. 3. بعد تأكيد الدفع ننفذ الشحن يدوياً.</p><p class="small">إرسال الطلب لا يخصم أي مبلغ من محفظتك ولا ينفذ الشحن تلقائياً.</p></div>
+      <div id="baroCustomerCatalog" class="deposit-card" aria-live="polite">جاري تحميل كتالوج BARO...</div>
+      <div class="game-checkout"><h3>إنشاء طلب يدوي</h3>
+        <label for="baroProductSelect">المنتج</label><select id="baroProductSelect"><option value="">جاري تحميل المنتجات...</option></select>
+        <label for="baroPlayerId">معرّف اللاعب / الحساب</label><input id="baroPlayerId" maxlength="80" autocomplete="off" placeholder="تأكد من المعرّف قبل الإرسال" dir="ltr">
+        <div id="baroQuantityWrap" class="hidden"><label for="baroQuantity">كمية جواكر (10,000 إلى 1,000,000)</label><input id="baroQuantity" type="number" min="10000" max="1000000" step="1000" value="10000"></div>
+        <label for="baroCustomerNote">ملاحظة إضافية (اختياري)</label><textarea id="baroCustomerNote" rows="2" maxlength="500" placeholder="أي تفاصيل تساعدنا على تنفيذ طلبك"></textarea>
+        <button id="baroSubmitOrder" class="full" type="button" onclick="submitBaroOrder()">إرسال طلب BARO للمراجعة</button>
+        <div id="baroOrderMessage" class="small" role="status" aria-live="polite"></div>
+      </div>
+      <div class="deposit-card"><h3>طلباتي في BARO</h3><button class="secondary" type="button" onclick="loadBaroCustomer()">↻ تحديث الطلبات</button><div id="baroCustomerOrders" class="ops-list">جاري تحميل طلباتك...</div></div>
+    </section>
     <section id="pubgStore" class="hidden game-store-page" data-game-store="PUBG">
       <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
       <div class="hero"><h2>PUBG MOBILE</h2><p>اختر باقة UC، أدخل معرّف اللاعب، وراجع التفاصيل قبل الانتقال للخطوة التالية.</p></div>
@@ -1896,13 +1918,63 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
     <section id="freeFireStore" class="hidden game-store-page" data-game-store="FREEFIRE">
       <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
       <div class="hero"><h2>FREE FIRE</h2><p>اختر باقة الجواهر أو العضوية، أدخل معرّف اللاعب، وراجع التفاصيل قبل الانتقال للخطوة التالية.</p></div>
-      <div id="freeFireProductCatalog" class="deposit-card game-catalog" aria-live="polite"><strong>باقات جواهر Free Fire</strong><p class="small">جاري تحميل الباقات...</p></div>
+      <div class="deposit-card game-catalog">
+        <h3>جواهر فري فاير 💎</h3>
+        <div id="freeFireDiamondsCatalog" aria-live="polite"><p class="small">جاري تحميل باقات الجواهر...</p></div>
+      </div>
+      <div class="deposit-card game-catalog">
+        <h3>عضويات فري فاير 👑</h3>
+        <div id="freeFireMembershipCatalog" aria-live="polite"><p class="small">جاري تحميل العضويات...</p></div>
+      </div>
       <div class="game-checkout" id="freeFireCheckout" aria-live="polite">
         <h3>بيانات الشحن</h3><p class="small">1. اختر الباقة أولاً، ثم أدخل Player ID الظاهر داخل اللعبة.</p>
         <label for="freeFirePlayerId">Player ID</label><input id="freeFirePlayerId" type="text" inputmode="numeric" autocomplete="off" maxlength="24" placeholder="أدخل معرّف اللاعب" dir="ltr">
         <div class="game-selection-summary" id="freeFireSelectionSummary">لم يتم اختيار باقة بعد.</div>
         <button class="full" type="button" disabled>الشحن غير متاح حالياً</button>
         <p class="small game-availability-note">لن يتم إنشاء طلب أو خصم رصيد قبل تفعيل مورد معتمد واختبار الشحن والاسترجاع.</p>
+      </div>
+    </section>
+
+    <section id="jawakerStore" class="hidden game-store-page">
+      <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <div class="hero">
+        <h2>JAWAKER · جواكر</h2>
+        <p>اختر نوع المنتج. نعرض هنا تصنيفات جواكر المعتمدة فقط، من دون أسعار أو طلبات قبل ربط كتالوج الزبائن والتحقق منه.</p>
+      </div>
+      <div class="deposit-card">
+        <h3>جواكر توكنز</h3>
+        <p class="small">اختر السيرفر وأدخل ID اللاعب والكمية المطلوبة. الكمية المفتوحة من 10,000 إلى 1,000,000 توكن في كلا السيرفرين. لا نطلب كلمة مرور.</p>
+        <div class="grid">
+          <div class="product-card" data-jawaker-server="1">
+            <strong>جواكر سيرفر 1</strong>
+            <label for="jawakerServer1PlayerId">ID اللاعب</label>
+            <input id="jawakerServer1PlayerId" type="text" inputmode="numeric" autocomplete="off" placeholder="أدخل ID جواكر">
+            <label for="jawakerServer1Quantity">كمية التوكنز</label>
+            <input id="jawakerServer1Quantity" type="number" min="10000" max="1000000" step="1" inputmode="numeric" placeholder="من 10000 إلى 1000000">
+            <p class="small">السعر قيد طلب عرض المورد. الشحن غير مفعّل حالياً.</p>
+          </div>
+          <div class="product-card" data-jawaker-server="2">
+            <strong>جواكر سيرفر 2</strong>
+            <label for="jawakerServer2PlayerId">ID اللاعب</label>
+            <input id="jawakerServer2PlayerId" type="text" inputmode="numeric" autocomplete="off" placeholder="أدخل ID جواكر">
+            <label for="jawakerServer2Quantity">كمية التوكنز</label>
+            <input id="jawakerServer2Quantity" type="number" min="10000" max="1000000" step="1" inputmode="numeric" placeholder="من 10000 إلى 1000000">
+            <p class="small">السعر قيد طلب عرض المورد. الشحن غير مفعّل حالياً.</p>
+          </div>
+        </div>
+      </div>
+      <div class="deposit-card">
+        <h3>مسرّعات جواكر</h3>
+        <div class="grid">
+          <button class="item" type="button" disabled><span class="item-content"><strong>المسرّع الأحمر</strong><span class="small">غير متاح للطلب حالياً</span></span></button>
+          <button class="item" type="button" disabled><span class="item-content"><strong>المسرّع الأزرق</strong><span class="small">غير متاح للطلب حالياً</span></span></button>
+          <button class="item" type="button" disabled><span class="item-content"><strong>المسرّع الأسود</strong><span class="small">غير متاح للطلب حالياً</span></span></button>
+          <button class="item" type="button" disabled><span class="item-content"><strong>المسرّع الذهبي</strong><span class="small">غير متاح للطلب حالياً</span></span></button>
+        </div>
+      </div>
+      <div class="deposit-card" role="note">
+        <strong>تنبيه قبل الإطلاق</strong>
+        <p class="small">هذا القسم واجهة تحضيرية فقط. لا يوجد اختيار باقة أو إنشاء طلب أو خصم رصيد. سنفعّل التصنيفات بعد ربط كتالوج عام آمن خاص بالزبائن والتأكد من السيرفر والأسعار.</p>
       </div>
     </section>
 
@@ -2279,7 +2351,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
             <div class="admin-hub-grid">
               <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المراقبة ومساعد الإدارة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والمنتجات</strong><small>الموردون والربط والأسعار والتكاليف.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card" onclick="window.location.href='./syria-market-admin.html'"><span class="admin-hub-icon">🇸🇾</span><strong>سوريا ماركت</strong><small>إدارة الموردين وروابط المنتجات — قراءة فقط حالياً.</small><span class="admin-hub-open">فتح المساحة المستقلة ←</span></button>
+              <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('baro')"><span class="admin-hub-icon">🟣</span><strong>BARO – الشحن اليدوي</strong><small>إدارة منتجات ليو، عروض الأسعار، تأكيد الدفع ومتابعة الشحن اليدوي.</small><span class="admin-hub-open">فتح القسم داخل BARAN ←</span></button>
             </div>
           </section>
           <section class="admin-hub-group">
@@ -2471,6 +2544,12 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       
       </div>
 
+      <div class="admin-subpanel hidden" data-admin-panel="baro">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>BARO – الشحن اليدوي</h2></div>
+        <div class="deposit-card"><strong>مسار BARO منفصل عن الشحن الآلي</strong><p class="small">إدارة كتالوج ليو، فتح استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا توجد عملية شراء تلقائية أو خصم محفظة أو ترحيل مالي.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
+        <h3>كتالوج BARO والمنتجات المتاحة للزبائن</h3><p class="small">فعّل إظهار المنتج والسماح بالطلبات فقط بعد مراجعة تفاصيله وأسعاره.</p><div id="baroAdminProducts" class="ops-list">جاري تحميل المنتجات...</div>
+        <h3>طلبات BARO اليدوية</h3><p class="small">حدّد السعر أولاً، ثم حالة الدفع. لا نعتبر الطلب مدفوعاً إلا بعد تأكيد استلام المبلغ يدوياً.</p><div id="baroAdminOrders" class="ops-list">جاري تحميل الطلبات...</div>
+      </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
@@ -3048,9 +3127,12 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
+<script src="./baro.js?v=20261116-baro-4"></script>
 <script>
-const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
-const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+// TEST-ONLY configuration. Never point this branch at production.
+const SUPABASE_URL="https://tjvuqgcyvbowyfenrpau.supabase.co";
+const SUPABASE_KEY="sb_publishable_XIiPW1f__6kJJ03dUyinBg_Fn4iUao-";
+const BARAN_AUTH_REDIRECT=window.location.origin+window.location.pathname;
 let selectedRecoveryCustomerId=null;
 let baranAdminNotificationPoll=null;
 
@@ -3292,6 +3374,8 @@ function buildAdminSectionNav(panel,id){
   if(old)old.remove();
 }
 function showAdminPanel(id){
+  if(id==="suppliers"){window.location.href="./syria-market-admin.html";return;}
+  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return;}
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
   if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}
@@ -3335,7 +3419,13 @@ function normalizeStoreSearch(value){
 function baranSearchDestination(product){
   const category=String(product.category||"").toLowerCase();
   const code=String(product.product_code||"").toLowerCase();
-  if(category==="game")return code.startsWith("freefire")?"freeFireStore":"pubgStore";
+  if(category==="game"){
+    if(code.startsWith("freefire"))return "freeFireStore";
+    if(code.startsWith("pubg"))return "pubgStore";
+    if(code.startsWith("jawaker"))return "jawakerStore";
+    // Jawaker and any future game must never be misrouted to PUBG.
+    return "games";
+  }
   if(category==="ai")return "chatgptStore";
   if(category==="vpn")return "vpnStore";
   if(category==="gift_card")return "giftCardsStore";
@@ -3373,7 +3463,7 @@ async function searchStore(value){
     const terms=query.split(/\s+/).filter(Boolean);
     // قاموس بحث ثنائي اللغة: أسماء عربية وإنجليزية وطرق كتابة شائعة.
     const aliases={
-      game:["لعبة","العاب","ألعاب","games","gaming","pubg","pubg mobile","ببجي","ببجي موبايل","ببجى","شدات","شدات uc","uc","unknown cash","free fire","freefire","فري فاير","فريفاير","جواهر","diamonds"],
+      game:["لعبة","العاب","ألعاب","games","gaming","pubg","pubg mobile","ببجي","ببجي موبايل","ببجى","شدات","شدات uc","uc","unknown cash","free fire","freefire","فري فاير","فريفاير","جواهر","diamonds","jawaker","jawaker tokens","جواكر","جواكر توكنز","توكنز","مسرعات جواكر","مسرّعات جواكر","مسرع","مسرّع"],
       ai:["ذكاء اصطناعي","ذكاء","شات جي بي تي","شات جي بيتي","شات gpt","chatgpt","chat gpt","chat gpt plus","gpt","openai","ai","artificial intelligence","اشتراك","subscription"],
       vpn:["في بي ان","في بي إن","vpn","virtual private network","شبكة خاصة","حماية","privacy"],
       gift_card:["بطاقات","بطاقة","بطاقات هدايا","كرت","كروت","غوغل بلاي","جوجل بلاي","google play","google play card","gift card","gift cards","giftcard","top up card"],
@@ -3385,6 +3475,7 @@ async function searchStore(value){
       const extra=[...(aliases[category]||[])];
       if(code.startsWith("pubg"))extra.push("ببجي","شدات","uc");
       if(code.startsWith("freefire"))extra.push("فري فاير","جواهر");
+      if(code.startsWith("jawaker"))extra.push("جواكر","توكنز","مسرعات");
       const haystack=normalizeStoreSearch([product.name,product.product_code,product.description,category,...extra].filter(Boolean).join(" "));
       return {product,score:terms.filter(term=>haystack.includes(term)).length};
     }).filter(item=>item.score===terms.length);
@@ -3582,7 +3673,7 @@ function showSection(id,button,options){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
+  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
@@ -3809,7 +3900,7 @@ async function signInWithGoogle(){
   try{
     const {error}=await sb.auth.signInWithOAuth({
       provider:"google",
-      options:{redirectTo:"https://eyadooon-cmyk.github.io/Baran-Game/"}
+      options:{redirectTo:BARAN_AUTH_REDIRECT}
     });
     if(error)throw error;
   }catch(error){
@@ -5947,8 +6038,10 @@ function baranSelectGamePackage(game,product){
   if(!summary)return;
   const playerId=document.getElementById(game==="PUBG"?"pubgPlayerId":"freeFirePlayerId")?.value.trim()||"بانتظار الإدخال";
   baranRenderUnifiedSelection(summary,product,baranMoneyText(product),"معرّف اللاعب: "+playerId);
-  const grid=document.querySelector('[data-game-package-grid="'+game+'"]');
-  if(grid)grid.querySelectorAll("button[data-product-code]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.productCode===product.product_code)));
+  const grids=game==="PUBG"
+    ?document.querySelectorAll('[data-game-package-grid="PUBG"]')
+    :document.querySelectorAll('[data-game-package-grid^="FREEFIRE_"]');
+  grids.forEach(grid=>grid.querySelectorAll("button[data-product-code]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.productCode===product.product_code))));
 }
 function baranUpdateGameSummary(game){
   const product=baranGameSelections[game];
@@ -5978,63 +6071,84 @@ function baranAddProductDetails(parent,product,categoryLabel){
 }
 async function loadBaranGameCatalog(game){
   const isPubg=game==="PUBG";
-  const container=document.getElementById(isPubg?"pubgProductCatalog":"freeFireProductCatalog");
-  if(!container||!currentUser)return;
-  container.replaceChildren();
-  const heading=document.createElement("strong");heading.textContent=isPubg?"باقات PUBG MOBILE":"باقات جواهر وعضويات Free Fire";
-  const status=document.createElement("p");status.className="small";status.textContent="جاري تحميل الباقات المعتمدة...";
-  container.append(heading,status);
+  const containers=isPubg
+    ?[{element:document.getElementById("pubgProductCatalog"),kind:"pubg",title:"باقات PUBG MOBILE",empty:"لا توجد باقات PUBG مفعّلة في الكتالوج حالياً. لن نعرض أسعاراً غير معتمدة."}]
+    :[
+      {element:document.getElementById("freeFireDiamondsCatalog"),kind:"diamonds",title:"باقات جواهر فري فاير",empty:"لا توجد باقات جواهر فري فاير مفعّلة حالياً."},
+      {element:document.getElementById("freeFireMembershipCatalog"),kind:"membership",title:"عضويات فري فاير",empty:"لا توجد عضويات فري فاير مفعّلة في الكتالوج حالياً."}
+    ];
+  if(!containers.some(item=>item.element)||!currentUser)return;
+  const showStatus=(container,title,message)=>{
+    if(!container)return;
+    container.replaceChildren();
+    const heading=document.createElement("strong");heading.textContent=title;
+    const status=document.createElement("p");status.className="small";status.textContent=message;
+    container.append(heading,status);
+  };
+  containers.forEach(item=>showStatus(item.element,item.title,"جاري تحميل المنتجات المعتمدة..."));
   try{
-    // استخدم نسخة الكتالوج النشط المشتركة التي يعتمد عليها بحث المتجر أيضاً،
-    // لتجنب تكرار استعلام مختلف قد يفشل في صفحة الألعاب.
     const catalog=await loadBaranStoreSearchProducts();
-    const pattern=isPubg?/^PUBG_MOBILE_\d+_UC$/:/^(?:FREEFIRE_\d+|FREEFIRE_MEMBERSHIP_(?:WEEKLY|MONTHLY))$/;
-    const packages=(catalog||[])
-      .filter(p=>p.category==="game"&&pattern.test(p.product_code||""))
-      .sort((a,b)=>(Number(a.sort_order)||0)-(Number(b.sort_order)||0));
-    container.replaceChildren(heading);
-    if(!packages.length){
-      const empty=document.createElement("p");empty.className="small";
-      empty.textContent=isPubg
-        ?"لا توجد باقات PUBG مفعّلة في الكتالوج حالياً. لن نعرض أسعاراً غير معتمدة."
-        :"لا توجد باقات Free Fire مفعّلة في الكتالوج حالياً.";
-      container.append(empty);return;
-    }
-    const grid=document.createElement("div");grid.className="game-package-grid";grid.dataset.gamePackageGrid=game;
-    packages.forEach(product=>{
-      const packageCard=document.createElement("div");packageCard.className="baran-game-package-card";
-      packageCard.dataset.packageCode=product.product_code;
-      const button=document.createElement("button");button.type="button";button.className="game-package-option baran-package-button";
-      button.dataset.productCode=product.product_code;button.setAttribute("aria-pressed","false");
-      const code=String(product.product_code||"");
-      const amount=(code.match(isPubg?/_(\d+)_UC$/i:/_(\d+)$/i)||[])[1]||"";
-      const isMembership=code==="FREEFIRE_MEMBERSHIP_WEEKLY"||code==="FREEFIRE_MEMBERSHIP_MONTHLY";
-      const art=document.createElement("span");art.className="baran-package-art";art.textContent=isPubg?"UC":(isMembership?"👑":"💎");
-      const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=isMembership?(code.endsWith("_WEEKLY")?"7 أيام":"30 يوم"):amount?(isPubg?amount+" UC":amount+" جوهرة"):(isPubg?"شدات UC":"جواهر");
-      const name=document.createElement("strong");name.textContent=product.name||product.product_code;
-      const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
-      const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
-      button.disabled=!baranHasApprovedGamePrice(product);
-      if(button.disabled){button.setAttribute("aria-label",(product.name||product.product_code)+" — بانتظار اعتماد السعر");}
-      button.append(art,quantity,name,description,price);
-      if(button.disabled){const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير متاحة للاختيار حتى اعتماد السعر";button.append(pending);}
-      button.addEventListener("click",()=>baranSelectGamePackage(game,product));
-      packageCard.append(button);
-      baranAddProductDetails(packageCard,product,isPubg?"PUBG MOBILE":"Free Fire");
-      grid.append(packageCard);
+    const activeProducts=(catalog||[]).filter(p=>p.category==="game");
+    containers.forEach(item=>{
+      const container=item.element;
+      if(!container)return;
+      container.replaceChildren();
+      const heading=document.createElement("strong");heading.textContent=item.title;
+      container.append(heading);
+      const matches=activeProducts.filter(product=>{
+        const code=String(product.product_code||"");
+        if(item.kind==="pubg")return /^PUBG_MOBILE_\d+_UC$/i.test(code);
+        if(item.kind==="diamonds")return /^FREEFIRE_\d+$/i.test(code);
+        return /^FREEFIRE_MEMBERSHIP_(?:WEEKLY|MONTHLY)$/i.test(code);
+      }).sort((a,b)=>(Number(a.sort_order)||0)-(Number(b.sort_order)||0));
+      if(!matches.length){
+        const empty=document.createElement("p");empty.className="small";empty.textContent=item.empty;
+        container.append(empty);return;
+      }
+      const grid=document.createElement("div");grid.className="game-package-grid";
+      grid.dataset.gamePackageGrid=item.kind==="pubg"?"PUBG":("FREEFIRE_"+item.kind.toUpperCase());
+      matches.forEach(product=>{
+        const packageCard=document.createElement("div");packageCard.className="baran-game-package-card";
+        packageCard.dataset.packageCode=product.product_code;
+        const button=document.createElement("button");button.type="button";button.className="game-package-option baran-package-button";
+        button.dataset.productCode=product.product_code;button.setAttribute("aria-pressed","false");
+        const code=String(product.product_code||"");
+        const isMembership=item.kind==="membership";
+        const amount=(code.match(item.kind==="pubg"?/_(\d+)_UC$/i:/_(\d+)$/i)||[])[1]||"";
+        const art=document.createElement("span");art.className="baran-package-art";art.textContent=item.kind==="pubg"?"UC":(isMembership?"👑":"💎");
+        const quantity=document.createElement("span");quantity.className="baran-package-quantity";
+        quantity.textContent=isMembership?(code.endsWith("_WEEKLY")?"7 أيام":"30 يوم"):amount?(item.kind==="pubg"?amount+" UC":amount+" جوهرة"):(item.kind==="pubg"?"شدات UC":"جواهر");
+        const name=document.createElement("strong");name.textContent=product.name||product.product_code;
+        const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
+        const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
+        button.disabled=!baranHasApprovedGamePrice(product);
+        if(button.disabled){
+          button.setAttribute("aria-label",(product.name||product.product_code)+" — بانتظار اعتماد السعر");
+          const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير متاحة للاختيار حتى اعتماد السعر";button.append(pending);
+        }
+        button.prepend(art,quantity,name,description,price);
+        button.addEventListener("click",()=>baranSelectGamePackage(game,product));
+        packageCard.append(button);
+        baranAddProductDetails(packageCard,product,item.kind==="pubg"?"PUBG MOBILE":(isMembership?"عضويات Free Fire":"جواهر Free Fire"));
+        grid.append(packageCard);
+      });
+      container.append(grid);
+      const note=document.createElement("p");note.className="small";
+      note.textContent="الأسعار من كتالوج المنتجات النشطة. اختيار الباقة لا ينشئ طلباً ولا يخصم رصيداً.";
+      container.append(note);
     });
-    container.append(grid);
-    const note=document.createElement("p");note.className="small";
-    note.textContent="الأسعار المعروضة مأخوذة من كتالوج المنتجات النشطة. اختيار الباقة لا ينشئ طلباً ولا يخصم رصيداً.";
-    container.append(note);
   }catch(error){
     console.error("Baran game catalog:",error);
-    container.replaceChildren(heading);
-    const message=document.createElement("p");message.className="small";
-    message.textContent="تعذر تحميل كتالوج المنتجات: "+(error?.message||"تحقق من اتصالك ثم أعد المحاولة.");
-    const retry=document.createElement("button");retry.type="button";retry.className="secondary";retry.textContent="إعادة تحميل الباقات";
-    retry.addEventListener("click",()=>{baranStoreSearchProducts=null;baranStoreSearchLoad=null;loadBaranGameCatalog(game);});
-    container.append(message,retry);
+    containers.forEach(item=>{
+      if(!item.element)return;
+      item.element.replaceChildren();
+      const heading=document.createElement("strong");heading.textContent=item.title;
+      const message=document.createElement("p");message.className="small";
+      message.textContent="تعذر تحميل الكتالوج: "+(error?.message||"تحقق من الاتصال ثم أعد المحاولة.");
+      const retry=document.createElement("button");retry.type="button";retry.className="secondary";retry.textContent="إعادة تحميل";
+      retry.addEventListener("click",()=>{baranStoreSearchProducts=null;baranStoreSearchLoad=null;loadBaranGameCatalog(game);});
+      item.element.append(heading,message,retry);
+    });
   }
 }
 document.addEventListener("input",event=>{

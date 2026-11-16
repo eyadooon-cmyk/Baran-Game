@@ -1,0 +1,21 @@
+name: BARAN subsystem separation checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [test-hardening-20261116]
+
+permissions:
+  contents: read
+
+jobs:
+  subsystem-separation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run static boundary tests
+        run: node --test tests/subsystem-separation.test.mjs
