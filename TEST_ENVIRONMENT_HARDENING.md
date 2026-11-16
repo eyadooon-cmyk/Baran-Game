@@ -255,3 +255,10 @@ The GitHub Actions workflow completed successfully on 2026-11-16:
 Run details: https://github.com/eyadooon-cmyk/Baran-Game/actions/runs/43787570383
 
 This confirms the source-level assertions passed. It does not constitute browser/session acceptance or prove the legacy combined backend has been fully decommissioned.
+
+
+### Supabase support ticket acknowledgement
+
+- Supabase automatically acknowledged the email and assigned ticket `SU-554250`.
+- The acknowledgement asks the account owner to link the email conversation to their Supabase account so support can inspect organization/project details: https://supabase.com/dashboard/support/link?conversationId=cnv_1p11ahni
+- This is an acknowledgement only, not a technical repair. The pg_cron sequence mismatch remains unresolved until Supabase support confirms the repair and fresh scheduled executions are observed.
