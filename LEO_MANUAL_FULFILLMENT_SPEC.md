@@ -31,7 +31,7 @@ Each product has separate fields for:
 - Current confirmed supplier cost (USD).
 - BARAN sale price (USD).
 - BARAN sale price (SYP).
-- Catalogue visibility.
+- Catalogue visibility remains locked off until a separate customer-facing catalogue integration is reviewed.
 - Purchase-enabled state.
 
 No screenshot cost is copied into the actual cost or sale-price fields. No sale price is invented. The database migration constrains `purchase_enabled = false`; the Edge Function also forces it to false. The customer catalogue shows products as unavailable.
