@@ -149,3 +149,13 @@ Read-only inspection of the deployed test-project Edge Functions and frontend so
 6. Before any enablement, test owner/admin access, customer denial, manual product update + atomic audit, manual order status update + atomic event/audit, and verify that no supplier/general-order/finance/wallet tables are touched.
 
 No source code, database records, deployed functions, schedules, or production resources were changed during this audit. Only this test-branch documentation is being updated.
+
+
+## Recovery of deployed manual function sources — 2026-11-16
+
+The two deployed test function sources have now been recovered verbatim into the test branch for review and reproducibility:
+
+- `supabase/functions/baran-baro-manual/index.ts` — deployed version 2; source SHA-256 `b3749b3dcacec58a6cdc4bd30ad634b3392b20022f46e46da2a74d3ca7c1117c`.
+- `supabase/functions/baran-leo-manual/index.ts` — deployed version 1; source SHA-256 `f50dd3e1c9e985a466dbcff34bdf66e0fdcdeffaefa1d7114ad44608488f90a8`.
+
+These are source-recovery commits only; they do not deploy or change either function. The older `baran-leo-manual` endpoint remains deployed but must not be used for writes until its non-atomic update/audit behavior is resolved. The RPC-backed `baran-baro-manual` is the safer candidate for the canonical manual endpoint, but it is not yet connected to a dedicated frontend and has not been UI-acceptance tested. No endpoint has been disabled, no records have been modified, and no order or financial action has been performed.
