@@ -24,6 +24,28 @@ function baroIdempotencyKey(){
  if(globalThis.crypto?.getRandomValues){const b=new Uint8Array(16);globalThis.crypto.getRandomValues(b);b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(x=>x.toString(16).padStart(2,"0")).join("");return h.slice(0,8)+"-"+h.slice(8,12)+"-"+h.slice(12,16)+"-"+h.slice(16,20)+"-"+h.slice(20);}
  throw new Error("تعذر إنشاء رقم آمن لمحاولة الطلب. حدّث المتصفح وحاول مجدداً.");
 }
+async function baroRequestFingerprint(request){
+ if(!globalThis.crypto?.subtle)return null;
+ const bytes=new TextEncoder().encode(JSON.stringify(request));
+ const digest=await globalThis.crypto.subtle.digest("SHA-256",bytes);
+ return [...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function baroGetPendingSubmission(fingerprint){
+ if(baroPendingSubmission?.fingerprint===fingerprint)return baroPendingSubmission;
+ try{
+  const saved=JSON.parse(globalThis.sessionStorage?.getItem("baro_pending_order_retry")||"null");
+  if(saved?.fingerprint===fingerprint&&uuidPattern.test(saved.idempotency_key)){
+   baroPendingSubmission=saved;return saved;
+  }
+ }catch{}
+ baroPendingSubmission={fingerprint,idempotency_key:baroIdempotencyKey()};
+ try{globalThis.sessionStorage?.setItem("baro_pending_order_retry",JSON.stringify(baroPendingSubmission));}catch{}
+ return baroPendingSubmission;
+}
+function baroClearPendingSubmission(){
+ baroPendingSubmission=null;
+ try{globalThis.sessionStorage?.removeItem("baro_pending_order_retry");}catch{}
+}
 function baroSelectedProduct(){return baroCustomerProducts.find(p=>p.product_code===baroEl("baroProductSelect")?.value)||null;}
 function baroUpdateQuantityField(){
  const p=baroSelectedProduct(),wrap=baroEl("baroQuantityWrap"),input=baroEl("baroQuantity");
@@ -94,14 +116,13 @@ async function submitBaroOrder(){
  if(note.length>500){message.textContent="الملاحظات طويلة جداً.";return;}
  if(!confirm("تأكيد إرسال طلب BARO؟ لن يتم خصم أي مبلغ الآن. ستراجع الإدارة الطلب وترسل السعر وطريقة الدفع."))return;
  const request={product_code:p.product_code,player_id:player,quantity,customer_note:note};
- const fingerprint=JSON.stringify(request);
- if(!baroPendingSubmission||baroPendingSubmission.fingerprint!==fingerprint){
-  baroPendingSubmission={fingerprint,idempotency_key:baroIdempotencyKey()};
- }
+ const fingerprint=await baroRequestFingerprint(request);
+ if(!fingerprint){message.textContent="متصفحك لا يدعم حماية إعادة المحاولة. حدّث المتصفح قبل إرسال الطلب.";return;}
+ const pending=baroGetPendingSubmission(fingerprint);
  button.disabled=true;message.textContent="جاري إرسال الطلب...";
  try{
-  const result=await baroApi("POST",{action:"create_order",...request,idempotency_key:baroPendingSubmission.idempotency_key});
-  baroPendingSubmission=null;
+  const result=await baroApi("POST",{action:"create_order",...request,idempotency_key:pending.idempotency_key});
+  baroClearPendingSubmission();
   message.textContent="وصل طلبك للإدارة بنجاح. رقم الطلب: "+String(result.order_id||"").slice(0,8)+" — لا يوجد خصم من المحفظة.";
   baroEl("baroPlayerId").value="";baroEl("baroCustomerNote").value="";
   await loadBaroCustomer();
