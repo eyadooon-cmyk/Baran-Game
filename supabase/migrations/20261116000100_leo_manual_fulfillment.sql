@@ -62,8 +62,6 @@ values
 ('LEO_PUBG_UC_325','pubg','uc','325 UC','PUBG Player ID',4.53,'2026-11-15'),
 ('LEO_PUBG_UC_660','pubg','uc','660 UC','PUBG Player ID',9.03,'2026-11-15'),
 ('LEO_PUBG_UC_1800','pubg','uc','1800 UC','PUBG Player ID',22.43,'2026-11-15'),
-('LEO_PUBG_UC_3850','pubg','uc','3850 UC','PUBG Player ID',45.04,'2026-11-15'),
-('LEO_PUBG_UC_8100','pubg','uc','8100 UC','PUBG Player ID',89.50,'2026-11-15'),
 ('LEO_PUBG_GROWTH_FIRST_PURCHASE','pubg','growth','حزمة الشراء الأول','PUBG Player ID',0.90,'2026-11-15'),
 ('LEO_PUBG_GROWTH_WEAPON_UPGRADE','pubg','growth','حزمة ترقية الأسلحة النارية','PUBG Player ID',2.69,'2026-11-15'),
 ('LEO_PUBG_GROWTH_MYTHIC_EMBLEM','pubg','growth','حزمة الشعار الخرافي','PUBG Player ID',4.48,'2026-11-15'),
