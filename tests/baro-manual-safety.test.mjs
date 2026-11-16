@@ -114,3 +114,28 @@ test("BARO and automatic fulfilment remain separate client modules and controls"
   assert.doesNotMatch(automatic, /baroEndpoint|baro_manual/);
   assert.doesNotMatch(ui, /baranAutomaticControlUrl|baran_supplier_prepare_order/);
 });
+
+const channelGuard = read("../supabase/migrations/20261116170000_shared_channel_order_guard_and_product_routes.sql");
+
+test("Automatic and manual orders share one per-user request lock", () => {
+  assert.match(channelGuard, /create table if not exists public\\.baran_order_channel_guard/);
+  assert.match(channelGuard, /primary key \\(user_id,client_request_id\\)/);
+  assert.match(channelGuard, /baran_claim_order_channel/);
+  assert.match(channelGuard, /v_claim\\.channel is distinct from p_channel/);
+  assert.match(channelGuard, /baran_guard_manual_order_insert/);
+  assert.match(channelGuard, /baran_guard_automatic_order_insert/);
+  assert.match(channelGuard, /new\\.idempotency_key,'manual'/);
+  assert.match(channelGuard, /new\\.client_request_id,'automatic'/);
+  assert.match(channelGuard, /baran_link_manual_order_channel/);
+  assert.match(channelGuard, /baran_link_automatic_order_channel/);
+  assert.match(channelGuard, /No function here releases a claim/);
+});
+
+test("Product route candidates are not executable until reviewed and approved", () => {
+  assert.match(channelGuard, /create table if not exists public\\.baran_channel_product_routes/);
+  assert.match(channelGuard, /mapping_status text not null default 'pending_review'/);
+  assert.match(channelGuard, /route_enabled boolean not null default false/);
+  assert.match(channelGuard, /check \\(route_enabled = false or mapping_status = 'approved'\\)/);
+  assert.match(channelGuard, /مرشح فقط/);
+  assert.match(channelGuard, /route_enabled=false/);
+});
