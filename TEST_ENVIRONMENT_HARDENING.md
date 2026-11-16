@@ -213,3 +213,16 @@ A follow-up source inventory confirms the remaining shared surface:
 5. Keep refund, wallet, payment, and general order actions outside Syria Market permanently.
 
 No legacy endpoint or frontend control was removed or modified in this step. No supplier write, supplier order, refund, finance action, or wallet operation was performed.
+
+
+## BARO LEO page-to-endpoint contract check — 2026-11-16
+
+Reviewed the standalone `baro-leo-manual.html` against the deployed test `baran-baro-manual` source:
+
+- Page GET expects `products`, `orders`, and `purchase_enabled`; the endpoint returns those exact fields.
+- Product edits send `action=product_update` with `product_code`, `supplier_cost_usd`, `sale_price_usd`, `sale_price_syp`, and `admin_notes`; the endpoint accepts those exact keys and calls `baro_manual_product_update_atomic`.
+- Existing order edits send `action=order_update` with `order_id`, `status`, `supplier_cost_usd`, `supplier_reference`, `exception_reason`, and `internal_notes`; the endpoint accepts those exact keys and calls `baro_manual_order_update_atomic`.
+- The endpoint returns `purchase_enabled=false` and has no create-order action. The page contains no order-creation action.
+- This is a static source-contract review only. No authenticated browser request or write operation was run, so UI acceptance remains pending.
+
+No endpoint or database changes were made during this contract review.
