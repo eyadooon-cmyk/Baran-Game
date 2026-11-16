@@ -115,7 +115,7 @@ function baroProductCard(p){
  save.onclick=async()=>{save.disabled=true;try{
   const n=v=>v.value.trim()===""?null:Number(v.value);
   if(enabled.checked&&!visible.checked)throw new Error("يجب إظهار المنتج قبل فتح استقبال الطلبات.");
-  if(enabled.checked&&n(saleUsd)===null&&n(saleSyp)===null)throw new Error("حدد سعر بيع بالدولار أو الليرة قبل إتاحة المنتج للطلب.");
+  if(enabled.checked&&(n(saleUsd)??0)<=0&&(n(saleSyp)??0)<=0)throw new Error("حدد سعر بيع موجب بالدولار أو الليرة قبل إتاحة المنتج للطلب.");
   await baroApi("POST",{action:"product_save",product_code:p.product_code,supplier_cost_usd:n(usd),sale_price_usd:n(saleUsd),sale_price_syp:n(saleSyp),admin_notes:notes.value,catalog_visible:visible.checked,purchase_enabled:enabled.checked});
   await loadBaroAdmin();baroAdminMessage("تم حفظ بيانات المنتج وإتاحته معاً وتسجيل التدقيق.");
  }catch(e){baroAdminMessage(e.message);}finally{save.disabled=false;}};
