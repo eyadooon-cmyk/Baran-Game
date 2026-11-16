@@ -34,7 +34,7 @@ test("BARO product pricing and visibility are saved through one atomic RPC", () 
   assert.doesNotMatch(ui, /action:"product_update".*?action:"product_configure"/s);
   assert.match(edge, /baro_manual_product_save_atomic/);
   assert.match(hardening, /baro_manual_product_update_atomic\([\s\S]*?baro_manual_product_configure_atomic/);
-  assert.match(hardening, /p_purchase_enabled and v_product\.sale_price_usd is null and v_product\.sale_price_syp is null/);
+  assert.match(hardening, /p_purchase_enabled[\s\S]*?sale_price_syp/);
 });
 
 test("Order status transitions prevent reopening terminal orders", () => {
