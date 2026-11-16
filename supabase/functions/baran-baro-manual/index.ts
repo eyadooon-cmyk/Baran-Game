@@ -70,6 +70,13 @@ Deno.serve(async(req:Request)=>{
    const {data,error}=await admin.rpc("baro_manual_product_configure_atomic",{p_admin_id:user.id,p_product_code:code,p_catalog_visible:body.catalog_visible,p_purchase_enabled:body.purchase_enabled});
    if(error)return json({error:"تعذر تحديث إتاحة المنتج."},400);return json(data);
   }
+  if(body.action==="product_save"){
+   const code=typeof body.product_code==="string"?body.product_code.trim():"",cost=amount(body.supplier_cost_usd,1000000),usd=amount(body.sale_price_usd,1000000),syp=amount(body.sale_price_syp,100000000000),notes=typeof body.admin_notes==="string"?body.admin_notes.trim():"";
+   if(!/^LEO_[A-Z0-9_]{3,56}$/.test(code)||cost===undefined||usd===undefined||syp===undefined||notes.length>1000||typeof body.catalog_visible!=="boolean"||typeof body.purchase_enabled!=="boolean")return json({error:"تحقق من رمز المنتج والأسعار والإتاحة والملاحظات."},400);
+   if(body.purchase_enabled&&(!body.catalog_visible||(usd===null&&syp===null)))return json({error:"يجب إظهار المنتج وتحديد سعر بيع قبل فتح استقبال الطلبات."},400);
+   const {data,error}=await admin.rpc("baro_manual_product_save_atomic",{p_admin_id:user.id,p_product_code:code,p_supplier_cost_usd:cost,p_sale_price_usd:usd,p_sale_price_syp:syp,p_admin_notes:notes,p_catalog_visible:body.catalog_visible,p_purchase_enabled:body.purchase_enabled});
+   if(error||!data?.product)return json({error:error?.message||"لم يتم حفظ المنتج والإتاحة."},400);return json(data);
+  }
   if(body.action==="product_update"){
    const code=typeof body.product_code==="string"?body.product_code.trim():"",cost=amount(body.supplier_cost_usd,1000000),usd=amount(body.sale_price_usd,1000000),syp=amount(body.sale_price_syp,100000000000),notes=typeof body.admin_notes==="string"?body.admin_notes.trim():"";
    if(!/^LEO_[A-Z0-9_]{3,56}$/.test(code)||cost===undefined||usd===undefined||syp===undefined||notes.length>1000)return json({error:"تحقق من رمز المنتج والأسعار والملاحظات."},400);
