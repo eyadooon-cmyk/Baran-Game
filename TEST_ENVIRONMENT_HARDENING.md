@@ -226,3 +226,18 @@ Reviewed the standalone `baro-leo-manual.html` against the deployed test `baran-
 - This is a static source-contract review only. No authenticated browser request or write operation was run, so UI acceptance remains pending.
 
 No endpoint or database changes were made during this contract review.
+
+
+## Consolidated admin navigation and automated boundary checks — 2026-11-16
+
+- Replaced the supplier button in the admin hub with direct navigation to the isolated Syria Market page.
+- Added a separate BARO LEO manual workspace link.
+- Added a redirect guard so the legacy `showAdminPanel("suppliers")` route redirects to the Syria Market read-only page rather than opening the old combined supplier panel through normal navigation.
+- The legacy supplier panel markup and combined `baran-admin` / `baran-admin-safe-actions` endpoints are deliberately retained for rollback and other legacy dependencies. They are not a proof of complete backend decommissioning; do not use them for supplier writes. No endpoint was disabled.
+- Added Node built-in static boundary tests at `tests/subsystem-separation.test.mjs`.
+- Added GitHub Actions workflow `.github/workflows/subsystem-separation.yml` to run these tests on pushes to this test branch and on pull requests targeting main.
+- The tests check JWT/admin gates, GET-only read-only supplier API, table boundaries, the BARO atomic RPC contract, no order-creation control in BARO UI, and admin hub routing.
+
+### Acceptance limitations
+
+The automated checks are source-level boundary tests. They do not replace browser testing with an authenticated owner/admin account and a non-admin account. The GitHub Actions workflow must report success before considering these checks passed. No live UI session, supplier write, manual order creation, payment, wallet debit, production deployment, or merge has been performed.
