@@ -40,7 +40,15 @@ async function loadBaroCustomer(){
    catalog.textContent="قسم BARO جاهز، لكن المنتجات لم تُفتح للطلبات بعد. ستظهر هنا المنتجات التي تعتمدها الإدارة.";
   }else{
    select.disabled=false;
-   baroCustomerProducts.forEach(p=>{const op=document.createElement("option");op.value=p.product_code;op.textContent=p.product_name+(p.purchase_enabled?"":" — متوقف مؤقتاً");op.disabled=!p.purchase_enabled;select.append(op);});
+   const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
+   const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
+   const groups=new Map();
+   baroCustomerProducts.forEach(p=>{
+    if(!groups.has(p.category_id)){const group=document.createElement("optgroup");group.label=categoryLabels[p.category_id]||p.category_id;groups.set(p.category_id,group);select.append(group);}
+    const op=document.createElement("option");op.value=p.product_code;
+    op.textContent=(groupLabels[p.group_id]?groupLabels[p.group_id]+" — ":"")+p.product_name+(p.purchase_enabled?"":" — متوقف مؤقتاً");
+    op.disabled=!p.purchase_enabled;groups.get(p.category_id).append(op);
+   });
    select.onchange=baroUpdateQuantityField;baroUpdateQuantityField();
    const available=baroCustomerProducts.filter(p=>p.purchase_enabled).length;
    catalog.textContent=baroManualEnabled
