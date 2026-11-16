@@ -44,7 +44,7 @@ test("Order status transitions prevent reopening terminal orders", () => {
 });
 
 test("BARO remains isolated from wallet debit and automatic dispatch", () => {
-  assert.match(edge, /wallet_changed|finance_posted/);
+  assert.match(schema, /wallet_changed\',false/);\n  assert.match(schema, /finance_posted\',false/);
   assert.match(gates, /automatic_fulfillment_changed',false/);
   assert.doesNotMatch(edge, /wallet_(?:debit|charge)|dispatch_supplier_order/i);
 });
