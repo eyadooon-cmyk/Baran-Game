@@ -7,6 +7,7 @@ const syriaPage = read("../syria-market-admin.html");
 const baroPage = read("../baro-leo-manual.html");
 const syriaApi = read("../supabase/functions/baran-syria-market-read/index.ts");
 const baroApi = read("../supabase/functions/baran-baro-manual/index.ts");
+const orderGateway = read("../supabase/functions/baran-order-gateway/index.ts");
 const storefront = read("../index.html");
 
 test("Test storefront is isolated from production Supabase", () => {
@@ -78,4 +79,18 @@ test("BARO LEO writes use server-side atomic RPCs and never invoke supplier tabl
   assert.match(baroApi, /baro_manual_order_update_atomic/);
   assert.match(baroApi, /admin_is_user/);
   assert.doesNotMatch(baroApi, /from\("(suppliers|supplier_products|orders|order_fulfillment)"\)/);
+});
+
+
+test("Customer order gateway remains authenticated and strictly read-only", () => {
+  assert.match(orderGateway, /auth\.getUser\(accessToken\)/);
+  assert.match(orderGateway, /from\("admin_users"\)/);
+  assert.match(orderGateway, /body\?\.action === "catalog_report"/);
+  assert.match(orderGateway, /body\?\.action !== "preflight"/);
+  assert.match(orderGateway, /READ_ONLY_GATEWAY/);
+  assert.match(orderGateway, /baran_order_preflight/);
+  assert.match(orderGateway, /can_create_order: false/);
+  assert.match(orderGateway, /charged: false/);
+  assert.doesNotMatch(orderGateway, /from\("(orders|wallets|wallet_transactions)"\)/);
+  assert.doesNotMatch(orderGateway, /\.insert\(|\.update\(|\.delete\(|\.upsert\(/);
 });
