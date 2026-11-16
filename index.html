@@ -2546,7 +2546,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 
       <div class="admin-subpanel hidden" data-admin-panel="baro">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>BARO – الشحن اليدوي</h2></div>
-        <div class="deposit-card"><strong>مسار BARO منفصل عن الشحن الآلي</strong><p class="small">إدارة كتالوج ليو، فتح استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا توجد عملية شراء تلقائية أو خصم محفظة أو ترحيل مالي.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
+        <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">مفتاح مستقل عن BARO. فتحه لا يفعّل الشحن الفعلي حالياً؛ الشراء والتنفيذ ما زالا مغلقين حتى اكتمال موصل المورد واختباره.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
+        <div class="deposit-card"><strong>BARO · الشحن اليدوي</strong><p class="small">مسار مستقل عن الشحن الآلي: إدارة كتالوج ليو، فتح استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا توجد عملية شراء تلقائية أو خصم محفظة أو ترحيل مالي.</p><button id="baroManualToggle" class="secondary" type="button" onclick="toggleBaroManualEnabled()" aria-pressed="false">تحميل حالة BARO...</button><p id="baroManualToggleStatus" class="small" role="status" aria-live="polite">جاري التحقق من حالة استقبال الطلبات.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
         <h3>كتالوج BARO والمنتجات المتاحة للزبائن</h3><p class="small">فعّل إظهار المنتج والسماح بالطلبات فقط بعد مراجعة تفاصيله وأسعاره.</p><div id="baroAdminProducts" class="ops-list">جاري تحميل المنتجات...</div>
         <h3>طلبات BARO اليدوية</h3><p class="small">حدّد السعر أولاً، ثم حالة الدفع. لا نعتبر الطلب مدفوعاً إلا بعد تأكيد استلام المبلغ يدوياً.</p><div id="baroAdminOrders" class="ops-list">جاري تحميل الطلبات...</div>
       </div>
@@ -3127,7 +3128,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
-<script src="./baro.js?v=20261116-baro-4"></script>
+<script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
+<script src="./baro.js?v=20261116-baro-5"></script>
 <script>
 // TEST-ONLY configuration. Never point this branch at production.
 const SUPABASE_URL="https://tjvuqgcyvbowyfenrpau.supabase.co";
@@ -3375,7 +3377,7 @@ function buildAdminSectionNav(panel,id){
 }
 function showAdminPanel(id){
   if(id==="suppliers"){window.location.href="./syria-market-admin.html";return;}
-  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return;}
+  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();if(typeof loadBaranAutomaticControl==="function")loadBaranAutomaticControl();window.scrollTo({top:0,behavior:"smooth"});return;}
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
   if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}

@@ -3,6 +3,7 @@ function baroEndpoint(){return SUPABASE_URL+"/functions/v1/baran-baro-manual";}
 const BARO_STATUS={pending:"طلب جديد بانتظار المراجعة",awaiting_payment:"بانتظار الدفع",paid:"تم تأكيد الدفع",in_progress:"قيد التنفيذ اليدوي",completed:"مكتمل",failed:"تعذر التنفيذ",needs_review:"يحتاج مراجعة",cancelled:"ملغي"};
 const BARO_PAYMENT={awaiting_quote:"بانتظار عرض السعر",awaiting_payment:"بانتظار الدفع",verified:"تم تأكيد الدفع",failed:"تعذر تأكيد الدفع"};
 let baroCustomerProducts=[],baroAdminProducts=[],baroAdminOrders=[];
+let baroManualEnabled=false,baroAdminManualEnabled=false;
 const baroEl=id=>document.getElementById(id);
 function baroEscape(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function baroMoney(value,currency){if(value===null||value===undefined||value==="")return "بانتظار تحديد السعر";const n=Number(value);return !Number.isFinite(n)?"—":currency==="USD"?"$"+n.toFixed(2):n.toLocaleString("en-US")+" ل.س";}
@@ -31,6 +32,8 @@ async function loadBaroCustomer(){
  try{
   const [c,o]=await Promise.all([baroApi("GET",null,"catalog"),baroApi("GET",null,"my_orders")]);
   baroCustomerProducts=Array.isArray(c.products)?c.products:[];
+  baroManualEnabled=c.manual_enabled===true;
+  const submitButton=baroEl("baroSubmitOrder");if(submitButton)submitButton.disabled=!baroManualEnabled;
   const select=baroEl("baroProductSelect");select.replaceChildren();
   if(!baroCustomerProducts.length){
    const option=document.createElement("option");option.value="";option.textContent="لا توجد منتجات يدوية مفعّلة حالياً";select.append(option);select.disabled=true;
@@ -39,7 +42,10 @@ async function loadBaroCustomer(){
    select.disabled=false;
    baroCustomerProducts.forEach(p=>{const op=document.createElement("option");op.value=p.product_code;op.textContent=p.product_name+(p.purchase_enabled?"":" — متوقف مؤقتاً");op.disabled=!p.purchase_enabled;select.append(op);});
    select.onchange=baroUpdateQuantityField;baroUpdateQuantityField();
-   catalog.textContent=baroCustomerProducts.filter(p=>p.purchase_enabled).length+" منتج متاح للطلب اليدوي. السعر النهائي يؤكده فريق BARAN قبل الدفع.";
+   const available=baroCustomerProducts.filter(p=>p.purchase_enabled).length;
+   catalog.textContent=baroManualEnabled
+    ?available+" منتج متاح للطلب اليدوي. السعر النهائي يؤكده فريق BARAN قبل الدفع."
+    :"قسم BARO ظاهر للمعاينة، لكن الإدارة أوقفت استقبال الطلبات اليدوية مؤقتاً. لن يتم إنشاء طلب الآن.";
   }
   renderBaroCustomerOrders(o.orders||[]);
  }catch(e){catalog.textContent=e.message;orders.textContent="تعذر تحميل طلبات BARO.";}
@@ -64,6 +70,7 @@ function renderBaroCustomerOrders(rows){
 async function submitBaroOrder(){
  const button=baroEl("baroSubmitOrder"),message=baroEl("baroOrderMessage"),p=baroSelectedProduct();
  if(!currentUser){message.textContent="سجّل الدخول أولاً.";return;}
+ if(!baroManualEnabled){message.textContent="استقبال طلبات BARO متوقف حالياً من الإدارة.";return;}
  if(!p||!p.purchase_enabled){message.textContent="هذا المنتج غير متاح للطلب حالياً.";return;}
  const player=baroEl("baroPlayerId").value.trim(),note=baroEl("baroCustomerNote").value.trim();
  const tokens=p.category_id==="jawaker"&&p.group_id==="tokens";
@@ -79,7 +86,7 @@ async function submitBaroOrder(){
   baroEl("baroPlayerId").value="";baroEl("baroCustomerNote").value="";
   await loadBaroCustomer();
  }catch(e){message.textContent=e.message;}
- finally{button.disabled=false;}
+ finally{button.disabled=!baroManualEnabled;}
 }
 function baroProductCard(p){
  const card=document.createElement("article");card.className="ops-item";
@@ -107,6 +114,9 @@ function baroProductCard(p){
 }
 function baroAdminMessage(text){const el=baroEl("baroAdminMessage");if(el)el.textContent=text;}
 function renderBaroAdmin(){
+ const toggle=baroEl("baroManualToggle"),toggleStatus=baroEl("baroManualToggleStatus");
+ if(toggle){toggle.textContent=baroAdminManualEnabled?"إيقاف استقبال طلبات BARO":"فتح استقبال طلبات BARO";toggle.classList.toggle("secondary",baroAdminManualEnabled);toggle.setAttribute("aria-pressed",String(baroAdminManualEnabled));}
+ if(toggleStatus)toggleStatus.textContent=baroAdminManualEnabled?"الاستقبال اليدوي مفتوح للمنتجات المفعّلة فقط.":"الاستقبال اليدوي متوقف. يمكن مراجعة الكتالوج والطلبات السابقة.";
  const products=baroEl("baroAdminProducts"),orders=baroEl("baroAdminOrders");
  if(products){products.replaceChildren();if(!baroAdminProducts.length)products.textContent="لا توجد منتجات في كتالوج BARO.";else baroAdminProducts.forEach(p=>products.append(baroProductCard(p)));}
  if(!orders)return;orders.replaceChildren();
@@ -138,10 +148,24 @@ function renderBaroAdmin(){
   card.append(h,id,info,grid,save);orders.append(card);
  });
 }
+async function toggleBaroManualEnabled(){
+ const button=baroEl("baroManualToggle");
+ if(!button)return;
+ const next=!baroAdminManualEnabled;
+ if(!confirm(next?"فتح استقبال طلبات BARO اليدوية للمنتجات التي فعّلتها فقط؟":"إيقاف استقبال طلبات BARO اليدوية؟"))return;
+ button.disabled=true;
+ try{
+  const result=await baroApi("POST",{action:"manual_toggle",enabled:next});
+  baroAdminManualEnabled=result.manual_enabled===true;
+  baroAdminMessage(baroAdminManualEnabled?"تم فتح استقبال BARO. الشحن والدفع ما زالا يدويين.":"تم إيقاف استقبال BARO. الطلبات السابقة وسجلاتها محفوظة.");
+  await loadBaroAdmin();
+ }catch(e){baroAdminMessage(e.message);}
+ finally{button.disabled=false;}
+}
 async function loadBaroAdmin(){
  const products=baroEl("baroAdminProducts"),orders=baroEl("baroAdminOrders");
  if(!products||!orders)return;
  products.textContent="جاري تحميل كتالوج BARO...";orders.textContent="جاري تحميل الطلبات...";
- try{const data=await baroApi("GET",null,"admin");baroAdminProducts=data.products||[];baroAdminOrders=data.orders||[];renderBaroAdmin();baroAdminMessage("تم تحميل بيانات BARO من قاعدة الاختبار.");}
+ try{const data=await baroApi("GET",null,"admin");baroAdminProducts=data.products||[];baroAdminOrders=data.orders||[];baroAdminManualEnabled=data.manual_enabled===true;renderBaroAdmin();baroAdminMessage("تم تحميل بيانات BARO من قاعدة الاختبار.");}
  catch(e){products.textContent=e.message;orders.textContent="تعذر تحميل الطلبات.";}
 }
