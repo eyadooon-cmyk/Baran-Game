@@ -77,13 +77,17 @@ Deno.serve(async (req: Request) => {
         updated_at: new Date().toISOString(),
       }).eq("product_code", code).select("*").maybeSingle();
       if (error || !product) return json({ error: "تعذر حفظ المنتج. تأكد من وجوده." }, 400);
-      await admin.from("admin_audit_log").insert({
+      const { error: auditError } = await admin.from("admin_audit_log").insert({
         admin_id: user.id,
         action: "leo_manual_product_update",
         entity_type: "leo_manual_product",
         entity_id: code,
         details: { supplier_cost_usd: supplierCost, sale_price_usd: saleUsd, sale_price_syp: saleSyp, catalog_visible: body.catalog_visible, purchase_enabled: false },
       });
+      if (auditError) {
+        console.error("leo-manual product audit failed", auditError.message);
+        return json({ error: "تم حفظ بيانات المنتج، لكن تعذر تسجيل سجل التدقيق. أوقف أي تعديل إضافي وراجع سجل الإدارة." }, 500);
+      }
       return json({ product, purchase_enabled: false });
     }
 
@@ -114,14 +118,18 @@ Deno.serve(async (req: Request) => {
       const { data: order, error } = await admin.from("leo_manual_orders").update(update)
         .eq("id", orderId).select("*").single();
       if (error) return json({ error: "تعذر تحديث طلب ليو." }, 400);
-      await admin.from("leo_manual_order_events").insert({
+      const { error: eventError } = await admin.from("leo_manual_order_events").insert({
         order_id: orderId, actor_id: user.id, event_type: "admin_status_update",
         details: { from: current.status, to: status, supplier_cost_usd: cost, supplier_reference: reference || null, exception_reason: exception || null },
       });
-      await admin.from("admin_audit_log").insert({
+      const { error: auditError } = await admin.from("admin_audit_log").insert({
         admin_id: user.id, action: "leo_manual_order_update", entity_type: "leo_manual_order",
         entity_id: orderId, details: { from: current.status, to: status },
       });
+      if (eventError || auditError) {
+        console.error("leo-manual order audit failed", eventError?.message || auditError?.message);
+        return json({ error: "تحدّثت حالة الطلب، لكن تعذر إكمال سجل التدقيق. راجع الطلب قبل أي متابعة." }, 500);
+      }
       return json({ order, finance_posted: false, wallet_changed: false });
     }
 
