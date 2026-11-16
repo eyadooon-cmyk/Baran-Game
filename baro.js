@@ -19,6 +19,7 @@ async function baroApi(method="GET",body=null,view="admin"){
  return data;
 }
 let baroPendingSubmission=null;
+const baroUuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function baroIdempotencyKey(){
  if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();
  if(globalThis.crypto?.getRandomValues){const b=new Uint8Array(16);globalThis.crypto.getRandomValues(b);b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=[...b].map(x=>x.toString(16).padStart(2,"0")).join("");return h.slice(0,8)+"-"+h.slice(8,12)+"-"+h.slice(12,16)+"-"+h.slice(16,20)+"-"+h.slice(20);}
@@ -34,7 +35,7 @@ function baroGetPendingSubmission(fingerprint){
  if(baroPendingSubmission?.fingerprint===fingerprint)return baroPendingSubmission;
  try{
   const saved=JSON.parse(globalThis.sessionStorage?.getItem("baro_pending_order_retry")||"null");
-  if(saved?.fingerprint===fingerprint&&uuidPattern.test(saved.idempotency_key)){
+  if(saved?.fingerprint===fingerprint&&baroUuidPattern.test(saved.idempotency_key)){
    baroPendingSubmission=saved;return saved;
   }
  }catch{}
