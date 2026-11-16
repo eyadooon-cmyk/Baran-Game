@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17111f">
+<title>إدارة ليو | BARAN GAME</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#100d15;color:#f5edf9}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 100% 0,#49305f55,transparent 35%),#100d15}
+header{padding:18px 15px;border-bottom:1px solid #49375a;background:#17111f;position:sticky;top:0;z-index:5}
+header strong{font-size:18px}header p{margin:5px 0 0;color:#bca9ca;font-size:12px;line-height:1.7}
+main{max-width:1000px;margin:auto;padding:14px}
+.panel{margin:12px 0;padding:14px;border:1px solid #59436d;border-radius:16px;background:#1b1522}
+h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;margin:0 0 8px}
+.small{font-size:11px;color:#bcaac7;line-height:1.8}
+.status{padding:10px;border:1px solid #59436d;border-radius:10px;background:#120e18;font-size:12px;line-height:1.8;margin:10px 0}
+button,a.button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 13px;border:1px solid #8663a0;border-radius:10px;background:#352542;color:#f6edfc;font-weight:800;text-decoration:none;font-size:12px}
+button:disabled{opacity:.55}
+input,textarea,select{width:100%;min-height:40px;padding:9px 10px;border:1px solid #59436d;border-radius:9px;background:#100d15;color:#fff;font:inherit;font-size:13px}
+label{display:block;margin:9px 0 5px;color:#d7c6e3;font-size:11px;font-weight:800}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.products{display:grid;grid-template-columns:1fr;gap:10px}
+.product{padding:12px;border:1px solid #4d3a5d;border-radius:13px;background:linear-gradient(145deg,#2a2035,#17121e)}
+.product-head{display:flex;justify-content:space-between;gap:8px;align-items:start}
+.product-name{font-size:13px;font-weight:900;line-height:1.6}
+.code{font:10px monospace;color:#a995b9;direction:ltr;text-align:left;overflow-wrap:anywhere}
+.cost-ref{font-size:11px;color:#c7b0d9;margin:7px 0}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fields>div{min-width:0}
+.checkbox{display:flex;align-items:center;gap:8px;margin-top:9px}
+.checkbox input{width:18px;min-height:18px}
+.queue-item{padding:12px;border:1px solid #49375a;border-radius:12px;margin:8px 0;background:#15101c}
+.hidden{display:none!important}
+@media(min-width:680px){.products{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header><strong>BARAN GAME · إدارة ليو اليدوية</strong><p>قسم مستقل عن Syria Market. إدارة كلفة ليو وسعر البيع وسجل التنفيذ اليدوي، دون خصم رصيد أو تنفيذ تلقائي.</p></header>
+<main>
+  <section class="panel">
+    <h2>حالة الوصول</h2>
+    <div id="authStatus" class="status">التحقق من جلسة المدير...</div>
+    <div class="toolbar"><a class="button" href="./index.html">العودة إلى المتجر</a><button id="refreshButton" type="button">تحديث البيانات</button></div>
+  </section>
+  <section class="panel">
+    <h2>كتالوج ليو والأسعار الداخلية</h2>
+    <p class="small">الكلفة المرجعية من صور 15-11-2026 للرجوع فقط وليست سعراً حالياً مؤكداً. أدخل كلفة الشراء الحالية من تطبيق ليو وسعر البيع الذي ستعتمده. إظهار المنتج لا يفعّل الشراء.</p>
+    <div class="status">🔒 الشراء معطّل برمجياً. لا يوجد ربط API مع ليو، ولا يتم إنشاء طلبات أو خصم أرصدة من هذه الصفحة.</div>
+    <div id="productStatus" class="status">جاري تحميل المنتجات...</div>
+    <div id="products" class="products"></div>
+  </section>
+  <section class="panel">
+    <h2>طلبات ليو اليدوية</h2>
+    <p class="small">تظهر هنا الطلبات المنفصلة الخاصة بليو فقط. إكمال أي طلب يتطلب تسجيل الكلفة الفعلية ورقم العملية أو سبب استثناء موثق. لا تُسجل أي حركة مالية تلقائياً.</p>
+    <div id="ordersStatus" class="status">جاري تحميل الطلبات...</div>
+    <div id="orders"></div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
+const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let session=null, products=[];
+const $=id=>document.getElementById(id);
+function node(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+function money(v){return v===null||v===undefined?"غير محدد":Number(v).toLocaleString("en-US",{maximumFractionDigits:4})+" $";}
+async function api(method,body){
+ const response=await fetch(SUPABASE_URL+"/functions/v1/baran-leo-manual",{method,headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(data.error||"تعذر الاتصال بخدمة إدارة ليو.");
+ return data;
+}
+async function init(){
+ try{
+  const result=await sb.auth.getSession();session=result.data?.session||null;
+  if(!session){$("authStatus").textContent="سجّل الدخول إلى حساب المدير من المتجر أولاً، ثم افتح هذه الصفحة مجدداً.";return;}
+  $("authStatus").textContent="تم العثور على جلسة. يجري التحقق من صلاحية الإدارة...";
+  await loadData();
+ }catch(error){$("authStatus").textContent=error.message||"تعذر التحقق من الحساب.";}
+}
+async function loadData(){
+ if(!session)return;
+ $("refreshButton").disabled=true;
+ try{
+  const data=await api("GET");
+  products=Array.isArray(data.products)?data.products:[];
+  $("authStatus").textContent="تم التحقق من صلاحية المدير.";
+  renderProducts();
+  renderOrders(Array.isArray(data.orders)?data.orders:[]);
+ }catch(error){
+  $("productStatus").textContent=error.message;
+  $("ordersStatus").textContent=error.message;
+  $("authStatus").textContent=error.message;
+ }finally{$("refreshButton").disabled=false;}
+}
+function renderProducts(){
+ const host=$("products");host.replaceChildren();
+ $("productStatus").textContent="عدد المنتجات: "+products.length+" — جميعها غير قابلة للشراء حالياً.";
+ const names={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"Jawaker"};
+ const groups={uc:"شدّات UC",growth:"حزم الازدهار وPrime",diamonds:"الجواهر",memberships:"العضويات",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
+ products.forEach(product=>{
+  const card=node("article","product");card.dataset.code=product.product_code;
+  const head=node("div","product-head");
+  const title=node("div","product-name",names[product.category_id]+" · "+(groups[product.group_id]||product.group_id)+"\n"+product.product_name);
+  const code=node("div","code",product.product_code);head.append(title,code);card.append(head);
+  const ref=node("div","cost-ref","الكلفة المرجعية من الصور: "+money(product.reference_cost_usd)+" — ليست كلفة معتمدة حالياً");card.append(ref);
+  const fields=node("div","fields");
+  const inputs=[
+   ["كلفة الشراء الحالية بالدولار","supplier_cost_usd",product.supplier_cost_usd],
+   ["سعر البيع بالدولار","sale_price_usd",product.sale_price_usd],
+   ["سعر البيع بالليرة السورية","sale_price_syp",product.sale_price_syp]
+  ];
+  inputs.forEach(([label,key,value])=>{
+   const wrap=node("div");const lab=node("label","",label);const input=node("input");
+   input.type="number";input.min="0";input.step="0.01";input.inputMode="decimal";input.dataset.field=key;input.value=value??"";wrap.append(lab,input);fields.append(wrap);
+  });
+  card.append(fields);
+  const notes=node("textarea");notes.rows=2;notes.maxLength=1000;notes.placeholder="ملاحظات داخلية عن السعر أو التوفر";notes.dataset.field="admin_notes";notes.value=product.admin_notes||"";
+  const noteLabel=node("label","","ملاحظات داخلية");card.append(noteLabel,notes);
+  const visible=node("label","checkbox");const check=node("input");check.type="checkbox";check.checked=product.catalog_visible===true;check.dataset.field="catalog_visible";visible.append(check,node("span","","إظهار المنتج بالكتالوج (لا يفعّل الشراء)"));card.append(visible);
+  const save=node("button","","حفظ الأسعار");save.type="button";save.onclick=()=>saveProduct(card,save);card.append(save);
+  host.append(card);
+ });
+}
+async function saveProduct(card,button){
+ const code=card.dataset.code;const payload={action:"product_update",product_code:code};
+ card.querySelectorAll("[data-field]").forEach(input=>{
+  const key=input.dataset.field;
+  payload[key]=key==="catalog_visible"?input.checked:key==="admin_notes"?input.value:(input.value.trim()===""?null:Number(input.value));
+ });
+ if(Object.entries(payload).some(([key,value])=>["supplier_cost_usd","sale_price_usd","sale_price_syp"].includes(key)&&value!==null&&(!Number.isFinite(value)||value<0))){
+  alert("تحقق من إدخال الأسعار كأرقام صحيحة.");return;
+ }
+ button.disabled=true;
+ try{await api("POST",payload);$("productStatus").textContent="تم حفظ "+code+" بنجاح. الشراء ما زال معطّلاً.";await loadData();}
+ catch(error){$("productStatus").textContent=error.message;}
+ finally{button.disabled=false;}
+}
+function renderOrders(orders){
+ const host=$("orders");host.replaceChildren();
+ $("ordersStatus").textContent="طلبات ليو المسجلة: "+orders.length;
+ if(!orders.length){host.append(node("div","queue-item","لا توجد طلبات ليو حتى الآن. لم ننشئ طلبات تجريبية."));return;}
+ orders.forEach(order=>{
+  const card=node("article","queue-item");
+  card.append(node("strong","",order.product_name_snapshot||order.product_code),node("div","small","Player ID: "+order.player_id+" · الحالة: "+order.status),node("div","small","رقم الطلب: "+order.id));
+  host.append(card);
+ });
+}
+$("refreshButton").addEventListener("click",loadData);
+init();
+</script>
+</body>
+</html>
