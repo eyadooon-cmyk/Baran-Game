@@ -1877,10 +1877,29 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE">
           <span class="item-content"><strong>FREE FIRE</strong><span>ادخل إلى متجر جواهر Free Fire والطلبات الخاصة باللعبة</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
+        <button class="item" type="button" onclick="showSection('baroManual',this);loadBaroCustomer()" style="text-align:right;cursor:pointer;border-color:#8c66ad">
+          <span class="item-content"><strong>BARO · الشحن اليدوي</strong><span>اطلب الشحن اليدوي وتابع السعر والتنفيذ من حسابك</span><span class="small">فتح BARO ←</span></span>
+        </button>
       </div>
     </section>
 
-    <section id="pubgStore" class="hidden game-store-page" data-game-store="PUBG">
+        <section id="baroManual" class="hidden">
+      <button class="secondary games-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <div class="hero"><h2>BARO · الشحن اليدوي</h2><p>اختر المنتج وأدخل معرّف اللاعب بدقة. ستراجع الإدارة الطلب وترسل السعر وطريقة الدفع قبل التنفيذ.</p></div>
+      <div class="deposit-card"><strong>كيف يعمل BARO؟</strong><p class="small">1. اختر المنتج وأدخل المعرّف الصحيح. 2. تراجع الإدارة الطلب وترسل عرض السعر وطريقة الدفع. 3. بعد تأكيد استلام الدفع يدوياً ننفذ الشحن عبر ليو.</p><p class="small">إرسال الطلب لا يخصم أي مبلغ من محفظتك ولا يرسل شحنة تلقائياً. تأكد من معرّف اللاعب قبل الإرسال.</p></div>
+      <div id="baroCustomerCatalog" class="deposit-card" aria-live="polite">جاري تحميل كتالوج BARO...</div>
+      <div class="game-checkout"><h3>إنشاء طلب يدوي</h3>
+        <label for="baroProductSelect">المنتج</label><select id="baroProductSelect"><option value="">جاري تحميل المنتجات...</option></select>
+        <label for="baroPlayerId">معرّف اللاعب / الحساب</label><input id="baroPlayerId" maxlength="80" autocomplete="off" placeholder="تأكد من المعرّف قبل الإرسال" dir="ltr">
+        <div id="baroQuantityWrap" class="hidden"><label for="baroQuantity">كمية جواكر (10,000 إلى 1,000,000)</label><input id="baroQuantity" type="number" min="10000" max="1000000" step="1000" value="10000"></div>
+        <label for="baroCustomerNote">ملاحظة إضافية (اختياري)</label><textarea id="baroCustomerNote" rows="2" maxlength="500" placeholder="أي تفاصيل تساعدنا على تنفيذ طلبك"></textarea>
+        <button id="baroSubmitOrder" class="full" type="button" onclick="submitBaroOrder()">إرسال طلب BARO للمراجعة</button>
+        <div id="baroOrderMessage" class="small" role="status" aria-live="polite"></div>
+      </div>
+      <div class="deposit-card"><h3>طلباتي في BARO</h3><button class="secondary" type="button" onclick="loadBaroCustomer()">↻ تحديث الطلبات</button><div id="baroCustomerOrders" class="ops-list">جاري تحميل طلباتك...</div></div>
+    </section>
+
+<section id="pubgStore" class="hidden game-store-page" data-game-store="PUBG">
       <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
       <div class="hero"><h2>PUBG MOBILE</h2><p>اختر باقة UC، أدخل معرّف اللاعب، وراجع التفاصيل قبل الانتقال للخطوة التالية.</p></div>
       <div id="pubgProductCatalog" class="deposit-card game-catalog" aria-live="polite"><strong>باقات PUBG MOBILE</strong><p class="small">جاري تحميل الباقات...</p></div>
@@ -2279,6 +2298,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
             <div class="admin-hub-grid">
               <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المراقبة ومساعد الإدارة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
+              <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('baro')"><span class="admin-hub-icon">🟣</span><strong>BARO – الشحن اليدوي</strong><small>إدارة منتجات ليو، عروض الأسعار، تأكيد الدفع ومتابعة الشحن اليدوي.</small><span class="admin-hub-open">فتح القسم داخل BARAN ←</span></button>
               <button type="button" class="admin-hub-card" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والمنتجات</strong><small>الموردون والربط والأسعار والتكاليف.</small><span class="admin-hub-open">فتح القسم ←</span></button>
             </div>
           </section>
@@ -2471,6 +2491,13 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       
       </div>
 
+      <div class="admin-subpanel hidden" data-admin-panel="baro">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>BARO – الشحن اليدوي</h2></div>
+        <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
+        <div class="deposit-card"><strong>BARO · الشحن اليدوي</strong><p class="small">مسار مستقل: إدارة كتالوج ليو، استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا يوجد خصم محفظة أو ترحيل مالي تلقائي.</p><button id="baroManualToggle" class="secondary" type="button" onclick="toggleBaroManualEnabled()" aria-pressed="false">تحميل حالة BARO...</button><p id="baroManualToggleStatus" class="small" role="status" aria-live="polite">جاري التحقق من حالة استقبال الطلبات.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
+        <h3>كتالوج BARO والمنتجات المتاحة للزبائن</h3><p class="small">راجع تكلفة ليو الحالية وسعر البيع قبل إظهار المنتج والسماح باستقبال الطلبات.</p><div id="baroAdminProducts" class="ops-list">جاري تحميل المنتجات...</div>
+        <h3>طلبات BARO اليدوية</h3><p class="small">حدّد السعر وطريقة الدفع أولاً، ولا تعتمد الدفع إلا بعد التأكد من استلام المبلغ فعلياً.</p><div id="baroAdminOrders" class="ops-list">جاري تحميل الطلبات...</div>
+      </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
@@ -3048,6 +3075,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
+<script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
+<script src="./baro.js?v=20261116-baro-6"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
 const SUPABASE_KEY="sb_publishable_lAcsTuoMnqyAv8jAz-SCVg_Jyc6T6Un";
@@ -3292,6 +3321,7 @@ function buildAdminSectionNav(panel,id){
   if(old)old.remove();
 }
 function showAdminPanel(id){
+  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();if(typeof loadBaranAutomaticControl==="function")loadBaranAutomaticControl();window.scrollTo({top:0,behavior:"smooth"});return;}
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
   if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}
@@ -3582,7 +3612,7 @@ function showSection(id,button,options){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
+  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",baroManual:"BARO – الشحن اليدوي",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
