@@ -126,3 +126,26 @@ A read-only inventory of the complete Git tree at commit `9178877a48c8a040b5b676
 - The tracked `baran-ai-control-center.html` includes a supplier-analysis action that calls `baran-supplier-manager`; this is a legacy combined administration surface, not proof of an isolated Syria Market supplier application.
 
 This inventory strengthens the earlier finding that end-to-end separation is not yet demonstrated. Do not infer that the deployed manual functions are absent from the test project; the finding is specifically that their source and a dedicated manual UI are not tracked in this repository branch. Before any UI acceptance test or release, obtain and review the exact deployed manual function sources, add reproducible source to a dedicated branch, and confirm the frontend's manual workflow calls only the manual endpoint and `leo_manual_*` tables. Keep supplier-management pages and endpoints separate. No source code, database, deployment, or production resource was changed during this inventory check.
+
+
+## Manual workflow endpoint audit — 2026-11-16
+
+Read-only inspection of the deployed test-project Edge Functions and frontend source established the following:
+
+- `baran-leo-manual` is ACTIVE (version 1, `verify_jwt=true`). It authenticates the user, checks `admin_is_user`, and reads/writes `leo_manual_products`, `leo_manual_orders`, `leo_manual_order_events`, and `admin_audit_log`. Its product/order updates use direct table updates followed by separate audit/event inserts, rather than the atomic RPCs. If the primary update succeeds but a subsequent audit insert fails, the endpoint can return an error after the data change has already occurred. This endpoint should not be used for further edits until reviewed/replaced by the atomic path.
+- `baran-baro-manual` is ACTIVE (version 2, `verify_jwt=true`). It also reads the same `leo_manual_products` and `leo_manual_orders` tables, but sends product/order changes through `baro_manual_product_update_atomic` and `baro_manual_order_update_atomic`. Those SQL functions update the `leo_manual_*` records and their audit/event records in one database transaction. They explicitly return `purchase_enabled=false` / `finance_posted=false` / `wallet_changed=false`.
+- The two deployed manual endpoints are therefore not separate data systems: both point at the same `leo_manual_*` data. The names alone must not be treated as evidence of two isolated manual systems.
+- Neither `baran-leo-manual` nor `baran-baro-manual` appears in the tracked `index.html` frontend source. The inspected customer-facing game/service catalogue only loads active products for display and selection; its selection note says it does not create an order or debit a balance. The tracked customer order page reads the general `orders` table, not `leo_manual_orders`. The frontend currently has no demonstrated end-to-end customer submission flow into the manual order tables.
+- The tracked admin dashboard continues to use the legacy `baran-admin` endpoint, which combines supplier records, supplier-product links, general orders, and fulfillment records in one response. The supplier section in `index.html` includes Syria Market catalogue reads, supplier AI, catalogue readiness, and order preflight. These are visibly grouped inside the same admin shell, not an independently navigable Syria Market application.
+- Read-only test-project counts at the time of inspection: `leo_manual_products=32`, `leo_manual_orders=0`, `leo_manual_order_events=0`, `suppliers=1`, `supplier_products=0`, `orders=0`, `order_fulfillment=0`. No test order or financial transaction was created.
+
+### Required remediation before UI acceptance
+
+1. Decide the single canonical manual endpoint and retire/disable the duplicate path only after dependency and rollback review. Prefer the atomic RPC-backed implementation; do not call the direct-update endpoint for writes.
+2. Store the exact deployed function source for the canonical manual endpoint in Git, with reproducible deployment instructions and version/hash recorded.
+3. Build or restore a dedicated mobile-first BARO LEO manual admin UI that calls only the canonical manual endpoint and operates only on `leo_manual_*` tables. Do not reuse the legacy supplier/general-order admin controls.
+4. Keep Syria Market in a separate UI/API/permission boundary, with no shared mutation endpoint for supplier management and manual orders.
+5. Add a customer manual-order preflight/read-only flow first. Do not create real manual orders, debit wallets, post finance, or send supplier requests during this phase.
+6. Before any enablement, test owner/admin access, customer denial, manual product update + atomic audit, manual order status update + atomic event/audit, and verify that no supplier/general-order/finance/wallet tables are touched.
+
+No source code, database records, deployed functions, schedules, or production resources were changed during this audit. Only this test-branch documentation is being updated.
