@@ -1877,6 +1877,9 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE">
           <span class="item-content"><strong>FREE FIRE</strong><span>ادخل إلى متجر جواهر Free Fire والطلبات الخاصة باللعبة</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
+        <button class="item" type="button" onclick="showSection('leoManualStore',null)" style="text-align:right;cursor:pointer">
+          <span class="item-content"><strong>كتالوج ليو — تنفيذ يدوي</strong><span>PUBG MOBILE وFree Fire وجواكر</span><span class="small">متجر مستقل عن المورد الآلي ←</span></span>
+        </button>
       </div>
     </section>
 
@@ -1904,6 +1907,15 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <button class="full" type="button" disabled>الشحن غير متاح حالياً</button>
         <p class="small game-availability-note">لن يتم إنشاء طلب أو خصم رصيد قبل تفعيل مورد معتمد واختبار الشحن والاسترجاع.</p>
       </div>
+    </section>
+
+    <section id="leoManualStore" class="hidden game-store-page">
+      <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <div class="hero"><h2>كتالوج ليو — التنفيذ اليدوي</h2><p>هذا مسار مستقل عن كتالوجات الموردين الآليين. تتم مراجعة الأسعار والتوفر قبل إتاحة الطلب.</p></div>
+      <div class="deposit-card">
+        <div id="leoManualCatalog" aria-live="polite"><p class="small">جاري تحميل كتالوج ليو...</p></div>
+      </div>
+      <p class="small">تنبيه: لا يتم إنشاء طلب أو خصم رصيد أو تنفيذ شحن من هذه الصفحة حالياً.</p>
     </section>
 
     <section id="services" class="hidden">
@@ -6226,5 +6238,17 @@ async function baranRunFreeFireRegionTest(){
 }
 </script>
 
+<style id="leo-manual-catalog-style">
+.leo-category{margin:18px 0;padding:14px;border:1px solid #584568;border-radius:16px;background:#17121e}
+.leo-category h3{margin:0 0 5px;color:#eadcf5}
+.leo-product-group{margin-top:14px}
+.leo-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.leo-product-card{display:flex;min-width:0;min-height:126px;flex-direction:column;gap:10px;padding:12px;border:1px solid #59456a;border-radius:13px;background:linear-gradient(145deg,#2a2035,#17121e)}
+.leo-product-card strong{font-size:13px;line-height:1.5}
+.leo-price-pending{color:#d7c2e8;font-size:12px}
+.leo-disabled-button{width:100%;opacity:.65;cursor:not-allowed}
+@media(min-width:620px){.leo-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+<script type="module" src="./leo-manual-store.js"></script>
 </body>
 </html>
