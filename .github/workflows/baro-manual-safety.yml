@@ -1,0 +1,27 @@
+name: BARO manual safety checks
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "baro.js"
+      - "supabase/functions/baran-baro-manual/**"
+      - "supabase/migrations/**"
+      - "tests/baro-manual-safety.test.mjs"
+      - ".github/workflows/baro-manual-safety.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baro-manual-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run BARO safety tests
+        run: node --test tests/baro-manual-safety.test.mjs
