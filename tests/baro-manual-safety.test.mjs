@@ -53,6 +53,20 @@ test("BARO remains isolated from wallet debit and automatic dispatch", () => {
   assert.doesNotMatch(edge, /wallet_(?:debit|charge)|dispatch_supplier_order/i);
 });
 
+test("BARO customer order retries are idempotent and serialized per user", () => {
+  const migration = read("../supabase/migrations/20261116153000_baro_manual_idempotent_customer_orders.sql");
+  assert.match(migration, /add column if not exists idempotency_key uuid/);
+  assert.match(migration, /unique index if not exists leo_manual_orders_user_idempotency_uidx/);
+  assert.match(migration, /pg_advisory_xact_lock/);
+  assert.match(migration, /where user_id=p_user_id and idempotency_key=p_idempotency_key/);
+  assert.match(migration, /replayed',true/);
+  assert.match(migration, /baro_manual_create_customer_order_without_global_gate/);
+  assert.match(edge, /p_idempotency_key:idempotencyKey/);
+  assert.match(edge, /uuidPattern\.test\(idempotencyKey\)/);
+  assert.match(ui, /baroPendingSubmission/);
+  assert.match(ui, /idempotency_key:baroPendingSubmission\.idempotency_key/);
+});
+
 test("Legacy BARO order update endpoint is disabled", () => {
   assert.equal(edge.includes('body.action==="order_update"'), false);
   assert.doesNotMatch(edge, /baro_manual_order_update_atomic/);
