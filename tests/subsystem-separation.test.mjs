@@ -94,3 +94,12 @@ test("Customer order gateway remains authenticated and strictly read-only", () =
   assert.doesNotMatch(orderGateway, /from\("(orders|wallets|wallet_transactions)"\)/);
   assert.doesNotMatch(orderGateway, /\.insert\(|\.update\(|\.delete\(|\.upsert\(/);
 });
+
+test("Free Fire diamonds and memberships have separate customer catalogs", () => {
+  assert.match(storefront, /id="freeFireDiamondsCatalog"/);
+  assert.match(storefront, /id="freeFireMembershipCatalog"/);
+  assert.doesNotMatch(storefront, /id="freeFireProductCatalog"/);
+  assert.match(storefront, /kind==="diamonds"\)return \/\^FREEFIRE_\\d\+\$\//);
+  assert.match(storefront, /FREEFIRE_MEMBERSHIP_\(\?:WEEKLY\|MONTHLY\)/);
+  assert.match(storefront, /data-game-package-grid=item\.kind==="pubg"\?"PUBG":\("FREEFIRE_"\+item\.kind\.toUpperCase\(\)\)/);
+});
