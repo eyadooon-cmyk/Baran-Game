@@ -1,6 +1,23 @@
 -- BARO hardening: atomic product configuration and strict order-state transitions.
 -- Branch-only migration; do not apply to production until reviewed and staged.
 
+-- Deactivate any previously exposed test catalogue entries that lack an approved sale price.
+update public.leo_manual_products
+set catalog_visible=false,purchase_enabled=false,updated_at=pg_catalog.now()
+where purchase_enabled=true
+  and coalesce(sale_price_usd,0)<=0
+  and coalesce(sale_price_syp,0)<=0;
+
+alter table public.leo_manual_products
+  drop constraint if exists leo_manual_products_purchase_requires_sale_price;
+alter table public.leo_manual_products
+  add constraint leo_manual_products_purchase_requires_sale_price
+  check (
+    purchase_enabled=false
+    or coalesce(sale_price_usd,0)>0
+    or coalesce(sale_price_syp,0)>0
+  );
+
 create or replace function public.baro_manual_product_configure_atomic(
   p_admin_id uuid,p_product_code text,p_catalog_visible boolean,p_purchase_enabled boolean
 ) returns jsonb
@@ -24,8 +41,10 @@ begin
   if not found then
     raise exception using errcode='P0002',message='product not found';
   end if;
-  if p_purchase_enabled and v_product.sale_price_usd is null and v_product.sale_price_syp is null then
-    raise exception using errcode='22023',message='يجب تحديد سعر بيع قبل فتح استقبال الطلبات.';
+  if p_purchase_enabled
+     and coalesce(v_product.sale_price_usd,0) <= 0
+     and coalesce(v_product.sale_price_syp,0) <= 0 then
+    raise exception using errcode='22023',message='يجب تحديد سعر بيع موجب قبل فتح استقبال الطلبات.';
   end if;
   update public.leo_manual_products
   set catalog_visible=p_catalog_visible,purchase_enabled=p_purchase_enabled,updated_at=pg_catalog.now()
@@ -69,8 +88,11 @@ begin
      or p_purchase_enabled is null then
     raise exception using errcode='22023', message='إعدادات منتج BARO غير صحيحة.';
   end if;
-  if p_purchase_enabled and (not p_catalog_visible or (p_sale_price_usd is null and p_sale_price_syp is null)) then
-    raise exception using errcode='22023', message='يجب إظهار المنتج وتحديد سعر بيع قبل فتح استقبال الطلبات.';
+  if p_purchase_enabled and (
+    not p_catalog_visible
+    or (coalesce(p_sale_price_usd,0) <= 0 and coalesce(p_sale_price_syp,0) <= 0)
+  ) then
+    raise exception using errcode='22023', message='يجب إظهار المنتج وتحديد سعر بيع موجب قبل فتح استقبال الطلبات.';
   end if;
 
   -- Both changes run in one database transaction. Any failure rolls back both.
