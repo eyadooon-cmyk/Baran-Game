@@ -1924,9 +1924,24 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
       <div class="deposit-card">
         <h3>جواكر توكنز</h3>
+        <p class="small">اختر السيرفر وأدخل ID اللاعب والكمية المطلوبة. الكمية المفتوحة من 10,000 إلى 1,000,000 توكن في كلا السيرفرين. لا نطلب كلمة مرور.</p>
         <div class="grid">
-          <button class="item" type="button" disabled><span class="item-content"><strong>جواكر سيرفر 1</strong><span class="small">الكتالوج قيد الربط والتحقق</span></span></button>
-          <button class="item" type="button" disabled><span class="item-content"><strong>جواكر سيرفر 2</strong><span class="small">الكتالوج قيد الربط والتحقق</span></span></button>
+          <div class="product-card" data-jawaker-server="1">
+            <strong>جواكر سيرفر 1</strong>
+            <label for="jawakerServer1PlayerId">ID اللاعب</label>
+            <input id="jawakerServer1PlayerId" type="text" inputmode="numeric" autocomplete="off" placeholder="أدخل ID جواكر">
+            <label for="jawakerServer1Quantity">كمية التوكنز</label>
+            <input id="jawakerServer1Quantity" type="number" min="10000" max="1000000" step="1" inputmode="numeric" placeholder="من 10000 إلى 1000000">
+            <p class="small">السعر قيد طلب عرض المورد. الشحن غير مفعّل حالياً.</p>
+          </div>
+          <div class="product-card" data-jawaker-server="2">
+            <strong>جواكر سيرفر 2</strong>
+            <label for="jawakerServer2PlayerId">ID اللاعب</label>
+            <input id="jawakerServer2PlayerId" type="text" inputmode="numeric" autocomplete="off" placeholder="أدخل ID جواكر">
+            <label for="jawakerServer2Quantity">كمية التوكنز</label>
+            <input id="jawakerServer2Quantity" type="number" min="10000" max="1000000" step="1" inputmode="numeric" placeholder="من 10000 إلى 1000000">
+            <p class="small">السعر قيد طلب عرض المورد. الشحن غير مفعّل حالياً.</p>
+          </div>
         </div>
       </div>
       <div class="deposit-card">
