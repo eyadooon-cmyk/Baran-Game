@@ -3339,7 +3339,12 @@ function normalizeStoreSearch(value){
 function baranSearchDestination(product){
   const category=String(product.category||"").toLowerCase();
   const code=String(product.product_code||"").toLowerCase();
-  if(category==="game")return code.startsWith("freefire")?"freeFireStore":"pubgStore";
+  if(category==="game"){
+    if(code.startsWith("freefire"))return "freeFireStore";
+    if(code.startsWith("pubg"))return "pubgStore";
+    // Jawaker and any future game must never be misrouted to PUBG.
+    return "games";
+  }
   if(category==="ai")return "chatgptStore";
   if(category==="vpn")return "vpnStore";
   if(category==="gift_card")return "giftCardsStore";
@@ -3377,7 +3382,7 @@ async function searchStore(value){
     const terms=query.split(/\s+/).filter(Boolean);
     // قاموس بحث ثنائي اللغة: أسماء عربية وإنجليزية وطرق كتابة شائعة.
     const aliases={
-      game:["لعبة","العاب","ألعاب","games","gaming","pubg","pubg mobile","ببجي","ببجي موبايل","ببجى","شدات","شدات uc","uc","unknown cash","free fire","freefire","فري فاير","فريفاير","جواهر","diamonds"],
+      game:["لعبة","العاب","ألعاب","games","gaming","pubg","pubg mobile","ببجي","ببجي موبايل","ببجى","شدات","شدات uc","uc","unknown cash","free fire","freefire","فري فاير","فريفاير","جواهر","diamonds","jawaker","jawaker tokens","جواكر","جواكر توكنز","توكنز","مسرعات جواكر","مسرّعات جواكر","مسرع","مسرّع"],
       ai:["ذكاء اصطناعي","ذكاء","شات جي بي تي","شات جي بيتي","شات gpt","chatgpt","chat gpt","chat gpt plus","gpt","openai","ai","artificial intelligence","اشتراك","subscription"],
       vpn:["في بي ان","في بي إن","vpn","virtual private network","شبكة خاصة","حماية","privacy"],
       gift_card:["بطاقات","بطاقة","بطاقات هدايا","كرت","كروت","غوغل بلاي","جوجل بلاي","google play","google play card","gift card","gift cards","giftcard","top up card"],
