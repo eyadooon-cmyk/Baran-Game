@@ -48,7 +48,7 @@ Deno.serve(async (req: Request) => {
         return json({ error: "معرّف التذكرة غير صحيح." }, 400);
       }
       let ticketQuery = admin.from("customer_feedback")
-        .select("id,user_id,feedback_type,ticket_code,subject,message,order_id,status,admin_reply,created_at,updated_at")
+        .select("id,user_id,feedback_type,ticket_code,subject,message,order_id,status,admin_reply,admin_read_at,created_at,updated_at")
         .eq("id", ticketId).eq("feedback_type", "support");
       if (!isStaff) ticketQuery = ticketQuery.eq("user_id", user.id);
       const { data: ticket, error: ticketError } = await ticketQuery.maybeSingle();
