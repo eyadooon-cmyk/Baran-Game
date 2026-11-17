@@ -147,7 +147,7 @@ Deno.serve(async (req: Request) => {
       if (updateError || !updated) return json({ error: "تعذر تحديث التذكرة." }, 400);
       await admin.from("admin_audit_log").insert({
         admin_id: user.id, action: "support_ticket_update", entity_type: "customer_feedback",
-        entity_id: ticketId, details: { status: updated.status, priority: updated.priority, assigned_admin_id: updated.assigned_admin_id },
+        entity_id: ticketId, details: { status: updated.status, priority: updated.priority, assigned_admin_id: updated.assigned_admin_id, attachments_enabled: updated.attachments_enabled },
       });
       return json({ success: true, ticket: updated });
     }
