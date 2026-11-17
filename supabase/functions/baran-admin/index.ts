@@ -96,7 +96,7 @@ Deno.serve(async (req: Request) => {
 
       const { data: feedback, error: feedbackError } = await admin
         .from("customer_feedback")
-        .select("id,user_id,feedback_type,ticket_code,subject,message,rating,order_id,status,admin_reply,admin_read_at,created_at,updated_at")
+        .select("id,user_id,feedback_type,ticket_code,subject,message,rating,order_id,status,priority,assigned_admin_id,admin_reply,admin_read_at,created_at,updated_at")
         .order("created_at", { ascending: false })
         .limit(100);
       if (feedbackError) {
