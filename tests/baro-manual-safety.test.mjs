@@ -12,6 +12,7 @@ const baroFinance = read("../supabase/migrations/20261117090000_baro_complete_ma
 const baroPermissions = read("../supabase/migrations/20261117093000_baro_complete_permissions.sql");
 const baroReporting = read("../supabase/migrations/20261117100000_baro_reporting_and_alert_hardening.sql");
 const baroIsolation = read("../supabase/migrations/20261117110000_baro_supplier_isolation_and_backups.sql");
+const baroPaymentFx = read("../supabase/migrations/20261117120000_baro_payment_fx_snapshots.sql");
 const management = read("../baro-management.js");
 
 test("Leo catalogue contains exactly the reviewed 30 products and remains hidden by default", () => {
@@ -232,4 +233,15 @@ test("BARO management dashboard loads as a separate admin workspace and automati
   assert.match(app, /if\(id==="suppliers"&&typeof loadBaranAutomaticControl==="function"\)/);
   assert.match(management, /BARO CONTROL/);
   assert.match(management, /تحديث بيانات BARO/);
+});
+
+
+test("BARO snapshots the exchange rate used when SYP payment is actually verified", () => {
+  assert.match(baroPaymentFx, /payment_exchange_rate_snapshot/);
+  assert.match(baroPaymentFx, /new\\.payment_status='verified'/);
+  assert.match(baroPaymentFx, /لا يمكن تأكيد دفع بالليرة قبل تحديد سعر الصرف/);
+  assert.match(baroPaymentFx, /new\\.payment_exchange_rate_snapshot:=v_rate/);
+  assert.match(baroPaymentFx, /exchange_rate_snapshot/);
+  assert.match(edge, /payment_exchange_rate_snapshot/);
+  assert.match(management, /سعر الصرف/);
 });
