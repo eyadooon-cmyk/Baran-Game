@@ -48,6 +48,8 @@ jobs:
           deno check supabase/functions/baran-order-gateway/index.ts
           deno check supabase/functions/baran-shamcash-verify/index.ts
           deno check supabase/functions/baran-auth-security/index.ts
+          deno check supabase/functions/baran-assistant/index.ts
+          deno check supabase/functions/baran-push-register/index.ts
       - name: Check communication UI wiring
         run: |
           node --input-type=module <<'NODE'
@@ -86,6 +88,7 @@ jobs:
             ['customer center displays last-seen history', readFileSync('customer-center.js', 'utf8').includes('renderRecentCustomers(result.recent || [])') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('is_online: new Date(row.last_seen_at)')],
             ['ban guard is enforced on customer center and support routes', readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('customer_account_controls') && readFileSync('supabase/functions/baran-support-center/index.ts', 'utf8').includes('customer_account_controls')],
             ['ban guard is enforced on BARO, ShamCash and order preflight', readFileSync('supabase/functions/baran-baro-manual/index.ts', 'utf8').includes('customer_account_controls') && readFileSync('supabase/functions/baran-shamcash-verify/index.ts', 'utf8').includes('customer_account_controls') && readFileSync('supabase/functions/baran-order-gateway/index.ts', 'utf8').includes('customer_account_controls')],
+            ['ban guard covers AI assistant and push registration', readFileSync('supabase/functions/baran-assistant/index.ts', 'utf8').includes('customer_account_controls') && readFileSync('supabase/functions/baran-push-register/index.ts', 'utf8').includes('customer_account_controls')],
             ['database blocks banned users across customer write tables', readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('block_banned_customer_orders') && readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('block_banned_customer_wallets')],
             ['new-device events are captured from real Supabase sessions', readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('after insert on auth.sessions') && readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('customer_new_device_detected')],
             ['failed login reports are rate-limited and marked unverified', readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('baran_record_login_failure') && readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('verified_by_auth_server')],
