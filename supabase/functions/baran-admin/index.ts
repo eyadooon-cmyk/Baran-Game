@@ -278,7 +278,11 @@ Deno.serve(async (req: Request) => {
         console.error("baran-admin: customer account controls failed", accountControlError.message);
         return json({ error: "تعذر تحميل حالات حماية الحسابات." }, 500);
       }
-      const accountControlsByUser = new Map((accountControlRows ?? []).map((row) => [row.user_id, row]));
+      const accountControlsByUser = new Map((accountControlRows ?? []).map((row) => {
+        const activeBan = row.status === "banned" &&
+          (!row.banned_until || new Date(row.banned_until).getTime() > Date.now());
+        return [row.user_id, activeBan ? row : { ...row, status: "active" }];
+      }));
       const customers = await Promise.all(customerProfiles.map(async (profile) => {
         const { data: authResult, error: authLookupError } = await admin.auth.admin.getUserById(profile.id);
         if (authLookupError) console.error("baran-admin: customer email lookup failed", authLookupError.message);
