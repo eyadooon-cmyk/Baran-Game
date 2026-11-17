@@ -6,6 +6,9 @@ on:
     paths:
       - 'index.html'
       - 'communication-center.js'
+      - 'community.js'
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
       - '.github/workflows/communication-center-check.yml'
   push:
     branches: [feature/communication-center-premium]
@@ -33,8 +36,9 @@ jobs:
           node --check communication-center.js
           node --check community.js
       - name: Check support Edge Function syntax
-        run: deno check supabase/functions/baran-support-center/index.ts
-deno check supabase/functions/baran-push-dispatch/index.ts
+        run: |
+          deno check supabase/functions/baran-support-center/index.ts
+          deno check supabase/functions/baran-push-dispatch/index.ts
           deno check supabase/functions/baran-admin/index.ts
       - name: Check communication UI wiring
         run: |
