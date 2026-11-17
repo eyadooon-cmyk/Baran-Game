@@ -85,7 +85,14 @@ Deno.serve(async (req: Request) => {
         return json({ error: "تعذر تحميل العملاء المتصلين." }, 500);
       }
 
-      const ids = (rows || []).map((row) => row.user_id);
+      const { data: adminRows, error: adminRowsError } = await admin.from("admin_users").select("user_id");
+      if (adminRowsError) {
+        console.error("customer center administrator exclusion failed", adminRowsError.message);
+        return json({ error: "تعذر التحقق من حسابات الإدارة." }, 500);
+      }
+      const adminIds = new Set((adminRows || []).map((row) => row.user_id));
+      const customerRows = (rows || []).filter((row) => !adminIds.has(row.user_id));
+      const ids = customerRows.map((row) => row.user_id);
       const { data: profiles, error: profileError } = ids.length
         ? await admin.from("profiles").select("id,full_name,member_code").in("id", ids)
         : { data: [], error: null };
@@ -94,7 +101,7 @@ Deno.serve(async (req: Request) => {
         return json({ error: "تعذر تحميل بيانات العملاء المتصلين." }, 500);
       }
       const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]));
-      const online = (rows || []).map((row) => ({
+      const online = customerRows.map((row) => ({
         user_id: row.user_id,
         full_name: profileById.get(row.user_id)?.full_name || "عميل",
         member_code: profileById.get(row.user_id)?.member_code || null,
