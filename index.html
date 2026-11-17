@@ -2590,8 +2590,10 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
+        <div class="admin-workgroup-label"><span>01</span><div><strong>حالة التشغيل</strong><small>تحقق من وضع الشحن الآلي قبل إدارة الموردين</small></div></div>
         <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
+      <div class="admin-workgroup-label"><span>02</span><div><strong>الكتالوج والاستيراد</strong><small>فحص جاهزية المنتجات وقراءة بيانات المورد دون تنفيذ طلبات</small></div></div>
       <section class="deposit-card" id="baranCatalogReadinessReport" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>📋 تقرير جاهزية كتالوج المنتجات</h2>
         <p class="small">يفحص جميع المنتجات دفعة واحدة: الأسعار، ربط المورد، SKU، إعداد API، رصيد المورد، وبوابة التنفيذ. التقرير للقراءة فقط.</p>
@@ -2630,6 +2632,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <div id="baranFreeFireTestResult" class="small" role="status" aria-live="polite" style="margin-top:10px;padding:12px;border:1px solid #514064;border-radius:10px;background:#100b16">أدخل آيدي حساب تجريبي ثم اضغط فحص.</div>
       </section>
       </section>
+      <div class="admin-workgroup-label"><span>03</span><div><strong>الفحص والتحقق</strong><small>اختبر بيانات المنتج واللاعب والرصيد قبل أي إجراء تشغيلي</small></div></div>
       <section class="deposit-card" id="baranAdminOrderPreflight" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>🛡️ فحص جاهزية الطلب — للإدارة</h2>
         <p class="small">أداة داخلية لفحص السعر والمورد والرصيد. لا تنشئ طلباً ولا تخصم رصيداً ولا ترسل أي عملية للمورد.</p>
@@ -2642,6 +2645,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <button class="full secondary" type="button" id="baranPreflightRunButton" onclick="baranRunAdminOrderPreflight()">فحص الجاهزية</button>
         <p id="baranPreflightResult" class="small" role="status" aria-live="polite">أدخل رمز المنتج ثم ابدأ الفحص.</p>
       </section>
+      <div class="admin-workgroup-label"><span>04</span><div><strong>التحليل والمساعدة</strong><small>استعن بالمساعد لقراءة البيانات واقتراح التحسينات فقط</small></div></div>
       <section class="deposit-card" id="supplierManagerAi" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span style="font-size:28px">🤖</span>
@@ -2659,6 +2663,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <p class="small">تنبيه أمان: المساعد لا يغيّر الأسعار أو الموردين أو إعدادات API، ولا ينفّذ شحنات أو استردادات أو أي حركة مالية.</p>
       </section>
       <hr style="border-color:#40334b;margin:24px 0">
+      <div class="admin-workgroup-label"><span>05</span><div><strong>دليل الموردين وربط المنتجات</strong><small>سجّل المورد أولاً، ثم اربط المنتجات وتكلفة الشراء وحقول العميل</small></div></div>
       <h2>إدارة الموردين 🤝</h2>
       <div class="ops-form">
         <label for="opsSupplierName">اسم المورد</label>
@@ -2700,6 +2705,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
       <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
       <hr style="border-color:#40334b;margin:24px 0">
+      <div class="admin-workgroup-label"><span>06</span><div><strong>تكامل المورد والمتابعة</strong><small>جهّز إعدادات الاتصال، ثم راجع الحالة وسجل الأحداث والمحاولات</small></div></div>
       <h3>إعداد ربط API المورد</h3>
       <p class="small">هذه إعدادات تحضيرية فقط. لا يتم الاتصال بالمورد أو إرسال طلبات حقيقية من هذه الصفحة. مفاتيح API تحفظ لاحقاً في Supabase Secrets، ولا تكتبها هنا.</p>
       <div class="ops-form">
