@@ -1844,6 +1844,9 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <button class="baran-clean-category" type="button" onclick="showSection('games',null)">
           <span class="baran-clean-category-icon">🎮</span><span class="baran-clean-category-copy"><strong>الألعاب والشحن</strong><small>PUBG MOBILE وFree Fire</small></span><span class="baran-clean-arrow">←</span>
         </button>
+        <button class="baran-clean-category" type="button" onclick="showSection('baroManual',null);loadBaroCustomer()" style="border-color:#8c66ad">
+          <span class="baran-clean-category-icon">🟣</span><span class="baran-clean-category-copy"><strong>BARO · الشحن اليدوي</strong><small>قسم مستقل للطلبات اليدوية والأسعار</small></span><span class="baran-clean-arrow">←</span>
+        </button>
         <button class="baran-clean-category" type="button" onclick="showSection('services',null)">
           <span class="baran-clean-category-icon">✦</span><span class="baran-clean-category-copy"><strong>الخدمات الرقمية</strong><small>اشتراكات وذكاء اصطناعي وVPN</small></span><span class="baran-clean-arrow">←</span>
         </button>
@@ -1877,19 +1880,17 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE">
           <span class="item-content"><strong>FREE FIRE</strong><span>ادخل إلى متجر جواهر Free Fire والطلبات الخاصة باللعبة</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
-        <button class="item" type="button" onclick="showSection('baroManual',this);loadBaroCustomer()" style="text-align:right;cursor:pointer;border-color:#8c66ad">
-          <span class="item-content"><strong>BARO · الشحن اليدوي</strong><span>اطلب الشحن اليدوي وتابع السعر والتنفيذ من حسابك</span><span class="small">فتح BARO ←</span></span>
-        </button>
       </div>
     </section>
 
         <section id="baroManual" class="hidden">
-      <button class="secondary games-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <button class="secondary games-back-button" type="button" onclick="showSection('home',null)">← العودة إلى الأقسام الرئيسية</button>
       <div class="hero"><h2>BARO · الشحن اليدوي</h2><p>اختر المنتج وأدخل معرّف اللاعب بدقة. ستراجع الإدارة الطلب وترسل السعر وطريقة الدفع قبل التنفيذ.</p></div>
       <div class="deposit-card"><strong>كيف يعمل BARO؟</strong><p class="small">1. اختر المنتج وأدخل المعرّف الصحيح. 2. تراجع الإدارة الطلب وترسل عرض السعر وطريقة الدفع. 3. بعد تأكيد استلام الدفع يدوياً ننفذ الشحن عبر ليو.</p><p class="small">إرسال الطلب لا يخصم أي مبلغ من محفظتك ولا يرسل شحنة تلقائياً. تأكد من معرّف اللاعب قبل الإرسال.</p></div>
       <div id="baroCustomerCatalog" class="deposit-card" aria-live="polite">جاري تحميل كتالوج BARO...</div>
       <div class="game-checkout"><h3>إنشاء طلب يدوي</h3>
         <label for="baroProductSelect">المنتج</label><select id="baroProductSelect"><option value="">جاري تحميل المنتجات...</option></select>
+        <div id="baroSelectedPrice" class="small" aria-live="polite">السعر الظاهر سيُحفظ عند تسجيل الطلب.</div>
         <label for="baroPlayerId">معرّف اللاعب / الحساب</label><input id="baroPlayerId" maxlength="80" autocomplete="off" placeholder="تأكد من المعرّف قبل الإرسال" dir="ltr">
         <div id="baroQuantityWrap" class="hidden"><label for="baroQuantity">كمية جواكر (10,000 إلى 1,000,000)</label><input id="baroQuantity" type="number" min="10000" max="1000000" step="1000" value="10000"></div>
         <label for="baroCustomerNote">ملاحظة إضافية (اختياري)</label><textarea id="baroCustomerNote" rows="2" maxlength="500" placeholder="أي تفاصيل تساعدنا على تنفيذ طلبك"></textarea>

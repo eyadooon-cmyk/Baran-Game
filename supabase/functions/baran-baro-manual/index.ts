@@ -19,14 +19,14 @@ Deno.serve(async(req:Request)=>{
 
   if(req.method==="GET"&&view==="catalog"){
    const [{data,error},{data:settings,error:settingsError}]=await Promise.all([
-    admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,purchase_enabled").eq("catalog_visible",true).order("category_id").order("group_id").order("product_name"),
+    admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,sale_price_usd,sale_price_syp,purchase_enabled").eq("catalog_visible",true).order("category_id").order("group_id").order("product_name"),
     admin.from("baro_manual_settings").select("enabled").eq("id","main").maybeSingle()
    ]);
    if(error||settingsError)return json({error:"تعذر تحميل كتالوج BARO."},500);
    return json({products:data??[],manual_enabled:settings?.enabled===true});
   }
   if(req.method==="GET"&&view==="my_orders"){
-   const {data,error}=await admin.from("leo_manual_orders").select("id,product_code,player_id,product_name_snapshot,quantity,customer_price_usd,customer_price_syp,status,payment_status,payment_method,customer_message,created_at,updated_at,completed_at").eq("user_id",user.id).order("created_at",{ascending:false}).limit(50);
+   const {data,error}=await admin.from("leo_manual_orders").select("id,product_code,player_id,product_name_snapshot,quantity,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,customer_price_usd,customer_price_syp,status,payment_status,payment_method,customer_message,created_at,updated_at,completed_at").eq("user_id",user.id).order("created_at",{ascending:false}).limit(50);
    if(error)return json({error:"تعذر تحميل طلبات BARO."},500);
    return json({orders:data??[]});
   }
@@ -52,7 +52,7 @@ Deno.serve(async(req:Request)=>{
   if(req.method==="GET"){
    const [{data:products,error:pe},{data:orders,error:oe}]=await Promise.all([
     admin.from("leo_manual_products").select("*").order("category_id").order("group_id").order("product_name"),
-    admin.from("leo_manual_orders").select("id,user_id,product_code,player_id,product_name_snapshot,quantity,customer_note,customer_price_usd,customer_price_syp,payment_status,payment_method,customer_message,supplier_cost_usd,supplier_reference,status,internal_notes,exception_reason,created_at,updated_at,completed_at").order("created_at",{ascending:false}).limit(150)
+    admin.from("leo_manual_orders").select("id,user_id,product_code,player_id,product_name_snapshot,quantity,customer_note,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,customer_price_usd,customer_price_syp,payment_status,payment_method,customer_message,supplier_cost_usd,supplier_reference,status,internal_notes,exception_reason,created_at,updated_at,completed_at").order("created_at",{ascending:false}).limit(150)
    ]);
    if(pe||oe)return json({error:"تعذر تحميل بيانات BARO اليدوية."},500);
    const enriched=await Promise.all((orders??[]).map(async o=>{const {data}=await admin.auth.admin.getUserById(o.user_id);return {...o,customer_email:data?.user?.email??null};}));
