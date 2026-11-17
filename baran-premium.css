@@ -124,3 +124,307 @@ footer{color:#a99bb5;border-top:1px solid rgba(139,105,164,.18);margin-top:30px}
 @media(prefers-reduced-motion:reduce){
   *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* =========================================================
+   BARAN GAME — Signature storefront polish / phase 2
+   Visual-only layer: preserves existing markup and behavior.
+   ========================================================= */
+:root{
+  --baran-ink:#0b0810;
+  --baran-panel:#17111f;
+  --baran-panel-2:#21172c;
+  --baran-line:rgba(190,145,220,.23);
+  --baran-violet:#b98bd9;
+  --baran-lilac:#e4cff4;
+  --baran-muted:#b9a9c9;
+}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(ellipse at 5% 12%,rgba(117,70,151,.12),transparent 30%),
+    radial-gradient(ellipse at 96% 38%,rgba(91,56,122,.10),transparent 27%),
+    linear-gradient(180deg,#0b0810 0%,#100b16 48%,#0b0810 100%);
+  color:#f5eff9;
+}
+::selection{background:#9b6ac2;color:#fff}
+header{
+  min-height:285px;
+  padding-top:48px;
+  background-image:
+    linear-gradient(90deg,rgba(9,7,13,.88),rgba(19,12,27,.54) 52%,rgba(9,7,13,.88)),
+    url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1800&q=90");
+  background-position:center 44%;
+  border-bottom:1px solid rgba(204,164,232,.55);
+}
+header .logo{filter:drop-shadow(0 8px 22px rgba(166,112,204,.22))}
+header .header-tag{backdrop-filter:blur(12px);background:rgba(17,11,24,.72);border-color:#b98bd966}
+.store-toolbar{
+  background:rgba(13,9,18,.92);
+  border-bottom:1px solid rgba(185,139,217,.24);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+.toolbar-brand{font-size:17px;letter-spacing:1.2px}
+.menu-toggle,.notification-bell{
+  background:linear-gradient(145deg,#30213e,#191221);
+  border-color:#76558e;
+  box-shadow:inset 0 1px 0 #ffffff12,0 5px 14px #0005;
+}
+main{max-width:1120px}
+main>section:not(#home){
+  position:relative;
+  border-color:rgba(185,139,217,.22);
+  background:linear-gradient(155deg,rgba(31,22,42,.98),rgba(15,11,21,.98));
+  box-shadow:0 16px 38px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.025);
+}
+main>section:not(#home)>h2:first-child{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:13px;
+  border-bottom-color:rgba(185,139,217,.2);
+  letter-spacing:.1px;
+}
+main>section:not(#home)>h2:first-child:before{
+  content:"";display:block;width:4px;height:25px;flex:0 0 4px;
+  border-radius:8px;background:linear-gradient(180deg,#e4cff4,#8d5eaf);
+  box-shadow:0 0 14px #b98bd966;
+}
+.hero{
+  position:relative;isolation:isolate;overflow:hidden;
+  padding:clamp(20px,4vw,30px);
+  border:1px solid rgba(196,151,226,.42);
+  background:
+    radial-gradient(circle at 8% 15%,rgba(191,143,223,.22),transparent 34%),
+    radial-gradient(circle at 95% 100%,rgba(112,68,150,.2),transparent 38%),
+    linear-gradient(130deg,#30203f,#1b1425 64%,#120d19);
+  box-shadow:0 14px 32px #0005,inset 0 1px 0 #ffffff12;
+}
+.hero:after{
+  content:"✦";position:absolute;z-index:-1;left:18px;bottom:-38px;
+  color:#d8b7ef;font-size:118px;line-height:1;opacity:.055;
+  transform:rotate(-12deg);pointer-events:none;
+}
+.hero h2{margin-bottom:8px;letter-spacing:.1px}
+.hero p{max-width:680px;color:#d1c1dc;line-height:2}
+.baran-home-clean{gap:18px}
+.baran-clean-hero{
+  min-height:205px;padding:clamp(20px,4vw,32px);
+  border-color:rgba(205,164,235,.5);
+  background:
+    radial-gradient(circle at 10% 90%,rgba(185,139,217,.24),transparent 42%),
+    radial-gradient(circle at 90% 0%,rgba(118,74,153,.28),transparent 36%),
+    linear-gradient(115deg,#342144 0%,#1b1425 62%,#100c16 100%);
+  box-shadow:0 18px 42px #0006,inset 0 1px 0 #ffffff15;
+}
+.baran-clean-eyebrow{font-size:10px;letter-spacing:2.2px;color:#e1c5f3}
+.baran-clean-hero h2{font-size:clamp(23px,5vw,32px);line-height:1.4}
+.baran-clean-hero p{font-size:12px;max-width:470px;line-height:2}
+.baran-clean-hero-symbol{
+  flex-basis:82px;width:82px;height:82px;border-radius:26px;
+  background:linear-gradient(145deg,#b98bd933,#70478d22);
+  border-color:#d4b0ed99;box-shadow:0 0 42px #a56bd644,inset 0 1px 0 #fff2;
+}
+.baran-clean-hero button,.baran-promo-copy button,.home-cta-primary{
+  background:linear-gradient(120deg,#e5caf7,#a978cb 72%,#8757aa);
+  box-shadow:0 8px 22px rgba(165,107,214,.24),inset 0 1px 0 #fff8;
+}
+.baran-clean-section-head{margin-top:6px}
+.baran-clean-section-head h2{font-size:19px;letter-spacing:.1px}
+.baran-clean-section-head p{font-size:11px}
+.baran-clean-category-grid{gap:12px}
+.baran-clean-category{
+  min-height:98px;padding:13px 11px;
+  border-color:rgba(185,139,217,.27);
+  background:linear-gradient(145deg,#261b33,#17111f 78%);
+  box-shadow:0 8px 20px #0004,inset 0 1px 0 #ffffff0a;
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.baran-clean-category:hover{
+  transform:translateY(-3px);border-color:#c59ae4;
+  box-shadow:0 13px 27px #0006,0 0 0 1px #b98bd922;
+}
+.baran-clean-category-icon{
+  flex-basis:44px;width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(145deg,#b98bd944,#754d922e);
+  border:1px solid #b98bd955;font-size:23px;
+}
+.baran-clean-category-copy strong{font-size:12px;color:#f5eafa}
+.baran-clean-category-copy small{font-size:10px;line-height:1.7}
+.baran-clean-arrow{font-size:20px}
+.baran-clean-shortcuts button,.home-quick-actions button{
+  border-color:rgba(185,139,217,.28);
+  background:linear-gradient(145deg,#251a31,#17111f);
+  box-shadow:0 6px 16px #0003,inset 0 1px 0 #ffffff0a;
+}
+.baran-promo-carousel{
+  border-color:#9a70b9;
+  background:radial-gradient(circle at 90% 10%,#b98bd933,transparent 40%),linear-gradient(120deg,#39264b,#17111f 78%);
+  box-shadow:0 16px 32px #0005;
+}
+.baran-promo-slide{padding:22px 22px 42px}
+.baran-promo-copy h3{font-size:clamp(19px,4vw,24px);line-height:1.55}
+.baran-promo-copy p{font-size:12px;line-height:1.9}
+.baran-promo-art{border-radius:26px;background:linear-gradient(145deg,#b98bd944,#70478d22);border-color:#caa5e5aa}
+.home-feature-card,.home-category-card,.home-shortcut{
+  border-color:rgba(185,139,217,.26);
+  background:linear-gradient(145deg,#261b33,#15101c);
+  box-shadow:0 8px 20px #0004,inset 0 1px 0 #ffffff09;
+}
+.home-feature-card:hover,.home-category-card:hover,.home-shortcut:hover{
+  border-color:#c49ae2;box-shadow:0 13px 28px #0006,0 0 0 1px #b98bd922;
+}
+#games .grid,.game-store-page .game-package-grid,.baran-service-product-grid{gap:12px}
+#games .item,.item{
+  border-color:rgba(185,139,217,.28);
+  background:linear-gradient(155deg,#2a1e37,#17111f 82%);
+  box-shadow:0 10px 24px #0005,inset 0 1px 0 #ffffff0b;
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+#games .item:hover,.item:hover{
+  transform:translateY(-3px);border-color:#c49ae2;
+  box-shadow:0 16px 30px #0007;
+}
+.item img{filter:saturate(1.04) contrast(1.03)}
+.item-content{display:flex;flex-direction:column;align-items:flex-start;gap:5px;text-align:right}
+.item-content>span:not(.small){color:#d0c1dc;font-size:12px;line-height:1.8}
+.item-content .small{color:#d5b5ed;font-weight:800}
+.game-package-option,.baran-service-product,.baran-game-package-card{
+  border-color:rgba(185,139,217,.32);
+  background:linear-gradient(150deg,#2a1e37,#17111f 82%);
+  box-shadow:0 8px 20px #0004,inset 0 1px 0 #ffffff0b;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.game-package-option:hover,.baran-service-product:hover{
+  transform:translateY(-2px);border-color:#c69ce4;
+  box-shadow:0 12px 24px #0006;
+}
+.game-package-option .game-package-price,.baran-service-product-price{
+  display:block;padding:9px 10px;border:1px solid #8e66aa55;border-radius:10px;
+  background:linear-gradient(90deg,#a56bd61c,#a56bd608);
+  color:#e9cdfa;font-size:14px;
+}
+.game-package-option[aria-pressed="true"]{
+  border-color:#e0b9fa;background:linear-gradient(145deg,#422858,#21152d);
+  box-shadow:0 0 0 2px #c69ce433,0 12px 26px #0006;
+}
+.game-checkout,.baran-service-selection-preview,.baran-unified-selection{
+  border-color:#9a70b9;
+  background:linear-gradient(150deg,#2b1e39,#15101d);
+  box-shadow:0 12px 26px #0004;
+}
+.game-checkout h3{font-size:17px}
+.game-selection-summary{background:#100b17;border-color:#9670b0}
+.deposit-card,.deposit-row,.finance-card,.finance-entry,.admin-request{
+  border-color:rgba(185,139,217,.25);
+  background:linear-gradient(145deg,#21182c,#15101c);
+  box-shadow:0 7px 18px #0003;
+}
+.product-card{
+  padding:16px;border-color:rgba(185,139,217,.34);
+  background:linear-gradient(145deg,#2a1e37,#17111f);
+  box-shadow:0 10px 24px #0004;
+}
+.product-card strong{font-size:16px;color:#ead7f7}
+.product-prices{
+  display:inline-block;padding:7px 10px;border:1px solid #a879c955;
+  border-radius:10px;background:#a56bd61a;color:#ead2f8;
+}
+.baran-service-product{padding:15px;min-height:155px}
+.baran-service-product-head{gap:10px}
+.baran-service-product-icon{border:1px solid #b98bd955;background:linear-gradient(145deg,#b98bd944,#754d9222)}
+.baran-service-product strong{font-size:14px;color:#f3e9f8}
+.baran-service-product p{font-size:11px;line-height:1.8}
+.baran-service-product-status{border:1px solid #98734466;background:#4b351d;color:#f5d9ac}
+.baran-product-detail-toggle{
+  border-color:#806099;background:#21172d;color:#e9d8f5;
+}
+.baran-product-detail-panel{background:#100b16;border-color:#9a70b966}
+.wallet-hero{
+  border:1px solid #956eb2!important;
+  border-radius:22px!important;
+  background:radial-gradient(circle at 12% 8%,#c79be633,transparent 38%),linear-gradient(130deg,#39254b,#1c1428 72%,#110d18)!important;
+  box-shadow:0 16px 36px #0006,inset 0 1px 0 #ffffff12;
+}
+.wallet-balance-card{
+  position:relative;overflow:hidden;
+  border:1px solid rgba(193,151,224,.4)!important;
+  border-radius:19px!important;
+  background:linear-gradient(145deg,#2a1e38,#17111f)!important;
+  box-shadow:0 12px 26px #0005,inset 0 1px 0 #ffffff12;
+}
+.wallet-balance-card:after{
+  content:"";position:absolute;left:-25px;bottom:-60px;width:150px;height:150px;
+  border:1px solid #c49ae233;border-radius:50%;box-shadow:0 0 0 18px #c49ae20a,0 0 0 38px #c49ae208;
+  pointer-events:none;
+}
+.wallet-amount{font-size:clamp(25px,6vw,34px)!important;color:#f0dafa!important}
+.wallet-actions>*{
+  border-color:#76558e!important;border-radius:15px!important;
+  background:linear-gradient(145deg,#2b1e39,#17111f)!important;
+}
+input,textarea,select{
+  border-radius:12px;
+  box-shadow:inset 0 2px 8px #0003;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:#c49ae2!important;box-shadow:0 0 0 3px #b98bd922,inset 0 2px 8px #0003;
+}
+button{
+  border-radius:12px;
+  transition:transform .16s ease,filter .16s ease,box-shadow .16s ease,border-color .16s ease;
+}
+button:not(:disabled):hover{filter:brightness(1.08)}
+button:not(:disabled):active{transform:translateY(1px) scale(.99)}
+main button:not(.secondary):not(.games-back-button):not(.section-back-button){
+  box-shadow:0 6px 16px rgba(0,0,0,.2),inset 0 1px 0 #ffffff35;
+}
+.section-back-button,.games-back-button{
+  border-color:#76558e;background:linear-gradient(145deg,#30213e,#191221);
+  box-shadow:0 5px 14px #0004;
+}
+.customer-order-card{
+  border-color:rgba(185,139,217,.32);
+  background:linear-gradient(150deg,#2a1e37,#17111f);
+  box-shadow:0 9px 22px #0004;
+}
+.customer-order-stat{
+  border-color:#76558e;background:linear-gradient(145deg,#2b1e39,#17111f);
+}
+.customer-order-stat strong{color:#ecd8fa}
+.notification-box,.notification-item{
+  border-color:rgba(185,139,217,.28);
+  background:linear-gradient(145deg,#21182c,#15101c);
+}
+.side-drawer{
+  background:linear-gradient(160deg,#24192f,#0d0912 78%);
+  border-left-color:#8c68a8;
+}
+.drawer-link{border-color:#493653;background:linear-gradient(145deg,#21182b,#17111f)}
+.drawer-link:hover{border-color:#b98bd9;background:#30213e}
+footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b365c}
+@media(min-width:760px){
+  .baran-clean-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .baran-clean-category{min-height:118px;padding:16px}
+  .baran-clean-hero{min-height:225px}
+  .game-package-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  header{min-height:235px;padding:32px 14px 27px}
+  .baran-clean-hero{min-height:178px;padding:18px 15px}
+  .baran-clean-hero-symbol{flex-basis:66px;width:66px;height:66px;font-size:31px}
+  .baran-clean-category{min-height:91px;padding:10px 8px}
+  .baran-service-product{padding:12px;min-height:148px}
+  .product-card{padding:13px}
+  .wallet-amount{font-size:25px!important}
+}
+@media(max-width:380px){
+  .baran-clean-category-grid{gap:7px}
+  .baran-clean-category{gap:6px;padding:9px 6px}
+  .baran-clean-category-copy strong{font-size:10px}
+  .baran-clean-category-copy small{font-size:9px}
+  .baran-clean-hero-copy{max-width:77%}
+  .baran-clean-hero-symbol{flex-basis:53px;width:53px;height:53px;font-size:26px}
+  .game-package-grid,.baran-service-product-grid{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .baran-clean-category,.home-feature-card,.home-category-card,.game-package-option,.baran-service-product,button{transition:none}
+}
