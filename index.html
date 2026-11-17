@@ -5784,6 +5784,7 @@ async function markBaranNotificationCardRead(item,button,audience,card,state){
       if(typeof loadAdminPanel==="function")await loadAdminPanel();
     }else{
       await markCustomerNotificationRead(item.id,button,audience);
+      if(typeof loadMyNotifications==="function")await loadMyNotifications();
     }
   }catch(error){
     if(button)button.disabled=false;
