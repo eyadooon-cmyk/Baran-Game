@@ -74,13 +74,15 @@ Deno.serve(async (req: Request) => {
     }
 
     if (req.method === "GET" && view === "admin") {
-      const access = await Promise.all(["catalog", "orders", "settings"].map(hasPermission));
-      const [canCatalog, canOrders, canSettings] = access;
+      const access = await Promise.all(["catalog", "orders", "settings", "suppliers", "finance", "view"].map(hasPermission));
+      const [canCatalog, canOrders, canSettings, canSuppliers, canFinance, canView] = access;
       if (!access.some(Boolean)) return json({ error: "لا تملك صلاحية عرض لوحة BARO." }, 403);
       const tasks: any[] = [];
       tasks.push(canCatalog
         ? admin.from("leo_manual_products").select("*").order("category_id").order("group_id").order("product_name")
-        : Promise.resolve({ data: [], error: null }));
+        : canSuppliers
+          ? admin.from("leo_manual_products").select("product_code,product_name,category_id,group_id").order("category_id").order("group_id").order("product_name")
+          : Promise.resolve({ data: [], error: null }));
       tasks.push(canOrders
         ? admin.from("leo_manual_orders").select("id,user_id,product_code,player_id,product_name_snapshot,quantity,customer_note,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,displayed_exchange_rate_snapshot,supplier_id_snapshot,supplier_cost_usd_snapshot,payment_status,payment_method,customer_message,supplier_cost_usd,supplier_reference,status,internal_notes,exception_reason,created_at,updated_at,completed_at")
           .order("created_at", { ascending: false }).limit(150)
@@ -97,7 +99,8 @@ Deno.serve(async (req: Request) => {
       })) : [];
       const { data: gate } = await admin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle();
       return json({ products: productsResult.data ?? [], orders: enriched, settings: settingsResult.data ?? null,
-        manual_enabled: gate?.enabled === true, access: { catalog: canCatalog, orders: canOrders, settings: canSettings } });
+        manual_enabled: gate?.enabled === true,
+        access: { catalog: canCatalog, orders: canOrders, settings: canSettings, suppliers: canSuppliers, finance: canFinance, view: canView } });
     }
 
     if (req.method === "GET" && view === "finance") {
