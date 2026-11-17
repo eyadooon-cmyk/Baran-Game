@@ -83,8 +83,9 @@ async function openBaranNotificationTarget(item,audience){
   const entityType=String(item.entity_type||"").toLowerCase();
   const kind=String(item.kind||"").toLowerCase();
   const entityId=item.entity_id||null;
+  const isSupportTarget=["ticket","customer_feedback"].includes(entityType)||entityType.includes("ticket")||kind.includes("support")||kind.includes("reply");
   const section=isAdmin?"admin":
-    (["ticket","customer_feedback"].includes(entityType)||entityType.includes("ticket")||kind.includes("support")||kind.includes("reply")?"support":
+    (isSupportTarget?"support":
      ["order","orders"].includes(entityType)||kind.includes("order")?"orders":
      ["deposit_request","wallet","wallet_transaction","wallet_transactions"].includes(entityType)||kind.includes("deposit")||kind.includes("wallet")||kind.includes("payment")?"wallet":
      entityType==="leo_manual_order"?"baroManual":"account");
@@ -99,7 +100,15 @@ async function openBaranNotificationTarget(item,audience){
     }catch(error){console.warn("تعذر تعليم الإشعار كمقروء:",error);}
   }
   if(typeof showSection==="function")showSection(section,null);
-  if(isAdmin){
+  if(isAdmin&&isSupportTarget){
+    if(typeof showAdminPanel==="function")await showAdminPanel("support");
+    if(typeof switchSupportTab==="function")switchSupportTab("tickets");
+    const typeFilter=document.getElementById("adminFeedbackTypeFilter");
+    const searchInput=document.getElementById("adminFeedbackSearch");
+    if(typeFilter)typeFilter.value=entityType==="customer_feedback"?"all":"support";
+    if(searchInput)searchInput.value="";
+    if(typeof filterAdminFeedback==="function")filterAdminFeedback();
+  }else if(isAdmin){
     if(typeof loadAdminPanel==="function")await loadAdminPanel();
   }else if(section==="support"&&typeof loadMyFeedback==="function")await loadMyFeedback();
   else if(section==="orders"&&typeof loadMyOrders==="function")await loadMyOrders();
@@ -107,9 +116,11 @@ async function openBaranNotificationTarget(item,audience){
     if(typeof loadDepositRequests==="function")await loadDepositRequests();
     else if(typeof loadWalletTransactions==="function")await loadWalletTransactions();
   }
-  const target=isAdmin&&kind.includes("monitor")
-    ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
-    :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
+  const target=isAdmin&&isSupportTarget&&entityId
+    ?document.querySelector('[data-feedback-id="'+CSS.escape(String(entityId))+'"]')
+    :isAdmin&&kind.includes("monitor")
+      ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
+      :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
   if(target){target.scrollIntoView({behavior:"smooth",block:"center"});target.classList.add("notification-target-highlight");}
   else{const sectionTarget=document.getElementById(section);if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});}
   if(!isAdmin&&typeof loadCustomerNotifications==="function")loadCustomerNotifications();
