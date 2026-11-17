@@ -1168,7 +1168,7 @@ footer{color:#9f91aa}
 .baro-ai-widget{margin:16px 0;padding:14px;border:1px solid #8b6ba8;border-radius:16px;background:linear-gradient(145deg,#21182b,#110d16);box-shadow:0 8px 24px #0005}
 .baro-ai-title{display:flex;align-items:center;gap:10px;color:#e9def2}.baro-ai-title>span:first-child{font-size:26px}.baro-ai-title>div{display:flex;flex-direction:column;flex:1}.baro-ai-title strong{font-size:17px;color:#d7c4e8}.baro-ai-title small{font-size:11px;color:#b9a9c9}.baro-ai-live{font-size:10px;color:#b9f0d6;border:1px solid #326c56;border-radius:20px;padding:4px 8px}.baro-ai-messages{height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:10px;margin:10px 0;background:#0d0a11;border:1px solid #40334b;border-radius:12px}.baro-ai-bubble{max-width:90%;padding:9px 11px;border-radius:12px;font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.baro-ai-bubble.bot{align-self:flex-start;background:#292033;color:#f1eaf7;border:1px solid #493b55}.baro-ai-bubble.user{align-self:flex-end;background:#57436a;color:white}.baro-ai-bubble.error{border-color:#8b4c62;color:#ffd9e1}.baro-ai-form{display:flex;gap:7px}.baro-ai-form input{flex:1;min-width:0;margin:0;font-size:14px}.baro-ai-form button{padding:10px 14px;white-space:nowrap}.baro-ai-form button:disabled{opacity:.55}.baro-ai-status{min-height:18px;padding-top:5px;font-size:11px;color:#b9a9c9}
 </style>
-<link rel="stylesheet" href="./baran-premium.css?v=20261117-admin-workspaces-1">
+<link rel="stylesheet" href="./baran-premium.css?v=20261117-admin-content-1">
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
 .customer-stat-card{display:flex;align-items:center;gap:10px;min-width:0;padding:13px;background:linear-gradient(145deg,#211a2b,#15111b);border:1px solid #493b55;border-radius:15px}
@@ -2446,6 +2446,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <div id="shamCashControlUpdated" class="small" role="status" aria-live="polite">بانتظار قراءة الحالة من الخادم.</div>
         </section>
         <section class="deposit-card">
+          <div class="admin-workgroup-label"><span>01</span><div><strong>حدود الحماية والتحكم</strong><small>راجع حدود العمليات قبل تفعيل أي استقبال</small></div></div>
           <h3>حدود الحماية</h3>
           <div class="shamcash-control-facts">
             <div><span>الحد اليومي SYP</span><strong id="shamCashSypLimit">—</strong></div>
@@ -2456,6 +2457,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <p class="small">حتى عند تفعيل الشحن التلقائي، يظل التنفيذ مقيداً بحساب الاختبار المحدد في الخادم. بقية الحسابات تبقى ضمن المراجعة اليدوية.</p>
         </section>
         <section class="deposit-card">
+          <div class="admin-workgroup-label"><span>02</span><div><strong>استقبال إشعارات الدفع</strong><small>إعداد ومراجعة إشعارات التحويل الواردة</small></div></div>
           <h3>استقبال Webhook</h3>
           <div class="shamcash-control-facts">
             <div><span>الأحداث المستلمة</span><strong id="shamCashWebhookCount">—</strong></div>
@@ -2467,6 +2469,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <button class="full secondary" type="button" onclick="showAdminPanel('payment-gateway')">فتح إعداد تسجيل Webhook ←</button>
         </section>
         <section class="deposit-card">
+          <div class="admin-workgroup-label"><span>03</span><div><strong>الاختبار وحالة التشغيل</strong><small>تأكد من نتيجة الاختبار وآخر حالة اتصال</small></div></div>
           <h3>حالة الاختبار والتشغيل</h3>
           <ul class="shamcash-control-checklist">
             <li>اختبار قاعدة البيانات داخل معاملة تراجعت بالكامل: نجح، ولم يبقَ طلب أو تغيير رصيد.</li>
@@ -2480,10 +2483,12 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 
       <div class="admin-subpanel hidden" data-admin-panel="overview">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الرئيسية والإحصائيات</h2></div>
+<div class="admin-workgroup-label"><span>01</span><div><strong>نظرة عامة ومؤشرات الأداء</strong><small>ابدأ بقراءة وضع المتجر قبل الانتقال إلى الإجراءات</small></div></div>
 <div class="overview-welcome"><div><span class="overview-kicker">BARAN GAME · ADMIN OVERVIEW</span><h3>أهلاً بك في مركز القيادة</h3><p>كل مؤشرات المتجر وأدوات الإدارة المهمة بمكان واحد، بترتيب واضح وسهل من الهاتف.</p></div><span class="overview-live">● لوحة الإدارة</span></div>
 <div class="overview-section-heading"><span>01</span><div><h3>ملخص المتجر</h3><p>الأرقام والمؤشرات المسجلة حالياً</p></div></div>
 <div id="opsStats" class="ops-grid"><div class="ops-card">جاري تحميل الإحصائيات...</div></div>
 <div class="overview-section-heading"><span>02</span><div><h3>صحة النظام</h3><p>المراقبة والتنبيهات التشغيلية</p></div></div>
+<div class="admin-workgroup-label"><span>02</span><div><strong>سلامة النظام والمراقبة</strong><small>راجع التنبيهات وحالة الخدمات قبل تنفيذ المهام</small></div></div>
 <section id="baranAutoMonitor" class="deposit-card overview-panel monitor-panel" aria-label="المراقبة التلقائية">
         <h3>🛡️ حالة النظام والمراقبة التلقائية 24/7</h3>
         <p class="small">فحص آلي كل 15 دقيقة للطلبات والإيداعات وتذاكر الدعم وتكاليف الموردين. هذه المراقبة لا تغيّر الأرصدة أو الدفعات.</p>
@@ -2491,6 +2496,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <div id="opsMonitorAlerts" class="ops-list">جاري تحميل التنبيهات...</div>
       </section>
 <div class="overview-section-heading"><span>03</span><div><h3>مساعد الإدارة</h3><p>اسأل، حلّل، وخذ توصيات تشغيلية</p></div></div>
+<div class="admin-workgroup-label"><span>03</span><div><strong>التحليل والمساعدة الإدارية</strong><small>مراجعة واستفسارات وتوصيات ضمن الصلاحيات المحددة</small></div></div>
 <section id="baranAdminAssistant" class="deposit-card overview-panel assistant-panel" aria-label="مساعد الإدارة الذكي">
         <h2>🧠 مساعد إدارة Baran Game</h2>
         <p class="small">مساعد إداري وتقني متصل ببيانات المتجر الحقيقية: الأرباح، الطلبات، الموردون، الإيداعات، تذاكر الدعم، وفحص الحالة التشغيلية.</p>
@@ -2513,8 +2519,10 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <div id="baranAdminAssistantStatus" class="ops-muted">🔒 خاص بالمدير فقط — يقرأ البيانات مباشرة، ولا ينفذ تغييرات مالية أو حساسة.</div>
       </section>
 <div class="overview-section-heading"><span>04</span><div><h3>الإجراءات الإدارية</h3><p>راجع المعاينة قبل اعتماد أي إجراء</p></div></div>
+<div class="admin-workgroup-label"><span>04</span><div><strong>الإجراءات الإدارية الآمنة</strong><small>راجع تفاصيل المهمة وتأثيرها قبل اعتمادها</small></div></div>
 <section class="deposit-card overview-panel safe-panel" aria-label="تنفيذ المهام الإدارية الآمنة"><h2>🛠️ تنفيذ المهام الإدارية الآمنة</h2><p class="small">اكتب المهمة، راجع تفاصيلها وتأثيرها، ولا يتم الحفظ إلا بعد موافقتك.</p><div id="baranSafeActionsHost"></div></section>
 <div class="overview-section-heading"><span>05</span><div><h3>التواصل مع الزبائن</h3><p>إعلانات وتحديثات الخدمة</p></div></div>
+<div class="admin-workgroup-label"><span>05</span><div><strong>التواصل مع العملاء</strong><small>إعلانات المتجر ورسائل الحالة العامة</small></div></div>
 <section class="deposit-card overview-panel announcement-panel" aria-label="إرسال إعلان عام للزبائن">
         <h2>📢 إرسال إعلان لجميع الزبائن</h2>
         <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
@@ -2590,8 +2598,10 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
+        <div class="admin-workgroup-label"><span>01</span><div><strong>حالة التشغيل</strong><small>تحقق من وضع الشحن الآلي قبل إدارة الموردين</small></div></div>
         <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
+      <div class="admin-workgroup-label"><span>02</span><div><strong>الكتالوج والاستيراد</strong><small>فحص جاهزية المنتجات وقراءة بيانات المورد دون تنفيذ طلبات</small></div></div>
       <section class="deposit-card" id="baranCatalogReadinessReport" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>📋 تقرير جاهزية كتالوج المنتجات</h2>
         <p class="small">يفحص جميع المنتجات دفعة واحدة: الأسعار، ربط المورد، SKU، إعداد API، رصيد المورد، وبوابة التنفيذ. التقرير للقراءة فقط.</p>
@@ -2630,6 +2640,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <div id="baranFreeFireTestResult" class="small" role="status" aria-live="polite" style="margin-top:10px;padding:12px;border:1px solid #514064;border-radius:10px;background:#100b16">أدخل آيدي حساب تجريبي ثم اضغط فحص.</div>
       </section>
       </section>
+      <div class="admin-workgroup-label"><span>03</span><div><strong>الفحص والتحقق</strong><small>اختبر بيانات المنتج واللاعب والرصيد قبل أي إجراء تشغيلي</small></div></div>
       <section class="deposit-card" id="baranAdminOrderPreflight" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>🛡️ فحص جاهزية الطلب — للإدارة</h2>
         <p class="small">أداة داخلية لفحص السعر والمورد والرصيد. لا تنشئ طلباً ولا تخصم رصيداً ولا ترسل أي عملية للمورد.</p>
@@ -2642,6 +2653,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <button class="full secondary" type="button" id="baranPreflightRunButton" onclick="baranRunAdminOrderPreflight()">فحص الجاهزية</button>
         <p id="baranPreflightResult" class="small" role="status" aria-live="polite">أدخل رمز المنتج ثم ابدأ الفحص.</p>
       </section>
+      <div class="admin-workgroup-label"><span>04</span><div><strong>التحليل والمساعدة</strong><small>استعن بالمساعد لقراءة البيانات واقتراح التحسينات فقط</small></div></div>
       <section class="deposit-card" id="supplierManagerAi" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span style="font-size:28px">🤖</span>
@@ -2659,6 +2671,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <p class="small">تنبيه أمان: المساعد لا يغيّر الأسعار أو الموردين أو إعدادات API، ولا ينفّذ شحنات أو استردادات أو أي حركة مالية.</p>
       </section>
       <hr style="border-color:#40334b;margin:24px 0">
+      <div class="admin-workgroup-label"><span>05</span><div><strong>دليل الموردين وربط المنتجات</strong><small>سجّل المورد أولاً، ثم اربط المنتجات وتكلفة الشراء وحقول العميل</small></div></div>
       <h2>إدارة الموردين 🤝</h2>
       <div class="ops-form">
         <label for="opsSupplierName">اسم المورد</label>
@@ -2700,6 +2713,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
       <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
       <hr style="border-color:#40334b;margin:24px 0">
+      <div class="admin-workgroup-label"><span>06</span><div><strong>تكامل المورد والمتابعة</strong><small>جهّز إعدادات الاتصال، ثم راجع الحالة وسجل الأحداث والمحاولات</small></div></div>
       <h3>إعداد ربط API المورد</h3>
       <p class="small">هذه إعدادات تحضيرية فقط. لا يتم الاتصال بالمورد أو إرسال طلبات حقيقية من هذه الصفحة. مفاتيح API تحفظ لاحقاً في Supabase Secrets، ولا تكتبها هنا.</p>
       <div class="ops-form">
@@ -2751,6 +2765,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <strong>وضع آمن: مسودات فقط</strong>
           <p class="small">يمكن تجهيز الكوبونات والعروض وربطها بمنتجات محددة. الكوبونات تُحفظ غير مفعّلة، والعروض تُحفظ كمسودات. لا يوجد خصم على الطلبات حالياً.</p>
         </div>
+        <div class="admin-workgroup-label"><span>01</span><div><strong>إنشاء العروض والخصومات</strong><small>جهّز الكوبون أو العرض أولاً، ثم راجعه قبل الحفظ</small></div></div>
         <h3>إنشاء كوبون خصم — مسودة</h3>
         <div class="ops-form">
           <label for="promoCouponCode">رمز الكوبون</label><input id="promoCouponCode" maxlength="24" placeholder="مثلاً BARAN10" autocomplete="off">
@@ -2781,6 +2796,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <button class="full" type="button" onclick="saveBaranCampaignDraft()">حفظ العرض كمسودة</button>
           <div id="promoCampaignMessage" class="ops-muted" role="status"></div>
         </div>
+        <div class="admin-workgroup-label"><span>02</span><div><strong>إدارة العروض المحفوظة</strong><small>راجع الكوبونات والعروض الحالية وحالتها</small></div></div>
         <h3>الكوبونات المحفوظة</h3><div id="promoCouponsList" class="ops-list">جاري التحميل...</div>
         <h3>العروض المحفوظة</h3><div id="promoCampaignsList" class="ops-list">جاري التحميل...</div>
       </div>
