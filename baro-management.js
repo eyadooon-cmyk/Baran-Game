@@ -63,7 +63,13 @@
     let t={};
     if(can("finance")){financeData=await getView("finance").catch(()=>({totals:{},entries:[]}));t=financeData.totals||{};}
     const orders=adminData.orders||[];
+    const products=adminData.products||[];
     const pending=orders.filter(o=>!["completed","cancelled","failed"].includes(o.status)).length;
+    const threshold=Number(adminData.settings?.low_margin_percent??15);
+    const priced=products.filter(p=>Number(p.sale_price_usd)>0&&Number(p.supplier_cost_usd)>0);
+    const expectedProfit=priced.reduce((sum,p)=>sum+Number(p.sale_price_usd)-Number(p.supplier_cost_usd),0);
+    const lowMargin=priced.filter(p=>((Number(p.sale_price_usd)-Number(p.supplier_cost_usd))/Number(p.sale_price_usd))*100<threshold);
+    const alertNames=lowMargin.slice(0,8).map(p=>esc(p.product_name)+" ("+(((Number(p.sale_price_usd)-Number(p.supplier_cost_usd))/Number(p.sale_price_usd))*100).toFixed(1)+"%)").join(" · ");
     content.innerHTML='<h3>مؤشرات BARO</h3><div class="baro-mgmt-grid">'+
       stat("المبيعات المقبوضة",money(t.sales||0))+
       stat("تكلفة الموردين",money(t.supplier_costs||0))+
@@ -71,11 +77,17 @@
       stat("العمولات",money(t.commissions||0))+
       stat("المستردات",money(t.refunds||0))+
       stat("صافي الربح المسجل",money(t.net_profit||0))+
+      stat("الربح المتوقع للمنتجات",money(expectedProfit))+
+      stat("تنبيهات هامش الربح",lowMargin.length)+
       stat("الطلبات الظاهرة",orders.length)+stat("طلبات قيد المتابعة",pending)+
-      '</div><p class="baro-mgmt-muted">المبيعات تُحسب بعد تأكيد استلام الدفع يدوياً فقط. الأرقام بالدولار المكافئ، ولا تشمل أي رصيد من المحفظة الآلية.</p><div class="baro-mgmt-actions"><button type="button" id="baroMgmtRefresh">تحديث بيانات BARO</button><button type="button" id="baroMgmtProducts" class="secondary">إدارة المنتجات</button><button type="button" id="baroMgmtOrders" class="secondary">إدارة الطلبات</button></div>';
+      '</div><p class="baro-mgmt-muted">المبيعات تُحسب بعد تأكيد استلام الدفع يدوياً فقط. الربح المتوقع تقدير من أسعار البيع والتكلفة الحالية، أما صافي الربح المسجل فيُحسب من الحركات المالية الفعلية. لا تشمل هذه الأرقام محفظة الشحن الآلي.</p>'+
+      (lowMargin.length?'<div class="baro-mgmt-panel"><strong>تنبيه هامش الربح</strong><p class="baro-mgmt-muted">'+alertNames+(lowMargin.length>8?" · وغيرها":"")+'</p></div>':'')+
+      '<div class="baro-mgmt-actions"><button type="button" id="baroMgmtRefresh">تحديث بيانات BARO</button><button type="button" id="baroMgmtProducts" class="secondary">إدارة المنتجات</button><button type="button" id="baroMgmtOrders" class="secondary">إدارة الطلبات</button><button type="button" id="baroMgmtExportOrders" class="secondary">تصدير الطلبات CSV</button><button type="button" id="baroMgmtExportProducts" class="secondary">تصدير المنتجات CSV</button></div>';
     $("baroMgmtRefresh").onclick=refreshAll;
     $("baroMgmtProducts").onclick=()=>$("baroAdminProducts")?.scrollIntoView({behavior:"smooth"});
     $("baroMgmtOrders").onclick=()=>$("baroAdminOrders")?.scrollIntoView({behavior:"smooth"});
+    $("baroMgmtExportOrders").onclick=()=>exportCsv("baro-orders.csv",[["id","product","player_id","quantity","status","payment_status","displayed_usd","displayed_syp","created_at"],...orders.map(o=>[o.id,o.product_name_snapshot,o.player_id,o.quantity,o.status,o.payment_status,o.displayed_price_usd_snapshot,o.displayed_price_syp_snapshot,o.created_at])]);
+    $("baroMgmtExportProducts").onclick=()=>exportCsv("baro-products.csv",[["code","name","sale_usd","sale_syp","supplier_cost_usd","visible","purchase_enabled"],...products.map(p=>[p.product_code,p.product_name,p.sale_price_usd,p.sale_price_syp,p.supplier_cost_usd,p.catalog_visible,p.purchase_enabled])]);
   }
   function exportCsv(filename, rows) {
     const csv=rows.map(r=>r.map(v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"').join(",")).join("\r\n");
@@ -98,7 +110,7 @@
       stat("حركات الشهر",monthly.length)+stat("قيمة حركات الشهر",money(sum(monthly)))+
       '</div><p class="baro-mgmt-muted">تسجيل الحركة هنا محاسبي فقط؛ لا ينفذ تحويلاً أو خصماً أو استرداداً فعلياً. لا تُسجل المبيعات كأموال محصلة إلا بعد تأكيد الدفع.</p>'+
       '<div class="baro-mgmt-panel"><h3>إضافة حركة مالية</h3><div class="baro-mgmt-form">'+
-      selectField("نوع الحركة","baroFinanceType",[["expense","مصروف"],["commission","عمولة"],["refund","مبلغ مسترد"],["adjustment","تسوية / تعديل"],["reversal","قيد عكسي"]])+
+      selectField("نوع الحركة","baroFinanceType",[["expense","مصروف"],["commission","عمولة"],["refund","مبلغ مسترد"],["adjustment","تسوية / تعديل"]])+
       field("العنوان","baroFinanceTitle","text","مثال: رسوم تحويل")+
       field("المبلغ","baroFinanceAmount","number","0.00")+
       selectField("العملة","baroFinanceCurrency",[["USD","دولار USD"],["SYP","ليرة سورية SYP"]])+
