@@ -3,9 +3,13 @@ self.addEventListener("push",event=>{
   try{if(event.data)data={...data,...event.data.json()};}catch(_){}
   event.waitUntil(self.registration.showNotification(data.title||"Baran Game",{
     body:data.body||"لديك إشعار جديد",
+    icon:"./baran-icon.svg",
+    badge:"./baran-icon.svg",
     data:{url:data.url||"./"},
     tag:data.tag||"baran-"+Date.now(),
     renotify:false,
+    vibrate:[110,55,110],
+    actions:[{action:"open",title:"فتح باران"}],
     dir:"rtl",
     lang:"ar"
   }));

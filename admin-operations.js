@@ -12,38 +12,23 @@ function renderOpsNotifications(rows){
   box.replaceChildren();
   const notifications=Array.isArray(rows)?rows:[];
   const unread=notifications.filter(item=>!item.read_at).length;
-  const heading=opsNode("div","ops-muted","آخر التنبيهات: "+notifications.length+" | غير المقروءة: "+unread);
-  box.appendChild(heading);
+  const summary=opsNode("div","notification-admin-summary");
+  const total=opsNode("span","", "آخر التنبيهات: "+notifications.length);
+  const pending=opsNode("span","", "غير مقروءة: "+unread);
+  summary.append(total,pending);box.appendChild(summary);
   if(!notifications.length){
-    box.appendChild(opsNode("div","notification-empty","لا توجد تنبيهات إدارية حالياً."));
-    return;
+    const empty=opsNode("div","notification-empty-state");
+    empty.append(opsNode("span","","✦"),opsNode("strong","","كل شيء هادئ"),opsNode("p","","لا توجد تنبيهات إدارية تحتاج انتباهك حالياً."));
+    box.appendChild(empty);return;
   }
   notifications.forEach(item=>{
+    if(typeof buildBaranNotificationCard==="function"){
+      box.appendChild(buildBaranNotificationCard(item,"admin"));
+      return;
+    }
     const card=opsNode("article","notification-item notification-clickable"+(item.read_at?"":" unread"));
     card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"admin");
-    card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openBaranNotificationTarget(item,"admin");}};
-    card.append(opsNode("strong","",item.title||"تنبيه إداري"),
-      opsNode("p","",item.body||""),
-      opsNode("div","ops-muted",opsDate(item.created_at)));
-    if(!item.read_at){
-      const button=opsNode("button","secondary","تحديد كمقروء");
-      button.type="button";
-      button.onclick=async(event)=>{
-        event.stopPropagation();button.disabled=true;
-        try{
-          await callAdminApi("POST",{action:"notification_read",notification_id:item.id});
-          item.read_at=new Date().toISOString();
-          renderOpsNotifications(latestBaranOperations?.notifications||[]);
-        }catch(error){
-          button.disabled=false;
-          const message=document.getElementById("adminMessage");
-          if(message)message.textContent="تعذر تحديث التنبيه: "+error.message;
-        }
-      };
-      card.appendChild(button);
-    }else{
-      card.appendChild(opsNode("span","ops-muted","مقروء"));
-    }
+    card.append(opsNode("strong","",item.title||"تنبيه إداري"),opsNode("p","",item.body||""),opsNode("time","",opsDate(item.created_at)));
     box.appendChild(card);
   });
 }

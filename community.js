@@ -35,25 +35,17 @@ async function loadMyNotifications(){
   try{
     const {data,error}=await sb.from("baran_notifications")
       .select("id,kind,title,body,entity_type,entity_id,read_at,created_at")
-      .eq("recipient_id",currentUser.id)
-      .eq("audience","customer")
-      .order("created_at",{ascending:false})
-      .limit(30);
+      .eq("recipient_id",currentUser.id).eq("audience","customer")
+      .order("created_at",{ascending:false}).limit(30);
     if(error)throw error;
-    const items=data||[];
-    const unread=items.filter(item=>!item.read_at);
+    const items=data||[],unread=items.filter(item=>!item.read_at);
     const badge=document.getElementById("notificationCount");
-    if(badge){
-      badge.textContent=unread.length>99?"99+":String(unread.length);
-      badge.classList.toggle("hidden",unread.length===0);
-    }
+    if(badge){badge.textContent=unread.length>99?"99+":String(unread.length);badge.classList.toggle("hidden",unread.length===0);}
     box.replaceChildren();
-    const heading=document.createElement("div");
-    heading.className="notification-heading";
-    const title=document.createElement("strong");title.textContent="🔔 إشعاراتك";
-    const markAll=document.createElement("button");markAll.type="button";markAll.className="secondary";
-    markAll.textContent=unread.length?"قراءة الكل":"محدّثة";
-    markAll.disabled=!unread.length;
+    const heading=document.createElement("div");heading.className="notification-heading";
+    const title=document.createElement("strong");title.textContent="آخر التحديثات";
+    const markAll=document.createElement("button");markAll.type="button";markAll.className="notification-read-action";
+    markAll.textContent=unread.length?"قراءة الكل":"محدّثة";markAll.disabled=!unread.length;
     markAll.onclick=async()=>{
       markAll.disabled=true;
       const {error:readError}=await sb.rpc("mark_baran_notifications_read",{p_ids:unread.map(item=>item.id)});
@@ -62,31 +54,26 @@ async function loadMyNotifications(){
     };
     heading.append(title,markAll);box.appendChild(heading);
     if(!items.length){
-      const empty=document.createElement("p");empty.className="small";empty.textContent="ما عندك إشعارات حالياً. رح تظهر هون تحديثات الطلبات والإيداعات وتذاكر الدعم.";
-      box.appendChild(empty);return;
+      const empty=document.createElement("div");empty.className="notification-empty-state";
+      const icon=document.createElement("span");icon.textContent="✦";
+      const label=document.createElement("strong");label.textContent="أنت على اطلاع";
+      const copy=document.createElement("p");copy.textContent="رح تظهر هون تحديثات الطلبات والإيداعات ورسائل الدعم.";
+      empty.append(icon,label,copy);box.appendChild(empty);return;
     }
     items.forEach(item=>{
-      const card=document.createElement("div");card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
-      card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"customer");
-      card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openBaranNotificationTarget(item,"customer");}};
-      const name=document.createElement("strong");name.textContent=item.title;
-      const body=document.createElement("p");body.textContent=item.body;
-      const date=document.createElement("div");date.className="small";date.textContent=new Date(item.created_at).toLocaleString("ar");
-      card.append(name,body,date);
-      if(!item.read_at){
-        const read=document.createElement("button");read.type="button";read.className="secondary";read.textContent="تحديد كمقروء";
-        read.onclick=async(event)=>{
-          event.stopPropagation();read.disabled=true;
-          const {error:readError}=await sb.rpc("mark_baran_notifications_read",{p_ids:[item.id]});
-          if(readError){read.disabled=false;alert("تعذر تحديث الإشعار.");return;}
-          await loadMyNotifications();
-        };
-        card.appendChild(read);
+      if(typeof buildBaranNotificationCard==="function"){
+        box.appendChild(buildBaranNotificationCard(item,"customer"));
+        return;
       }
-      box.appendChild(card);
+      const card=document.createElement("article");card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
+      card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"customer");
+      const name=document.createElement("strong");name.textContent=item.title||"إشعار من Baran Game";
+      const body=document.createElement("p");body.textContent=item.body||"";
+      const date=document.createElement("time");date.textContent=new Date(item.created_at).toLocaleString("ar");
+      card.append(name,body,date);box.appendChild(card);
     });
   }catch(error){
-    box.textContent="تعذر تحميل الإشعارات حالياً.";
+    box.replaceChildren();const message=document.createElement("div");message.className="notification-load-error";message.textContent="تعذر تحميل الإشعارات حالياً. حاول لاحقاً.";box.appendChild(message);
   }
 }
 
@@ -127,36 +114,26 @@ function renderAdminNotifications(items){
   const box=document.getElementById("adminNotifications");
   if(!box)return;
   box.replaceChildren();
-  const unread=(items||[]).filter(item=>!item.read_at);
-  const badge=document.getElementById("notificationCount");
-  if(badge){
-    badge.textContent=unread.length>99?"99+":String(unread.length);
-    badge.classList.toggle("hidden",unread.length===0);
+  const list=Array.isArray(items)?items:[],unread=list.filter(item=>!item.read_at);
+  const summary=document.createElement("div");summary.className="notification-admin-summary";
+  const total=document.createElement("span");total.textContent="آخر التنبيهات: "+list.length;
+  const pending=document.createElement("span");pending.textContent="غير مقروءة: "+unread.length;
+  summary.append(total,pending);box.appendChild(summary);
+  if(!list.length){
+    const empty=document.createElement("div");empty.className="notification-empty-state";
+    const icon=document.createElement("span");icon.textContent="✦";
+    const title=document.createElement("strong");title.textContent="كل شيء هادئ";
+    const copy=document.createElement("p");copy.textContent="لا توجد تنبيهات إدارية جديدة حالياً.";
+    empty.append(icon,title,copy);box.appendChild(empty);return;
   }
-  const heading=document.createElement("div");heading.className="notification-heading";
-  const title=document.createElement("strong");title.textContent="🔔 تنبيهات الإدارة ("+unread.length+" غير مقروء)";
-  const refresh=document.createElement("button");refresh.type="button";refresh.className="secondary";refresh.textContent="تحديث";
-  refresh.onclick=()=>loadAdminPanel();
-  heading.append(title,refresh);box.appendChild(heading);
-  if(!items?.length){const empty=document.createElement("p");empty.className="small";empty.textContent="لا توجد تنبيهات جديدة حالياً.";box.appendChild(empty);return;}
-  items.forEach(item=>{
-    const card=document.createElement("div");card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
+  list.forEach(item=>{
+    if(typeof buildBaranNotificationCard==="function"){box.appendChild(buildBaranNotificationCard(item,"admin"));return;}
+    const card=document.createElement("article");card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
     card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"admin");
-    card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openBaranNotificationTarget(item,"admin");}};
-    const name=document.createElement("strong");name.textContent=item.title;
-    const body=document.createElement("p");body.textContent=item.body;
-    const date=document.createElement("div");date.className="small";date.textContent=new Date(item.created_at).toLocaleString("ar");
-    card.append(name,body,date);
-    if(!item.read_at){
-      const read=document.createElement("button");read.type="button";read.className="secondary";read.textContent="تحديد كمقروء";
-      read.onclick=async(event)=>{
-        event.stopPropagation();read.disabled=true;
-        try{await callAdminApi("POST",{action:"notification_read",notification_id:item.id});await loadAdminPanel();}
-        catch(error){read.disabled=false;alert("تعذر تحديث التنبيه: "+error.message);}
-      };
-      card.appendChild(read);
-    }
-    box.appendChild(card);
+    const title=document.createElement("strong");title.textContent=item.title||"تنبيه إداري";
+    const body=document.createElement("p");body.textContent=item.body||"";
+    const date=document.createElement("time");date.textContent=new Date(item.created_at).toLocaleString("ar");
+    card.append(title,body,date);box.appendChild(card);
   });
 }
 
