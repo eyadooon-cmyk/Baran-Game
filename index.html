@@ -1747,6 +1747,14 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 .support-conversation-admin-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}
 .support-conversation-admin-tools label{font-size:12px;color:#d9c7e8}
 .support-message-meta{display:block;margin-top:8px;font-size:10px;opacity:.72}
+/* Readable support bubbles on narrow mobile screens */
+.support-conversation-messages{width:100%;min-width:0;align-items:stretch}
+.support-message{display:block;width:min(88%,620px);max-width:min(88%,620px);min-width:0;flex:0 1 auto;box-sizing:border-box;direction:rtl;text-align:right;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;line-height:1.85}
+.support-message>div:first-child{display:block;width:100%;min-width:0;direction:rtl;text-align:right;unicode-bidi:plaintext;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal}
+.support-message-meta{direction:rtl;text-align:right;white-space:normal;line-height:1.6}
+.support-message-attachment{direction:rtl;text-align:right}
+@media(max-width:420px){.support-message{width:94%;max-width:94%;padding:12px;line-height:1.9}}
+
 @media(max-width:520px){.support-conversation-admin-tools{grid-template-columns:1fr}.support-message-attachment{max-width:100%}}
 </style>
 
