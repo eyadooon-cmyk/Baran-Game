@@ -1,0 +1,126 @@
+/* BARAN GAME — Premium visual system refresh */
+:root{
+  --bg:#08070d;--panel:#12101a;--panel-2:#191423;--line:#342844;
+  --green:#b78ad8;--muted:#b9aec7;--accent:#a66bd1;
+  --glow:rgba(174,116,218,.22);--radius:20px;
+  color-scheme:dark;
+}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{
+  min-height:100vh;background:
+    radial-gradient(ellipse at 8% 8%,rgba(112,64,150,.16),transparent 34rem),
+    radial-gradient(ellipse at 94% 35%,rgba(68,48,111,.13),transparent 32rem),
+    linear-gradient(180deg,#09070e 0%,#0b0911 48%,#08070d 100%);
+  color:#f7f2fb;font-family:"Cairo",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.14;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 78%)}
+header{
+  min-height:300px;padding:54px 18px 42px;
+  background:linear-gradient(105deg,rgba(8,7,13,.96),rgba(19,13,28,.72) 52%,rgba(8,7,13,.93)),url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1800&q=88") center 42%/cover no-repeat;
+  border-bottom:1px solid rgba(190,145,224,.45);box-shadow:0 18px 50px rgba(0,0,0,.35);
+}
+header .logo{font-family:"Orbitron","Cairo",sans-serif;font-size:clamp(32px,6vw,52px);letter-spacing:1.5px;color:#fff;text-shadow:0 0 18px rgba(186,137,224,.65)}
+header .logo-mark{width:58px;height:58px;border-radius:18px;border-color:#c7a3e3;background:linear-gradient(145deg,#39244c,#110d19);color:#ead8f7;box-shadow:0 0 25px rgba(174,116,218,.28),inset 0 0 16px rgba(174,116,218,.12)}
+header p{font-size:15px;color:#e6d9f0}
+header .header-tag{border-color:rgba(195,155,224,.38);background:rgba(20,14,29,.76);color:#dfc5f1;letter-spacing:1px}
+main{max-width:1160px;padding:22px 18px 40px}
+.store-toolbar{background:rgba(13,10,19,.91);backdrop-filter:blur(18px);border-bottom:1px solid rgba(183,138,216,.18);box-shadow:0 8px 28px rgba(0,0,0,.25)}
+.toolbar-brand{font-family:"Orbitron","Cairo",sans-serif;font-size:15px;letter-spacing:1.2px}
+.menu-toggle,.notification-bell{background:linear-gradient(145deg,#2d2039,#17111f);border-color:#624878;color:#e4c9f6;transition:transform .2s,border-color .2s,box-shadow .2s}
+.menu-toggle:hover,.notification-bell:hover{transform:translateY(-2px);border-color:#c39bdd;box-shadow:0 6px 20px rgba(166,107,209,.18)}
+nav{background:rgba(14,10,20,.92);backdrop-filter:blur(16px);border-bottom-color:#382a47}
+button{font-family:"Cairo",system-ui,sans-serif;font-weight:800;border-radius:13px;background:linear-gradient(135deg,#c69be4,#9561bd);color:#170f20;box-shadow:0 5px 16px rgba(135,84,177,.16);transition:transform .18s,filter .18s,box-shadow .18s}
+button:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-2px);box-shadow:0 9px 22px rgba(135,84,177,.24)}
+button:active:not(:disabled){transform:translateY(0) scale(.985)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #d7b3f0;outline-offset:2px}
+nav button{background:#21192b;color:#e8dff0;border:1px solid #3b2d4b;box-shadow:none}
+nav button.active{background:linear-gradient(135deg,#c69be4,#9561bd);color:#170f20;border-color:transparent}
+input,textarea,select{font-family:"Cairo",system-ui,sans-serif;background:#0d0a13;border:1px solid #40324e;border-radius:13px;color:#fbf8ff;transition:border-color .18s,box-shadow .18s}
+input::placeholder,textarea::placeholder{color:#81758d}
+input:focus,textarea:focus,select:focus{border-color:#a978ce;box-shadow:0 0 0 3px rgba(169,120,206,.12);outline:none}
+section,.auth-card{
+  background:linear-gradient(145deg,rgba(25,20,35,.96),rgba(15,12,22,.98));
+  border:1px solid rgba(139,105,164,.32);border-radius:22px;padding:22px;
+  margin:17px 0;box-shadow:0 14px 36px rgba(0,0,0,.18);
+}
+h1,h2,h3,h4{font-family:"Cairo",system-ui,sans-serif;letter-spacing:-.25px}
+h2{color:#d8b5f0;font-size:clamp(20px,3vw,27px)}
+h3{color:#e7d5f5}
+p{line-height:1.85}
+.small,.small-text,.muted{color:#b9aec7}
+.grid{gap:17px}
+.item{
+  position:relative;background:linear-gradient(150deg,#20182b,#120f19);
+  border:1px solid #40304f;border-radius:19px;overflow:hidden;
+  box-shadow:0 9px 24px rgba(0,0,0,.2);transition:transform .22s,border-color .22s,box-shadow .22s;
+}
+.item:hover{transform:translateY(-5px);border-color:#9569b5;box-shadow:0 16px 34px rgba(0,0,0,.3),0 0 0 1px rgba(183,138,216,.08)}
+.item img{height:clamp(145px,22vw,205px);background:#17111f;transition:transform .35s}
+.item:hover img{transform:scale(1.035)}
+.item-content{position:relative;background:linear-gradient(180deg,rgba(25,19,34,.92),#17121f);padding:16px}
+.item strong,.product-card strong{color:#e0c3f4;font-size:18px}
+.full{min-height:46px}
+.secondary{background:linear-gradient(135deg,#352742,#21182c);color:#eee5f6;border:1px solid #604777;box-shadow:none}
+.hero{
+  position:relative;overflow:hidden;padding:clamp(22px,4vw,36px);
+  background:radial-gradient(circle at 90% 5%,rgba(179,126,219,.22),transparent 42%),linear-gradient(125deg,#30213d,#191322 72%);
+  border:1px solid rgba(191,151,221,.42);border-radius:24px;box-shadow:0 16px 38px rgba(0,0,0,.25)
+}
+.hero:after{content:"";position:absolute;inset:auto -10% -65% 35%;height:180px;background:radial-gradient(ellipse,rgba(175,119,218,.18),transparent 68%);pointer-events:none}
+.hero h2{font-size:clamp(23px,4vw,32px);color:#f0e1fb}
+.deposit-card,.admin-request,.finance-card,.finance-entry,.product-card,.notification-box,.notification-item{
+  background:linear-gradient(145deg,#211a2b,#15111d);border:1px solid #443452;border-radius:16px;
+}
+.deposit-id{background:#0d0a13;border-color:#9f72c1;color:#d8b5f0}
+.deposit-row{background:#1c1725;border-color:#40324e;border-radius:13px}
+.finance-grid{gap:13px}
+.finance-card strong{color:#d8b5f0}
+.balance{color:#e0c3f4}
+.auth-card{max-width:500px;box-shadow:0 20px 55px rgba(0,0,0,.35)}
+.auth-logo{color:#e0c3f4;font-family:"Orbitron","Cairo",sans-serif}
+.lock-card{background:linear-gradient(145deg,#21182d,#100d16);border-color:#9c70bd;box-shadow:0 20px 60px #0009}
+.section-back-button,.games-back-button{background:linear-gradient(135deg,#30213d,#1b1424);border-color:#76558e;color:#f1e5fa;border-radius:12px}
+.side-drawer{background:linear-gradient(160deg,#21182c,#0b0911 78%);border-left-color:#5b426e}
+.drawer-profile-card{background:linear-gradient(125deg,#392748,#17121e 80%);border-color:#795994}
+.drawer-title{color:#d8b5f0}
+.notification-box{background:#17121e}
+.notification-item.unread{border-color:#a978d0;box-shadow:inset -3px 0 #c69be4}
+.ai-assistant-fab{background:linear-gradient(135deg,#b98bd9,#754b98);color:#150e1c;border:1px solid #d4b2eb;box-shadow:0 9px 28px rgba(0,0,0,.4)}
+.ai-assistant-panel{background:#15111d;border-color:#8d65ad;border-radius:20px;box-shadow:0 18px 44px rgba(0,0,0,.38)}
+.ai-assistant-head,.ai-assistant-form{background:#100c17;border-color:#40324e}
+.ai-assistant-head strong{color:#e0c3f4}
+.ai-chat-message.bot{background:#2a2035;border-color:#4a385a}
+.ai-chat-message.user{background:#765092}
+footer{color:#a99bb5;border-top:1px solid rgba(139,105,164,.18);margin-top:30px}
+#message{color:#d7b8ec}
+.baran-ticker{border-color:rgba(183,138,216,.28);background:linear-gradient(90deg,transparent,rgba(40,27,53,.65),transparent)}
+.baran-ticker-copy span{color:#ead8f7}
+.baran-ticker-copy .baran-ticker-welcome{color:#d8b5f0}
+@media(min-width:760px){
+  main{padding-top:28px}
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .item img{height:190px}
+}
+@media(max-width:600px){
+  header{min-height:255px;padding:38px 14px 30px}
+  header .logo{font-size:clamp(27px,8vw,38px);gap:8px}
+  header .logo-mark{width:45px;height:45px;border-radius:14px;font-size:24px}
+  main{padding:13px 12px 30px}
+  section,.auth-card{padding:16px;border-radius:18px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .item{border-radius:15px}
+  .item img{height:125px}
+  .item-content{padding:11px}
+  .item strong{font-size:15px}
+  button{padding:12px 13px}
+  .hero{border-radius:19px}
+  .finance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:370px){
+  .grid{grid-template-columns:1fr}
+  .item img{height:180px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
