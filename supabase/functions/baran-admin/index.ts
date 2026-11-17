@@ -330,6 +330,14 @@ Deno.serve(async (req: Request) => {
         .from("admin_audit_log").select("id,admin_id,action,entity_type,entity_id,details,created_at")
         .order("created_at",{ascending:false}).limit(100);
       if (auditLogError) return json({ error:"Could not load administrator audit log" },500);
+      const { data: customerSecurityEvents, error: customerSecurityEventsError } = await admin
+        .from("customer_security_events")
+        .select("id,user_id,actor_id,event_type,severity,details,created_at")
+        .order("created_at", { ascending: false }).limit(100);
+      if (customerSecurityEventsError) {
+        console.error("baran-admin: customer security events failed", customerSecurityEventsError.message);
+        return json({ error: "تعذر تحميل سجل أحداث حماية العملاء." }, 500);
+      }
       const { count: productCount, error: productCountError } = await admin
         .from("products").select("id",{count:"exact",head:true});
       const { count: supplierCount, error: supplierCountError } = await admin
@@ -356,6 +364,7 @@ Deno.serve(async (req: Request) => {
         orders: orderCustomers,
         loyalty_customers: loyaltyCustomers,
         audit_log: auditLog ?? [],
+        customer_security_events: customerSecurityEvents ?? [],
         stats: { users: userCount ?? 0, orders: orderCount ?? 0,
           products: productCount ?? 0, suppliers: supplierCount ?? 0,
           order_statuses: statusCounts, pending_orders: statusCounts.pending ?? 0,
@@ -477,17 +486,21 @@ Deno.serve(async (req: Request) => {
           console.error("baran-admin: customer control save failed", controlError.message);
           return json({ error: "تم تحديث جلسة الدخول لكن تعذر حفظ سجل حالة الحظر؛ راجع السجل الإداري." }, 500);
         }
-        await admin.from("customer_security_events").insert({
+        const { error: securityEventError } = await admin.from("customer_security_events").insert({
           user_id: targetId, actor_id: user.id,
           event_type: duration === "none" ? "customer_unbanned" : "customer_banned",
           severity: duration === "none" ? "info" : "warning",
           details: { duration, reason: duration === "none" ? null : reason },
         });
-        await admin.from("admin_audit_log").insert({
+        const { error: auditInsertError } = await admin.from("admin_audit_log").insert({
           admin_id: user.id, action: duration === "none" ? "customer_unban" : "customer_ban",
           entity_type: "customer", entity_id: targetId,
           details: { duration, reason: duration === "none" ? null : reason },
         });
+        if (securityEventError || auditInsertError) {
+          console.error("baran-admin: ban audit write failed", securityEventError?.message || auditInsertError?.message);
+          return json({ error: "تم تغيير حالة الحظر، لكن تعذر حفظ سجل التدقيق كاملاً. راجع سجلات الإدارة." }, 500);
+        }
         return json({ success: true, user_id: targetId, status: duration === "none" ? "active" : "banned",
           banned_until: bannedUntil, auth_user_updated: Boolean(authUpdate?.user) });
       }
