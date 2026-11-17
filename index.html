@@ -3185,7 +3185,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./products.js"></script>
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
-<script src="./community.js?v=20261107-2"></script>
+<script src="./community.js?v=20261117-notification-dismiss-1"></script>
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
@@ -5882,11 +5882,15 @@ function openCustomerNotifications(){
   const modal=document.getElementById("customerNotificationsModal");
   if(!modal)return;
   modal.classList.remove("hidden");
+  modal.setAttribute("aria-hidden","false");
   loadCustomerNotifications();
 }
 function closeCustomerNotifications(){
   const modal=document.getElementById("customerNotificationsModal");
-  if(modal)modal.classList.add("hidden");
+  if(modal){
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden","true");
+  }
 }
 function startBaranNotificationPolling(){
   stopBaranNotificationPolling();
