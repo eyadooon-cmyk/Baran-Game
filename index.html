@@ -4163,6 +4163,20 @@ async function signInWithGoogle(){
   }
 }
 
+async function reportFailedLogin(email){
+  try{
+    if(!window.crypto?.subtle||!email)return;
+    const normalized=email.trim().toLowerCase();
+    const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(normalized));
+    const identifierHash=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
+    await fetch(SUPABASE_URL+"/functions/v1/baran-auth-security",{
+      method:"POST",
+      headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({identifier_hash:identifierHash}),
+      keepalive:true
+    });
+  }catch(error){console.warn("تعذر إرسال إشارة محاولة الدخول الفاشلة.");}
+}
 async function signIn(){
   const email=document.getElementById("email").value.trim();
   const password=document.getElementById("password").value;
@@ -4180,6 +4194,7 @@ async function signIn(){
     if(error) throw error;
     showApp(data.user);
   }catch(error){
+    if([400,401].includes(Number(error?.status))) await reportFailedLogin(email);
     say("تعذر تسجيل الدخول: "+error.message);
   }finally{
     document.getElementById("loginButton").disabled=false;
