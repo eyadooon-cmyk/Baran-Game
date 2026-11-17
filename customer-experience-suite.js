@@ -97,7 +97,7 @@
     const securityPanel = node("section", "baran-experience-card");
     securityPanel.append(node("h4", "", "🛡️ مراقبة الدخول والأجهزة"));
     const securityStats = node("div", "baran-experience-stats");
-    [[ "محاولات دخول فاشلة مُبلّغ عنها", loginReports.length ], [ "أجهزة جديدة مكتشفة", newDeviceEvents.length ]].forEach(([label,value]) => {
+    [[ "محاولات دخول فاشلة مُبلّغ عنها", loginReports.length ], [ "أجهزة أو شبكات جديدة", newDeviceEvents.length ]].forEach(([label,value]) => {
       const card = node("article", "baran-experience-stat");
       card.append(node("small", "", label), node("strong", "", Number(value).toLocaleString("en-US")));
       securityStats.append(card);
@@ -109,7 +109,7 @@
     latestSecurity.forEach(event => {
       const row = node("div", "baran-experience-segment");
       const label = event.event_type === "login_failed_reported" ? "محاولة دخول فاشلة مُبلّغ عنها" :
-        event.event_type === "customer_new_device_detected" ? "تسجيل دخول من جهاز جديد" : "إنشاء جلسة دخول";
+        event.event_type === "customer_new_device_detected" ? "دخول من جهاز أو شبكة جديدة" : "إنشاء جلسة دخول";
       const details = event.details || {};
       row.append(node("span", "", label + " · " + date(event.created_at)));
       row.append(node("b", "", event.severity || "info"));
