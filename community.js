@@ -114,36 +114,26 @@ function renderAdminNotifications(items){
   const box=document.getElementById("adminNotifications");
   if(!box)return;
   box.replaceChildren();
-  const unread=(items||[]).filter(item=>!item.read_at);
-  const badge=document.getElementById("notificationCount");
-  if(badge){
-    badge.textContent=unread.length>99?"99+":String(unread.length);
-    badge.classList.toggle("hidden",unread.length===0);
+  const list=Array.isArray(items)?items:[],unread=list.filter(item=>!item.read_at);
+  const summary=document.createElement("div");summary.className="notification-admin-summary";
+  const total=document.createElement("span");total.textContent="آخر التنبيهات: "+list.length;
+  const pending=document.createElement("span");pending.textContent="غير مقروءة: "+unread.length;
+  summary.append(total,pending);box.appendChild(summary);
+  if(!list.length){
+    const empty=document.createElement("div");empty.className="notification-empty-state";
+    const icon=document.createElement("span");icon.textContent="✦";
+    const title=document.createElement("strong");title.textContent="كل شيء هادئ";
+    const copy=document.createElement("p");copy.textContent="لا توجد تنبيهات إدارية جديدة حالياً.";
+    empty.append(icon,title,copy);box.appendChild(empty);return;
   }
-  const heading=document.createElement("div");heading.className="notification-heading";
-  const title=document.createElement("strong");title.textContent="🔔 تنبيهات الإدارة ("+unread.length+" غير مقروء)";
-  const refresh=document.createElement("button");refresh.type="button";refresh.className="secondary";refresh.textContent="تحديث";
-  refresh.onclick=()=>loadAdminPanel();
-  heading.append(title,refresh);box.appendChild(heading);
-  if(!items?.length){const empty=document.createElement("p");empty.className="small";empty.textContent="لا توجد تنبيهات جديدة حالياً.";box.appendChild(empty);return;}
-  items.forEach(item=>{
-    const card=document.createElement("div");card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
+  list.forEach(item=>{
+    if(typeof buildBaranNotificationCard==="function"){box.appendChild(buildBaranNotificationCard(item,"admin"));return;}
+    const card=document.createElement("article");card.className="notification-item notification-clickable"+(item.read_at?"":" unread");
     card.tabIndex=0;card.setAttribute("role","button");card.onclick=()=>openBaranNotificationTarget(item,"admin");
-    card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();openBaranNotificationTarget(item,"admin");}};
-    const name=document.createElement("strong");name.textContent=item.title;
-    const body=document.createElement("p");body.textContent=item.body;
-    const date=document.createElement("div");date.className="small";date.textContent=new Date(item.created_at).toLocaleString("ar");
-    card.append(name,body,date);
-    if(!item.read_at){
-      const read=document.createElement("button");read.type="button";read.className="secondary";read.textContent="تحديد كمقروء";
-      read.onclick=async(event)=>{
-        event.stopPropagation();read.disabled=true;
-        try{await callAdminApi("POST",{action:"notification_read",notification_id:item.id});await loadAdminPanel();}
-        catch(error){read.disabled=false;alert("تعذر تحديث التنبيه: "+error.message);}
-      };
-      card.appendChild(read);
-    }
-    box.appendChild(card);
+    const title=document.createElement("strong");title.textContent=item.title||"تنبيه إداري";
+    const body=document.createElement("p");body.textContent=item.body||"";
+    const date=document.createElement("time");date.textContent=new Date(item.created_at).toLocaleString("ar");
+    card.append(title,body,date);box.appendChild(card);
   });
 }
 
