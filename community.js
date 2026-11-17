@@ -105,7 +105,7 @@ async function openBaranNotificationTarget(item,audience){
   else if(section==="orders"&&typeof loadMyOrders==="function")await loadMyOrders();
   else if(section==="wallet"){
     if(typeof loadDepositRequests==="function")await loadDepositRequests();
-    if(typeof loadWalletTransactions==="function")await loadWalletTransactions();
+    else if(typeof loadWalletTransactions==="function")await loadWalletTransactions();
   }
   const target=isAdmin&&kind.includes("monitor")
     ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
