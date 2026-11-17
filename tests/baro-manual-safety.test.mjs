@@ -210,7 +210,7 @@ test("BARO staff permissions are scoped and do not grant BARAN-wide administrato
   assert.match(baroPermissions, /baro_manual_has_permission/);
   assert.match(baroFinance, /public\.admin_is_user\(p_admin_id\)/);
   assert.match(baroPermissions, /baro_manual_has_permission\(p_admin_id,'orders'\)/);
-  assert.match(edge, /baro_staff_permission_save_atomic/);
+  assert.match(edge, /baro_manual_staff_permission_save_atomic/);
   assert.match(management, /صلاحيات موظفي BARO/);
 });
 
