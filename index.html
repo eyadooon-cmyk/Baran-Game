@@ -2937,6 +2937,13 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
                 </div>
               </div>
               <div id="adminFeedback" class="ops-list">جاري تحميل الرسائل...</div>
+              <section id="adminSupportConversation" class="support-conversation hidden" aria-label="محادثة تذكرة الدعم">
+                <div class="support-conversation-head"><div><span class="support-conversation-kicker">BARAN GAME · SUPPORT DESK</span><h3 id="adminSupportConversationTitle">محادثة التذكرة</h3><p id="adminSupportConversationMeta" class="small"></p></div><button type="button" class="secondary" onclick="closeSupportConversation('admin')">إغلاق المحادثة</button></div>
+                <div id="adminSupportConversationMessages" class="support-conversation-messages" aria-live="polite"></div>
+                <div class="support-conversation-admin-tools"><label for="adminSupportConversationStatus">حالة التذكرة</label><select id="adminSupportConversationStatus"><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المعالجة</option><option value="completed">تم الحل / مكتملة</option><option value="rejected">مغلقة / مرفوضة</option></select></div>
+                <form class="support-conversation-compose" onsubmit="sendSupportConversationMessage(event,'admin')"><textarea id="adminSupportConversationInput" rows="2" maxlength="2000" placeholder="اكتب ردك للزبون..." required></textarea><button id="adminSupportConversationSend" type="submit">إرسال الرد</button></form>
+                <p class="support-conversation-safety">الرد يُسجّل ضمن سجل التذكرة ويصل للزبون بإشعار. لا تتضمن هذه الواجهة أي إجراء مالي.</p>
+              </section>
             </section>
           </div>
         </div>
@@ -3096,6 +3103,12 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       <section class="support-block support-history-block" aria-labelledby="supportHistoryTitle">
         <div class="support-block-heading"><div><h3 id="supportHistoryTitle">📨 طلباتي ورسائلي السابقة</h3><p class="small">تابع حالة كل رسالة ورد الإدارة عليها.</p></div></div>
         <div id="myFeedbackList" class="small">جاري تحميل الرسائل...</div>
+        <section id="customerSupportConversation" class="support-conversation hidden" aria-label="محادثة الدعم">
+          <div class="support-conversation-head"><div><span class="support-conversation-kicker">BARAN GAME · SUPPORT</span><h3 id="customerSupportConversationTitle">محادثة التذكرة</h3><p id="customerSupportConversationMeta" class="small"></p></div><button type="button" class="secondary" onclick="closeSupportConversation('customer')">إغلاق</button></div>
+          <div id="customerSupportConversationMessages" class="support-conversation-messages" aria-live="polite"></div>
+          <form class="support-conversation-compose" onsubmit="sendSupportConversationMessage(event,'customer')"><textarea id="customerSupportConversationInput" rows="2" maxlength="2000" placeholder="اكتب رسالتك للدعم..." required></textarea><button id="customerSupportConversationSend" type="submit">إرسال الرسالة</button></form>
+          <p class="support-conversation-safety">لا ترسل كلمة المرور أو رموز التحقق أو بيانات البطاقة. المعاملات المالية تحتاج مراجعة الإدارة.</p>
+        </section>
       </section>
 
       <section class="support-block support-extras-block" aria-label="التقييمات والاقتراحات">
@@ -6447,6 +6460,29 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
 @media(min-width:900px){.game-package-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:360px){.baran-package-button{min-height:178px;padding:10px}.baran-package-button strong{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.baran-package-button{transition:none}}
+
+/* BARAN unified support conversation center */
+.support-conversation{margin:16px 0;padding:14px;background:linear-gradient(150deg,#21182b,#120e17);border:1px solid #80619a;border-radius:17px;box-shadow:0 12px 28px #0005;min-width:0}
+.support-conversation-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid #493b55}
+.support-conversation-head h3{margin:4px 0;color:#eadcf6;font-size:17px}
+.support-conversation-head button{flex:0 0 auto;padding:8px 11px}
+.support-conversation-kicker{font-size:10px;letter-spacing:1.2px;color:#b99bd1;font-weight:800}
+.support-conversation-messages{display:flex;flex-direction:column;gap:10px;max-height:48vh;min-height:170px;overflow:auto;padding:14px 2px;scroll-behavior:smooth}
+.support-message{max-width:88%;padding:11px 13px;border-radius:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.support-message.customer{align-self:flex-end;background:#3a2c49;border:1px solid #72598a;color:#f4eafa;border-bottom-right-radius:4px}
+.support-message.admin{align-self:flex-start;background:#211a2b;border:1px solid #8b6ba8;color:#f5edf9;border-bottom-left-radius:4px}
+.support-message.assistant{align-self:flex-start;background:#1c302c;border:1px solid #39715e;color:#d8f5e9;border-bottom-left-radius:4px}
+.support-message.system{align-self:center;max-width:96%;background:#17131b;border:1px dashed #665078;color:#c7b6d5;font-size:12px}
+.support-message-meta{display:block;margin-top:6px;font-size:10px;opacity:.72}
+.support-conversation-compose{display:flex;align-items:stretch;gap:8px;padding-top:10px;border-top:1px solid #493b55}
+.support-conversation-compose textarea{flex:1;min-width:0;margin:0;resize:vertical}
+.support-conversation-compose button{min-width:88px;padding:10px}
+.support-conversation-safety{margin:9px 0 0;color:#ad9db9;font-size:11px;line-height:1.7}
+.support-conversation-admin-tools{display:flex;align-items:center;gap:10px;margin:10px 0}
+.support-conversation-admin-tools label{white-space:nowrap;color:#cdbbdc;font-size:13px}
+.support-conversation-admin-tools select{margin:0;min-width:0}
+.support-open-chat{margin-top:10px}
+@media(max-width:420px){.support-conversation{padding:11px}.support-conversation-compose{flex-direction:column}.support-conversation-compose button{width:100%}.support-message{max-width:94%}.support-conversation-head h3{font-size:15px}}
 </style>
 
 
