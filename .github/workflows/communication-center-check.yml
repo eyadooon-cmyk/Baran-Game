@@ -75,7 +75,7 @@ jobs:
             ['communication report routes through read-only admin analysis', js.includes('أنشئ تقريراً إدارياً عن التواصل') && js.includes('ولا تنفذ أي إجراء أو تغيير')],
             ['notification preference migration exists', readFileSync('supabase/migrations/20261117190000_add_notification_preferences.sql', 'utf8').includes('baran_notification_preferences')],
             ['support attachment migration exists', readFileSync('supabase/migrations/20261117183000_enhance_baran_support_attachments_receipts.sql', 'utf8').includes('baran-support-attachments')],
-            ['customer center script is loaded', html.includes('./customer-center.js?v=20261117-customer-center-2')],
+            ['customer center script is loaded', html.includes('./customer-center.js?v=20261117-customer-center-3')],
             ['customer center sends authenticated heartbeat and admin dashboard requests', readFileSync('customer-center.js', 'utf8').includes('sendPresence("heartbeat")') && readFileSync('customer-center.js', 'utf8').includes('action: "dashboard"')],
             ['customer presence endpoint enforces admin access for dashboard', readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('admin_is_user') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('Administrator access required')],
             ['presence migration keeps rows server-only', readFileSync('supabase/migrations/20261117220000_customer_presence_tracking.sql', 'utf8').toLowerCase().includes('enable row level security') && readFileSync('supabase/migrations/20261117220000_customer_presence_tracking.sql', 'utf8').toLowerCase().includes('revoke all on table public.customer_presence from anon, authenticated')],
@@ -94,7 +94,10 @@ jobs:
             ['failed login reports are rate-limited and marked unverified', readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('baran_record_login_failure') && readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('verified_by_auth_server')],
             ['login form hashes the email and never sends the password to telemetry', html.includes('reportFailedLogin(email)') && html.includes('identifier_hash:identifierHash') && !/reportFailedLogin\([^)]*password/.test(html)],
             ['admin customer profile includes security monitoring', readFileSync('customer-experience-suite.js', 'utf8').includes('مراقبة الدخول والأجهزة') && readFileSync('supabase/functions/baran-admin/index.ts', 'utf8').includes('customer_security_events')],
-            ['customer experience bundle cache version is refreshed', html.includes('./customer-experience-suite.js?v=20261117-suite-3')],
+            ['customer experience bundle cache version is refreshed', html.includes('./customer-experience-suite.js?v=20261117-suite-4')],
+            ['customer segment counter uses matching canonical keys and guards unknown labels', readFileSync('customer-experience-suite.js', 'utf8').includes('"جديد": 0') && readFileSync('customer-experience-suite.js', 'utf8').includes('hasOwnProperty.call(segments, segment)')],
+            ['full customer profile button is visible outside the collapsed detail area', readFileSync('customer-experience-suite.js', 'utf8').includes('card.append(button)') && !readFileSync('customer-experience-suite.js', 'utf8').includes('details.append(button)')],
+            ['customer classification is rendered only once in the experience suite', !readFileSync('customer-center.js', 'utf8').includes('baranCustomerSegments') && readFileSync('customer-experience-suite.js', 'utf8').includes('شرائح العملاء')],
           ];
           for (const [label, ok] of checks) {
             console.log((ok ? 'PASS ' : 'FAIL ') + label);

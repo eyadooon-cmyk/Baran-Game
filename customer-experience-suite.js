@@ -38,8 +38,11 @@
     const feedback = Array.isArray(current.feedback) ? current.feedback : [];
     const completed = orders.filter(o => o.status === "completed");
     const failed = orders.filter(o => ["failed", "rejected", "cancelled"].includes(o.status));
-    const segments = { "جدد": 0, "نشط": 0, "وفيّ": 0, "غير نشط": 0 };
-    customers.forEach(c => segments[customerSegment(c)]++);
+    const segments = { "جديد": 0, "نشط": 0, "وفيّ": 0, "غير نشط": 0 };
+    customers.forEach(c => {
+      const segment = customerSegment(c);
+      if (Object.prototype.hasOwnProperty.call(segments, segment)) segments[segment] += 1;
+    });
     const top = [...customers].sort((a,b) => Number(b.lifetime_spend_usd||0)-Number(a.lifetime_spend_usd||0)).slice(0,3);
     const cards = [
       ["👥", "إجمالي العملاء", customers.length],
@@ -67,7 +70,7 @@
     segmentsBox.append(node("h4", "", "شرائح العملاء"));
     Object.entries(segments).forEach(([label,count]) => {
       const row = node("div", "baran-experience-segment");
-      row.append(node("span", "", label));
+      row.append(node("span", "", label === "جديد" ? "جدد" : label));
       const track = node("span", "baran-experience-track");
       const fill = node("i");
       fill.style.width = (customers.length ? Math.round(count/customers.length*100) : 0) + "%";
@@ -140,15 +143,20 @@
     if (!list) return;
     list.querySelectorAll(".customer-directory-item").forEach(card => {
       const details = card.querySelector(".customer-directory-details");
-      if (!details || details.querySelector(".baran-open-full-profile")) return;
+      if (!details || card.querySelector(".baran-open-full-profile")) return;
       const summary = card.querySelector(".customer-directory-toggle");
       const label = summary?.querySelector(".customer-directory-identity strong")?.textContent || "";
       const customer = (current?.customers || []).find(c => c.id === card.dataset.customerId) || (current?.customers || []).find(c => (c.full_name || c.email || "زبون") === label);
       if (!customer) return;
       const button = node("button", "baran-open-full-profile", "فتح الملف الشامل ←");
       button.type = "button";
-      button.addEventListener("click", () => openProfile(customer));
-      details.append(button);
+      button.setAttribute("aria-label", "فتح الملف الشامل للعميل " + (customer.full_name || customer.email || ""));
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openProfile(customer);
+      });
+      card.append(button);
     });
   }
   function openProfile(customer) {
