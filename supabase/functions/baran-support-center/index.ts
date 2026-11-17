@@ -74,14 +74,14 @@ Deno.serve(async (req: Request) => {
       }));
       if (!thread.some((m) => m.message_type === "ticket_opened")) {
         thread.unshift({ id: "ticket-" + ticket.id, feedback_id: ticket.id, sender_id: ticket.user_id,
-          sender_role: "customer", message: ticket.message, message_type: "ticket_opened", created_at: ticket.created_at });
+          sender_role: "customer", message: ticket.message, message_type: "ticket_opened", created_at: ticket.created_at, read_at: null, attachment_path: null, attachment_name: null, attachment_mime: null, attachment_size: null, attachment_url: null });
       }
       if (ticket.admin_reply && !thread.some((m) => m.message === ticket.admin_reply)) {
         const { data: queue } = await admin.from("baran_auto_support_queue")
           .select("generated_reply,state").eq("feedback_id", ticket.id).maybeSingle();
         thread.push({ id: "legacy-" + ticket.id, feedback_id: ticket.id, sender_id: ticket.user_id,
           sender_role: queue?.state === "sent" && queue.generated_reply === ticket.admin_reply ? "assistant" : "admin",
-          message: ticket.admin_reply, message_type: "message", created_at: ticket.updated_at ?? ticket.created_at });
+          message: ticket.admin_reply, message_type: "message", created_at: ticket.updated_at ?? ticket.created_at, read_at: null, attachment_path: null, attachment_name: null, attachment_mime: null, attachment_size: null, attachment_url: null });
       }
       thread.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       if (isStaff && !ticket.admin_read_at) {
