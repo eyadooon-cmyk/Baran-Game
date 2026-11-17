@@ -114,18 +114,56 @@ async function openBaranNotificationTarget(item,audience){
       item.read_at=new Date().toISOString();
     }catch(error){console.warn("تعذر تعليم الإشعار كمقروء:",error);}
   }
-  if(typeof showSection==="function")showSection(section,null);
+  // Dedicated admin support route: never let a support alert fall through to the generic admin dashboard.
   if(isAdmin&&isSupportTarget){
-    if(typeof showAdminPanel==="function")await showAdminPanel("support");
+    if(typeof showSection==="function")showSection("admin",null);
+    const adminRoot=document.getElementById("admin");
+    if(adminRoot)adminRoot.classList.remove("hidden");
+    let panelReady=false;
+    if(typeof showAdminPanel==="function"){
+      await showAdminPanel("support");
+      panelReady=true;
+    }
+    if(!panelReady){
+      const hub=document.getElementById("adminHub");
+      if(hub)hub.classList.add("hidden");
+      adminRoot?.querySelectorAll(".admin-subpanel").forEach(panel=>{
+        panel.classList.toggle("hidden",panel.dataset.adminPanel!=="support");
+      });
+      if(typeof loadAdminPanel==="function")await loadAdminPanel();
+    }
     if(typeof switchSupportTab==="function")switchSupportTab("tickets");
     const typeFilter=document.getElementById("adminFeedbackTypeFilter");
     const statusFilter=document.getElementById("adminFeedbackStatusFilter");
     const searchInput=document.getElementById("adminFeedbackSearch");
-    if(typeFilter)typeFilter.value=entityType==="customer_feedback"?"all":"support";
+    if(typeFilter)typeFilter.value="support";
     if(statusFilter)statusFilter.value="all";
     if(searchInput)searchInput.value="";
     if(typeof filterAdminFeedback==="function")filterAdminFeedback();
-  }else if(isAdmin){
+    const ticketId=entityId?String(entityId):"";
+    if(ticketId&&typeof openSupportConversation==="function"){
+      try{
+        await openSupportConversation(ticketId,"admin");
+      }catch(error){
+        console.warn("تعذر تحميل محادثة إشعار الدعم:",error);
+        const box=document.getElementById("adminSupportConversation");
+        const messages=document.getElementById("adminSupportConversationMessages");
+        if(box)box.classList.remove("hidden");
+        if(messages)messages.textContent="وصلنا إلى قسم الدعم، لكن تعذر تحميل هذه المحادثة. افتح التذكرة من القائمة وحاول مجدداً.";
+      }
+    }
+    const conversation=document.getElementById("adminSupportConversation");
+    const inbox=document.getElementById("supportTicketsView");
+    const destination=conversation&&!conversation.classList.contains("hidden")?conversation:inbox;
+    if(destination){
+      destination.scrollIntoView({behavior:"smooth",block:"start"});
+      destination.classList.add("notification-target-highlight");
+    }
+    return;
+  }
+
+  if(typeof showSection==="function")showSection(section,null);
+  if(isAdmin){
     if(typeof loadAdminPanel==="function")await loadAdminPanel();
   }else if(section==="support"&&typeof loadMyFeedback==="function")await loadMyFeedback();
   else if(section==="orders"&&typeof loadMyOrders==="function")await loadMyOrders();
@@ -144,10 +182,10 @@ async function openBaranNotificationTarget(item,audience){
       ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
       :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
   if(target){
-    target.scrollIntoView({behavior:"smooth",block:isAdmin&&isSupportTarget&&!entityId?"start":"center"});
+    target.scrollIntoView({behavior:"smooth",block:"center"});
     target.classList.add("notification-target-highlight");
   }else{
-    const sectionTarget=document.getElementById(isAdmin&&isSupportTarget?"supportTicketsView":section);
+    const sectionTarget=document.getElementById(section);
     if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});
   }
   if(!isAdmin&&typeof loadCustomerNotifications==="function")loadCustomerNotifications();
