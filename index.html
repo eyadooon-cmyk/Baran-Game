@@ -1775,11 +1775,18 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
   <div id="customerNotificationsModal" class="notification-modal hidden" role="dialog" aria-modal="true" aria-labelledby="customerNotificationsTitle">
     <div class="notification-panel">
       <div class="notification-panel-head">
-        <h2 id="customerNotificationsTitle">مركز الإشعارات 🔔</h2>
-        <button type="button" class="secondary" onclick="closeCustomerNotifications()" aria-label="إغلاق الإشعارات">إغلاق ✕</button>
+        <div class="notification-panel-title">
+          <span class="notification-panel-kicker">BARAN GAME · UPDATES</span>
+          <h2 id="customerNotificationsTitle">مركز الإشعارات</h2>
+          <p>كل جديد يخص طلباتك ومحفظتك ورسائل الدعم، مرتب بمكان واحد.</p>
+        </div>
+        <button type="button" class="notification-close" onclick="closeCustomerNotifications()" aria-label="إغلاق الإشعارات">✕</button>
       </div>
-      <p class="small">ستظهر هنا تحديثات طلباتك والإيداعات ورسائل الدعم.</p>
-      <div id="customerNotificationsList" aria-live="polite">جاري تحميل الإشعارات...</div>
+      <div class="notification-summary" aria-live="polite">
+        <div><strong id="notificationTotalCount">—</strong><span>كل الإشعارات</span></div>
+        <div><strong id="notificationUnreadCount">—</strong><span>غير مقروءة</span></div>
+      </div>
+      <div id="customerNotificationsList" class="notification-list" aria-live="polite">جاري تحميل الإشعارات...</div>
     </div>
   </div>
 
@@ -5755,6 +5762,45 @@ let baranCustomerNotificationPoll=null;
 function notificationDate(value){
   return value ? new Date(value).toLocaleString("ar") : "—";
 }
+function baranNotificationMeta(item){
+  const text=[item?.kind,item?.title,item?.body,item?.entity_type].filter(Boolean).join(" ").toLowerCase();
+  if(/support|ticket|reply|رسالة|دعم|تذكرة/.test(text))return {icon:"✉",label:"الدعم والرسائل",tone:"support"};
+  if(/deposit|wallet|payment|transfer|إيداع|محفظة|حوالة|دفع|رصيد/.test(text))return {icon:"◈",label:"المحفظة والدفع",tone:"wallet"};
+  if(/order|top.?up|purchase|طلب|شحن|شراء/.test(text))return {icon:"▣",label:"الطلبات والشحن",tone:"order"};
+  if(/security|login|password|أمان|دخول|حماية/.test(text))return {icon:"◇",label:"الأمان والحساب",tone:"security"};
+  if(/promotion|offer|coupon|عرض|كوبون|خصم/.test(text))return {icon:"✧",label:"العروض والتحديثات",tone:"offer"};
+  return {icon:"✦",label:"تحديث من باران",tone:"general"};
+}
+function buildBaranNotificationCard(item,audience){
+  const meta=baranNotificationMeta(item);
+  const card=document.createElement("article");
+  card.className="notification-item notification-tone-"+meta.tone+(item.read_at?"":" unread")+(audience==="customer"?" notification-clickable":"");
+  if(audience==="customer"||audience==="admin"){
+    card.tabIndex=0;card.setAttribute("role","button");
+    const open=()=>openBaranNotificationTarget(item,audience);
+    card.onclick=open;
+    card.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();open();}};
+  }
+  const head=document.createElement("div");head.className="notification-item-head";
+  const icon=document.createElement("span");icon.className="notification-item-icon";icon.setAttribute("aria-hidden","true");icon.textContent=meta.icon;
+  const titleWrap=document.createElement("div");titleWrap.className="notification-item-title";
+  const category=document.createElement("span");category.className="notification-category";category.textContent=meta.label;
+  const title=document.createElement("strong");title.textContent=item.title||"إشعار من Baran Game";
+  titleWrap.append(category,title);
+  const state=document.createElement("span");state.className="notification-state"+(item.read_at?"":" is-new");state.textContent=item.read_at?"مقروء":"جديد";
+  head.append(icon,titleWrap,state);
+  const body=document.createElement("p");body.className="notification-item-body";body.textContent=item.body||"لديك تحديث جديد من باران.";
+  const footer=document.createElement("div");footer.className="notification-item-footer";
+  const date=document.createElement("time");date.dateTime=item.created_at||"";date.textContent=notificationDate(item.created_at);
+  footer.appendChild(date);
+  if(!item.read_at){
+    const button=document.createElement("button");button.type="button";button.className="notification-read-action";button.textContent="تحديد كمقروء";
+    button.onclick=event=>{event.stopPropagation();markCustomerNotificationRead(item.id,button,audience);};
+    footer.appendChild(button);
+  }
+  card.append(head,body,footer);
+  return card;
+}
 async function loadCustomerNotifications(){
   const list=document.getElementById("customerNotificationsList");
   const count=document.getElementById("notificationCount");
@@ -5762,65 +5808,26 @@ async function loadCustomerNotifications(){
   const audience=currentUser.id===BARAN_OWNER_ID?"admin":"customer";
   try{
     const [{data:rows,error},{count:unreadCount,error:countError}]=await Promise.all([
-      sb.from("baran_notifications")
-        .select("id,kind,title,body,entity_type,entity_id,read_at,created_at")
-        .eq("recipient_id",currentUser.id)
-        .eq("audience",audience)
-        .order("created_at",{ascending:false})
-        .limit(50),
-      sb.from("baran_notifications")
-        .select("id",{count:"exact",head:true})
-        .eq("recipient_id",currentUser.id)
-        .eq("audience",audience)
-        .is("read_at",null)
+      sb.from("baran_notifications").select("id,kind,title,body,entity_type,entity_id,read_at,created_at").eq("recipient_id",currentUser.id).eq("audience",audience).order("created_at",{ascending:false}).limit(50),
+      sb.from("baran_notifications").select("id",{count:"exact",head:true}).eq("recipient_id",currentUser.id).eq("audience",audience).is("read_at",null)
     ]);
-    if(error)throw error;
-    if(countError)throw countError;
-    const total=Number(unreadCount||0);
-    if(count){
-      count.textContent=total>99?"99+":String(total);
-      count.classList.toggle("hidden",total===0);
-    }
+    if(error)throw error;if(countError)throw countError;
+    const total=Number(unreadCount||0),all=Array.isArray(rows)?rows:[];
+    if(count){count.textContent=total>99?"99+":String(total);count.classList.toggle("hidden",total===0);}
+    const totalNode=document.getElementById("notificationTotalCount"),unreadNode=document.getElementById("notificationUnreadCount");
+    if(totalNode)totalNode.textContent=String(all.length);
+    if(unreadNode)unreadNode.textContent=String(total);
     list.replaceChildren();
-    if(!rows||rows.length===0){
-      const empty=document.createElement("div");
-      empty.className="notification-empty";
-      empty.textContent=audience==="admin"?"ما عندك تنبيهات إدارية حالياً.":"ما عندك إشعارات حالياً.";
-      list.appendChild(empty);
-      return;
+    if(!all.length){
+      const empty=document.createElement("div");empty.className="notification-empty-state";
+      const icon=document.createElement("span");icon.textContent="✦";
+      const title=document.createElement("strong");title.textContent="أنت على اطلاع";
+      const copy=document.createElement("p");copy.textContent=audience==="admin"?"ما في تنبيهات إدارية جديدة حالياً.":"ما عندك إشعارات جديدة حالياً. رح نخبرك هون بكل تحديث مهم.";
+      empty.append(icon,title,copy);list.appendChild(empty);return;
     }
-    rows.forEach(item=>{
-      const card=document.createElement("article");
-      card.className="notification-item"+(audience==="customer"?" notification-clickable":"")+(item.read_at?"":" unread");
-      if(audience==="customer"){
-        card.tabIndex=0;card.setAttribute("role","button");
-        card.onclick=()=>openBaranNotificationTarget(item,"customer");
-      }
-      const title=document.createElement("strong");
-      title.textContent=item.title||"إشعار من Baran Game";
-      const body=document.createElement("p");
-      body.textContent=item.body||"";
-      const date=document.createElement("time");
-      date.dateTime=item.created_at||"";
-      date.textContent=notificationDate(item.created_at);
-      card.append(title,body,date);
-      if(!item.read_at){
-        const readButton=document.createElement("button");
-        readButton.type="button";
-        readButton.className="secondary";
-        readButton.textContent="تحديد كمقروء";
-        readButton.onclick=event=>{event.stopPropagation();markCustomerNotificationRead(item.id,readButton,audience);};
-        card.appendChild(readButton);
-      }else{
-        const readLabel=document.createElement("span");
-        readLabel.className="small";
-        readLabel.textContent="مقروء";
-        card.appendChild(readLabel);
-      }
-      list.appendChild(card);
-    });
+    all.forEach(item=>list.appendChild(buildBaranNotificationCard(item,audience)));
   }catch(error){
-    list.textContent="تعذر تحميل الإشعارات. حاول التحديث لاحقاً.";
+    list.replaceChildren();const message=document.createElement("div");message.className="notification-load-error";message.textContent="ما قدرنا نحمّل الإشعارات حالياً. جرّب التحديث بعد شوي.";list.appendChild(message);
     console.error("Baran notifications:",error);
   }
 }
