@@ -47,7 +47,7 @@ jobs:
           const html = readFileSync('index.html', 'utf8');
           const js = readFileSync('communication-center.js', 'utf8');
           const checks = [
-            ['communication script is loaded', html.includes('./communication-center.js?v=20261117-unified-1')],
+            ['communication script is loaded', html.includes('./communication-center.js?v=20261117-unified-2')],
             ['notification cards expose their ID after creation', /const card=document\.createElement\("article"\);\s*card\.dataset\.notificationId/.test(html)],
             ['customer and admin notification lists are wired', js.includes('createToolbar("customerNotificationsList"') && js.includes('createToolbar("adminNotifications"')],
             ['bulk read uses the existing server RPC', js.includes('mark_baran_notifications_read')],
@@ -61,7 +61,7 @@ jobs:
             ['broadcast is grouped inside a collapsed communication-center section', js.includes('bcc-announcements') && js.includes('notificationContent.appendChild(announcementDetails)')],
             ['support inbox has a helpful empty state', html.includes('support-empty-state') && html.includes('صندوق الدعم فارغ حالياً')],
             ['support priority filter has no visible escaped newline', !html.includes('</select>\\n                  <label for=\"adminFeedbackPriorityFilter\">')],
-            ['embedded broadcast is excluded from duplicate section navigation', html.includes('announcement-panel'))],
+            ['embedded broadcast is excluded from duplicate section navigation', html.includes('announcement-panel')],
             ['communication report routes through read-only admin analysis', js.includes('أنشئ تقريراً إدارياً عن التواصل') && js.includes('ولا تنفذ أي إجراء أو تغيير')],
             ['notification preference migration exists', readFileSync('supabase/migrations/20261117190000_add_notification_preferences.sql', 'utf8').includes('baran_notification_preferences')],
             ['support attachment migration exists', readFileSync('supabase/migrations/20261117183000_enhance_baran_support_attachments_receipts.sql', 'utf8').includes('baran-support-attachments')]
