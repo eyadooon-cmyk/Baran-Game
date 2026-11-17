@@ -167,11 +167,53 @@
     tickets.slice(0,15).forEach(t=>{
       const row=node("div","baran-profile-record");row.append(node("strong","",t.subject||t.ticket_code||t.feedback_type||"تواصل"),node("span","",t.status||"—"),node("small","",date(t.created_at)+" · "+(t.message||"").slice(0,180)));support.append(row);
     });dialog.append(support);
+    const accountControl=customer.account_control||{status:"active"};
+    const securityBox=node("section","baran-profile-section");
+    securityBox.append(node("h4","","🛡️ حماية الحساب وإدارة الحظر"));
+    const state=node("p",accountControl.status==="banned"?"baran-account-banned":"baran-account-active",
+      accountControl.status==="banned"?"الحساب محظور حالياً":"الحساب غير محظور");
+    securityBox.append(state);
+    if(accountControl.status==="banned"){
+      securityBox.append(node("small","baran-experience-muted","السبب: "+(accountControl.reason||"غير محدد")+" · حتى: "+date(accountControl.banned_until)));
+      const unban=node("button","baran-ban-action baran-unban","إلغاء الحظر");
+      unban.type="button";
+      unban.addEventListener("click",()=>changeCustomerBan(customer.id,"none",modal));
+      securityBox.append(unban);
+    }else{
+      const reason=node("input","baran-ban-reason");
+      reason.type="text";reason.maxLength=500;reason.placeholder="سبب الحظر (إلزامي)";
+      const duration=node("select","baran-ban-duration");
+      [["1h","ساعة واحدة"],["24h","24 ساعة"],["7d","7 أيام"],["30d","30 يوماً"],["permanent","دائم"]].forEach(([v,l])=>{const op=node("option","",l);op.value=v;duration.append(op);});
+      const ban=node("button","baran-ban-action","تأكيد الحظر");
+      ban.type="button";
+      ban.addEventListener("click",()=>changeCustomerBan(customer.id,duration.value,modal,reason.value));
+      securityBox.append(reason,duration,ban);
+    }
+    dialog.append(securityBox);
     const safe=node("p","baran-profile-safety","الملف للعرض والمتابعة فقط. لا توجد أزرار لتعديل الرصيد أو تنفيذ استرداد أو شحن.");
     dialog.append(safe);modal.append(dialog);
     modal.addEventListener("click",e=>{if(e.target===modal)modal.remove();});
     document.addEventListener("keydown",function esc(e){if(e.key==="Escape"){modal.remove();document.removeEventListener("keydown",esc);}});
     document.body.append(modal);
+  }
+  async function changeCustomerBan(userId,duration,modal,reason=""){
+    if(duration!=="none"&&!reason.trim()){window.alert("اكتب سبب الحظر أولاً.");return;}
+    const confirmText=duration==="none"?"تأكيد إلغاء حظر هذا العميل؟":"تأكيد حظر العميل؟";
+    if(!window.confirm(confirmText))return;
+    try{
+      const {data:{session},error:sessionError}=await window.sb.auth.getSession();
+      if(sessionError||!session)throw new Error("انتهت جلسة المدير.");
+      const response=await fetch(window.SUPABASE_URL+"/functions/v1/baran-admin",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+session.access_token,"apikey":window.SUPABASE_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({action:"customer_account_ban",target_user_id:userId,ban_duration:duration,ban_reason:reason.trim()})
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||"تعذر تنفيذ الإجراء.");
+      window.alert(duration==="none"?"تم إلغاء الحظر.":"تم تطبيق الحظر.");
+      if(modal)modal.remove();
+      if(typeof window.loadOperationsDashboard==="function")await window.loadOperationsDashboard();
+    }catch(error){window.alert(error.message||"تعذر تنفيذ الإجراء.");}
   }
   window.renderBaranCustomerExperience = render;
   const observer = new MutationObserver(attachProfileButtons);
