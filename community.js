@@ -89,14 +89,20 @@ async function openBaranNotificationTarget(item,audience){
   }
   document.body.classList.remove("baran-notifications-open");
   const isAdmin=audience==="admin";
-  const entityType=String(item.entity_type||"").toLowerCase();
-  const kind=String(item.kind||"").toLowerCase();
+  const entityType=String(item.entity_type||"").trim().toLowerCase();
+  const kind=String(item.kind||"").trim().toLowerCase();
   const entityId=item.entity_id||null;
-  const isSupportTarget=["ticket","customer_feedback"].includes(entityType)||entityType.includes("ticket")||kind.includes("support")||kind.includes("reply");
+  // Notification producers may use different entity/kind labels; inspect the visible
+  // title and body too, so support alerts never fall through to the generic admin hub.
+  const notificationText=[entityType,kind,item.title,item.body].filter(Boolean).join(" ").toLowerCase();
+  const isSupportTarget=
+    /support|ticket|feedback|customer.?message|reply|رسالة|دعم|تذكرة|شكوى|استفسار/.test(notificationText) ||
+    entityType.includes("ticket") || entityType.includes("feedback");
+  const isDepositTarget=["deposit","deposit_request","wallet","wallet_transaction","wallet_transactions"].includes(entityType)||
+    /deposit|wallet|payment|transfer|إيداع|محفظة|حوالة|دفع|رصيد/.test(notificationText);
+  const isOrderTarget=["order","orders"].includes(entityType)||/order|top.?up|purchase|طلب|شحن|شراء/.test(notificationText);
   const section=isAdmin?"admin":
-    (isSupportTarget?"support":
-     ["order","orders"].includes(entityType)||kind.includes("order")?"orders":
-     ["deposit_request","wallet","wallet_transaction","wallet_transactions"].includes(entityType)||kind.includes("deposit")||kind.includes("wallet")||kind.includes("payment")?"wallet":
+    (isSupportTarget?"support":isOrderTarget?"orders":isDepositTarget?"wallet":
      entityType==="leo_manual_order"?"baroManual":"account");
   if(!item.read_at){
     try{
@@ -129,11 +135,18 @@ async function openBaranNotificationTarget(item,audience){
   }
   const target=isAdmin&&isSupportTarget&&entityId
     ?document.querySelector('[data-feedback-id="'+CSS.escape(String(entityId))+'"]')
-    :isAdmin&&kind.includes("monitor")
-      ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
-      :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
-  if(target){target.scrollIntoView({behavior:"smooth",block:"center"});target.classList.add("notification-target-highlight");}
-  else{const sectionTarget=document.getElementById(section);if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});}
+    :isAdmin&&isSupportTarget
+      ?(document.getElementById("supportTicketsView")||document.getElementById("adminFeedback"))
+      :isAdmin&&kind.includes("monitor")
+        ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
+        :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
+  if(target){
+    target.scrollIntoView({behavior:"smooth",block:isAdmin&&isSupportTarget&&!entityId?"start":"center"});
+    target.classList.add("notification-target-highlight");
+  }else{
+    const sectionTarget=document.getElementById(isAdmin&&isSupportTarget?"supportTicketsView":section);
+    if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});
+  }
   if(!isAdmin&&typeof loadCustomerNotifications==="function")loadCustomerNotifications();
 }
 
