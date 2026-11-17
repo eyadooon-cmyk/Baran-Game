@@ -6629,57 +6629,6 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
 .support-conversation-admin-tools select{margin:0;min-width:0}
 .support-open-chat{margin-top:10px}
 @media(max-width:420px){.support-conversation{padding:11px}.support-conversation-compose{flex-direction:column}.support-conversation-compose button{width:100%}.support-message{max-width:94%}.support-conversation-head h3{font-size:15px}}
-</style>
-
-
-<script id="baran-freefire-region-test">
-async function baranRunFreeFireRegionTest(){
-  const input=document.getElementById("baranFreeFireTestId");
-  const button=document.getElementById("baranFreeFireTestButton");
-  const result=document.getElementById("baranFreeFireTestResult");
-  const id=(input?.value||"").trim();
-  if(!/^\d{5,20}$/.test(id)){
-    result.textContent="أدخل Player ID صحيحاً من 5 إلى 20 رقماً.";
-    return;
-  }
-  if(!currentUser){
-    result.textContent="سجّل الدخول بحساب الإدارة أولاً.";
-    return;
-  }
-  button.disabled=true;
-  result.textContent="جاري فحص الحساب عبر Volsever MENA Checker...";
-  try{
-    const {data,error}=await sb.functions.invoke("baran-freefire-check",{body:{id}});
-    if(error)throw new Error(error.message||"تعذر الاتصال بخدمة الفحص.");
-    if(!data?.ok){
-      result.textContent=data?.message||(
-        data?.error==="PLAYER_NOT_FOUND"?"لم يتم العثور على اللاعب. تأكد من الآيدي.":"تعذر إكمال الفحص: "+(data?.error||"خطأ غير معروف")
-      );
-      return;
-    }
-    const player=data.player||{};
-    const region=String(player.region||"غير محددة");
-    result.replaceChildren();
-    const title=document.createElement("strong");
-    title.textContent="✓ تم العثور على اللاعب: "+String(player.username||"—");
-    const idLine=document.createElement("div");idLine.textContent="Player ID: "+String(player.id||id);
-    const regionLine=document.createElement("div");regionLine.textContent="المنطقة حسب Volsever: "+region;
-    const note=document.createElement("p");note.className="small";
-    note.textContent=/^mena$/i.test(region)
-      ?"الحساب مصنّف MENA حسب نتيجة الفحص. بقي اختبار توافق باقة Syria Market نفسها قبل اعتماد الشحن."
-      :"ظهور اسم اللاعب لا يعني أن الحساب MENA. نعتمد رمز المنطقة كما أعادته الخدمة، ولا نفعّل باقة المورد بناءً على هذا الفحص وحده.";
-    result.append(title,idLine,regionLine,note);
-  }catch(error){
-    result.textContent="تعذر الفحص: "+(error?.message||"حاول مرة أخرى.");
-  }finally{
-    button.disabled=false;
-  }
-}
-</script>
-
-</body>
-</html>
-
 /* Premium unified back navigation — BARAN GAME */
 .section-back-button,
 .games-back-button,
@@ -6761,3 +6710,53 @@ button[onclick*="backToLogin"]:active{
   button[onclick*="showSection('home'"],button[onclick*="backToLogin"]{transition:none}
 }
 
+</style>
+
+
+<script id="baran-freefire-region-test">
+async function baranRunFreeFireRegionTest(){
+  const input=document.getElementById("baranFreeFireTestId");
+  const button=document.getElementById("baranFreeFireTestButton");
+  const result=document.getElementById("baranFreeFireTestResult");
+  const id=(input?.value||"").trim();
+  if(!/^\d{5,20}$/.test(id)){
+    result.textContent="أدخل Player ID صحيحاً من 5 إلى 20 رقماً.";
+    return;
+  }
+  if(!currentUser){
+    result.textContent="سجّل الدخول بحساب الإدارة أولاً.";
+    return;
+  }
+  button.disabled=true;
+  result.textContent="جاري فحص الحساب عبر Volsever MENA Checker...";
+  try{
+    const {data,error}=await sb.functions.invoke("baran-freefire-check",{body:{id}});
+    if(error)throw new Error(error.message||"تعذر الاتصال بخدمة الفحص.");
+    if(!data?.ok){
+      result.textContent=data?.message||(
+        data?.error==="PLAYER_NOT_FOUND"?"لم يتم العثور على اللاعب. تأكد من الآيدي.":"تعذر إكمال الفحص: "+(data?.error||"خطأ غير معروف")
+      );
+      return;
+    }
+    const player=data.player||{};
+    const region=String(player.region||"غير محددة");
+    result.replaceChildren();
+    const title=document.createElement("strong");
+    title.textContent="✓ تم العثور على اللاعب: "+String(player.username||"—");
+    const idLine=document.createElement("div");idLine.textContent="Player ID: "+String(player.id||id);
+    const regionLine=document.createElement("div");regionLine.textContent="المنطقة حسب Volsever: "+region;
+    const note=document.createElement("p");note.className="small";
+    note.textContent=/^mena$/i.test(region)
+      ?"الحساب مصنّف MENA حسب نتيجة الفحص. بقي اختبار توافق باقة Syria Market نفسها قبل اعتماد الشحن."
+      :"ظهور اسم اللاعب لا يعني أن الحساب MENA. نعتمد رمز المنطقة كما أعادته الخدمة، ولا نفعّل باقة المورد بناءً على هذا الفحص وحده.";
+    result.append(title,idLine,regionLine,note);
+  }catch(error){
+    result.textContent="تعذر الفحص: "+(error?.message||"حاول مرة أخرى.");
+  }finally{
+    button.disabled=false;
+  }
+}
+</script>
+
+</body>
+</html>
