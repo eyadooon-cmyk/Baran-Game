@@ -150,7 +150,7 @@ Deno.serve(async (req: Request) => {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ticketId)) {
       return json({ error: "معرّف التذكرة غير صحيح." }, 400);
     }
-    if (message.length < 1 || message.length > 2000) return json({ error: "الرسالة يجب أن تكون بين حرف و2000 حرف." }, 400);
+    if (message.length > 2000) return json({ error: "الرسالة يجب ألا تتجاوز 2000 حرف." }, 400);
     let ticketQuery = admin.from("customer_feedback").select("id,user_id,ticket_code,status,feedback_type")
       .eq("id", ticketId).eq("feedback_type", "support");
     if (!isStaff) ticketQuery = ticketQuery.eq("user_id", user.id);
@@ -174,7 +174,7 @@ Deno.serve(async (req: Request) => {
     const now = new Date().toISOString();
     const { error: ticketUpdateError } = await admin.from("customer_feedback").update({
       updated_at: now,
-      ...(isStaff ? { admin_reply: message, admin_read_at: now,
+      ...(isStaff ? { admin_reply: message || "أرفق ملفاً", admin_read_at: now,
         status: body.status === "pending" || body.status === "in_progress" || body.status === "completed" || body.status === "rejected"
           ? body.status : "in_progress" }
         : { admin_read_at: null, ...(ticket.status === "completed" || ticket.status === "rejected" ? { status: "in_progress" } : {}) }),
