@@ -672,3 +672,170 @@ footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b36
 .admin-hub-icon{display:grid;place-items:center;width:39px;height:39px;border:1px solid #8664a066;border-radius:12px;background:#a66bd121;font-size:20px}.admin-hub-card strong{font-size:13px;line-height:1.55}.admin-hub-card small{font-size:10px;line-height:1.75}.admin-hub-open{display:flex;align-items:center;justify-content:space-between;width:100%;padding-top:8px;border-top:1px solid #ffffff10;font-size:10px}.admin-hub-open b{font-size:17px}.admin-hub-no-results{margin:12px 0;padding:18px;border:1px dashed #795c91;border-radius:14px;background:#1a1422;color:#d8c5e8;text-align:center;font-size:12px}.admin-search-hidden{display:none!important}
 @media(max-width:420px){.admin-command-hero{min-height:178px;padding:18px 15px 19px}.admin-command-emblem{flex-basis:70px;width:70px;height:70px;border-radius:23px}.admin-command-emblem span{font-size:37px}.admin-command-emblem i{border-radius:27px}.admin-command-copy h3{font-size:22px}.admin-command-copy p{font-size:10px}.admin-command-foot{right:15px;left:15px}.admin-hub-group{padding:11px}.admin-hub-group .admin-hub-grid{grid-template-columns:1fr}.admin-hub-group .admin-hub-card{min-height:132px}.admin-hub-group-title em{font-size:7px}}
 @media(prefers-reduced-motion:reduce){.admin-hub-group .admin-hub-card{transition:none}}
+
+
+/* ADMIN INTERIOR — unified premium layout for every management workspace */
+#admin .admin-subpanel{
+  --admin-surface:#17121f;
+  --admin-surface-raised:#20182a;
+  --admin-border:#493858;
+  --admin-text:#f2eaf8;
+  --admin-muted:#b9a9c9;
+  width:100%;max-width:100%;min-width:0;
+  padding:clamp(13px,2.5vw,22px)!important;
+  background:linear-gradient(180deg,rgba(25,19,33,.98),rgba(15,12,20,.98));
+  border:1px solid rgba(151,113,177,.34);
+  border-radius:20px;
+  box-shadow:0 14px 38px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.025);
+}
+#admin .admin-subpanel-head{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin:0 0 17px;padding:0 0 14px;
+  border-bottom:1px solid rgba(169,133,194,.25);
+}
+#admin .admin-subpanel-head h2{
+  flex:1 1 160px;min-width:0;margin:0!important;padding:0!important;
+  border:0!important;color:#f0e6f7;font-size:clamp(18px,3vw,23px);
+  line-height:1.45;font-weight:900;
+}
+#admin .admin-subpanel-head .admin-back{
+  flex:0 0 auto;min-height:40px;margin:0;padding:8px 13px;
+  border:1px solid #705787;border-radius:12px;
+  background:linear-gradient(145deg,#352442,#21182b);
+  color:#f0e6f7;font-size:12px;font-weight:800;
+}
+#admin .admin-subpanel > p.small:first-of-type{
+  margin:0 0 15px;padding:11px 13px;
+  border-right:3px solid #a77bc5;border-radius:10px;
+  background:rgba(124,84,151,.10);color:#c8bad4;line-height:1.8;
+}
+#admin .admin-subpanel > section,
+#admin .admin-subpanel > .deposit-card,
+#admin .admin-subpanel > .finance-section,
+#admin .admin-subpanel > .support-workspace,
+#admin .admin-subpanel > .security-view{
+  margin:14px 0!important;padding:clamp(13px,2.2vw,18px);
+  background:linear-gradient(150deg,rgba(31,24,41,.96),rgba(20,16,27,.98));
+  border:1px solid rgba(111,83,132,.42);border-radius:16px;
+}
+#admin .admin-subpanel h3{
+  color:#eadcf4;font-size:16px;line-height:1.55;font-weight:850;
+}
+#admin .admin-subpanel h4{color:#e2d2ef;font-weight:800}
+#admin .admin-subpanel hr,
+#admin .admin-subpanel .security-divider{
+  border:0!important;height:1px!important;
+  background:linear-gradient(90deg,transparent,rgba(167,123,197,.42),transparent)!important;
+  margin:17px 0!important;opacity:1!important;
+}
+#admin .admin-subpanel .ops-form,
+#admin .admin-subpanel .finance-form{
+  margin:12px 0;padding:14px;
+  background:rgba(10,8,14,.36);
+  border:1px solid rgba(105,79,125,.42);border-radius:14px;
+}
+#admin .admin-subpanel .ops-form label,
+#admin .admin-subpanel .finance-form label,
+#admin .admin-subpanel label{
+  color:#d6c5e2;font-size:12px;font-weight:750;line-height:1.6;
+}
+#admin .admin-subpanel input,
+#admin .admin-subpanel select,
+#admin .admin-subpanel textarea{
+  min-height:43px;margin:7px 0 11px;padding:11px 12px;
+  background:#100c16;border:1px solid #4a3a59;border-radius:11px;
+  color:#f4edf8;font:inherit;font-size:14px;
+}
+#admin .admin-subpanel textarea{min-height:100px;line-height:1.8}
+#admin .admin-subpanel input:focus,
+#admin .admin-subpanel select:focus,
+#admin .admin-subpanel textarea:focus{
+  outline:2px solid rgba(183,138,216,.32);outline-offset:1px;border-color:#b78ad8;
+}
+#admin .admin-subpanel button:not(.admin-back){
+  min-height:40px;border-radius:11px;font-weight:800;
+  transition:transform .16s ease,border-color .16s ease,filter .16s ease;
+}
+#admin .admin-subpanel button:not(.admin-back):active{transform:scale(.985)}
+#admin .admin-subpanel button.secondary{
+  background:#2a2034;color:#eadcf4;border:1px solid #604a73;
+}
+#admin .admin-subpanel .ops-list{display:grid;gap:10px;margin:13px 0}
+#admin .admin-subpanel .ops-item,
+#admin .admin-subpanel .admin-request,
+#admin .admin-subpanel .finance-entry{
+  min-width:0;padding:14px;margin:0;
+  background:linear-gradient(145deg,#211a2b,#17121e);
+  border:1px solid #493858;border-radius:14px;
+  box-shadow:0 5px 15px rgba(0,0,0,.12);
+}
+#admin .admin-subpanel .ops-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#admin .admin-subpanel .ops-actions button{flex:1 1 125px}
+#admin .admin-subpanel .small,
+#admin .admin-subpanel .ops-muted{color:#b9a9c9;line-height:1.75}
+#admin .admin-subpanel .security-tabs,
+#admin .admin-subpanel .support-tabs{
+  display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;padding:6px;
+  background:#100c16;border:1px solid #403149;border-radius:14px;
+}
+#admin .admin-subpanel .security-tabs button,
+#admin .admin-subpanel .support-tabs button{
+  flex:1 1 145px;min-height:43px;padding:9px 12px;
+  background:transparent;color:#cbbbd8;border:1px solid transparent;
+}
+#admin .admin-subpanel .security-tabs button.active,
+#admin .admin-subpanel .support-tabs button.active{
+  color:#fff;background:linear-gradient(135deg,#49325d,#2b2038);
+  border-color:#8665a0;box-shadow:0 4px 13px rgba(0,0,0,.2);
+}
+#admin .admin-subpanel .finance-hero{
+  margin:0 0 16px;padding:17px;
+  background:radial-gradient(circle at 8% 0,rgba(172,123,205,.18),transparent 48%),linear-gradient(135deg,#30213d,#17121f 78%);
+  border:1px solid #71558a;border-radius:17px;
+}
+#admin .admin-subpanel .finance-section-heading,
+#admin .admin-subpanel .support-section-head,
+#admin .admin-subpanel .security-section-title{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:0 0 13px;padding:0 0 11px;
+  border-bottom:1px solid rgba(169,133,194,.2);
+}
+#admin .admin-subpanel .finance-section-heading h3,
+#admin .admin-subpanel .support-section-head h2,
+#admin .admin-subpanel .security-section-title h3{margin:2px 0 4px}
+#admin .admin-subpanel .finance-kicker,
+#admin .admin-subpanel .finance-eyebrow{
+  color:#bb91d7;font-size:10px;font-weight:900;letter-spacing:1.3px;
+}
+#admin .admin-subpanel .security-note,
+#admin .admin-subpanel .shamcash-control-warning{
+  margin:12px 0;padding:12px 14px;border-radius:12px;
+  background:rgba(143,102,53,.13);border:1px solid rgba(180,137,82,.42);
+  color:#e8d2b2;line-height:1.8;
+}
+#admin .admin-subpanel .admin-ai-assistant,
+#admin .admin-subpanel .baran-ai-widget{
+  margin:16px 0;padding:14px;border-radius:15px;
+}
+@media(max-width:600px){
+  #admin .admin-subpanel{padding:11px!important;border-radius:15px}
+  #admin .admin-subpanel-head{align-items:flex-start;gap:9px}
+  #admin .admin-subpanel-head .admin-back{width:100%;justify-content:center}
+  #admin .admin-subpanel-head h2{flex:1 1 100%;font-size:18px}
+  #admin .admin-subpanel > section,
+  #admin .admin-subpanel > .deposit-card,
+  #admin .admin-subpanel > .finance-section,
+  #admin .admin-subpanel > .support-workspace,
+  #admin .admin-subpanel > .security-view{padding:12px;margin:11px 0!important}
+  #admin .admin-subpanel .security-tabs,
+  #admin .admin-subpanel .support-tabs{display:grid;grid-template-columns:1fr}
+  #admin .admin-subpanel .security-tabs button,
+  #admin .admin-subpanel .support-tabs button{width:100%;text-align:center}
+  #admin .admin-subpanel .ops-actions button{flex:1 1 100%}
+  #admin .admin-subpanel .finance-section-heading,
+  #admin .admin-subpanel .support-section-head,
+  #admin .admin-subpanel .security-section-title{align-items:flex-start;flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){
+  #admin .admin-subpanel button{transition:none}
+}
