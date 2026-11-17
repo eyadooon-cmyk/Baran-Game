@@ -22,8 +22,42 @@ function createToolbar(containerId,kind){
  search.addEventListener("input",apply);const observer=new MutationObserver(apply);observer.observe(container,{childList:true,subtree:true,attributes:true,attributeFilter:["class","data-notification-id"]});toolbar._apply=apply;apply();
 }
 function addArchiveActions(){document.querySelectorAll("#customerNotificationsList .notification-item,#adminNotifications .notification-item").forEach(card=>{if(card.querySelector(".baran-archive-action"))return;const footer=card.querySelector(".notification-item-footer"),id=card.dataset.notificationId;if(!footer||!id)return;const b=document.createElement("button");b.type="button";b.className="baran-archive-action";b.textContent=archived().has(id)?"إلغاء الأرشفة":"أرشفة";b.onclick=e=>{e.stopPropagation();const set=archived();if(set.has(id))set.delete(id);else set.add(id);saveArchived(set);b.textContent=set.has(id)?"إلغاء الأرشفة":"أرشفة";const bar=card.closest(".notification-list,.notification-box")?.previousElementSibling;bar?._apply?.();};footer.appendChild(b);});}
+function addNotificationPreferences(targetId,kind){
+ const target=$(targetId);if(!target||$("baranPreferences-"+kind))return;
+ const details=document.createElement("details");details.id="baranPreferences-"+kind;details.className="baran-notification-preferences";
+ const summary=document.createElement("summary");summary.textContent="⚙️ إعدادات الإشعارات وساعات الهدوء";
+ const body=document.createElement("div");body.className="baran-preferences-body";
+ const description=document.createElement("p");description.textContent="تتحكم هذه الخيارات بإشعارات الهاتف الفورية فقط؛ ستبقى التنبيهات محفوظة داخل صندوق الإشعارات.";
+ body.appendChild(description);
+ const options=[["support_enabled","رسائل الدعم"],["wallet_enabled","المحفظة والإيداعات"],["orders_enabled","الطلبات والشحن"],["offers_enabled","العروض والإعلانات"],["security_enabled","الأمان والحساب"]];
+ const controls={};
+ options.forEach(([key,label])=>{const row=document.createElement("label");row.className="baran-preference-row";const input=document.createElement("input");input.type="checkbox";input.checked=true;input.dataset.preference=key;controls[key]=input;const text=document.createElement("span");text.textContent=label;row.append(input,text);body.appendChild(row);});
+ const quietRow=document.createElement("label");quietRow.className="baran-preference-row";const quiet=document.createElement("input");quiet.type="checkbox";quiet.checked=false;const quietText=document.createElement("span");quietText.textContent="تفعيل ساعات الهدوء";quietRow.append(quiet,quietText);body.appendChild(quietRow);
+ const times=document.createElement("div");times.className="baran-quiet-hours";const start=document.createElement("label");start.textContent="من";const startInput=document.createElement("input");startInput.type="time";startInput.value="22:00";start.appendChild(startInput);const end=document.createElement("label");end.textContent="إلى";const endInput=document.createElement("input");endInput.type="time";endInput.value="08:00";end.appendChild(endInput);times.append(start,end);body.appendChild(times);
+ const save=document.createElement("button");save.type="button";save.className="baran-preferences-save";save.textContent="حفظ الإعدادات";
+ const status=document.createElement("small");status.className="baran-preferences-status";status.setAttribute("role","status");
+ body.append(save,status);details.append(summary,body);target.parentNode.insertBefore(details,target);
+ let loaded=false;
+ async function load(){
+  if(typeof currentUser==="undefined"||!currentUser?.id||typeof sb==="undefined"){status.textContent="سجّل الدخول لعرض إعداداتك.";return;}
+  status.textContent="جاري تحميل الإعدادات...";
+  try{const {data,error}=await sb.from("baran_notification_preferences").select("*").eq("user_id",currentUser.id).maybeSingle();if(error)throw error;
+   if(data){options.forEach(([key])=>controls[key].checked=data[key]!==false);quiet.checked=!!data.quiet_hours_enabled;startInput.value=String(data.quiet_hours_start||"22:00").slice(0,5);endInput.value=String(data.quiet_hours_end||"08:00").slice(0,5);}
+   loaded=true;status.textContent="";
+  }catch(error){status.textContent="تعذر تحميل الإعدادات: "+(error.message||"حاول لاحقاً.");}
+ }
+ details.addEventListener("toggle",()=>{if(details.open&&!loaded)load();});
+ save.onclick=async()=>{
+  if(typeof currentUser==="undefined"||!currentUser?.id){status.textContent="سجّل الدخول أولاً.";return;}
+  save.disabled=true;status.textContent="جاري الحفظ...";
+  const payload={user_id:currentUser.id,...Object.fromEntries(options.map(([key])=>[key,controls[key].checked])),quiet_hours_enabled:quiet.checked,quiet_hours_start:startInput.value||"22:00",quiet_hours_end:endInput.value||"08:00",timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC",updated_at:new Date().toISOString()};
+  try{const {error}=await sb.from("baran_notification_preferences").upsert(payload,{onConflict:"user_id"});if(error)throw error;loaded=true;status.textContent="تم حفظ تفضيلات الإشعارات بنجاح.";}
+  catch(error){status.textContent="تعذر حفظ الإعدادات: "+(error.message||"حاول لاحقاً.");}
+  finally{save.disabled=false;}
+ };
+}
 function addQuickReplies(){const presets=[["طلب رقم الطلب","أهلاً بك 🌟 حتى نساعدك بسرعة، أرسل رقم الطلب أو رقم التذكرة من فضلك."],["قيد المراجعة","وصلتنا رسالتك، والطلب قيد المراجعة حالياً. سنحدّثك فور توفر نتيجة."],["إثبات التحويل","يرجى إرفاق صورة واضحة لإثبات التحويل مع رقم العملية، ولا ترسل أي كلمة مرور أو رمز تحقق."],["تم الحل","يسعدنا إبلاغك أن المشكلة تمت معالجتها. إذا احتجت أي مساعدة إضافية نحن بالخدمة."]];[["customerSupportConversationInput","customerSupportConversation"],["adminSupportConversationInput","adminSupportConversation"]].forEach(([inputId,boxId])=>{const input=$(inputId),box=$(boxId);if(!input||!box||box.querySelector(".baran-quick-replies"))return;const row=document.createElement("div");row.className="baran-quick-replies";row.setAttribute("aria-label","ردود سريعة");presets.forEach(([label,value])=>{const b=document.createElement("button");b.type="button";b.textContent=label;b.onclick=()=>{input.value=value;input.focus();};row.appendChild(b);});const compose=box.querySelector(".support-conversation-compose");if(compose)compose.parentNode.insertBefore(row,compose);});}
-function enhance(){createToolbar("customerNotificationsList","customer");createToolbar("adminNotifications","admin");addArchiveActions();addQuickReplies();}
+function enhance(){createToolbar("customerNotificationsList","customer");createToolbar("adminNotifications","admin");addNotificationPreferences("customerNotificationsList","customer");addNotificationPreferences("adminNotifications","admin");addArchiveActions();addQuickReplies();}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",enhance);else enhance();
 new MutationObserver(enhance).observe(document.documentElement,{childList:true,subtree:true});
 window.BaranCommunicationCenter={refresh:enhance,archivedCount:()=>archived().size};
