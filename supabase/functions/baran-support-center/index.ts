@@ -45,6 +45,18 @@ Deno.serve(async (req: Request) => {
     const { data: isAdmin, error: adminCheckError } = await admin.rpc("admin_is_user", { p_user_id: user.id });
     if (adminCheckError) return json({ error: "Could not verify support permissions" }, 500);
     const isStaff = isAdmin === true;
+    // Block banned customers even when they still hold an older, unexpired JWT.
+    if (!isStaff) {
+      const { data: control, error: controlError } = await admin.from("customer_account_controls")
+        .select("status,banned_until").eq("user_id", user.id).maybeSingle();
+      if (controlError) {
+        console.error("baran-support-center account-control lookup failed", controlError.message);
+        return json({ error: "تعذر التحقق من حالة حماية الحساب." }, 500);
+      }
+      const stillBanned = control?.status === "banned" &&
+        (!control.banned_until || new Date(control.banned_until).getTime() > Date.now());
+      if (stillBanned) return json({ error: "هذا الحساب موقوف حالياً. تواصل مع الإدارة." }, 403);
+    }
 
     if (req.method === "GET") {
       const ticketId = new URL(req.url).searchParams.get("ticket_id") ?? "";
