@@ -529,6 +529,12 @@ function renderSupportConversation(data,audience){
     if(status)status.value=ticket.status||"pending";
     const priority=document.getElementById("adminSupportConversationPriority");
     if(priority)priority.value=ticket.priority||"normal";
+    const attachmentToggle=document.getElementById("adminSupportAttachmentsEnabled");
+    if(attachmentToggle)attachmentToggle.checked=ticket.attachments_enabled===true;
+    const adminAttachmentWrap=document.getElementById("adminSupportAttachmentControls");
+    if(adminAttachmentWrap)adminAttachmentWrap.hidden=ticket.attachments_enabled!==true;
+    const customerAttachmentWrap=document.getElementById("customerSupportAttachmentControls");
+    if(customerAttachmentWrap)customerAttachmentWrap.hidden=true;
     const assignee=document.getElementById("adminSupportConversationAssignee");
     if(assignee){
       const staff=Array.isArray(data.staff)?data.staff:[];
@@ -538,6 +544,9 @@ function renderSupportConversation(data,audience){
       staff.forEach(member=>{const option=document.createElement("option");option.value=member.user_id;option.textContent=member.full_name||("موظف "+member.user_id.slice(0,8));assignee.appendChild(option);});
       assignee.value=selected;
     }
+  }else{
+    const customerAttachmentWrap=document.getElementById("customerSupportAttachmentControls");
+    if(customerAttachmentWrap)customerAttachmentWrap.hidden=ticket.attachments_enabled!==true;
   }
 }
 async function updateSupportTicketMeta(){
@@ -545,8 +554,9 @@ async function updateSupportTicketMeta(){
   const status=document.getElementById("adminSupportConversationStatus")?.value||"pending";
   const priority=document.getElementById("adminSupportConversationPriority")?.value||"normal";
   const assigned=document.getElementById("adminSupportConversationAssignee")?.value||"";
+  const attachmentsEnabled=document.getElementById("adminSupportAttachmentsEnabled")?.checked===true;
   try{
-    await supportCenterRequest("POST",null,{action:"update_ticket",ticket_id:activeSupportConversation.id,status,priority,assigned_admin_id:assigned||null});
+    await supportCenterRequest("POST",null,{action:"update_ticket",ticket_id:activeSupportConversation.id,status,priority,assigned_admin_id:assigned||null,attachments_enabled:attachmentsEnabled});
     const meta=document.getElementById("adminSupportConversationMeta");
     if(meta)meta.dataset.saved="1";
     await openSupportConversation(activeSupportConversation.id,"admin");
@@ -557,8 +567,8 @@ function ensureSupportComposerExtras(){
     const prefix=audience==="admin"?"admin":"customer";
     const form=document.querySelector("#"+prefix+"SupportConversation .support-conversation-compose");
     if(form&&!document.getElementById(prefix+"SupportAttachment")){
-      const wrap=document.createElement("div");wrap.className="support-attachment-controls";
-      const label=document.createElement("label");label.textContent="📎 إرفاق صورة أو PDF (حتى 10MB)";
+      const wrap=document.createElement("div");wrap.id=prefix+"SupportAttachmentControls";wrap.className="support-attachment-controls";wrap.hidden=true;
+      const label=document.createElement("label");label.textContent="📎 إرفاق صورة أو PDF (حتى 10MB · 3 ملفات كحد أقصى للتذكرة)";
       label.htmlFor=prefix+"SupportAttachment";
       const file=document.createElement("input");file.type="file";file.id=prefix+"SupportAttachment";
       file.accept="image/jpeg,image/png,image/webp,application/pdf";
@@ -578,6 +588,10 @@ function ensureSupportComposerExtras(){
     const unassigned=document.createElement("option");unassigned.value="";unassigned.textContent="غير مسندة";assignee.appendChild(unassigned);
     assignee.addEventListener("change",updateSupportTicketMeta);
     tools.append(assigneeLabel,assignee);
+    const attachmentLabel=document.createElement("label");attachmentLabel.htmlFor="adminSupportAttachmentsEnabled";attachmentLabel.textContent="السماح للزبون بإرفاق ملفات";
+    const attachmentToggle=document.createElement("input");attachmentToggle.type="checkbox";attachmentToggle.id="adminSupportAttachmentsEnabled";attachmentToggle.checked=false;
+    attachmentToggle.addEventListener("change",updateSupportTicketMeta);
+    tools.append(attachmentLabel,attachmentToggle);
     const status=document.getElementById("adminSupportConversationStatus");if(status)status.addEventListener("change",updateSupportTicketMeta);
   }
 }
@@ -611,6 +625,8 @@ async function sendSupportConversationMessage(event,audience){
   const file=fileInput?.files?.[0]||null;
   if(!ticketId||activeSupportConversation.audience!==audience){alert("افتح التذكرة أولاً.");return;}
   if(!message&&!file){input?.focus();return;}
+  const attachmentWrap=document.getElementById(prefix+"SupportAttachmentControls");
+  if(file&&attachmentWrap?.hidden){alert("المرفقات مغلقة لهذه التذكرة حالياً.");return;}
   if(message.length>2000){alert("الرسالة طويلة جداً.");return;}
   if(file){
     const allowed=["image/jpeg","image/png","image/webp","application/pdf"];
