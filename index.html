@@ -5494,7 +5494,8 @@ function filterBaranCustomerDirectory(){
     const details=document.createElement("div");details.className="customer-directory-details";
     const activityCount=Number(item.order_count||0);
     const lastOrder=item.last_order_at?new Date(item.last_order_at).toLocaleString("ar"):"لا يوجد طلب سابق";
-    const segment=!activityCount?"عميل جديد":activityCount>=5?"عميل دائم":item.last_order_at&&Date.now()-new Date(item.last_order_at).getTime()<=30*86400000?"عميل نشط":"غير نشط";
+    const daysSinceLastOrder=item.last_order_at?(Date.now()-new Date(item.last_order_at).getTime())/86400000:Infinity;
+    const segment=!activityCount?"عميل جديد":daysSinceLastOrder>30?"غير نشط":activityCount>=5?"عميل دائم":"عميل نشط";
     const detailRows=[
       ["📧","البريد الإلكتروني",item.email||"غير متوفر"],
       ["📱","رقم الهاتف",item.phone||"غير مسجل"],
