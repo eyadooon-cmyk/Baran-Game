@@ -259,7 +259,7 @@ test("BARO customer order form is hidden in static HTML until the backend confir
   const app = read("../index.html");
   assert.match(app, /class="game-checkout hidden"/);
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
-  assert.match(ui, /if\(submitButton\)submitButton\.disabled=true/);
+  assert.match(ui, /if\(submitButton\)\{submitButton\.hidden=!canOrder;submitButton\.disabled=!canOrder;\}/);
   assert.match(ui, /if\(!baroManualEnabled\)\{message\.textContent=/);
 });
 
