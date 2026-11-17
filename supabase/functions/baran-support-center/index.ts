@@ -52,7 +52,7 @@ Deno.serve(async (req: Request) => {
         return json({ error: "معرّف التذكرة غير صحيح." }, 400);
       }
       let ticketQuery = admin.from("customer_feedback")
-        .select("id,user_id,feedback_type,ticket_code,subject,message,order_id,status,priority,admin_reply,admin_read_at,created_at,updated_at")
+        .select("id,user_id,feedback_type,ticket_code,subject,message,order_id,status,priority,assigned_admin_id,admin_reply,admin_read_at,created_at,updated_at")
         .eq("id", ticketId).eq("feedback_type", "support");
       if (!isStaff) ticketQuery = ticketQuery.eq("user_id", user.id);
       const { data: ticket, error: ticketError } = await ticketQuery.maybeSingle();
@@ -95,7 +95,17 @@ Deno.serve(async (req: Request) => {
         ]);
         customer = { ...profile, email: authUser?.user?.email ?? null };
       }
-      return json({ success: true, ticket, messages: thread, customer, is_admin: isStaff });
+      let staff: Array<{user_id:string;full_name:string|null}> = [];
+      if (isStaff) {
+        const { data: adminRows } = await admin.from("admin_users").select("user_id");
+        const ids = (adminRows ?? []).map((row) => row.user_id);
+        if (ids.length) {
+          const { data: profileRows } = await admin.from("profiles").select("id,full_name").in("id", ids);
+          const names = new Map((profileRows ?? []).map((row) => [row.id, row.full_name]));
+          staff = ids.map((user_id) => ({ user_id, full_name: names.get(user_id) ?? null }));
+        }
+      }
+      return json({ success: true, ticket, messages: thread, customer, is_admin: isStaff, staff });
     }
 
     let body: Record<string, unknown>;
@@ -117,13 +127,23 @@ Deno.serve(async (req: Request) => {
           return json({ error: "أولوية التذكرة غير صحيحة." }, 400);
         updates.priority = body.priority;
       }
+      if (body.assigned_admin_id !== undefined) {
+        if (body.assigned_admin_id !== null && typeof body.assigned_admin_id !== "string")
+          return json({ error: "الموظف المحدد غير صالح." }, 400);
+        if (body.assigned_admin_id !== null) {
+          const { data: staffMember } = await admin.from("admin_users").select("user_id")
+            .eq("user_id", body.assigned_admin_id).maybeSingle();
+          if (!staffMember) return json({ error: "الموظف المحدد ليس ضمن فريق الإدارة." }, 400);
+        }
+        updates.assigned_admin_id = body.assigned_admin_id;
+      }
       const { data: updated, error: updateError } = await admin.from("customer_feedback")
         .update(updates).eq("id", ticketId).eq("feedback_type", "support")
-        .select("id,status,priority,updated_at").maybeSingle();
+        .select("id,status,priority,assigned_admin_id,updated_at").maybeSingle();
       if (updateError || !updated) return json({ error: "تعذر تحديث التذكرة." }, 400);
       await admin.from("admin_audit_log").insert({
         admin_id: user.id, action: "support_ticket_update", entity_type: "customer_feedback",
-        entity_id: ticketId, details: { status: updated.status, priority: updated.priority },
+        entity_id: ticketId, details: { status: updated.status, priority: updated.priority, assigned_admin_id: updated.assigned_admin_id },
       });
       return json({ success: true, ticket: updated });
     }
