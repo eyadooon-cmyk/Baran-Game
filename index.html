@@ -1819,7 +1819,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
   <label for="signupPasswordConfirm">تأكيد كلمة المرور</label>
   <input id="signupPasswordConfirm" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور">
   <button id="signupSubmitButton" class="full" type="button" onclick="signUp()">إنشاء الحساب</button>
-  <button class="full secondary" type="button" onclick="backToLogin()">العودة لتسجيل الدخول</button>
+  <button class="full secondary baran-back-button" type="button" onclick="backToLogin()">العودة لتسجيل الدخول</button>
   <div id="signupMessage" class="small" role="status" aria-live="polite">أدخل بياناتك لإنشاء حساب جديد.</div>
 </div>
 
@@ -1861,7 +1861,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
   <div class="store-toolbar">
     <button class="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" onclick="toggleSideMenu()" id="menuToggle">☰</button>
     <div class="toolbar-brand">BARAN <span>GAME</span></div>
-    <button id="sectionBackButton" class="section-back-button hidden" type="button" onclick="goBackSection()" aria-label="رجوع إلى القسم السابق">← رجوع</button>
+    <button id="sectionBackButton" class="section-back-button hidden baran-back-button" type="button" onclick="goBackSection()" aria-label="رجوع إلى القسم السابق">← رجوع</button>
     <div id="currentSectionLabel" class="small">الرئيسية</div>
     <button class="notification-bell" type="button" onclick="showSection('settings',null)" aria-label="الإعدادات">⚙️</button>
     <button id="notificationBell" class="notification-bell" type="button" onclick="openCustomerNotifications()" aria-label="فتح الإشعارات">🔔<span id="notificationCount" class="notification-count hidden">0</span></button>
@@ -2049,7 +2049,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
     </section>
 
     <section id="games" class="hidden">
-      <button class="secondary games-back-button" type="button" onclick="goBackSection()">← رجوع</button>
+      <button class="secondary games-back-button baran-back-button" type="button" onclick="goBackSection()">← رجوع</button>
       <h2>الألعاب 🎮</h2>
       <p class="small">اختر اللعبة لفتح متجرها الخاص. كل لعبة لها باقاتها وطلباتُها بشكل مستقل.</p>
       <div class="grid">
@@ -2065,7 +2065,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
     </section>
 
         <section id="baroManual" class="hidden">
-      <button class="secondary games-back-button" type="button" onclick="showSection('home',null)">← العودة إلى الأقسام الرئيسية</button>
+      <button class="secondary games-back-button baran-back-button" type="button" onclick="showSection('home',null)">← العودة إلى الأقسام الرئيسية</button>
       <div class="hero"><h2>BARO · الشحن اليدوي المستقل</h2><p>استعرض المنتجات وأسعارها بالدولار والليرة السورية. استقبال الطلبات اليدوية مغلق حالياً.</p></div>
       <div class="deposit-card"><strong>معاينة BARO الآمنة</strong><p class="small">هذا القسم مخصص حالياً لمعاينة المنتجات والتصميم والأسعار فقط.</p><p class="small">لا يتم إرسال بيانات أو إنشاء طلبات أو خصم رصيد أو الاتصال بأي مورد. سيظهر نموذج الطلب فقط بعد اعتماد الإدارة وفتح استقبال الطلبات.</p></div>
       <div id="baroAiWidget" class="baro-ai-widget" aria-label="مساعد BARO الذكي">
@@ -2088,7 +2088,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
     </section>
 
 <section id="pubgStore" class="hidden game-store-page" data-game-store="PUBG">
-      <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
       <div class="hero"><h2>PUBG MOBILE</h2><p>اختر باقة UC، أدخل معرّف اللاعب، وراجع التفاصيل قبل الانتقال للخطوة التالية.</p></div>
       <div id="pubgProductCatalog" class="deposit-card game-catalog" aria-live="polite"><strong>باقات PUBG MOBILE</strong><p class="small">جاري تحميل الباقات...</p></div>
       <div class="game-checkout" id="pubgCheckout" aria-live="polite">
@@ -2101,7 +2101,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
     </section>
 
     <section id="freeFireStore" class="hidden game-store-page" data-game-store="FREEFIRE">
-      <button class="secondary" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
       <div class="hero"><h2>FREE FIRE</h2><p>اختر باقة الجواهر أو العضوية، أدخل معرّف اللاعب، وراجع التفاصيل قبل الانتقال للخطوة التالية.</p></div>
       <div id="freeFireProductCatalog" class="deposit-card game-catalog" aria-live="polite"><strong>باقات جواهر Free Fire</strong><p class="small">جاري تحميل الباقات...</p></div>
       <div class="game-checkout" id="freeFireCheckout" aria-live="polite">
@@ -2125,25 +2125,25 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
     </section>
 
     <section id="chatgptStore" class="hidden">
-      <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
       <div class="hero"><h2>اشتراكات ChatGPT</h2><p>باقات الذكاء الاصطناعي وطلباتها ضمن هذا القسم فقط.</p></div>
       <div id="chatgptProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>باقات ChatGPT</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="vpnStore" class="hidden">
-      <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
       <div class="hero"><h2>اشتراكات VPN</h2><p>كل مزودي وباقات ومدد VPN ضمن هذا القسم فقط.</p></div>
       <div id="vpnProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>باقات VPN</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="giftCardsStore" class="hidden">
-      <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
       <div class="hero"><h2>بطاقات الهدايا</h2><p>بطاقات Google Play وباقي البطاقات الرقمية ضمن هذا القسم فقط.</p></div>
       <div id="giftCardProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>بطاقات Google Play</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="appsStore" class="hidden">
-      <button class="secondary" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
       <div class="hero"><h2>التطبيقات المدفوعة</h2><p>التطبيقات والاشتراكات الخاصة بها ضمن هذا القسم فقط.</p></div>
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
@@ -2365,7 +2365,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 
       <div id="shamCashPayment" class="hidden shamcash-payment-section">
         <div class="shamcash-detail-top">
-          <button class="shamcash-back-button" type="button" onclick="hideShamCashDeposit()">‹ رجوع إلى طرق الدفع</button>
+          <button class="shamcash-back-button baran-back-button" type="button" onclick="hideShamCashDeposit()">‹ رجوع إلى طرق الدفع</button>
           <div class="shamcash-detail-brand">
             <span class="payment-method-logo-wrap"><img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&ssl=1" alt="شعار شام كاش"></span>
             <div><strong>شام كاش</strong><small>تفاصيل شحن محفظة Baran Game</small></div>
@@ -2520,7 +2520,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="payment-gateway">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>بوابة الدفع والتحصيل 💳</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>بوابة الدفع والتحصيل 💳</h2></div>
         <section class="deposit-card" style="margin:12px 0;border-color:#70528a">
           <h3>ربط ShamCash API</h3>
           <p class="small">هذا الربط مستقل تماماً عن موردي الألعاب. التسجيل يعرّف عنوان Webhook لدى ShamCash فقط، ولا يضيف رصيداً للزبائن ولا ينفّذ أي حركة مالية.</p>
@@ -2531,7 +2531,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="shamcash-control">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>تحكم الشحن التلقائي ⚡</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>تحكم الشحن التلقائي ⚡</h2></div>
         <section class="deposit-card shamcash-control-hero">
           <span class="overview-kicker">BARAN GAME · SHAMCASH CONTROL</span>
           <h3>مركز تحكم ShamCash</h3>
@@ -2584,7 +2584,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="overview">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الرئيسية والإحصائيات</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الرئيسية والإحصائيات</h2></div>
 <div class="admin-workgroup-label"><span>01</span><div><strong>نظرة عامة ومؤشرات الأداء</strong><small>ابدأ بقراءة وضع المتجر قبل الانتقال إلى الإجراءات</small></div></div>
 <div class="overview-welcome"><div><span class="overview-kicker">BARAN GAME · ADMIN OVERVIEW</span><h3>أهلاً بك في مركز القيادة</h3><p>كل مؤشرات المتجر وأدوات الإدارة المهمة بمكان واحد، بترتيب واضح وسهل من الهاتف.</p></div><span class="overview-live">● لوحة الإدارة</span></div>
 <div class="overview-section-heading"><span>01</span><div><h3>ملخص المتجر</h3><p>الأرقام والمؤشرات المسجلة حالياً</p></div></div>
@@ -2649,7 +2649,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="financial-support">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>التذاكر المالية</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>التذاكر المالية</h2></div>
         <section id="baranFinancialSupportPanel" class="deposit-card" style="display:block!important;visibility:visible!important;position:relative!important;margin:16px 0;padding:16px;border:2px solid #b58a42" aria-label="تذاكر الشؤون المالية">
         <h2>💰 تذاكر الشؤون المالية</h2>
         <p class="small">كل تذاكر الزبائن المتعلقة بالحوالات وشام كاش والإيداع والسحب والمحفظة والأرصدة والاسترداد. هذه التذاكر تحتاج مراجعتك؛ لا يتم تأكيد حوالة أو تعديل رصيد تلقائياً.</p>
@@ -2662,7 +2662,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="wallet-finance">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>محفظة المالك</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>محفظة المالك</h2></div>
         <div class="finance-hero">
           <div class="finance-hero-icon">💳</div>
           <div><span class="finance-eyebrow">BARAN GAME · OWNER WALLET</span><h2>إدارة محفظة المالك</h2><p>إدارة أرصدة المالك والتحويل بين العملات ومراجعة طلبات التمويل وشحن أرصدة الزبائن. هذه الأدوات خاصة بمالك المتجر.</p></div>
@@ -2673,7 +2673,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="users">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>إدارة المستخدمين</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>إدارة المستخدمين</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
       <h2>إدارة المستخدمين وأرصدة الزبائن 👥</h2>
       <p class="small">عرض أرصدة الزبائن الفعلية بالدولار والليرة السورية. هذا القسم للعرض والمتابعة فقط ولا يتيح تعديل الأرصدة.</p>
@@ -2693,7 +2693,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="orders">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>متابعة الطلبات</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>متابعة الطلبات</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
       <h2>متابعة الطلبات 📦</h2>
       <p class="small">عرض إداري لطلبات الزبائن وبياناتها وحالتها. تحديث الحالات سيبقى عبر إجراء إداري موثّق.</p>
@@ -2703,14 +2703,14 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="baro">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>BARO – الشحن اليدوي</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>BARO – الشحن اليدوي</h2></div>
         
         <div class="deposit-card"><strong>BARO · الشحن اليدوي</strong><p class="small">مسار مستقل: إدارة كتالوج ليو، استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا يوجد خصم محفظة أو ترحيل مالي تلقائي.</p><button id="baroManualToggle" class="secondary" type="button" onclick="toggleBaroManualEnabled()" aria-pressed="false">تحميل حالة BARO...</button><p id="baroManualToggleStatus" class="small" role="status" aria-live="polite">جاري التحقق من حالة استقبال الطلبات.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
         <h3>كتالوج BARO والمنتجات المتاحة للزبائن</h3><p class="small">راجع تكلفة ليو الحالية وسعر البيع قبل إظهار المنتج والسماح باستقبال الطلبات.</p><div id="baroAdminProducts" class="ops-list">جاري تحميل المنتجات...</div>
         <h3>طلبات BARO اليدوية</h3><p class="small">حدّد السعر وطريقة الدفع أولاً، ولا تعتمد الدفع إلا بعد التأكد من استلام المبلغ فعلياً.</p><div id="baroAdminOrders" class="ops-list">جاري تحميل الطلبات...</div>
       </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
         <div class="admin-workgroup-label"><span>01</span><div><strong>حالة التشغيل</strong><small>تحقق من وضع الشحن الآلي قبل إدارة الموردين</small></div></div>
         <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
@@ -2873,7 +2873,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="promotions">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>العروض والكوبونات 🏷️</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>العروض والكوبونات 🏷️</h2></div>
         <div class="deposit-card" style="margin:12px 0;border-color:#70528a">
           <strong>وضع آمن: مسودات فقط</strong>
           <p class="small">يمكن تجهيز الكوبونات والعروض وربطها بمنتجات محددة. الكوبونات تُحفظ غير مفعّلة، والعروض تُحفظ كمسودات. لا يوجد خصم على الطلبات حالياً.</p>
@@ -2915,7 +2915,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="loyalty">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>نقاط الولاء</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>نقاط الولاء</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
       <h2>نقاط الولاء 🎁</h2>
       <p class="small">يمكن إضافة نقاط أو خصمها يدوياً مع تسجيل سبب العملية في سجل التدقيق.</p>
@@ -2934,7 +2934,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="security">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الأمان والإيداعات</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الأمان والإيداعات</h2></div>
         <p class="small security-intro">إدارة طلبات شحن المحافظ ومراجعة سجل العمليات والتنبيهات من مكان واحد.</p>
         <div class="security-tabs" role="tablist" aria-label="أقسام الأمان والإيداعات">
           <button type="button" class="security-tab active" id="securityDepositsTab" role="tab" aria-selected="true" onclick="switchSecurityDepositTab('deposits')">💳 طلبات الإيداع</button>
@@ -2964,7 +2964,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="recovery">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>استعادة الحسابات</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>استعادة الحسابات</h2></div>
         <hr style="border-color:#40334b;margin:24px 0">
       <h2>استعادة حساب الزبون 🔐</h2>
       <p class="small">ابحث بالاسم أو رقم الهاتف أو البريد المسجل. راجع تفاصيل طلباته وتحويلاته مع الزبون قبل إرسال رابط الاستعادة. رقم الهاتف وحده غير كافٍ لإثبات الملكية.</p>
@@ -2999,7 +2999,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="staff-management">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>🛡️ إدارة المشرفين</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>🛡️ إدارة المشرفين</h2></div>
         <section class="finance-section staff-manager-card">
           <div class="finance-section-heading"><div><span class="finance-kicker">OWNER CONTROL</span><h3>إضافة مشرفة أو إدارة الصلاحيات</h3></div></div>
           <p class="small">هذه الصفحة للمالك فقط. ابحث بالبريد الإلكتروني للحساب الموجود مسبقاً، ثم راجع الحساب قبل تفعيل الصلاحية. لن يتم تفعيل أي حساب تلقائياً.</p>
@@ -3014,7 +3014,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="support">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الدعم والردود الآلية</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الدعم والردود الآلية</h2></div>
         <div class="support-workspace">
           <div class="support-tabs" role="tablist" aria-label="أقسام الدعم">
             <button type="button" class="support-tab active" id="supportTabAuto" role="tab" aria-selected="true" onclick="switchSupportTab('auto')">🤖 الردود الآلية</button>
@@ -3056,7 +3056,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="finance">
-        <div class="admin-subpanel-head finance-admin-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الحسابات المالية</h2></div>
+        <div class="admin-subpanel-head finance-admin-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الحسابات المالية</h2></div>
         <div class="finance-hero">
           <div class="finance-hero-icon">📊</div>
           <div><span class="finance-eyebrow">BARAN GAME · FINANCE CENTER</span><h2>مركز الحسابات المالية</h2><p>متابعة رأس المال والمبيعات والتكاليف والأرباح بوضوح، مع فصل كامل بين الدولار والليرة السورية.</p></div>
@@ -3128,7 +3128,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       <h3>سجل النقاط</h3>
       <div id="customerLoyaltyHistory" class="ops-list">جاري تحميل سجل النقاط...</div>
       <p class="small">تُضاف النقاط أو تُخصم وفق العمليات المعتمدة من إدارة المتجر. ستظهر تفاصيل كل حركة هنا.</p>
-      <button class="full secondary" onclick="showSection('account',document.querySelectorAll('nav button')[4])">العودة إلى حسابي</button>
+      <button class="full secondary baran-back-button" onclick="showSection('account',document.querySelectorAll('nav button')[4])">العودة إلى حسابي</button>
     </section>
 
     <section id="learning" class="hidden">
@@ -6757,6 +6757,90 @@ async function baranRunFreeFireRegionTest(){
   }
 }
 </script>
+
+
+<style id="baran-unified-back-navigation-final">
+/* One unmistakable premium back-button treatment across storefront and admin */
+#appShell button.baran-back-button,
+button.baran-back-button,
+.game-store-page>button.baran-back-button{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+  min-width:112px !important;
+  min-height:46px !important;
+  width:auto !important;
+  max-width:100% !important;
+  padding:8px 17px 8px 15px !important;
+  margin:0 0 14px !important;
+  border:1px solid #b58bd4 !important;
+  border-radius:999px !important;
+  background:linear-gradient(115deg,#70458f 0%,#402653 48%,#24172f 100%) !important;
+  color:#fff !important;
+  font-family:"Cairo",Tahoma,Arial,sans-serif !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+  line-height:1.5 !important;
+  letter-spacing:0 !important;
+  white-space:normal !important;
+  box-shadow:inset 0 1px 0 #ffffff35,0 7px 18px #0008,0 0 0 1px #cda9e522 !important;
+  text-shadow:0 1px 2px #160d20 !important;
+  transition:transform .18s ease,filter .18s ease,box-shadow .18s ease !important;
+  -webkit-tap-highlight-color:transparent;
+}
+#appShell button.baran-back-button::before,
+button.baran-back-button::before{
+  content:"↶";
+  display:inline-grid;
+  place-items:center;
+  flex:0 0 27px;
+  width:27px;
+  height:27px;
+  border:1px solid #ead8f7aa;
+  border-radius:50%;
+  background:linear-gradient(145deg,#a77ac5,#5c3977);
+  color:#fff;
+  font-family:Arial,sans-serif;
+  font-size:18px;
+  font-weight:900;
+  line-height:1;
+  box-shadow:inset 0 1px 2px #ffffff44,0 2px 6px #170d20aa;
+}
+#appShell button.baran-back-button:hover,
+button.baran-back-button:hover{
+  filter:brightness(1.18) !important;
+  box-shadow:inset 0 1px 0 #ffffff44,0 9px 22px #0009,0 0 18px #b889db55 !important;
+  transform:translateY(-2px) !important;
+}
+#appShell button.baran-back-button:active,
+button.baran-back-button:active{
+  filter:brightness(.96) !important;
+  transform:translateY(1px) scale(.98) !important;
+  box-shadow:inset 0 2px 5px #170d20aa !important;
+}
+#appShell button.baran-back-button:focus-visible,
+button.baran-back-button:focus-visible{
+  outline:3px solid #e4c8fa !important;
+  outline-offset:3px !important;
+}
+.admin-subpanel-head button.baran-back-button{margin:0 !important;flex:0 0 auto}
+@media(max-width:420px){
+  #appShell button.baran-back-button,button.baran-back-button,
+  .game-store-page>button.baran-back-button{
+    min-width:104px !important;
+    min-height:44px !important;
+    padding:7px 13px 7px 11px !important;
+    font-size:12px !important;
+  }
+  #appShell button.baran-back-button::before,button.baran-back-button::before{
+    flex-basis:25px;width:25px;height:25px;font-size:17px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #appShell button.baran-back-button,button.baran-back-button{transition:none !important}
+}
+</style>
 
 </body>
 </html>
