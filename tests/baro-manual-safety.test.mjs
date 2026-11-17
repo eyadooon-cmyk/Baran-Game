@@ -185,8 +185,8 @@ test("BARO has a separate append-only finance ledger and records confirmed payme
   assert.match(baroFinance, /create table if not exists public\.baro_manual_finance_entries/);
   assert.match(baroFinance, /enable row level security/);
   assert.match(baroFinance, /revoke all on public\.baro_manual_finance_entries from anon,authenticated/);
-  assert.match(baroReporting, /baro_finance_order_sale_once/);
-  assert.match(baroReporting, /baro_finance_order_supplier_cost_once/);
+  assert.match(baroFinance, /baro_finance_order_sale_once/);
+  assert.match(baroFinance, /baro_finance_order_supplier_cost_once/);
   assert.match(baroReporting, /payment_status='verified'/);
   assert.match(baroReporting, /new\.status='completed'/);
   assert.match(edge, /baro_manual_finance_entry_atomic/);
@@ -208,7 +208,7 @@ test("BARO supplier records and settings are isolated from automatic supplier da
 test("BARO staff permissions are scoped and do not grant BARAN-wide administrator rights", () => {
   assert.match(baroFinance, /create table if not exists public\.baro_staff_permissions/);
   assert.match(baroPermissions, /baro_manual_has_permission/);
-  assert.match(baroPermissions, /public\.admin_is_user\(p_admin_id\)/);
+  assert.match(baroFinance, /public\.admin_is_user\(p_admin_id\)/);
   assert.match(baroPermissions, /baro_manual_has_permission\(p_admin_id,'orders'\)/);
   assert.match(edge, /baro_staff_permission_save_atomic/);
   assert.match(management, /صلاحيات موظفي BARO/);
@@ -238,9 +238,9 @@ test("BARO management dashboard loads as a separate admin workspace and automati
 
 test("BARO snapshots the exchange rate used when SYP payment is actually verified", () => {
   assert.match(baroPaymentFx, /payment_exchange_rate_snapshot/);
-  assert.match(baroPaymentFx, /new\\.payment_status='verified'/);
+  assert.match(baroPaymentFx, /new\.payment_status='verified'/);
   assert.match(baroPaymentFx, /لا يمكن تأكيد دفع بالليرة قبل تحديد سعر الصرف/);
-  assert.match(baroPaymentFx, /new\\.payment_exchange_rate_snapshot:=v_rate/);
+  assert.match(baroPaymentFx, /new\.payment_exchange_rate_snapshot:=v_rate/);
   assert.match(baroPaymentFx, /exchange_rate_snapshot/);
   assert.match(edge, /payment_exchange_rate_snapshot/);
   assert.match(management, /سعر الصرف/);
