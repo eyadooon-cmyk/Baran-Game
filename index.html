@@ -1718,6 +1718,21 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 @media(max-width:360px){.game-checkout{padding:12px}.game-checkout h3{font-size:15px}.game-selection-summary,.baran-unified-selection{padding:11px}.baran-package-button{min-height:160px;padding:10px}}
 </style>
 
+
+<style id="baran-communication-premium-style">
+.baran-comm-toolbar{margin:10px 0 14px;padding:12px;border:1px solid #59416e;border-radius:16px;background:linear-gradient(145deg,#21182c,#14101b);box-shadow:0 10px 28px #0004}
+.baran-comm-search,.baran-announcement-composer input,.baran-announcement-composer textarea{width:100%;min-width:0;box-sizing:border-box;background:#100c16!important;color:#f5edf9!important;border:1px solid #574267!important;border-radius:11px!important;padding:11px 13px!important}
+.baran-comm-filters{display:flex;gap:7px;overflow-x:auto;padding:10px 0 5px;scrollbar-width:thin}
+.baran-comm-filters button,.baran-comm-actions button,.baran-quick-replies button{white-space:nowrap;width:auto;min-height:34px;padding:7px 11px;border:1px solid #574267;border-radius:999px;background:#21182c;color:#e9d9f5;font-size:12px}
+.baran-comm-filters button.active{background:linear-gradient(120deg,#68418a,#38244d);border-color:#c5a3df;color:#fff;box-shadow:0 0 0 2px #a978d033}
+.baran-comm-actions{display:flex;gap:8px;flex-wrap:wrap}.baran-comm-actions button{border-radius:9px}.baran-archived{opacity:.55;filter:saturate(.65)}
+.baran-archive-action{background:#251b30!important;border:1px solid #705589!important;color:#e8d8f4!important}
+.baran-announcement-composer{margin:14px 0;padding:16px;border:1px solid #765692;border-radius:17px;background:radial-gradient(circle at 100% 0,#49305d66,transparent 48%),linear-gradient(145deg,#21182c,#120e18);box-shadow:0 12px 30px #0005}
+.baran-comm-section-head span{display:block;color:#c7a5e5;font-size:10px;letter-spacing:1.5px;font-weight:900}.baran-comm-section-head strong{display:block;margin:4px 0;font-size:16px;color:#f7efff}.baran-comm-section-head p{font-size:12px;color:#bfaecb;line-height:1.7}
+.baran-announcement-composer label{display:block;margin:10px 0 5px;color:#e4d3f0;font-size:13px}.baran-announcement-composer button{width:100%;margin-top:10px;background:linear-gradient(110deg,#8155a5,#563477);border:1px solid #b38bd0;color:#fff;border-radius:11px;padding:12px;font-weight:800}#baranAnnouncementStatus{font-size:12px;color:#d8c5e8;min-height:18px}
+.baran-quick-replies{display:flex;gap:7px;overflow-x:auto;padding:9px 0;scrollbar-width:thin}.baran-quick-replies button{border-radius:9px}
+@media(max-width:560px){.baran-comm-toolbar{padding:10px}.baran-comm-actions>*{flex:1}.baran-announcement-composer{padding:13px}.baran-quick-replies button{font-size:11px}}
+</style>
 </head>
 <body>
 
@@ -3230,6 +3245,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
 <script src="./community.js?v=20261117-notification-dismiss-1"></script>
+<script src="./communication-center.js?v=20261117-premium-1"></script>
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
@@ -5861,6 +5877,8 @@ async function markBaranNotificationCardRead(item,button,audience,card,state){
   }
 }
 function buildBaranNotificationCard(item,audience){
+  card.dataset.notificationId=String(item.id||"");
+  card.dataset.notificationKind=String(item.kind||"");
   const meta=baranNotificationMeta(item);
   const card=document.createElement("article");
   card.className="notification-item notification-tone-"+meta.tone+(item.read_at?"":" unread")+(audience==="customer"?" notification-clickable":"");
