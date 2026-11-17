@@ -252,7 +252,7 @@ async function submitBaroOrder(){
   baroEl("baroPlayerId").value="";baroEl("baroCustomerNote").value="";baroEl("baroPlayerIdConfirmed").checked=false;baroUpdateOrderSubmitState();
   try{await loadBaroCustomer();}catch{message.textContent=successMessage+" تعذر تحديث قائمة الطلبات؛ حدّث الصفحة لرؤية الطلب.";}
  }catch(e){message.textContent=e.message+" إذا لم يتأكد وصول الطلب، أعد إرسال نفس البيانات لتجنب إنشاء طلب مكرر.";}
- finally{button.disabled=!baroManualEnabled;}
+ finally{baroUpdateOrderSubmitState();}
 }
 function baroProductCard(p){
  const card=document.createElement("article");card.className="ops-item";
