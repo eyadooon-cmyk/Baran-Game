@@ -2493,13 +2493,14 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 
       <div class="admin-subpanel hidden" data-admin-panel="baro">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>BARO – الشحن اليدوي</h2></div>
-        <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
+        
         <div class="deposit-card"><strong>BARO · الشحن اليدوي</strong><p class="small">مسار مستقل: إدارة كتالوج ليو، استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا يوجد خصم محفظة أو ترحيل مالي تلقائي.</p><button id="baroManualToggle" class="secondary" type="button" onclick="toggleBaroManualEnabled()" aria-pressed="false">تحميل حالة BARO...</button><p id="baroManualToggleStatus" class="small" role="status" aria-live="polite">جاري التحقق من حالة استقبال الطلبات.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
         <h3>كتالوج BARO والمنتجات المتاحة للزبائن</h3><p class="small">راجع تكلفة ليو الحالية وسعر البيع قبل إظهار المنتج والسماح باستقبال الطلبات.</p><div id="baroAdminProducts" class="ops-list">جاري تحميل المنتجات...</div>
         <h3>طلبات BARO اليدوية</h3><p class="small">حدّد السعر وطريقة الدفع أولاً، ولا تعتمد الدفع إلا بعد التأكد من استلام المبلغ فعلياً.</p><div id="baroAdminOrders" class="ops-list">جاري تحميل الطلبات...</div>
       </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
+        <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
       <section class="deposit-card" id="baranCatalogReadinessReport" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>📋 تقرير جاهزية كتالوج المنتجات</h2>
@@ -3322,7 +3323,7 @@ function buildAdminSectionNav(panel,id){
   if(old)old.remove();
 }
 function showAdminPanel(id){
-  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();if(typeof loadBaranAutomaticControl==="function")loadBaranAutomaticControl();window.scrollTo({top:0,behavior:"smooth"});return;}
+  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return;}
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return;
   if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}
@@ -3335,6 +3336,7 @@ function showAdminPanel(id){
     if(typeof loadAdminPanel==="function")loadAdminPanel();
   }
   if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")loadBaranPromotionsManager();
+  if(id==="suppliers"&&typeof loadBaranAutomaticControl==="function")loadBaranAutomaticControl();
   if(id==="staff-management")loadBaranStaffList();
   if(id==="wallet-finance"){
     if(typeof loadWalletExchangeSettings==="function")loadWalletExchangeSettings();
