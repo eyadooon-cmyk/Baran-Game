@@ -62,3 +62,106 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 new MutationObserver(enhance).observe(document.documentElement,{childList:true,subtree:true});
 window.BaranCommunicationCenter={refresh:enhance,archivedCount:()=>archived().size};
 })();
+
+/* BARAN COMMUNICATION CENTER — unified admin workspace.
+   Reuses existing live components; does not duplicate data flows or financial actions. */
+(()=>{
+"use strict";
+const byId=id=>document.getElementById(id);
+const ROOT_ID="baranCommunicationCenter";
+const styleText=`
+#baranCommunicationCenter{margin:14px 0;padding:16px;border:1px solid #70518b;border-radius:18px;background:linear-gradient(155deg,#1b1423,#100c16 72%);box-shadow:0 12px 32px #0005}
+#baranCommunicationCenter .bcc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+#baranCommunicationCenter .bcc-kicker{font-size:10px;letter-spacing:1.8px;color:#c7a9df;font-weight:900}
+#baranCommunicationCenter .bcc-head h2{margin:5px 0;color:#f1e6fa;font-size:22px}
+#baranCommunicationCenter .bcc-head p{margin:4px 0;color:#bbaacb;font-size:12px;line-height:1.7}
+#baranCommunicationCenter .bcc-shield{flex:0 0 auto;padding:7px 10px;border:1px solid #557d67;border-radius:10px;background:#14271d;color:#bce9ca;font-size:11px;font-weight:800}
+#baranCommunicationCenter .bcc-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0 16px;padding:5px;background:#0c0911;border:1px solid #443451;border-radius:14px}
+#baranCommunicationCenter .bcc-tab{min-width:0;min-height:48px;padding:8px 5px;border:1px solid #4b3a59;border-radius:10px;background:#1a1421;color:#d8c6e7;font-size:12px;font-weight:800;line-height:1.4}
+#baranCommunicationCenter .bcc-tab[aria-selected=true]{background:linear-gradient(135deg,#75469a,#43265d);border-color:#c49be2;color:#fff;box-shadow:0 4px 14px #0005}
+#baranCommunicationCenter .bcc-pane[hidden]{display:none!important}
+#baranCommunicationCenter .bcc-pane>section,#baranCommunicationCenter .bcc-pane>.support-view{margin:12px 0}
+#baranCommunicationCenter .bcc-pane .announcement-panel{margin-top:14px}
+#baranCommunicationCenter .bcc-report{padding:13px;margin:12px 0;border:1px solid #59436d;border-radius:13px;background:#17111f}
+#baranCommunicationCenter .bcc-report h3{margin:0 0 5px;color:#e8d9f4;font-size:15px}
+#baranCommunicationCenter .bcc-report p{margin:4px 0 10px;color:#bbaacb;font-size:12px;line-height:1.6}
+#baranCommunicationCenter .bcc-report button{width:100%;min-height:43px}
+@media(max-width:380px){#baranCommunicationCenter{padding:11px}#baranCommunicationCenter .bcc-head{display:block}#baranCommunicationCenter .bcc-shield{display:inline-block;margin-top:8px}#baranCommunicationCenter .bcc-tab{font-size:11px}}
+`;
+function injectStyle(){
+ if(document.getElementById("baranCommunicationCenterStyles"))return;
+ const style=document.createElement("style");style.id="baranCommunicationCenterStyles";style.textContent=styleText;document.head.appendChild(style);
+}
+function createPane(id,label,icon){
+ const pane=document.createElement("section");pane.className="bcc-pane";pane.id="bcc-pane-"+id;pane.hidden=id!=="notifications";
+ pane.setAttribute("aria-label",label);
+ const tab=document.createElement("button");tab.type="button";tab.className="bcc-tab";tab.dataset.tab=id;
+ tab.textContent=icon+" "+label;tab.setAttribute("role","tab");tab.setAttribute("aria-controls",pane.id);tab.setAttribute("aria-selected",id==="notifications"?"true":"false");
+ return {pane,tab};
+}
+function move(el,parent){if(el&&parent)parent.appendChild(el);}
+function mount(){
+ const adminPanel=document.querySelector('[data-admin-panel="support"]');
+ const workspace=adminPanel?.querySelector(".support-workspace");
+ if(!workspace||byId(ROOT_ID))return;
+ const notifications=byId("adminNotifications");
+ const tickets=byId("supportTicketsView");
+ const auto=byId("baranAutoSupportPanel");
+ const assistant=byId("baranAdminAssistant");
+ const announcement=document.querySelector(".announcement-panel");
+ if(!notifications||!tickets||!auto||!assistant||!announcement)return;
+ injectStyle();
+ const root=document.createElement("section");root.id=ROOT_ID;
+ const head=document.createElement("div");head.className="bcc-head";
+ const intro=document.createElement("div");
+ intro.innerHTML='<span class="bcc-kicker">BARAN GAME · UNIFIED OPERATIONS</span><h2>BARAN COMMUNICATION CENTER</h2><p>مركز موحّد لإدارة التنبيهات والرسائل ومساعد BARAN والإعلانات، مع إبقاء الصلاحيات المالية منفصلة.</p>';
+ const shield=document.createElement("span");shield.className="bcc-shield";shield.textContent="🔒 لا صلاحيات مالية للمساعد";
+ head.append(intro,shield);
+ const tabs=document.createElement("div");tabs.className="bcc-tabs";tabs.setAttribute("role","tablist");tabs.setAttribute("aria-label","أقسام مركز التواصل");
+ const notificationsPane=createPane("notifications","الإشعارات","🔔");
+ const messagesPane=createPane("messages","الرسائل والتذاكر","💬");
+ const assistantPane=createPane("assistant","مساعد BARAN","🤖");
+ [notificationsPane,messagesPane,assistantPane].forEach(x=>{tabs.appendChild(x.tab);root.appendChild(x.pane);});
+ root.insertBefore(head,root.firstChild);root.insertBefore(tabs,root.children[1]);
+ const notificationContent=document.createElement("div");notificationContent.className="bcc-notification-content";
+ let sibling=notifications.previousElementSibling;
+ const preferences=sibling?.id==="baranPreferences-admin"?sibling:null;
+ if(preferences)sibling=preferences.previousElementSibling;
+ const toolbar=sibling?.classList.contains("baran-comm-toolbar")?sibling:null;
+ move(toolbar,notificationContent);move(preferences,notificationContent);move(notifications,notificationContent);
+ move(announcement,notificationContent);
+ notificationsPane.pane.appendChild(notificationContent);
+ tickets.classList.remove("hidden");tickets.hidden=false;
+ messagesPane.pane.appendChild(tickets);
+ move(auto,assistantPane.pane);move(assistant,assistantPane.pane);
+ const report=document.createElement("section");report.className="bcc-report";report.innerHTML='<h3>📊 تقارير التواصل</h3><p>استخدم بيانات التذاكر والردود والتنبيهات المسجلة لإعداد تقرير إداري، مع توضيح الفترة وأي نقص في البيانات.</p>';
+ const reportButton=document.createElement("button");reportButton.type="button";reportButton.className="secondary";reportButton.textContent="إنشاء تقرير التواصل";
+ reportButton.addEventListener("click",()=>{
+   const prompt="أنشئ تقريراً إدارياً عن التواصل وخدمة العملاء للفترة المتاحة: عدد التذاكر المفتوحة والمغلقة، الأولويات، الردود الآلية، الحالات المحوّلة للإدارة، أكثر أسباب التواصل تكراراً، والتنبيهات والإعلانات. افصل الأرقام المؤكدة عن أي نقص في البيانات، ولا تنفذ أي إجراء أو تغيير.";
+   if(typeof window.askBaranAdminPrompt==="function")window.askBaranAdminPrompt(prompt);
+   else if(typeof window.askBaranAdminAssistant==="function")window.askBaranAdminAssistant(prompt);
+   else {assistantPane.pane.scrollIntoView({behavior:"smooth",block:"start"});const input=byId("baranAdminAssistantInput");if(input){input.value=prompt;input.focus();}}
+ });
+ report.appendChild(reportButton);assistantPane.pane.insertBefore(report,assistantPane.pane.firstChild);
+ const legacyTabs=workspace.querySelector(".support-tabs");if(legacyTabs)legacyTabs.remove();
+ const autoView=byId("supportAutoView");if(autoView)autoView.remove();
+ workspace.prepend(root);
+ function activate(id){
+  [notificationsPane,messagesPane,assistantPane].forEach(item=>{
+   const active=item===({notifications:notificationsPane,messages:messagesPane,assistant:assistantPane}[id]);
+   item.pane.hidden=!active;item.tab.setAttribute("aria-selected",active?"true":"false");
+  });
+  if(id==="assistant"&&typeof window.loadAdminPanel==="function"){
+   // Refresh remains an explicit action inside the assistant queue.
+  }
+ }
+ [notificationsPane,messagesPane,assistantPane].forEach(item=>item.tab.addEventListener("click",()=>activate(item.tab.dataset.tab)));
+ root.dataset.ready="1";
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
+new MutationObserver(()=>{if(!byId(ROOT_ID))mount();}).observe(document.documentElement,{childList:true,subtree:true});
+window.BaranCommunicationCenter=Object.assign(window.BaranCommunicationCenter||{},{
+ mountAdmin:mount,
+ openAdminSection(id){const root=byId(ROOT_ID);if(!root)return false;const tab=root.querySelector('[data-tab="'+id+'"]');if(tab){tab.click();root.scrollIntoView({behavior:"smooth",block:"start"});return true;}return false;}
+});
+})();
