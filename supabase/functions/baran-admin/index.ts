@@ -249,13 +249,40 @@ Deno.serve(async (req: Request) => {
         if (!page || page.length < customerPageSize) break;
       }
       const customerWalletByUser = new Map(customerWalletRows.map((wallet) => [wallet.user_id, wallet]));
+      // Build lifetime customer activity from every order page; this is analytics only.
+      const customerOrderStats = new Map<string, { count:number; spendUsd:number; spendSyp:number; lastOrderAt:string|null }>();
+      for (let from = 0; ; from += customerPageSize) {
+        const { data: page, error: orderStatsError } = await admin
+          .from("orders")
+          .select("user_id,total_price_usd,total_price_syp,created_at")
+          .order("created_at", { ascending: false })
+          .range(from, from + customerPageSize - 1);
+        if (orderStatsError) {
+          console.error("baran-admin: customer order analytics failed", orderStatsError.message);
+          return json({ error:"تعذر تحميل إحصائيات نشاط الزبائن." },500);
+        }
+        for (const order of page ?? []) {
+          const current = customerOrderStats.get(order.user_id) ?? { count:0, spendUsd:0, spendSyp:0, lastOrderAt:null };
+          current.count += 1;
+          current.spendUsd += Number(order.total_price_usd ?? 0);
+          current.spendSyp += Number(order.total_price_syp ?? 0);
+          if (!current.lastOrderAt && order.created_at) current.lastOrderAt = order.created_at;
+          customerOrderStats.set(order.user_id,current);
+        }
+        if (!page || page.length < customerPageSize) break;
+      }
+      const loyaltyByUser = new Map((loyaltyRows ?? []).map((row) => [row.user_id, Number(row.points_balance ?? 0)]));
       const customers = await Promise.all(customerProfiles.map(async (profile) => {
         const { data: authResult, error: authLookupError } = await admin.auth.admin.getUserById(profile.id);
         if (authLookupError) console.error("baran-admin: customer email lookup failed", authLookupError.message);
         const wallet = customerWalletByUser.get(profile.id);
+        const activity = customerOrderStats.get(profile.id);
         return { ...profile, email:authResult?.user?.email ?? null,
           balance_usd:Number(wallet?.balance_usd ?? 0), balance_syp:Number(wallet?.balance_syp ?? 0),
-          has_balance:Number(wallet?.balance_usd ?? 0) > 0 || Number(wallet?.balance_syp ?? 0) > 0 };
+          has_balance:Number(wallet?.balance_usd ?? 0) > 0 || Number(wallet?.balance_syp ?? 0) > 0,
+          order_count:activity?.count ?? 0, lifetime_spend_usd:activity?.spendUsd ?? 0,
+          lifetime_spend_syp:activity?.spendSyp ?? 0, last_order_at:activity?.lastOrderAt ?? null,
+          loyalty_points:loyaltyByUser.get(profile.id) ?? 0 };
       }));
       const fulfillmentByOrder = new Map((fulfillmentRows ?? []).map((row) => [row.order_id, row]));
       const orderCustomers = await Promise.all((orders ?? []).map(async (item) => {
