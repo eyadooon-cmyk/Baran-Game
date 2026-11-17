@@ -173,6 +173,20 @@
     const state=node("p",accountControl.status==="banned"?"baran-account-banned":"baran-account-active",
       accountControl.status==="banned"?"الحساب محظور حالياً":"الحساب غير محظور");
     securityBox.append(state);
+    const securityEvents=(current?.customer_security_events||[]).filter(event=>event.user_id===customer.id).slice(0,10);
+    const eventTitle=node("h5","","آخر أحداث الحماية المسجلة");
+    securityBox.append(eventTitle);
+    if(!securityEvents.length){
+      securityBox.append(node("p","baran-experience-muted","لا توجد أحداث حماية مسجلة لهذا العميل بعد."));
+    }else{
+      securityEvents.forEach(event=>{
+        const row=node("div","baran-profile-record");
+        const label=event.event_type==="customer_banned"?"تم حظر الحساب":
+          event.event_type==="customer_unbanned"?"تم إلغاء الحظر":event.event_type;
+        row.append(node("strong","",label),node("span","",event.severity||"info"),node("small","",date(event.created_at)));
+        securityBox.append(row);
+      });
+    }
     if(accountControl.status==="banned"){
       securityBox.append(node("small","baran-experience-muted","السبب: "+(accountControl.reason||"غير محدد")+" · حتى: "+date(accountControl.banned_until)));
       const unban=node("button","baran-ban-action baran-unban","إلغاء الحظر");
