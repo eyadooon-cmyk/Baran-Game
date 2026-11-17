@@ -8,6 +8,12 @@ const edge = read("../supabase/functions/baran-baro-manual/index.ts");
 const schema = read("../supabase/migrations/20261116000100_leo_manual_fulfillment.sql");
 const gates = read("../supabase/migrations/20261116125528_baro_manual_global_switch_and_order_gate.sql");
 const hardening = read("../supabase/migrations/20261116141910_harden_baro_manual_workflow.sql");
+const baroFinance = read("../supabase/migrations/20261117090000_baro_complete_management.sql");
+const baroPermissions = read("../supabase/migrations/20261117093000_baro_complete_permissions.sql");
+const baroReporting = read("../supabase/migrations/20261117100000_baro_reporting_and_alert_hardening.sql");
+const baroIsolation = read("../supabase/migrations/20261117110000_baro_supplier_isolation_and_backups.sql");
+const baroPaymentFx = read("../supabase/migrations/20261117120000_baro_payment_fx_snapshots.sql");
+const management = read("../baro-management.js");
 
 test("Leo catalogue contains exactly the reviewed 30 products and remains hidden by default", () => {
   const seeded = schema.match(/\('LEO_[A-Z0-9_]+',/g) ?? [];
@@ -20,9 +26,9 @@ test("Leo catalogue contains exactly the reviewed 30 products and remains hidden
 
 test("BARO customer orders are authenticated and use the signed-in user's ID", () => {
   assert.match(edge, /auth\.getUser\(token\)/);
-  assert.match(edge, /p_user_id:user\.id/);
+  assert.match(edge, /p_user_id:\s*user\.id/);
   assert.match(edge, /baro_manual_create_customer_order/);
-  assert.match(edge, /admin\.from\("leo_manual_orders"\).*\.eq\("user_id",user\.id\)/s);
+  assert.match(edge, /admin\.from\("leo_manual_orders"\)[\s\S]*?\.eq\("user_id",\s*user\.id\)/);
 });
 
 test("BARO manual switch is OFF by default and independent of automatic fulfilment", () => {
@@ -34,7 +40,7 @@ test("BARO manual switch is OFF by default and independent of automatic fulfilme
 
 test("BARO product pricing and visibility are saved through one atomic RPC", () => {
   assert.match(ui, /action:"product_save"/);
-  assert.match(edge, /baro_manual_product_save_atomic/);
+  assert.match(edge, /baro_manual_product_save_complete_atomic/);
   assert.match(hardening, /baro_manual_product_update_atomic\([\s\S]*?baro_manual_product_configure_atomic/);
   assert.match(hardening, /p_purchase_enabled[\s\S]*?sale_price_syp/);
 });
@@ -61,7 +67,7 @@ test("BARO customer order retries are idempotent and serialized per user", () =>
   assert.match(migration, /where user_id=p_user_id and idempotency_key=p_idempotency_key/);
   assert.match(migration, /replayed',true/);
   assert.doesNotMatch(migration, /baro_manual_create_customer_order_without_global_gate\(/);
-  assert.match(edge, /p_idempotency_key:idempotencyKey/);
+  assert.match(edge, /p_idempotency_key:\s*idempotencyKey/);
   assert.match(edge, /uuidPattern\.test\(idempotencyKey\)/);
   assert.match(ui, /baroPendingSubmission/);
   assert.ok(ui.includes('globalThis.sessionStorage?.setItem("baro_pending_order_retry"') || ui.includes('sessionStorage?.setItem("baro_pending_order_retry"'));
@@ -87,10 +93,10 @@ test("BARO data tables remain private and legacy update RPC is removed", () => {
   assert.match(settingsIndex, /baro_manual_settings_updated_by_idx/);
 });
 
-test("Customer catalogue does not expose internal supplier cost or unquoted sale prices", () => {
-  const catalogBlock = edge.split('if(req.method==="GET"&&view==="catalog")')[1]?.split('if(req.method==="GET"&&view==="my_orders")')[0] ?? "";
-  assert.match(catalogBlock, /select\("product_code,category_id,group_id,product_name,input_label,purchase_enabled"\)/);
-  assert.doesNotMatch(catalogBlock, /supplier_cost_usd|sale_price_usd|sale_price_syp/);
+test("Customer catalogue exposes approved USD and SYP prices but never supplier cost", () => {
+  const catalogBlock = edge.split('if (req.method === "GET" && view === "catalog")')[1]?.split('if (req.method === "GET" && view === "my_orders")')[0] ?? "";
+  assert.match(catalogBlock, /sale_price_usd,sale_price_syp/);
+  assert.doesNotMatch(catalogBlock, /supplier_cost_usd/);
 });
 
 
@@ -161,4 +167,94 @@ test("Channel SECURITY DEFINER trigger functions are not callable through the Da
   ]) {
     assert.match(triggerGrantHardening, new RegExp("revoke all on function public\\."+fn+"\\(\\) from public, anon, authenticated"));
   }
+});
+
+
+test("Every visible BARO product card shows both currencies and the closed gate hides the real order form", () => {
+  assert.match(ui, /baroCustomerProductCards/);
+  assert.match(ui, /baroMoney\(p\.sale_price_usd,"USD"\)/);
+  assert.match(ui, /baroMoney\(p\.sale_price_syp,"SYP"\)/);
+  assert.match(ui, /checkout\.classList\.toggle\("hidden",!baroManualEnabled\)/);
+  assert.match(ui, /submit\.hidden=!baroManualEnabled/);
+  assert.match(baroFinance, /displayed_price_usd_snapshot/);
+  assert.match(baroFinance, /displayed_price_syp_snapshot/);
+  assert.match(baroFinance, /displayed_exchange_rate_snapshot/);
+});
+
+test("BARO has a separate append-only finance ledger and records confirmed payments and supplier costs", () => {
+  assert.match(baroFinance, /create table if not exists public\.baro_manual_finance_entries/);
+  assert.match(baroFinance, /enable row level security/);
+  assert.match(baroFinance, /revoke all on public\.baro_manual_finance_entries from anon,authenticated/);
+  assert.match(baroFinance, /baro_finance_order_sale_once/);
+  assert.match(baroFinance, /baro_finance_order_supplier_cost_once/);
+  assert.match(baroReporting, /payment_status='verified'/);
+  assert.match(baroReporting, /new\.status='completed'/);
+  assert.match(edge, /baro_manual_finance_entry_atomic/);
+  assert.match(management, /الإدارة المالية المستقلة/);
+  assert.match(management, /تصدير كشف BARO المالي CSV/);
+});
+
+test("BARO supplier records and settings are isolated from automatic supplier data", () => {
+  assert.match(baroIsolation, /create table if not exists public\.baro_manual_suppliers/);
+  assert.match(baroIsolation, /references public\.baro_manual_suppliers/);
+  assert.match(edge, /admin\.from\(\"baro_manual_suppliers\"\)/);
+  assert.doesNotMatch(edge, /admin\.from\(\"suppliers\"\)/);
+  assert.match(baroFinance, /usd_syp_rate/);
+  assert.match(baroFinance, /low_margin_percent/);
+  assert.match(edge, /baro_manual_settings_save_atomic/);
+  assert.match(management, /إعدادات BARO المستقلة/);
+});
+
+test("BARO staff permissions are scoped and do not grant BARAN-wide administrator rights", () => {
+  assert.match(baroFinance, /create table if not exists public\.baro_staff_permissions/);
+  assert.match(baroPermissions, /baro_manual_has_permission/);
+  assert.match(baroFinance, /public\.admin_is_user\(p_admin_id\)/);
+  assert.match(baroPermissions, /baro_manual_has_permission\(p_admin_id,'orders'\)/);
+  assert.match(edge, /baro_manual_staff_permission_save_atomic/);
+  assert.match(management, /صلاحيات موظفي BARO/);
+});
+
+test("BARO price history, audit, customer notifications and scheduled private backups are enabled", () => {
+  assert.match(baroFinance, /baro_manual_product_price_history/);
+  assert.match(baroFinance, /baro_manual_capture_price_history/);
+  assert.match(baroReporting, /baran_notifications/);
+  assert.match(baroIsolation, /baro_manual_backup_snapshots/);
+  assert.match(baroIsolation, /cron\.schedule\('baro-manual-daily-backup'/);
+  assert.match(edge, /baro_manual_create_backup_snapshot/);
+  assert.match(management, /إنشاء نسخة احتياطية الآن/);
+});
+
+test("BARO management dashboard loads as a separate admin workspace and automatic control is moved out", () => {
+  const app = read("../index.html");
+  assert.match(app, /baro-management\.js/);
+  assert.match(app, /data-admin-panel="suppliers">[\s\S]*?baranAutomaticToggle/);
+  const baroPanel = app.split('data-admin-panel="baro"')[1]?.split('data-admin-panel="suppliers"')[0] ?? "";
+  assert.doesNotMatch(baroPanel, /baranAutomaticToggle/);
+  assert.match(app, /if\(id==="suppliers"&&typeof loadBaranAutomaticControl==="function"\)/);
+  assert.match(management, /BARO CONTROL/);
+  assert.match(management, /تحديث بيانات BARO/);
+});
+
+
+test("BARO snapshots the exchange rate used when SYP payment is actually verified", () => {
+  assert.match(baroPaymentFx, /payment_exchange_rate_snapshot/);
+  assert.match(baroPaymentFx, /new\.payment_status='verified'/);
+  assert.match(baroPaymentFx, /لا يمكن تأكيد دفع بالليرة قبل تحديد سعر الصرف/);
+  assert.match(baroPaymentFx, /new\.payment_exchange_rate_snapshot:=v_rate/);
+  assert.match(baroPaymentFx, /exchange_rate_snapshot/);
+  assert.match(edge, /payment_exchange_rate_snapshot/);
+  assert.match(management, /سعر الصرف/);
+});
+
+
+test("BARO customer order form is hidden in static HTML until the backend confirms the gate is open", () => {
+  const app = read("../index.html");
+  assert.match(app, /class="game-checkout hidden"/);
+  assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
+  assert.match(ui, /submit\.hidden=!baroManualEnabled/);
+});
+
+test("BARO staff without catalog or order permissions cannot see those admin panels", () => {
+  assert.match(management, /productList\.hidden=!can\("catalog"\)/);
+  assert.match(management, /orderList\.hidden=!can\("orders"\)/);
 });

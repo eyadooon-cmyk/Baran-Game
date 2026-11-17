@@ -216,3 +216,95 @@ async function loadBaroAdmin(){
  try{const data=await baroApi("GET",null,"admin");baroAdminProducts=data.products||[];baroAdminOrders=data.orders||[];baroAdminManualEnabled=data.manual_enabled===true;renderBaroAdmin();baroAdminMessage("تم تحميل بيانات BARO من المتجر.");}
  catch(e){products.textContent=e.message;orders.textContent="تعذر تحميل الطلبات.";}
 }
+
+
+/* BARO customer catalogue: visible USD + SYP prices on every product card. */
+const baroBaseLoadCustomer=loadBaroCustomer;
+function baroRenderCustomerProductCards(){
+ const section=baroEl("baroManual");
+ if(!section)return;
+ const checkout=section.querySelector(".game-checkout");
+ let grid=baroEl("baroCustomerProductCards");
+ if(!grid){
+  grid=document.createElement("div");
+  grid.id="baroCustomerProductCards";
+  grid.className="baro-customer-products";
+  if(checkout)checkout.before(grid);
+  else baroEl("baroCustomerCatalog")?.after(grid);
+ }
+ grid.replaceChildren();
+ const heading=document.createElement("h3");
+ heading.textContent="منتجات BARO وأسعارها";
+ grid.append(heading);
+ if(!baroCustomerProducts.length){
+  const empty=document.createElement("p");
+  empty.className="small";
+  empty.textContent="لا توجد منتجات ظاهرة حالياً.";
+  grid.append(empty);
+ }else{
+  baroCustomerProducts.forEach(p=>{
+   const card=document.createElement("article");
+   card.className="baro-customer-product-card";
+   const name=document.createElement("strong");
+   name.textContent=p.product_name;
+   const category=document.createElement("div");
+   category.className="small";
+   category.textContent=({pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"جواكر"}[p.category_id]||p.category_id);
+   const prices=document.createElement("div");
+   prices.className="baro-card-prices";
+   const usd=document.createElement("strong");
+   usd.className="baro-price-usd";
+   usd.textContent=baroMoney(p.sale_price_usd,"USD");
+   const syp=document.createElement("strong");
+   syp.className="baro-price-syp";
+   syp.textContent=baroMoney(p.sale_price_syp,"SYP");
+   prices.append(usd,syp);
+   const status=document.createElement("div");
+   status.className="small";
+   status.textContent=p.purchase_enabled?"متاح عند فتح استقبال الطلبات":"متوقف مؤقتاً";
+   card.append(name,category,prices,status);
+   if(baroManualEnabled&&p.purchase_enabled){
+    const choose=document.createElement("button");
+    choose.type="button";
+    choose.textContent="اختيار هذه الباقة";
+    choose.addEventListener("click",()=>{
+     const select=baroEl("baroProductSelect");
+     if(select){select.value=p.product_code;baroUpdateQuantityField();}
+     checkout?.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+    card.append(choose);
+   }else{
+    const note=document.createElement("span");
+    note.className="baro-preview-label";
+    note.textContent=baroManualEnabled?"غير متاح حالياً":"معاينة فقط · الطلبات مغلقة";
+    card.append(note);
+   }
+   grid.append(card);
+  });
+ }
+ if(checkout)checkout.classList.toggle("hidden",!baroManualEnabled);
+ const submit=baroEl("baroSubmitOrder");
+ if(submit){
+  submit.hidden=!baroManualEnabled;
+  submit.disabled=!baroManualEnabled;
+ }
+}
+loadBaroCustomer=async function(){
+ await baroBaseLoadCustomer();
+ baroRenderCustomerProductCards();
+ const catalog=baroEl("baroCustomerCatalog");
+ if(catalog&&!baroManualEnabled)catalog.textContent="هذه معاينة BARO فقط. الأسعار ظاهرة على بطاقات المنتجات، واستقبال الطلبات مغلق حالياً.";
+};
+const baroBaseRenderCustomerOrders=renderBaroCustomerOrders;
+renderBaroCustomerOrders=function(rows){
+ baroBaseRenderCustomerOrders(rows);
+ const box=baroEl("baroCustomerOrders");
+ if(!box||!Array.isArray(rows))return;
+ [...box.children].forEach((card,index)=>{
+  const order=rows[index];if(!order)return;
+  const snapshot=document.createElement("div");
+  snapshot.className="small";
+  snapshot.textContent="السعر وقت الطلب: "+baroMoney(order.displayed_price_usd_snapshot,"USD")+" | "+baroMoney(order.displayed_price_syp_snapshot,"SYP");
+  card.append(snapshot);
+ });
+};
