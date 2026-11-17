@@ -84,9 +84,10 @@ async function openBaranNotificationTarget(item,audience){
   const kind=String(item.kind||"").toLowerCase();
   const entityId=item.entity_id||null;
   const section=isAdmin?"admin":
-    (entityType==="ticket"||kind.includes("support")?"support":
-     entityType==="order"||kind.includes("order")?"orders":
-     entityType==="deposit_request"||entityType==="wallet"||kind.includes("deposit")||kind.includes("wallet")?"wallet":"account");
+    (["ticket","customer_feedback"].includes(entityType)||entityType.includes("ticket")||kind.includes("support")||kind.includes("reply")?"support":
+     ["order","orders"].includes(entityType)||kind.includes("order")?"orders":
+     ["deposit_request","wallet","wallet_transaction","wallet_transactions"].includes(entityType)||kind.includes("deposit")||kind.includes("wallet")||kind.includes("payment")?"wallet":
+     entityType==="leo_manual_order"?"baroManual":"account");
   if(!item.read_at){
     try{
       if(isAdmin)await callAdminApi("POST",{action:"notification_read",notification_id:item.id});
@@ -102,9 +103,13 @@ async function openBaranNotificationTarget(item,audience){
     if(typeof loadAdminPanel==="function")await loadAdminPanel();
   }else if(section==="support"&&typeof loadMyFeedback==="function")await loadMyFeedback();
   else if(section==="orders"&&typeof loadMyOrders==="function")await loadMyOrders();
+  else if(section==="wallet"){
+    if(typeof loadDepositRequests==="function")await loadDepositRequests();
+    if(typeof loadWalletTransactions==="function")await loadWalletTransactions();
+  }
   const target=isAdmin&&kind.includes("monitor")
     ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
-    :(entityId?document.querySelector('[data-notification-entity-id="'+entityId+'"]'):null);
+    :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
   if(target){target.scrollIntoView({behavior:"smooth",block:"center"});target.classList.add("notification-target-highlight");}
   else{const sectionTarget=document.getElementById(section);if(sectionTarget)sectionTarget.scrollIntoView({behavior:"smooth",block:"start"});}
   if(!isAdmin&&typeof loadCustomerNotifications==="function")loadCustomerNotifications();
