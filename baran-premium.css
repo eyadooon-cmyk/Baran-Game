@@ -604,3 +604,57 @@ footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b36
 @media(prefers-reduced-motion:reduce){
  .baran-home-category,.baran-home-game-card img{transition:none}
 }
+
+
+/* BARAN GAME — premium side navigation refinement */
+.side-drawer{
+  width:min(350px,89vw);padding:16px 15px 18px;
+  display:flex;flex-direction:column;gap:0;
+  background:radial-gradient(ellipse at 100% 0%,#55376b55,transparent 38%),linear-gradient(160deg,#21172b 0%,#100c16 48%,#09070d 100%);
+  border-left:1px solid #9b77b5;box-shadow:-20px 0 60px #000b;
+  scrollbar-width:thin;scrollbar-color:#684b7c #100c16;
+}
+.drawer-head{position:sticky;top:-16px;z-index:3;flex:0 0 auto;margin:0 -15px 14px;padding:17px 17px 15px;background:linear-gradient(180deg,#21172b 75%,#21172b00);border:0}
+.drawer-brand-lockup{display:flex;align-items:center;gap:11px;min-width:0}
+.drawer-brand-mark{display:grid;place-items:center;width:43px;height:43px;border:1px solid #cba7e5;border-radius:14px;background:linear-gradient(145deg,#694987,#291a37);color:#fff;font:900 24px Orbitron,sans-serif;box-shadow:0 0 22px #a56bd644,inset 0 1px 0 #fff5}
+.drawer-brand-lockup>span:last-child{display:flex;flex-direction:column;gap:2px}
+.drawer-brand-lockup .drawer-title{font:900 15px Orbitron,Cairo,sans-serif;letter-spacing:1px;color:#f3e7fb}
+.drawer-brand-lockup small{font:700 8px Orbitron,sans-serif;letter-spacing:1.8px;color:#a88dbb}
+.drawer-close{flex:0 0 36px;width:36px;height:36px;border-radius:12px;background:#ffffff0a;border-color:#76558e;color:#eadcf5;font-size:21px}
+.drawer-profile-card{position:relative;flex:0 0 auto;margin:0 0 17px;padding:13px;border-color:#9b75b8;border-radius:17px;background:linear-gradient(120deg,#47305b,#24192f 72%,#1b1423);box-shadow:0 12px 25px #0005,inset 0 1px 0 #ffffff18}
+.drawer-profile-avatar{width:54px;height:54px;flex-basis:54px;border:2px solid #d7b8ed;padding:2px;background:linear-gradient(145deg,#e5cafa,#8059a0);box-shadow:0 0 18px #b98bd955}
+.drawer-profile-details{gap:3px}
+.drawer-profile-details strong{font-size:13px}
+.drawer-profile-details>span{font-size:10px;color:#d2c1df}
+.drawer-profile-details small{font-size:10px;color:#e2c5f5}
+.drawer-profile-details small b{font-size:15px;margin-right:4px}
+.drawer-profile-chevron{font-size:25px;color:#d9b9ef}
+.drawer-section{margin:0 0 14px;padding:0 0 11px;border-bottom:1px solid #ffffff10}
+.drawer-section-label{display:flex;align-items:center;gap:9px;margin:0 4px 8px;color:#cbb5dc;font-size:11px;font-weight:900;letter-spacing:.2px}
+.drawer-section-label>span{display:grid;place-items:center;width:23px;height:21px;border:1px solid #77578d;border-radius:7px;background:#a56bd61c;color:#dcbdf2;font:800 9px Orbitron,sans-serif}
+.drawer-link{position:relative;display:flex;align-items:center;gap:11px;min-height:53px;margin:5px 0;padding:8px 10px;border:1px solid transparent;border-radius:13px;background:transparent;color:#e9e0ef;font-size:13px;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s}
+.drawer-link .drawer-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border:1px solid #74578a66;border-radius:11px;background:linear-gradient(145deg,#b98bd92a,#704a8b20);color:#e0c3f4;font-size:17px}
+.drawer-link-copy{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0;text-align:right}
+.drawer-link-copy strong{color:#f1e9f7;font-size:12px;font-weight:800;line-height:1.5}
+.drawer-link-copy small{color:#a999b5;font-size:9px;font-weight:500;line-height:1.5}
+.drawer-link>i{font-style:normal;color:#9878ae;font-size:22px;line-height:1}
+.drawer-link:hover{transform:translateX(-2px);background:#ffffff09;border-color:#74578a88;color:#fff}
+.drawer-link.active{border-color:#a981c5;background:linear-gradient(100deg,#9b6bb52a,#55386d44);box-shadow:inset -3px 0 #d2a8ef,0 5px 14px #0003}
+.drawer-link.active .drawer-icon{border-color:#c39ae2;background:#a56bd644;color:#fff;box-shadow:0 0 14px #a56bd633}
+.drawer-link.active .drawer-link-copy strong{color:#f5e8ff}
+.drawer-link.active .drawer-link-copy small{color:#cbb2dc}
+.drawer-link:focus-visible,.drawer-close:focus-visible,.drawer-profile-card:focus-visible{outline:2px solid #e2c5f5;outline-offset:2px}
+.drawer-group-divider,.drawer-divider{display:none}
+.drawer-bottom{flex:0 0 auto;margin-top:auto;padding-top:8px}
+.drawer-legal-link{display:inline-flex;align-items:center;gap:7px;margin:0 3px 8px;padding:7px 8px;border-radius:9px;color:#b9a9c9;text-decoration:none;font-size:10px}
+.drawer-legal-link span{color:#b98bd9;font-size:14px}
+.drawer-legal-link:hover{background:#ffffff0a;color:#f0e3f8}
+.drawer-bottom .drawer-link.logout{min-height:48px;margin-top:7px;border:1px solid #79425366;background:linear-gradient(100deg,#4a202c55,#25131c);color:#ffd9df}
+.drawer-bottom .drawer-link.logout .drawer-icon{border-color:#98546a77;background:#8f35451c;color:#ffc1cb}
+.drawer-bottom .drawer-link.logout .drawer-link-copy strong{color:#ffd9df}
+.drawer-bottom .drawer-link.logout .drawer-link-copy small{color:#c99ca5}
+.drawer-version{padding:9px 4px 0;border-top:1px solid #ffffff10;text-align:center;color:#75677f;font:700 8px Orbitron,sans-serif;letter-spacing:1.3px}
+.drawer-version span{color:#b98bd9;margin:0 5px}
+.admin-drawer-counts{display:flex;flex-wrap:wrap;gap:4px;margin-right:auto}
+@media(max-width:380px){.side-drawer{width:min(330px,91vw);padding-right:12px;padding-left:12px}.drawer-head{margin-right:-12px;margin-left:-12px;padding-right:14px;padding-left:14px}.drawer-link{min-height:49px}.drawer-profile-card{padding:10px}}
+@media(prefers-reduced-motion:reduce){.drawer-link{transition:none}}
