@@ -273,7 +273,7 @@ test("BARO manual requests require explicit player ID confirmation in UI, Edge F
   const app = read("../index.html");
   const confirmationMigration = read("../supabase/migrations/20261117210000_baro_player_id_confirmation_and_status_notifications.sql");
   assert.match(app, /id="baroPlayerIdConfirmed" type="checkbox"/);
-  assert.match(ui, /playerIdConfirmed\?\.checked===true/);
+  assert.match(ui, /playerIdConfirmed=baroEl\("baroPlayerIdConfirmed"\)\?\.checked===true/);
   assert.match(ui, /player_id_confirmed:true/);
   assert.match(edge, /body\.player_id_confirmed !== true/);
   assert.match(edge, /p_player_id_confirmed: true/);
