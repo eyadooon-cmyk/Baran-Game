@@ -5436,6 +5436,7 @@ function renderAdminDepositRequestList(container,requests,isOwner=false){
 let baranCustomerDirectory=[];
 function renderBaranCustomerDirectory(customers){
   baranCustomerDirectory=Array.isArray(customers)?customers:[];
+  window.baranCustomerDirectory=baranCustomerDirectory;
   const totals=document.getElementById("customerWalletTotals");
   if(totals){
     totals.replaceChildren();
@@ -5456,6 +5457,7 @@ function renderBaranCustomerDirectory(customers){
     });
   }
   filterBaranCustomerDirectory();
+  if(typeof window.refreshBaranCustomerSegments==="function")window.refreshBaranCustomerSegments();
 }
 function filterBaranCustomerDirectory(){
   const box=document.getElementById("opsCustomers");
@@ -5490,10 +5492,19 @@ function filterBaranCustomerDirectory(){
     const hint=document.createElement("span");hint.className="customer-directory-chevron";hint.textContent="تفاصيل";
     summary.append(avatar,identity,balance,hint);
     const details=document.createElement("div");details.className="customer-directory-details";
+    const activityCount=Number(item.order_count||0);
+    const lastOrder=item.last_order_at?new Date(item.last_order_at).toLocaleString("ar"):"لا يوجد طلب سابق";
+    const segment=!activityCount?"عميل جديد":activityCount>=5?"عميل دائم":item.last_order_at&&Date.now()-new Date(item.last_order_at).getTime()<=30*86400000?"عميل نشط":"غير نشط";
     const detailRows=[
       ["📧","البريد الإلكتروني",item.email||"غير متوفر"],
       ["📱","رقم الهاتف",item.phone||"غير مسجل"],
       ["🪪","رقم العضوية",item.member_code||"غير متوفر"],
+      ["🏷️","تصنيف العميل",segment],
+      ["📦","عدد الطلبات",activityCount.toLocaleString("en-US")],
+      ["🕒","آخر طلب",lastOrder],
+      ["💳","إجمالي المشتريات بالدولار",financeMoney(item.lifetime_spend_usd,"USD")],
+      ["💰","إجمالي المشتريات بالليرة",financeMoney(item.lifetime_spend_syp,"SYP")],
+      ["⭐","نقاط الولاء",Number(item.loyalty_points||0).toLocaleString("en-US")],
       ["💵","رصيد الدولار",financeMoney(item.balance_usd,"USD")],
       ["💰","رصيد الليرة السورية",financeMoney(item.balance_syp,"SYP")]
     ];
@@ -6950,5 +6961,6 @@ button.baran-back-button:focus-visible{
 .baro-order-quick-actions button{flex:1 1 180px}
 </style>
 
+<script src="./customer-center.js?v=20261117-customer-center-1"></script>
 </body>
 </html>
