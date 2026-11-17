@@ -3005,7 +3005,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
                   <label for="adminFeedbackTypeFilter">نوع الرسالة</label>
                   <select id="adminFeedbackTypeFilter" onchange="filterAdminFeedback()"><option value="all">كل الرسائل</option><option value="support">تذاكر الدعم فقط</option><option value="review">التقييمات والاقتراحات</option></select>
                   <label for="adminFeedbackStatusFilter">حالة التذكرة</label>
-                  <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()"><option value="all">كل الحالات</option><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المتابعة</option><option value="completed">مكتملة</option><option value="rejected">مغلقة/مرفوضة</option><option value="approved">تقييم معتمد</option></select>
+                  <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()"><option value="all">كل الحالات</option><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المتابعة</option><option value="completed">مكتملة</option><option value="rejected">مغلقة/مرفوضة</option><option value="approved">تقييم معتمد</option></select>\n                  <label for="adminFeedbackPriorityFilter">أولوية التذكرة</label><select id="adminFeedbackPriorityFilter" onchange="filterAdminFeedback()"><option value="all">كل الأولويات</option><option value="urgent">عاجلة</option><option value="high">عالية</option><option value="normal">عادية</option><option value="low">منخفضة</option></select>
                 </div>
               </div>
               <div id="adminFeedback" class="ops-list">جاري تحميل الرسائل...</div>
@@ -5159,9 +5159,11 @@ function filterAdminFeedback(){
   const query=String(document.getElementById("adminFeedbackSearch")?.value||"").trim().toLocaleLowerCase("ar");
   const type=document.getElementById("adminFeedbackTypeFilter")?.value||"all";
   const status=document.getElementById("adminFeedbackStatusFilter")?.value||"all";
+  const priority=document.getElementById("adminFeedbackPriorityFilter")?.value||"all";
   const rows=baranAdminFeedbackRows.filter(item=>{
     if(type!=="all"&&item.feedback_type!==type)return false;
     if(status!=="all"&&item.status!==status)return false;
+    if(priority!=="all"&&item.feedback_type==="support"&&(item.priority||"normal")!==priority)return false;
     const haystack=[item.ticket_code,item.subject,item.message,item.customer_email,item.admin_reply].filter(Boolean).join(" ").toLocaleLowerCase("ar");
     return !query||haystack.includes(query);
   });
@@ -5181,6 +5183,12 @@ function filterAdminFeedback(){
     const statuses={pending:"بانتظار الرد",in_progress:"قيد المتابعة",completed:"مكتملة",rejected:"مغلقة/مرفوضة",approved:"تقييم معتمد"};
     meta.textContent="الحالة: "+(statuses[item.status]||item.status||"غير محددة")+" | "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"—");
     card.append(heading,meta);
+    if(item.feedback_type==="support"){
+      const priorityLabels={low:"منخفضة",normal:"عادية",high:"عالية",urgent:"عاجلة"};
+      const priority=document.createElement("span");priority.className="support-ticket-priority priority-"+(item.priority||"normal");priority.textContent="الأولوية: "+(priorityLabels[item.priority||"normal"]||"عادية");card.appendChild(priority);
+      const age=Date.now()-new Date(item.updated_at||item.created_at||Date.now()).getTime();
+      if(["pending","in_progress"].includes(item.status)&&age>12*60*60*1000){const overdue=document.createElement("span");overdue.className="support-ticket-overdue";overdue.textContent="متأخرة — تحتاج متابعة";card.appendChild(overdue);}
+    }
     if(item.subject){const subject=document.createElement("p");subject.textContent="الموضوع: "+item.subject;card.appendChild(subject);}
     const message=document.createElement("p");message.textContent="رسالة الزبون: "+(item.message||"—");card.appendChild(message);
     if(item.customer_email){const customer=document.createElement("p");customer.className="ops-muted";customer.textContent="البريد: "+item.customer_email;card.appendChild(customer);}
