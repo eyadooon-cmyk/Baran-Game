@@ -5771,6 +5771,28 @@ function baranNotificationMeta(item){
   if(/promotion|offer|coupon|عرض|كوبون|خصم/.test(text))return {icon:"✧",label:"العروض والتحديثات",tone:"offer"};
   return {icon:"✦",label:"تحديث من باران",tone:"general"};
 }
+async function markBaranNotificationCardRead(item,button,audience,card,state){
+  if(button)button.disabled=true;
+  try{
+    if(audience==="admin"){
+      const result=await callAdminApi("POST",{action:"notification_read",notification_id:item.id});
+      if(!result?.success)throw new Error("لم يؤكد الخادم تحديث التنبيه.");
+      item.read_at=new Date().toISOString();
+      card?.classList.remove("unread");
+      if(state){state.textContent="مقروء";state.classList.remove("is-new");}
+      if(button)button.remove();
+      if(typeof loadAdminPanel==="function")await loadAdminPanel();
+    }else{
+      await markCustomerNotificationRead(item.id,button,audience);
+    }
+  }catch(error){
+    if(button)button.disabled=false;
+    if(audience==="admin"){
+      const message=document.getElementById("adminMessage");
+      if(message)message.textContent="تعذر تحديث التنبيه: "+(error.message||"حاول مرة أخرى.");
+    }else alert("تعذر تحديث الإشعار. حاول مرة أخرى.");
+  }
+}
 function buildBaranNotificationCard(item,audience){
   const meta=baranNotificationMeta(item);
   const card=document.createElement("article");
@@ -5795,7 +5817,7 @@ function buildBaranNotificationCard(item,audience){
   footer.appendChild(date);
   if(!item.read_at){
     const button=document.createElement("button");button.type="button";button.className="notification-read-action";button.textContent="تحديد كمقروء";
-    button.onclick=event=>{event.stopPropagation();markCustomerNotificationRead(item.id,button,audience);};
+    button.onclick=event=>{event.stopPropagation();markBaranNotificationCardRead(item,button,audience,card,state);};
     footer.appendChild(button);
   }
   card.append(head,body,footer);
