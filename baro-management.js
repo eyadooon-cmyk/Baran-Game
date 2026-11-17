@@ -138,6 +138,7 @@
     supplierData=await getView("suppliers");
     const suppliers=supplierData.suppliers||[],links=supplierData.products||[],events=supplierData.events||[],products=adminData.products||[];
     content.innerHTML='<h3>إدارة موردي BARO</h3><div class="baro-mgmt-panel"><h3>إضافة مورد أو تحديث بياناته</h3><div class="baro-mgmt-form">'+
+      selectField("تعديل مورد موجود (اتركه فارغاً لإضافة جديد)","baroSupplierEditId",[["","إضافة مورد جديد"],...suppliers.map(s=>[s.id,s.name])])+
       field("اسم المورد","baroSupplierName","text","اسم المورد")+field("جهة التواصل","baroSupplierContact","text","اختياري")+
       field("رقم الهاتف","baroSupplierPhone","text","اختياري")+field("البريد الإلكتروني","baroSupplierEmail","email","اختياري")+
       '<label>ملاحظات<textarea id="baroSupplierNotes" rows="2"></textarea></label><button type="button" id="baroSupplierSave">حفظ المورد</button></div></div>'+
@@ -153,7 +154,7 @@
       selectField("نوع الحدث","baroSupplierEventType",[["rating","تقييم"],["delay","تأخير"],["issue","مشكلة"],["note","ملاحظة"]])+
       field("التقييم من 1 إلى 5","baroSupplierRating","number","5")+
       '<label>التفاصيل<textarea id="baroSupplierEventDetails" rows="2"></textarea></label><button type="button" id="baroSupplierEventSave">حفظ السجل</button></div></div>'+
-      '<h3>الموردون</h3>'+table(["المورد","جهة التواصل","الهاتف","الحالة","روابط المنتجات"],suppliers.map(s=>row([s.name,s.contact_name,s.contact_phone,s.is_active?"نشط":"موقوف",links.filter(l=>l.supplier_id===s.id).length])))+
+      '<h3>الموردون</h3>'+table(["المورد","جهة التواصل","الهاتف","الحالة","متوسط التقييم","روابط المنتجات"],suppliers.map(s=>{const rs=events.filter(e=>e.supplier_id===s.id&&e.rating);const avg=rs.length?(rs.reduce((n,e)=>n+Number(e.rating),0)/rs.length).toFixed(1):"—";return row([s.name,s.contact_name,s.contact_phone,s.is_active?"نشط":"موقوف",avg,links.filter(l=>l.supplier_id===s.id).length]);}))+
       '<h3>تكاليف الموردين المرتبطة بالمنتجات</h3>'+table(["المورد","رمز المنتج","SKU","التكلفة","العملة","المدة","مفضل"],links.map(l=>row([suppliers.find(s=>s.id===l.supplier_id)?.name,l.product_code,l.supplier_sku,l.unit_cost,l.currency,l.lead_time_hours,l.is_preferred?"نعم":"لا"])))+
       '<h3>سجل أداء الموردين</h3>'+table(["التاريخ","المورد","النوع","التقييم","التفاصيل"],events.map(e=>row([new Date(e.created_at).toLocaleString("ar"),suppliers.find(s=>s.id===e.supplier_id)?.name,e.event_type,e.rating,e.details])));
     $("baroSupplierSave").onclick=async()=>{
@@ -191,14 +192,19 @@
     const content=$("baroMgmtContent");if(!content)return;
     const history=can("catalog")?await getView("history").catch(()=>({history:[]})):{history:[]};
     const audit=can("audit")?await getView("audit").catch(()=>({audit:[]})):{audit:[]};
+    const backupResult=(can("audit")||can("settings"))?await getView("backups").catch(()=>({backups:[]})):{backups:[]};
     historyData=history.history||[];auditData=audit.audit||[];
+    const backups=backupResult.backups||[];
     content.innerHTML='<h3>سجل تغييرات الأسعار</h3>'+
       table(["التاريخ","المنتج","القيم السابقة","القيم الجديدة","المنفذ"],historyData.map(h=>row([new Date(h.created_at).toLocaleString("ar"),h.product_code,JSON.stringify(h.previous_values),JSON.stringify(h.new_values),h.changed_by])))+
       '<div class="baro-mgmt-actions"><button type="button" id="baroHistoryExport" class="secondary">تصدير سجل الأسعار CSV</button></div><h3>سجل عمليات BARO</h3>'+
       table(["التاريخ","الإجراء","نوع السجل","المعرف","التفاصيل","المنفذ"],auditData.map(a=>row([new Date(a.created_at).toLocaleString("ar"),a.action,a.entity_type,a.entity_id,JSON.stringify(a.details),a.admin_id])))+
-      '<div class="baro-mgmt-actions"><button type="button" id="baroAuditExport" class="secondary">تصدير سجل التدقيق CSV</button></div><p class="baro-mgmt-muted">السجلات تاريخية ولا يتم تعديلها بصمت. احتفظ بنسخ CSV دورية خارج المتجر كنسخة مراجعة إضافية.</p>';
+      '<div class="baro-mgmt-actions"><button type="button" id="baroAuditExport" class="secondary">تصدير سجل التدقيق CSV</button></div><h3>النسخ الاحتياطية اليومية</h3><div class="baro-mgmt-actions"><button type="button" id="baroBackupNow">إنشاء نسخة احتياطية الآن</button></div>'+
+      table(["تاريخ النسخة","معرّف النسخة","المنتجات","الطلبات","الحركات المالية","الموردون"],backups.map(b=>row([new Date(b.created_at).toLocaleString("ar"),b.id,b.row_counts?.products,b.row_counts?.orders,b.row_counts?.finance_entries,b.row_counts?.suppliers])))+
+      '<p class="baro-mgmt-muted">يُنشئ النظام نسخة داخل قاعدة BARO يومياً ويحتفظ بآخر 60 يوماً. صدّر CSV دورياً أيضاً كنسخة خارجية مستقلة.</p>';
     $("baroHistoryExport").onclick=()=>exportCsv("baro-price-history.csv",[["date","product_code","previous_values","new_values","changed_by"],...historyData.map(h=>[h.created_at,h.product_code,JSON.stringify(h.previous_values),JSON.stringify(h.new_values),h.changed_by])]);
     $("baroAuditExport").onclick=()=>exportCsv("baro-audit-log.csv",[["date","action","entity_type","entity_id","details","admin_id"],...auditData.map(a=>[a.created_at,a.action,a.entity_type,a.entity_id,JSON.stringify(a.details),a.admin_id])]);
+    $("baroBackupNow").onclick=async()=>{try{const result=await post({action:"backup_now"});msg("تم إنشاء نسخة BARO الاحتياطية: "+result.backup_id);await loadHistory();}catch(e){msg(e.message);}};
   }
 
   async function loadStaff() {
