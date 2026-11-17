@@ -106,6 +106,11 @@
     customerTools.append(segmentBox);
     section.append(customerTools);
     void loadOnline();
+    if (!window.baranCustomerCenterPoll) {
+      window.baranCustomerCenterPoll = setInterval(() => {
+        if (document.visibilityState === "visible") void loadOnline();
+      }, 30000);
+    }
   }
 
   async function loadOnline() {
