@@ -128,7 +128,7 @@ Deno.serve(async (req: Request) => {
     if (req.method === "GET" && view === "suppliers") {
       if (!(await hasPermission("suppliers"))) return json({ error: "لا تملك صلاحية إدارة موردي BARO." }, 403);
       const [suppliers, links, events] = await Promise.all([
-        admin.from("suppliers").select("id,name,contact_name,contact_phone,contact_email,notes,is_active,created_at,updated_at").order("name"),
+        admin.from("baro_manual_suppliers").select("id,name,contact_name,contact_phone,contact_email,notes,is_active,created_at,updated_at").order("name"),
         admin.from("baro_manual_supplier_products").select("id,supplier_id,product_code,supplier_sku,unit_cost,currency,lead_time_hours,is_preferred,is_active,notes,created_at,updated_at").order("product_code"),
         admin.from("baro_manual_supplier_events").select("id,supplier_id,order_id,event_type,rating,details,created_by,created_at").order("created_at", { ascending: false }).limit(200)
       ]);
@@ -156,10 +156,18 @@ Deno.serve(async (req: Request) => {
     if (req.method === "GET" && view === "audit") {
       if (!(await hasPermission("audit"))) return json({ error: "لا تملك صلاحية سجل عمليات BARO." }, 403);
       const { data, error } = await admin.from("admin_audit_log")
-        .select("id,admin_id,action,entity_type,entity_id,details,created_at,actor_type")
+        .select("id,admin_id,action,entity_type,entity_id,details,created_at")
         .like("action", "baro%").order("created_at", { ascending: false }).limit(300);
       if (error) return json({ error: "تعذر تحميل سجل عمليات BARO." }, 500);
       return json({ audit: data ?? [] });
+    }
+
+    if (req.method === "GET" && view === "backups") {
+      if (!(await hasPermission("audit")) && !(await hasPermission("settings"))) return json({ error: "لا تملك صلاحية عرض نسخ BARO الاحتياطية." }, 403);
+      const { data, error } = await admin.from("baro_manual_backup_snapshots")
+        .select("id,row_counts,created_at").order("created_at", { ascending: false }).limit(60);
+      if (error) return json({ error: "تعذر تحميل سجل النسخ الاحتياطية." }, 500);
+      return json({ backups: data ?? [] });
     }
 
     if (req.method === "GET" && view === "staff") {
@@ -281,8 +289,8 @@ Deno.serve(async (req: Request) => {
         return json({ error: "أدخل اسم المورد وبريداً صحيحاً إن وجد." }, 400);
       const payload = { name, contact_name: contact || null, contact_phone: phone || null, contact_email: email || null, notes, is_active: active, updated_at: new Date().toISOString() };
       const query = id
-        ? admin.from("suppliers").update(payload).eq("id", id).select("id,name,contact_name,contact_phone,contact_email,notes,is_active").single()
-        : admin.from("suppliers").insert(payload).select("id,name,contact_name,contact_phone,contact_email,notes,is_active").single();
+        ? admin.from("baro_manual_suppliers").update(payload).eq("id", id).select("id,name,contact_name,contact_phone,contact_email,notes,is_active").single()
+        : admin.from("baro_manual_suppliers").insert(payload).select("id,name,contact_name,contact_phone,contact_email,notes,is_active").single();
       const { data, error } = await query;
       if (error || !data) return json({ error: error?.message || "تعذر حفظ المورد." }, 400);
       await admin.from("admin_audit_log").insert({ admin_id: user.id, action: "baro_supplier_saved", entity_type: "supplier", entity_id: data.id,
@@ -320,6 +328,17 @@ Deno.serve(async (req: Request) => {
       });
       if (error) return json({ error: error.message || "تعذر تسجيل ملاحظة المورد." }, 400);
       return json(data);
+    }
+
+    if (body.action === "backup_now") {
+      if (!(await hasPermission("settings")) && !(await hasPermission("audit"))) return json({ error: "لا تملك صلاحية إنشاء نسخة BARO احتياطية." }, 403);
+      const { data, error } = await admin.rpc("baro_manual_create_backup_snapshot");
+      if (error || !data) return json({ error: error?.message || "تعذر إنشاء النسخة الاحتياطية." }, 400);
+      await admin.from("admin_audit_log").insert({
+        admin_id: user.id, action: "baro_backup_created", entity_type: "baro_manual_backup_snapshot",
+        entity_id: String(data), details: { snapshot_id: data }
+      });
+      return json({ backup_id: data, success: true });
     }
 
     if (body.action === "staff_permission_save") {
