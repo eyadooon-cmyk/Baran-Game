@@ -87,21 +87,41 @@ test("BARO data tables remain private and legacy update RPC is removed", () => {
   assert.match(settingsIndex, /baro_manual_settings_updated_by_idx/);
 });
 
-test("Customer catalogue does not expose internal supplier cost or unquoted sale prices", () => {
+test("Customer catalogue exposes sale prices but never internal supplier costs", () => {
   const catalogBlock = edge.split('if(req.method==="GET"&&view==="catalog")')[1]?.split('if(req.method==="GET"&&view==="my_orders")')[0] ?? "";
-  assert.match(catalogBlock, /select\("product_code,category_id,group_id,product_name,input_label,purchase_enabled"\)/);
-  assert.doesNotMatch(catalogBlock, /supplier_cost_usd|sale_price_usd|sale_price_syp/);
+  assert.match(catalogBlock, /sale_price_usd,sale_price_syp,purchase_enabled/);
+  assert.doesNotMatch(catalogBlock, /supplier_cost_usd|reference_cost_usd|admin_notes/);
+  assert.match(ui, /المنتجات والأسعار الحالية/);
+  assert.match(ui, /السعر الحالي الظاهر/);
+  assert.match(ui, /sale_price_usd/);
 });
 
 
-test("BARO is embedded inside the existing BARAN customer app and admin panel", () => {
+test("BARO is a top-level customer section outside Games and remains in the admin panel", () => {
   const app = read("../index.html");
   assert.match(app, /<section id="baroManual" class="hidden">/);
-  assert.match(app, /onclick="showSection\('baroManual',this\);loadBaroCustomer\(\)"/);
+  const home = app.split('<section id="home"')[1]?.split('<section id="games"')[0] ?? "";
+  const games = app.split('<section id="games"')[1]?.split('<section id="baroManual"')[0] ?? "";
+  assert.match(home, /onclick="showSection\('baroManual',null\);loadBaroCustomer\(\)"/);
+  assert.doesNotMatch(games, /baroManual|BARO · الشحن اليدوي/);
   assert.match(app, /data-admin-panel="baro"/);
   assert.match(app, /onclick="showAdminPanel\('baro'\)"/);
   assert.match(app, /loadBaroAdmin\(\)/);
   assert.match(app, /loadBaranAutomaticControl\(\)/);
+});
+
+
+test("BARO stores an immutable snapshot of the displayed catalog price separately from the final quote", () => {
+  const snapshot = read("../supabase/migrations/20261117100000_baro_displayed_price_snapshots.sql");
+  assert.match(snapshot, /displayed_price_usd_snapshot numeric/);
+  assert.match(snapshot, /displayed_price_syp_snapshot numeric/);
+  assert.match(snapshot, /displayed_price_captured_at timestamptz/);
+  assert.match(snapshot, /v_product\.sale_price_usd,v_product\.sale_price_syp,v_captured_at/);
+  assert.match(snapshot, /'displayed_price_usd'/);
+  assert.match(edge, /displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at/);
+  assert.match(ui, /السعر الظاهر عند الطلب/);
+  assert.match(ui, /السعر الذي ظهر للعميل وقت الطلب/);
+  assert.match(ui, /عرض السعر النهائي/);
 });
 
 test("BARO and automatic fulfilment remain separate client modules and controls", () => {
