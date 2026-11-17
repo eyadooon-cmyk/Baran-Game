@@ -48,7 +48,7 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET" && view === "catalog") {
       const [{ data: products, error }, { data: settings, error: settingsError }] = await Promise.all([
-        admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label")
+        admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,purchase_enabled")
           .eq("catalog_visible", true).order("category_id").order("group_id").order("product_name"),
         admin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle()
       ]);
@@ -185,6 +185,7 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "POST" && body.action === "create_order") {
       const code = str(body.product_code, 60), player = str(body.player_id, 80);
+      if (body.player_id_confirmed !== true) return json({ error: "يجب تأكيد صحة رقم ID قبل إرسال الطلب." }, 400);
       const qty = typeof body.quantity === "number" ? body.quantity : Number(body.quantity ?? 1);
       const note = str(body.customer_note, 500);
       if (!/^LEO_[A-Z0-9_]{3,56}$/.test(code) || player.length < 3 || !Number.isInteger(qty) || qty < 1 || qty > 1000000)
@@ -193,7 +194,8 @@ Deno.serve(async (req: Request) => {
       if (!uuidPattern.test(idempotencyKey)) return json({ error: "تعذر التحقق من رقم محاولة الطلب. أعد المحاولة." }, 400);
       const { data, error } = await admin.rpc("baro_manual_create_customer_order", {
         p_user_id: user.id, p_product_code: code, p_player_id: player,
-        p_quantity: qty, p_customer_note: note, p_idempotency_key: idempotencyKey
+        p_quantity: qty, p_customer_note: note, p_idempotency_key: idempotencyKey,
+        p_player_id_confirmed: true
       });
       if (error) return json({ error: error.message || "تعذر تسجيل طلب BARO." }, 400);
       return json(data ?? { success: true });
