@@ -50,7 +50,7 @@ Deno.serve(async (req: Request) => {
       : /deposit|wallet|payment|transfer|إيداع|محفظة|حوالة|دفع|رصيد/.test(textForCategory) ? "wallet"
       : /order|top.?up|purchase|طلب|شحن|شراء/.test(textForCategory) ? "orders"
       : /security|login|password|أمان|دخول|حماية/.test(textForCategory) ? "security"
-      : /promotion|offer|coupon|عرض|كوبون|خصم/.test(textForCategory) ? "offers" : "general";
+      : /announcement|promotion|offer|coupon|إعلان|عرض|كوبون|خصم/.test(textForCategory) ? "offers" : "general";
     const preferenceKey = category === "general" ? null : category + "_enabled";
     if (preferenceKey && preferences && preferences[preferenceKey] === false) {
       return json({ success: true, sent: 0, reason: "category_muted", category });
