@@ -2505,6 +2505,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           </div></section>
           <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>03</span><div><strong>العملاء وخدمة المتجر</strong><small>حسابات العملاء، طلبات المساعدة، واستعادة الوصول للحسابات.</small></div><em>CUSTOMER CARE</em></div><div class="admin-hub-grid">
             <button type="button" class="admin-hub-card" data-admin-search="المستخدمين العملاء الزبائن الحسابات محافظ المستخدم users" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>ملفات العملاء</strong><small>اعرض حسابات الزبائن ومعلومات محافظهم ضمن صلاحياتك.</small><span class="admin-hub-open">إدارة العملاء <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="عرض المستخدمين دليل المستخدمين قائمة العملاء البحث عن مستخدم user directory" onclick="showAdminPanel('user-directory')"><span class="admin-hub-icon">🗂️</span><strong>عرض المستخدمين</strong><small>قائمة مستقلة لكل الحسابات مع بحث سريع وفتح الملف الشامل مباشرة.</small><span class="admin-hub-open">فتح دليل المستخدمين <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="الدعم الرسائل التذاكر الردود الآلية مساعد الزبائن support" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>مركز خدمة العملاء</strong><small>تابع الرسائل والتذاكر والردود الآلية، واعرف ما ينتظر تدخلك.</small><span class="admin-hub-open">فتح مركز الدعم <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="استعادة الحساب كلمة المرور recovery" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>راجع طلبات الاستعادة وتحقق من الملكية قبل أي إجراء.</small><span class="admin-hub-open">مراجعة الاستعادة <b>←</b></span></button>
           </div></section>
@@ -2694,6 +2695,20 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       </select>
       <div id="opsCustomers" class="customer-directory-list">جاري تحميل المستخدمين...</div>
       
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="user-directory">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>عرض المستخدمين</h2></div>
+        <hr style="border-color:#40334b;margin:18px 0">
+        <div class="finance-section" style="padding:14px;margin:10px 0">
+          <div class="finance-section-heading"><div><span class="finance-kicker">BARAN GAME · USER DIRECTORY</span><h3>دليل حسابات المستخدمين</h3><p class="small">ابحث عن أي حساب وافتح ملفه الشامل مباشرة. البيانات للعرض الإداري فقط.</p></div><span class="finance-section-icon">🗂️</span></div>
+          <div id="baranUserDirectoryStats" class="customer-directory-stats"></div>
+        </div>
+        <input id="baranUserDirectorySearch" type="search" maxlength="120" placeholder="ابحث بالبريد أو الاسم أو الهاتف أو رقم العضوية..." oninput="renderBaranUserDirectory()">
+        <select id="baranUserDirectorySort" aria-label="ترتيب المستخدمين" onchange="renderBaranUserDirectory()">
+          <option value="newest">الأحدث تسجيلاً</option><option value="usd">الأعلى رصيداً بالدولار</option><option value="syp">الأعلى رصيداً بالليرة</option>
+        </select>
+        <div id="baranUserDirectoryList" class="customer-directory-list" aria-live="polite">جاري تحميل المستخدمين...</div>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="orders">
@@ -3628,7 +3643,7 @@ function showAdminPanel(id){
   buildAdminSectionNav(admin.querySelector('.admin-subpanel[data-admin-panel="'+id+'"]'),id);
   if(BARAN_SECTION_ASSISTANTS[id])ensureBaranSectionAssistant(id);
   let panelLoad=Promise.resolve();
-  if(id==="overview"||id==="financial-support"||id==="users"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"||id==="shamcash-control"){
+  if(id==="overview"||id==="financial-support"||id==="users"||id==="user-directory"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"||id==="shamcash-control"){
     if(typeof loadAdminPanel==="function")panelLoad=loadAdminPanel();
   }
   if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")loadBaranPromotionsManager();
@@ -5477,8 +5492,38 @@ function renderBaranCustomerDirectory(customers){
     });
   }
   filterBaranCustomerDirectory();
+  renderBaranUserDirectory();
   if(typeof window.refreshBaranCustomerSegments==="function")window.refreshBaranCustomerSegments();
 }
+function renderBaranUserDirectory(){
+  const box=document.getElementById("baranUserDirectoryList");
+  if(!box)return;
+  const search=document.getElementById("baranUserDirectorySearch");
+  const sort=document.getElementById("baranUserDirectorySort");
+  const query=(search?.value||"").trim().toLocaleLowerCase("ar");
+  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
+  const mode=sort?.value||"newest";
+  rows.sort((a,b)=>mode==="usd"?Number(b.balance_usd||0)-Number(a.balance_usd||0):mode==="syp"?Number(b.balance_syp||0)-Number(a.balance_syp||0):new Date(b.created_at||0)-new Date(a.created_at||0));
+  const stats=document.getElementById("baranUserDirectoryStats");
+  if(stats){stats.replaceChildren();[["👥","إجمالي الحسابات",baranCustomerDirectory.length],["💵","أرصدة الدولار",financeMoney(baranCustomerDirectory.reduce((n,x)=>n+Number(x.balance_usd||0),0),"USD")],["💰","أرصدة الليرة",financeMoney(baranCustomerDirectory.reduce((n,x)=>n+Number(x.balance_syp||0),0),"SYP")]].forEach(([ico,label,value])=>{const el=document.createElement("div");el.className="customer-stat-card";const icon=document.createElement("span");icon.className="customer-stat-icon";icon.textContent=ico;const copy=document.createElement("div");copy.className="customer-stat-copy";const title=document.createElement("span");title.textContent=label;const amount=document.createElement("strong");amount.textContent=String(value);copy.append(title,amount);el.append(icon,copy);stats.appendChild(el);});}
+  box.replaceChildren();
+  if(!rows.length){const empty=document.createElement("div");empty.className="customer-directory-empty";empty.textContent=query?"ما لقينا مستخدماً مطابقاً للبحث.":"لا توجد حسابات لعرضها.";box.appendChild(empty);return;}
+  rows.forEach((item,index)=>{
+    const card=document.createElement("article");card.className="customer-directory-item";card.style.cssText="padding:13px;margin:10px 0;border:1px solid #59436b;border-radius:14px;background:linear-gradient(145deg,#21192b,#15101d)";
+    const head=document.createElement("div");head.style.cssText="display:flex;align-items:center;gap:10px;min-width:0";
+    const avatar=document.createElement("span");avatar.className="customer-directory-avatar";avatar.textContent="👤";
+    const identity=document.createElement("div");identity.className="customer-directory-identity";identity.style.flex="1";
+    const name=document.createElement("strong");name.textContent=(index+1)+". "+(item.full_name||item.email||"مستخدم BARAN");
+    const email=document.createElement("small");email.textContent=item.email||"لا يوجد بريد مسجل";
+    identity.append(name,email);head.append(avatar,identity);card.appendChild(head);
+    const meta=document.createElement("div");meta.className="customer-directory-details";meta.style.cssText="display:block;margin-top:10px";
+    [["📱 الهاتف",item.phone||"غير مسجل"],["🪪 العضوية",item.member_code||"غير متوفر"],["🗓️ التسجيل",item.created_at?new Date(item.created_at).toLocaleString("ar"):"غير متوفر"],["💵 رصيد الدولار",financeMoney(item.balance_usd,"USD")],["💰 رصيد الليرة",financeMoney(item.balance_syp,"SYP")],["📦 الطلبات",Number(item.order_count||0).toLocaleString("en-US")],["⭐ نقاط الولاء",Number(item.loyalty_points||0).toLocaleString("en-US")]].forEach(([label,value])=>{const row=document.createElement("div");row.className="customer-detail-row";const key=document.createElement("span");key.textContent=label;const val=document.createElement("strong");val.textContent=String(value);row.append(key,val);meta.appendChild(row);});card.appendChild(meta);
+    const open=document.createElement("button");open.type="button";open.className="baran-open-full-profile";open.textContent="📂 فتح الملف الشامل لهذا المستخدم ←";open.style.cssText="display:block!important;width:100%!important;min-height:48px!important;margin-top:12px!important;padding:12px!important;border:1px solid #b58bd2!important;border-radius:12px!important;background:linear-gradient(100deg,#694080,#382449)!important;color:#fff!important;font-size:14px!important;font-weight:900!important;cursor:pointer!important;touch-action:manipulation!important";
+    open.addEventListener("click",event=>{event.preventDefault();event.stopPropagation();if(typeof window.openBaranCustomerProfile==="function")window.openBaranCustomerProfile(item);else alert("تعذر فتح الملف الشامل. حدّث الصفحة وحاول مجدداً.");});
+    card.appendChild(open);box.appendChild(card);
+  });
+}
+
 function filterBaranCustomerDirectory(){
   const box=document.getElementById("opsCustomers");
   const search=document.getElementById("opsCustomerSearch");
