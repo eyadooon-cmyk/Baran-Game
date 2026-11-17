@@ -5542,19 +5542,19 @@ function filterBaranCustomerDirectory(){
       summary.setAttribute("aria-expanded",isOpen?"true":"false");
       hint.textContent=isOpen?"إخفاء التفاصيل":"تفاصيل";
     });
-    card.append(summary,details);
     const profileButton=document.createElement("button");
     profileButton.type="button";
     profileButton.className="baran-open-full-profile";
-    profileButton.textContent="فتح الملف الشامل ←";
+    profileButton.textContent="📂 فتح الملف الشامل للعميل ←";
     profileButton.setAttribute("aria-label","فتح الملف الشامل للعميل "+(item.full_name||item.email||""));
+    profileButton.style.cssText="display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:5!important;width:100%!important;min-height:46px!important;margin:10px 0!important;padding:12px!important;border:1px solid #b58bd2!important;border-radius:12px!important;background:linear-gradient(100deg,#694080,#382449)!important;color:#fff!important;font-size:14px!important;font-weight:900!important;cursor:pointer!important;touch-action:manipulation!important";
     profileButton.addEventListener("click",event=>{
       event.preventDefault();
       event.stopPropagation();
       if(typeof window.openBaranCustomerProfile==="function")window.openBaranCustomerProfile(item);
-      else window.alert("تعذر فتح الملف الشامل حالياً. حدّث الصفحة وحاول مجدداً.");
+      else window.alert("ملف العميل لم يجهز بعد. حدّث الصفحة ثم حاول مجدداً.");
     });
-    card.appendChild(profileButton);
+    card.append(summary,profileButton,details);
     box.appendChild(card);
   });
 }
@@ -7063,7 +7063,7 @@ button.baran-back-button:focus-visible{
 
 </style>
 
-<script src="./customer-experience-suite.js?v=20261117-suite-5"></script>
+<script src="./customer-experience-suite.js?v=20261118-suite-6"></script>
 <script src="./customer-center.js?v=20261117-customer-center-3"></script>
 </body>
 </html>
