@@ -118,7 +118,7 @@
       if (!details || details.querySelector(".baran-open-full-profile")) return;
       const summary = card.querySelector(".customer-directory-toggle");
       const label = summary?.querySelector(".customer-directory-identity strong")?.textContent || "";
-      const customer = (current?.customers || []).find(c => (c.full_name || c.email || "زبون") === label);
+      const customer = (current?.customers || []).find(c => c.id === card.dataset.customerId) || (current?.customers || []).find(c => (c.full_name || c.email || "زبون") === label);
       if (!customer) return;
       const button = node("button", "baran-open-full-profile", "فتح الملف الشامل ←");
       button.type = "button";
