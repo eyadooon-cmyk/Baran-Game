@@ -5771,6 +5771,13 @@ async function loadAdminPanel(){
     // Render the customer directory first so an unrelated dashboard renderer
     // cannot leave the customer list stuck on its initial loading message.
     renderBaranCustomerDirectory(result.customers||[]);
+    if(typeof window.renderBaranCustomerExperience==="function")window.renderBaranCustomerExperience({
+      customers:result.customers||[],
+      orders:result.orders||[],
+      feedback:result.feedback||[],
+      loyalty_customers:result.loyalty_customers||[],
+      customer_security_events:result.customer_security_events||[]
+    });
     const requests=result.requests||[];
     renderAdminDepositRequestList(container,requests.filter(x=>x.request_source!=="owner_wallet"&&x.request_source!=="owner_usd_sale"));
     if(ownerContainer)renderAdminDepositRequestList(ownerContainer,requests.filter(x=>x.request_source==="owner_wallet"),true);
@@ -7043,7 +7050,7 @@ button.baran-back-button:focus-visible{
 
 </style>
 
-<script src="./customer-experience-suite.js?v=20261117-suite-2"></script>
+<script src="./customer-experience-suite.js?v=20261117-suite-3"></script>
 <script src="./customer-center.js?v=20261117-customer-center-2"></script>
 </body>
 </html>
