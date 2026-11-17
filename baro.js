@@ -309,73 +309,8 @@ async function loadBaroAdmin(){
 }
 
 
-/* BARO customer catalogue: product-only preview; never expose sale prices here. */
-const baroBaseLoadCustomer=loadBaroCustomer;
-function baroRenderCustomerProductCards(){
- const section=baroEl("baroManual");
- if(!section)return;
- const checkout=section.querySelector(".game-checkout");
- let grid=baroEl("baroCustomerProductCards");
- if(!grid){
-  grid=document.createElement("div");
-  grid.id="baroCustomerProductCards";
-  grid.className="baro-customer-products";
-  if(checkout)checkout.before(grid);
-  else baroEl("baroCustomerCatalog")?.after(grid);
- }
- grid.replaceChildren();
- const heading=document.createElement("h3");
- heading.textContent="كتالوج BARO · معاينة المنتجات";
- grid.append(heading);
- const intro=document.createElement("p");
- intro.className="small";
- intro.textContent="تعرّف على المنتجات والباقات المتاحة في القسم اليدوي. الأسعار غير معروضة حالياً.";
- grid.append(intro);
- if(!baroCustomerProducts.length){
-  const empty=document.createElement("p");
-  empty.className="small";
-  empty.textContent="لا توجد منتجات ظاهرة حالياً.";
-  grid.append(empty);
- }else{
-  const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"جواكر"};
-  const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
-  baroCustomerProducts.forEach(p=>{
-   const card=document.createElement("article");
-   card.className="baro-customer-product-card";
-   const name=document.createElement("strong");
-   name.textContent=p.product_name||"منتج BARO";
-   const category=document.createElement("div");
-   category.className="small";
-   category.textContent=categoryLabels[p.category_id]||p.category_id||"منتج رقمي";
-   const group=document.createElement("div");
-   group.className="small";
-   group.textContent=groupLabels[p.group_id]||"";
-   const status=document.createElement("div");
-   status.className="small";
-   status.textContent=p.purchase_enabled?"المنتج ضمن الكتالوج · الطلبات مغلقة للمعاينة":"المنتج معروض للمعاينة فقط";
-   card.append(name,category);
-   if(group.textContent)card.append(group);
-   card.append(status);
-   const note=document.createElement("span");
-   note.className="baro-preview-label";
-   note.textContent="معاينة فقط · لا يوجد شراء حالياً";
-   card.append(note);
-   grid.append(card);
-  });
- }
- if(checkout)checkout.classList.toggle("hidden",!baroManualEnabled);
- const submit=baroEl("baroSubmitOrder");
- if(submit){
-  submit.hidden=!baroManualEnabled;
-  submit.disabled=!baroManualEnabled;
- }
-}
-loadBaroCustomer=async function(){
- await baroBaseLoadCustomer();
- baroRenderCustomerProductCards();
- const catalog=baroEl("baroCustomerCatalog");
- if(catalog)catalog.textContent="كتالوج BARO للمعاينة فقط. الأسعار مخفية واستقبال الطلبات مغلق حالياً.";
-};
+/* The main catalogue renderer above owns #baroCustomerCatalog.
+   Do not replace its rendered sections with legacy preview text. */
 const baroBaseRenderCustomerOrders=renderBaroCustomerOrders;
 renderBaroCustomerOrders=function(rows){
  baroBaseRenderCustomerOrders(rows);
