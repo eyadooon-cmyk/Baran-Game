@@ -839,3 +839,48 @@ footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b36
 @media(prefers-reduced-motion:reduce){
   #admin .admin-subpanel button{transition:none}
 }
+
+
+/* ADMIN WORKSPACES — real in-section orientation and task navigation */
+#admin .admin-workspace-index{
+  position:relative;z-index:2;margin:4px 0 19px;padding:13px 14px 12px;
+  border:1px solid rgba(158,119,184,.42);border-radius:16px;
+  background:linear-gradient(135deg,rgba(48,34,62,.96),rgba(24,18,32,.98));
+  box-shadow:0 9px 24px rgba(0,0,0,.18);
+}
+#admin .admin-workspace-index-intro{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+#admin .admin-workspace-index-intro strong{color:#f0e3f8;font-size:14px;font-weight:900}
+#admin .admin-workspace-index-intro span{color:#bca9ca;font-size:11px}
+#admin .admin-workspace-index-links{display:flex;flex-wrap:wrap;gap:7px}
+#admin .admin-workspace-index-link{
+  flex:0 1 auto;max-width:100%;min-height:35px;padding:7px 10px;
+  border:1px solid rgba(135,102,157,.48);border-radius:10px;
+  background:rgba(14,10,19,.55);color:#dfd0eb;
+  font-size:11px;font-weight:750;line-height:1.5;text-align:right;
+}
+#admin .admin-workspace-index-link:hover,
+#admin .admin-workspace-index-link:focus-visible{
+  border-color:#bd91d8;background:rgba(113,78,139,.28);color:#fff;outline:none;
+}
+#admin .admin-workspace-index-count{
+  display:block;margin-top:9px;color:#a994b9;font-size:10px;font-weight:800;
+}
+#admin .admin-workspace-heading{scroll-margin-top:115px}
+#admin .admin-workspace-heading:focus{outline:2px solid rgba(184,142,213,.42);outline-offset:5px;border-radius:5px}
+#admin .admin-subpanel > .finance-section,
+#admin .admin-subpanel > .deposit-card,
+#admin .admin-subpanel > section:not(.admin-workspace-index),
+#admin .admin-subpanel > .support-workspace{
+  position:relative;isolation:isolate;
+}
+#admin .admin-subpanel > .finance-section + .finance-section,
+#admin .admin-subpanel > .deposit-card + .deposit-card,
+#admin .admin-subpanel > section + section{margin-top:16px}
+#admin .admin-subpanel > hr{margin:18px 0!important;border:0!important;height:1px!important;background:linear-gradient(90deg,transparent,rgba(157,119,181,.4),transparent)!important}
+@media(max-width:600px){
+  #admin .admin-workspace-index{margin:2px 0 14px;padding:11px;border-radius:13px}
+  #admin .admin-workspace-index-intro{align-items:flex-start;flex-direction:column;gap:2px}
+  #admin .admin-workspace-index-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  #admin .admin-workspace-index-link{width:100%;min-height:40px;padding:7px 8px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){#admin .admin-workspace-index-link{scroll-behavior:auto}}
