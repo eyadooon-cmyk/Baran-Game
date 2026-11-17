@@ -171,33 +171,33 @@ test("Channel SECURITY DEFINER trigger functions are not callable through the Da
 
 test("Every visible BARO product card shows both currencies and the closed gate hides the real order form", () => {
   assert.match(ui, /baroCustomerProductCards/);
-  assert.match(ui, /baroMoney\\(p\\.sale_price_usd,"USD"\\)/);
-  assert.match(ui, /baroMoney\\(p\\.sale_price_syp,"SYP"\\)/);
-  assert.match(ui, /checkout\\.classList\\.toggle\\("hidden",!baroManualEnabled\\)/);
-  assert.match(ui, /submit\\.hidden=!baroManualEnabled/);
+  assert.match(ui, /baroMoney\(p\.sale_price_usd,"USD"\)/);
+  assert.match(ui, /baroMoney\(p\.sale_price_syp,"SYP"\)/);
+  assert.match(ui, /checkout\.classList\.toggle\("hidden",!baroManualEnabled\)/);
+  assert.match(ui, /submit\.hidden=!baroManualEnabled/);
   assert.match(baroFinance, /displayed_price_usd_snapshot/);
   assert.match(baroFinance, /displayed_price_syp_snapshot/);
   assert.match(baroFinance, /displayed_exchange_rate_snapshot/);
 });
 
 test("BARO has a separate append-only finance ledger and records confirmed payments and supplier costs", () => {
-  assert.match(baroFinance, /create table if not exists public\\.baro_manual_finance_entries/);
+  assert.match(baroFinance, /create table if not exists public\.baro_manual_finance_entries/);
   assert.match(baroFinance, /enable row level security/);
-  assert.match(baroFinance, /revoke all on public\\.baro_manual_finance_entries from anon,authenticated/);
+  assert.match(baroFinance, /revoke all on public\.baro_manual_finance_entries from anon,authenticated/);
   assert.match(baroReporting, /baro_finance_order_sale_once/);
   assert.match(baroReporting, /baro_finance_order_supplier_cost_once/);
   assert.match(baroReporting, /payment_status='verified'/);
-  assert.match(baroReporting, /new\\.status='completed'/);
+  assert.match(baroReporting, /new\.status='completed'/);
   assert.match(edge, /baro_manual_finance_entry_atomic/);
   assert.match(management, /الإدارة المالية المستقلة/);
   assert.match(management, /تصدير كشف BARO المالي CSV/);
 });
 
 test("BARO supplier records and settings are isolated from automatic supplier data", () => {
-  assert.match(baroIsolation, /create table if not exists public\\.baro_manual_suppliers/);
-  assert.match(baroIsolation, /references public\\.baro_manual_suppliers/);
-  assert.match(edge, /admin\\.from\\(\"baro_manual_suppliers\"\\)/);
-  assert.doesNotMatch(edge, /admin\\.from\\(\"suppliers\"\\)/);
+  assert.match(baroIsolation, /create table if not exists public\.baro_manual_suppliers/);
+  assert.match(baroIsolation, /references public\.baro_manual_suppliers/);
+  assert.match(edge, /admin\.from\(\"baro_manual_suppliers\"\)/);
+  assert.doesNotMatch(edge, /admin\.from\(\"suppliers\"\)/);
   assert.match(baroFinance, /usd_syp_rate/);
   assert.match(baroFinance, /low_margin_percent/);
   assert.match(edge, /baro_manual_settings_save_atomic/);
@@ -205,10 +205,10 @@ test("BARO supplier records and settings are isolated from automatic supplier da
 });
 
 test("BARO staff permissions are scoped and do not grant BARAN-wide administrator rights", () => {
-  assert.match(baroFinance, /create table if not exists public\\.baro_staff_permissions/);
+  assert.match(baroFinance, /create table if not exists public\.baro_staff_permissions/);
   assert.match(baroPermissions, /baro_manual_has_permission/);
-  assert.match(baroPermissions, /public\\.admin_is_user\\(p_admin_id\\)/);
-  assert.match(baroPermissions, /baro_manual_has_permission\\(p_admin_id,'orders'\\)/);
+  assert.match(baroPermissions, /public\.admin_is_user\(p_admin_id\)/);
+  assert.match(baroPermissions, /baro_manual_has_permission\(p_admin_id,'orders'\)/);
   assert.match(edge, /baro_staff_permission_save_atomic/);
   assert.match(management, /صلاحيات موظفي BARO/);
 });
@@ -218,18 +218,18 @@ test("BARO price history, audit, customer notifications and scheduled private ba
   assert.match(baroFinance, /baro_manual_capture_price_history/);
   assert.match(baroReporting, /baran_notifications/);
   assert.match(baroIsolation, /baro_manual_backup_snapshots/);
-  assert.match(baroIsolation, /cron\\.schedule\\('baro-manual-daily-backup'/);
+  assert.match(baroIsolation, /cron\.schedule\('baro-manual-daily-backup'/);
   assert.match(edge, /baro_manual_create_backup_snapshot/);
   assert.match(management, /إنشاء نسخة احتياطية الآن/);
 });
 
 test("BARO management dashboard loads as a separate admin workspace and automatic control is moved out", () => {
   const app = read("../index.html");
-  assert.match(app, /baro-management\\.js/);
-  assert.match(app, /data-admin-panel="suppliers">[\\s\\S]*?baranAutomaticToggle/);
+  assert.match(app, /baro-management\.js/);
+  assert.match(app, /data-admin-panel="suppliers">[\s\S]*?baranAutomaticToggle/);
   const baroPanel = app.split('data-admin-panel="baro"')[1]?.split('data-admin-panel="suppliers"')[0] ?? "";
   assert.doesNotMatch(baroPanel, /baranAutomaticToggle/);
-  assert.match(app, /if\\(id==="suppliers"&&typeof loadBaranAutomaticControl==="function"\\)/);
+  assert.match(app, /if\(id==="suppliers"&&typeof loadBaranAutomaticControl==="function"\)/);
   assert.match(management, /BARO CONTROL/);
   assert.match(management, /تحديث بيانات BARO/);
 });
