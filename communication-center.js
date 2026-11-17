@@ -124,9 +124,10 @@ function mount(){
  [notificationsPane,messagesPane,assistantPane].forEach(x=>{tabs.appendChild(x.tab);root.appendChild(x.pane);});
  root.insertBefore(head,root.firstChild);root.insertBefore(tabs,root.children[1]);
  const notificationContent=document.createElement("div");notificationContent.className="bcc-notification-content";
- const toolbar=notifications.previousElementSibling?.classList.contains("baran-comm-toolbar")?notifications.previousElementSibling:null;
- const preferences=toolbar?.previousElementSibling?.id==="baranPreferences-admin"?toolbar.previousElementSibling:
-   notifications.previousElementSibling?.id==="baranPreferences-admin"?notifications.previousElementSibling:null;
+ let sibling=notifications.previousElementSibling;
+ const preferences=sibling?.id==="baranPreferences-admin"?sibling:null;
+ if(preferences)sibling=preferences.previousElementSibling;
+ const toolbar=sibling?.classList.contains("baran-comm-toolbar")?sibling:null;
  move(toolbar,notificationContent);move(preferences,notificationContent);move(notifications,notificationContent);
  move(announcement,notificationContent);
  notificationsPane.pane.appendChild(notificationContent);
