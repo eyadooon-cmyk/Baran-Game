@@ -24,27 +24,5 @@ create policy baran_support_messages_deny_clients
 revoke all on public.baran_support_messages from anon, authenticated;
 grant all on public.baran_support_messages to service_role;
 
-create or replace function public.baran_support_record_ticket_opened()
-returns trigger
-language plpgsql
-security invoker
-set search_path = ''
-as $$
-begin
-  if new.feedback_type = 'support' then
-    insert into public.baran_support_messages
-      (feedback_id, sender_id, sender_role, message, message_type)
-    values
-      (new.id, new.user_id, 'customer', new.message, 'ticket_opened');
-  end if;
-  return new;
-end;
-$$;
-
-drop trigger if exists baran_support_ticket_opened_message on public.customer_feedback;
-create trigger baran_support_ticket_opened_message
-after insert on public.customer_feedback
-for each row execute function public.baran_support_record_ticket_opened();
-
 comment on table public.baran_support_messages is
   'Append-only support conversation messages. Client roles are denied; access is mediated by baran-support-center Edge Function.';
