@@ -1786,7 +1786,10 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
   <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeSideMenu()" aria-hidden="true"></div>
   <aside id="sideDrawer" class="side-drawer" aria-label="القائمة الرئيسية" aria-hidden="true">
     <div class="drawer-head">
-      <div class="drawer-title">BARAN GAME</div>
+      <div class="drawer-brand-lockup">
+        <span class="drawer-brand-mark">B</span>
+        <span><strong class="drawer-title">BARAN GAME</strong><small>YOUR DIGITAL STORE</small></span>
+      </div>
       <button class="drawer-close" type="button" onclick="closeSideMenu()" aria-label="إغلاق القائمة">×</button>
     </div>
     <button class="drawer-profile-card" type="button" onclick="navigateDrawer('account')" aria-label="فتح حسابي">
@@ -1797,31 +1800,38 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       <span class="drawer-profile-details">
         <strong id="drawerAccountName">مستخدم Baran Game</strong>
         <span id="drawerAccountEmail" dir="ltr"></span>
-        <small>عرض الحساب الشخصي ←</small>
+        <small>إدارة الحساب والملف الشخصي <b>←</b></small>
       </span>
+      <span class="drawer-profile-chevron">‹</span>
     </button>
-    <div class="drawer-section-label">المتجر</div>
-    <button class="drawer-link" data-section="home" onclick="navigateDrawer('home')"><span class="drawer-icon">⌂</span>الرئيسية</button>
-    <button class="drawer-link" data-section="games" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span>الألعاب</button>
-    <button class="drawer-link" data-section="services" onclick="navigateDrawer('services')"><span class="drawer-icon">✦</span>الخدمات الرقمية</button>
-    <button class="drawer-link" data-section="mobileTopup" onclick="navigateDrawer('mobileTopup')"><span class="drawer-icon">▣</span>شحن رصيد الجوال</button>
-    <button class="drawer-link" data-section="learning" onclick="navigateDrawer('learning')"><span class="drawer-icon">🎓</span>مركز التعلم</button>
-    <div class="drawer-group-divider"></div>
-    <div class="drawer-section-label">حسابي ومشترياتي</div>
-    <button class="drawer-link" data-section="wallet" onclick="navigateDrawer('wallet')"><span class="drawer-icon">▤</span>محفظتي</button>
-    <button class="drawer-link" data-section="orders" onclick="navigateDrawer('orders')"><span class="drawer-icon">▣</span>طلباتي</button>
-    <button class="drawer-link" data-section="rewards" onclick="navigateDrawer('rewards')"><span class="drawer-icon">🎁</span>المكافآت ودعوة الأصدقاء</button>
-    <div class="drawer-group-divider"></div>
-    <div class="drawer-section-label">المساعدة والحساب</div>
-    <button class="drawer-link" data-section="support" onclick="navigateDrawer('support')"><span class="drawer-icon">◉</span>التقييمات والاقتراحات والدعم</button>
-    <button class="drawer-link" data-section="settings" onclick="navigateDrawer('settings')"><span class="drawer-icon">⚙</span>الإعدادات</button>
-    <button id="adminDrawerButton" class="drawer-link hidden" data-section="admin" onclick="navigateDrawer('admin')"><span class="drawer-icon">⌘</span><span>لوحة الإدارة</span><span class="admin-drawer-counts"><span id="adminDrawerOrdersCount" class="admin-drawer-count orders hidden">طلبات <b>0</b></span><span id="adminDrawerSupportCount" class="admin-drawer-count support hidden">دعم <b>0</b></span></span></button>
-    <button id="staffTasksDrawerButton" class="drawer-link hidden" data-section="staffTasks" onclick="navigateDrawer('staffTasks')"><span class="drawer-icon">🗂️</span><span>مهامي المسندة</span></button>
-    <button id="staffAssistantDrawerButton" class="drawer-link hidden" data-section="staffAssistant" onclick="navigateDrawer('staffAssistant')"><span class="drawer-icon">🤖</span><span>مساعدتي الذكي</span></button>
-    <div class="drawer-divider"></div>
-    <a class="drawer-link" href="./terms.html" style="text-decoration:none"><span class="drawer-icon">▤</span>شروط الاستخدام</a>
-    <a class="drawer-link" href="./privacy.html" style="text-decoration:none"><span class="drawer-icon">◇</span>سياسة الخصوصية</a>
-    <button class="drawer-link logout" onclick="closeSideMenu();signOut()"><span class="drawer-icon">↪</span>تسجيل الخروج</button>
+    <div class="drawer-section">
+      <div class="drawer-section-label"><span>01</span> اكتشف المتجر</div>
+      <button class="drawer-link" data-section="home" onclick="navigateDrawer('home')"><span class="drawer-icon">⌂</span><span class="drawer-link-copy"><strong>الرئيسية</strong><small>الواجهة الرئيسية والعروض</small></span><i>‹</i></button>
+      <button class="drawer-link" data-section="games" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span><span class="drawer-link-copy"><strong>الألعاب</strong><small>PUBG · Free Fire · Jawaker</small></span><i>‹</i></button>
+      <button class="drawer-link" data-section="services" onclick="navigateDrawer('services')"><span class="drawer-icon">✦</span><span class="drawer-link-copy"><strong>الخدمات الرقمية</strong><small>اشتراكات وتطبيقات مدفوعة</small></span><i>‹</i></button>
+      <button class="drawer-link" data-section="mobileTopup" onclick="navigateDrawer('mobileTopup')"><span class="drawer-icon">▣</span><span class="drawer-link-copy"><strong>شحن رصيد الجوال</strong><small>خدمات الاتصالات</small></span><i>‹</i></button>
+      <button class="drawer-link" data-section="learning" onclick="navigateDrawer('learning')"><span class="drawer-icon">🎓</span><span class="drawer-link-copy"><strong>مركز التعلم</strong><small>إرشادات ومعلومات</small></span><i>‹</i></button>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-label"><span>02</span> حسابي ومشترياتي</div>
+      <button class="drawer-link" data-section="wallet" onclick="navigateDrawer('wallet')"><span class="drawer-icon">▤</span><span class="drawer-link-copy"><strong>المحفظة</strong><small>الرصيد وعمليات الشحن</small></span><i>‹</i></button>
+      <button class="drawer-link" data-section="orders" onclick="navigateDrawer('orders')"><span class="drawer-icon">▣</span><span class="drawer-link-copy"><strong>طلباتي</strong><small>متابعة حالة مشترياتك</small></span><i>‹</i></button>
+      <button class="drawer-link" data-section="rewards" onclick="navigateDrawer('rewards')"><span class="drawer-icon">🎁</span><span class="drawer-link-copy"><strong>المكافآت ودعوة الأصدقاء</strong><small>نقاطك ومزايا الدعوة</small></span><i>‹</i></button>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-label"><span>03</span> المساعدة والإدارة</div>
+      <button class="drawer-link" data-section="support" onclick="navigateDrawer('support')"><span class="drawer-icon">◉</span><span class="drawer-link-copy"><strong>الدعم والتقييمات</strong><small>مساعدة واقتراحات وشكاوى</small></span><i>‹</i></button>
+      <button class="drawer-link" data-section="settings" onclick="navigateDrawer('settings')"><span class="drawer-icon">⚙</span><span class="drawer-link-copy"><strong>الإعدادات</strong><small>تفضيلات الحساب</small></span><i>‹</i></button>
+      <button id="adminDrawerButton" class="drawer-link hidden" data-section="admin" onclick="navigateDrawer('admin')"><span class="drawer-icon">⌘</span><span class="drawer-link-copy"><strong>لوحة الإدارة</strong><small>إدارة ومتابعة المتجر</small></span><span class="admin-drawer-counts"><span id="adminDrawerOrdersCount" class="admin-drawer-count orders hidden">طلبات <b>0</b></span><span id="adminDrawerSupportCount" class="admin-drawer-count support hidden">دعم <b>0</b></span></span></button>
+      <button id="staffTasksDrawerButton" class="drawer-link hidden" data-section="staffTasks" onclick="navigateDrawer('staffTasks')"><span class="drawer-icon">🗂️</span><span class="drawer-link-copy"><strong>مهامي المسندة</strong><small>قائمة مهام العمل</small></span><i>‹</i></button>
+      <button id="staffAssistantDrawerButton" class="drawer-link hidden" data-section="staffAssistant" onclick="navigateDrawer('staffAssistant')"><span class="drawer-icon">🤖</span><span class="drawer-link-copy"><strong>مساعدتي الذكي</strong><small>مساعد العمل والدعم</small></span><i>‹</i></button>
+    </div>
+    <div class="drawer-bottom">
+      <a class="drawer-legal-link" href="./terms.html"><span>▤</span>شروط الاستخدام</a>
+      <a class="drawer-legal-link" href="./privacy.html"><span>◇</span>سياسة الخصوصية</a>
+      <button class="drawer-link logout" onclick="closeSideMenu();signOut()"><span class="drawer-icon">↪</span><span class="drawer-link-copy"><strong>تسجيل الخروج</strong><small>الخروج الآمن من حسابك</small></span></button>
+      <div class="drawer-version">BARAN GAME <span>•</span> DIGITAL SERVICES</div>
+    </div>
   </aside>
 
   <main>
