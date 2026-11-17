@@ -1,3 +1,5 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
+
 const allowedOrigin = "https://eyadooon-cmyk.github.io";
 const corsHeaders = {
   "Access-Control-Allow-Origin": allowedOrigin,
@@ -38,7 +40,7 @@ Deno.serve(async (req: Request) => {
     if (!/^[0-9a-f]{64}$/.test(identifierHash)) return json({ error: "Invalid telemetry payload" }, 400);
     const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
     const ipHash = await sha256(forwarded);
-    const admin = (await import("npm:@supabase/supabase-js@2")).createClient(url, service, {
+    const admin = createClient(url, service, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const { data, error } = await admin.rpc("baran_record_login_failure", {
