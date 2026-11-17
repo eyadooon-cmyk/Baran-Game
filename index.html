@@ -1168,7 +1168,7 @@ footer{color:#9f91aa}
 .baro-ai-widget{margin:16px 0;padding:14px;border:1px solid #8b6ba8;border-radius:16px;background:linear-gradient(145deg,#21182b,#110d16);box-shadow:0 8px 24px #0005}
 .baro-ai-title{display:flex;align-items:center;gap:10px;color:#e9def2}.baro-ai-title>span:first-child{font-size:26px}.baro-ai-title>div{display:flex;flex-direction:column;flex:1}.baro-ai-title strong{font-size:17px;color:#d7c4e8}.baro-ai-title small{font-size:11px;color:#b9a9c9}.baro-ai-live{font-size:10px;color:#b9f0d6;border:1px solid #326c56;border-radius:20px;padding:4px 8px}.baro-ai-messages{height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:10px;margin:10px 0;background:#0d0a11;border:1px solid #40334b;border-radius:12px}.baro-ai-bubble{max-width:90%;padding:9px 11px;border-radius:12px;font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.baro-ai-bubble.bot{align-self:flex-start;background:#292033;color:#f1eaf7;border:1px solid #493b55}.baro-ai-bubble.user{align-self:flex-end;background:#57436a;color:white}.baro-ai-bubble.error{border-color:#8b4c62;color:#ffd9e1}.baro-ai-form{display:flex;gap:7px}.baro-ai-form input{flex:1;min-width:0;margin:0;font-size:14px}.baro-ai-form button{padding:10px 14px;white-space:nowrap}.baro-ai-form button:disabled{opacity:.55}.baro-ai-status{min-height:18px;padding-top:5px;font-size:11px;color:#b9a9c9}
 </style>
-<link rel="stylesheet" href="./baran-premium.css?v=20261117-notification-deep-links-1">
+<link rel="stylesheet" href="./baran-premium.css?v=20261117-admin-support-target-1">
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
 .customer-stat-card{display:flex;align-items:center;gap:10px;min-width:0;padding:13px;background:linear-gradient(145deg,#211a2b,#15111b);border:1px solid #493b55;border-radius:15px}
@@ -3491,17 +3491,18 @@ function filterAdminHub(query){
 }
 function clearAdminHubSearch(){const input=document.getElementById("adminHubSearch");if(input)input.value="";filterAdminHub("");if(input)input.focus();}
 function showAdminPanel(id){
-  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return;}
+  if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return Promise.resolve();}
   const admin=document.getElementById("admin");
-  if(!admin||!currentUser)return;
-  if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return;}
+  if(!admin||!currentUser)return Promise.resolve();
+  if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return Promise.resolve();}
   const hub=document.getElementById("adminHub");
   if(hub)hub.classList.add("hidden");
   admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!==id));
   buildAdminSectionNav(admin.querySelector('.admin-subpanel[data-admin-panel="'+id+'"]'),id);
   if(BARAN_SECTION_ASSISTANTS[id])ensureBaranSectionAssistant(id);
+  let panelLoad=Promise.resolve();
   if(id==="overview"||id==="financial-support"||id==="users"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"||id==="shamcash-control"){
-    if(typeof loadAdminPanel==="function")loadAdminPanel();
+    if(typeof loadAdminPanel==="function")panelLoad=loadAdminPanel();
   }
   if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")loadBaranPromotionsManager();
   if(id==="suppliers"&&typeof loadBaranAutomaticControl==="function")loadBaranAutomaticControl();
@@ -3512,6 +3513,7 @@ function showAdminPanel(id){
     if(typeof loadOwnerFundingHistory==="function")loadOwnerFundingHistory();
   }
   window.scrollTo({top:0,behavior:"smooth"});
+  return panelLoad;
 }
 function closeAdminPanel(){
   const admin=document.getElementById("admin");
@@ -5081,8 +5083,9 @@ function filterAdminFeedback(){
     box.appendChild(empty);return;
   }
   rows.forEach(item=>{
-    const card=document.createElement("article");card.className="ops-item";
-    card.dataset.feedbackId=item.id;
+    const card=document.createElement("article");card.className="ops-item notification-feedback-target";
+    card.dataset.feedbackId=String(item.id||"");
+    card.dataset.notificationEntityId=String(item.id||"");
     const heading=document.createElement("strong");
     heading.textContent=(item.ticket_code||"رسالة بدون رقم")+" — "+(item.feedback_type==="review"?"تقييم/اقتراح":"تذكرة دعم");
     const meta=document.createElement("p");meta.className="ops-muted";
