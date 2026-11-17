@@ -35,8 +35,10 @@ jobs:
         run: |
           node --check communication-center.js
           node --check community.js
+          node --check baro.js
       - name: Check support Edge Function syntax
         run: |
+          deno check supabase/functions/baran-baro-manual/index.ts
           deno check supabase/functions/baran-support-center/index.ts
           deno check supabase/functions/baran-push-dispatch/index.ts
           deno check supabase/functions/baran-admin/index.ts

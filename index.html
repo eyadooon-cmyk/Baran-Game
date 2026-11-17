@@ -2078,7 +2078,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
       <div id="baroCustomerCatalog" class="deposit-card" aria-live="polite">جاري تحميل كتالوج BARO...</div>
       <div class="game-checkout hidden"><h3>إنشاء طلب يدوي</h3>
         <label for="baroProductSelect">المنتج</label><select id="baroProductSelect"><option value="">جاري تحميل المنتجات...</option></select>
-        <label for="baroPlayerId">معرّف اللاعب / الحساب</label><input id="baroPlayerId" maxlength="80" autocomplete="off" placeholder="تأكد من المعرّف قبل الإرسال" dir="ltr">
+        <label for="baroPlayerId">معرّف اللاعب / الحساب</label><input id="baroPlayerId" maxlength="80" autocomplete="off" placeholder="أدخل رقم ID الخاص بحسابك" dir="ltr">
+        <label class="baro-id-confirm" for="baroPlayerIdConfirmed"><input id="baroPlayerIdConfirmed" type="checkbox"> أؤكد أن رقم ID صحيح ويخص الحساب الذي أريد شحنه.</label>
         <div id="baroQuantityWrap" class="hidden"><label for="baroQuantity">كمية جواكر (10,000 إلى 1,000,000)</label><input id="baroQuantity" type="number" min="10000" max="1000000" step="1000" value="10000"></div>
         <label for="baroCustomerNote">ملاحظة إضافية (اختياري)</label><textarea id="baroCustomerNote" rows="2" maxlength="500" placeholder="أي تفاصيل تساعدنا على تنفيذ طلبك"></textarea>
         <button id="baroSubmitOrder" class="full" type="button" hidden onclick="submitBaroOrder()">إرسال طلب BARO للمراجعة</button>
@@ -3311,7 +3312,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
-<script src="./baro.js?v=20261117-horizontal-art-2"></script>
+<script src="./baro.js?v=20261117-manual-order-flow-1"></script>
 <script src="./baro-management.js?v=20261117-baro-management-4"></script>
 <script src="./baro-ai.js?v=20261117-baro-ai-1"></script>
 <script>
@@ -6943,6 +6944,10 @@ button.baran-back-button:focus-visible{
  #baroCustomerCatalog .baro-catalog-product-art-icon{flex-basis:34px;width:34px;height:34px;font-size:21px}
  #baroCustomerCatalog .baro-catalog-product-art-label{font-size:6px;letter-spacing:0}
 }
+ .baro-id-confirm{display:flex;align-items:flex-start;gap:10px;margin:12px 0;padding:12px;border:1px solid #665078;border-radius:11px;background:#21182b;color:#eadcf4;line-height:1.6;font-size:13px}
+.baro-id-confirm input{width:20px;height:20px;flex:0 0 20px;margin:1px 0 0;accent-color:#a878cf}
+.baro-order-quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.baro-order-quick-actions button{flex:1 1 180px}
 </style>
 
 </body>

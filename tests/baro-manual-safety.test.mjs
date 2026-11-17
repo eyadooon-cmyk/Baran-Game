@@ -259,11 +259,35 @@ test("BARO customer order form is hidden in static HTML until the backend confir
   const app = read("../index.html");
   assert.match(app, /class="game-checkout hidden"/);
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
-  assert.match(ui, /if\(submitButton\)submitButton\.disabled=true/);
+  assert.match(ui, /if\(submitButton\)\{submitButton\.hidden=!canOrder;submitButton\.disabled=!canOrder;\}/);
   assert.match(ui, /if\(!baroManualEnabled\)\{message\.textContent=/);
 });
 
 test("BARO staff without catalog or order permissions cannot see those admin panels", () => {
   assert.match(management, /productList\.hidden=!can\("catalog"\)/);
   assert.match(management, /orderList\.hidden=!can\("orders"\)/);
+});
+
+
+test("BARO manual requests require explicit player ID confirmation in UI, Edge Function, and database", () => {
+  const app = read("../index.html");
+  const confirmationMigration = read("../supabase/migrations/20261117210000_baro_player_id_confirmation_and_status_notifications.sql");
+  assert.match(app, /id="baroPlayerIdConfirmed" type="checkbox"/);
+  assert.match(ui, /playerIdConfirmed=baroEl\("baroPlayerIdConfirmed"\)\?\.checked===true/);
+  assert.match(ui, /player_id_confirmed:true/);
+  assert.match(edge, /body\.player_id_confirmed !== true/);
+  assert.match(edge, /p_player_id_confirmed: true/);
+  assert.match(confirmationMigration, /p_player_id_confirmed boolean/);
+  assert.match(confirmationMigration, /player_id_confirmed/);
+});
+
+test("BARO status quick actions send customer-facing in-progress and completion notifications", () => {
+  const notificationMigration = read("../supabase/migrations/20261117210000_baro_player_id_confirmation_and_status_notifications.sql");
+  assert.match(ui, /بدء الشحن اليدوي/);
+  assert.match(ui, /تأكيد اكتمال الشحن/);
+  assert.match(ui, /تم استلام طلبك، والشحن حالياً قيد التنفيذ/);
+  assert.match(ui, /تم شحن طلبك بنجاح/);
+  assert.match(notificationMigration, /تم استلام طلبك، والشحن حالياً قيد التنفيذ/);
+  assert.match(notificationMigration, /تم شحن طلبك بنجاح/);
+  assert.match(notificationMigration, /baran_notifications/);
 });
