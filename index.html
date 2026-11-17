@@ -3411,7 +3411,7 @@ function buildAdminSectionNav(panel,id){
   if(!panel)return;
   panel.querySelectorAll(":scope > .admin-workspace-index").forEach(node=>node.remove());
   panel.querySelectorAll(".admin-workspace-heading").forEach(node=>node.classList.remove("admin-workspace-heading"));
-  panel.querySelectorAll("[data-admin-workspace-anchor]").forEach(node=>{node.removeAttribute("id");node.removeAttribute("data-admin-workspace-anchor");node.removeAttribute("tabindex");});
+  panel.querySelectorAll("[data-admin-workspace-anchor]").forEach(node=>{if(node.dataset.adminWorkspaceGeneratedId==="true")node.removeAttribute("id");node.removeAttribute("data-admin-workspace-anchor");node.removeAttribute("data-admin-workspace-generated-id");node.removeAttribute("tabindex");});
   // التبويبات الموجودة في الدعم والأمان هي طريقة التنقل الأساسية لهذين القسمين.
   if(panel.querySelector(":scope .support-tabs,:scope .security-tabs"))return;
   const headings=[...panel.querySelectorAll("h2,h3")].filter(heading=>{
@@ -3438,8 +3438,9 @@ function buildAdminSectionNav(panel,id){
   intro.append(title,note);
   const links=document.createElement("div");links.className="admin-workspace-index-links";
   stops.forEach((heading,index)=>{
-    const anchor="admin-workspace-"+id+"-"+(index+1);
-    heading.id=anchor;heading.tabIndex=-1;heading.dataset.adminWorkspaceAnchor="true";
+    const anchor=heading.id||("admin-workspace-"+id+"-"+(index+1));
+    if(!heading.id){heading.id=anchor;heading.dataset.adminWorkspaceGeneratedId="true";}
+    heading.tabIndex=-1;heading.dataset.adminWorkspaceAnchor="true";
     heading.classList.add("admin-workspace-heading");
     const link=document.createElement("button");
     link.type="button";link.className="admin-workspace-index-link";
