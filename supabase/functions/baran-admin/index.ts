@@ -433,6 +433,9 @@ Deno.serve(async (req: Request) => {
         if (!allowedSegments.includes(segment)) return json({ error: "فئة المستلمين غير صالحة." }, 400);
         let recipientIds: string[] = [];
         if (segment === "all") {
+          const { data: adminRows, error: adminRowsError } = await admin.from("admin_users").select("user_id");
+          if (adminRowsError) return json({ error: "تعذر التحقق من حسابات الإدارة." }, 500);
+          const adminIds = new Set((adminRows ?? []).map((row) => row.user_id));
           for (let offset = 0; offset < 100000; offset += 1000) {
             const { data: profiles, error: profilesError } = await admin.from("profiles")
               .select("id").order("id").range(offset, offset + 999);
@@ -440,7 +443,7 @@ Deno.serve(async (req: Request) => {
               console.error("baran-admin: announcement recipients failed", profilesError.message);
               return json({ error: "تعذر تحميل قائمة الزبائن." }, 500);
             }
-            recipientIds.push(...(profiles ?? []).map((profile) => profile.id));
+            recipientIds.push(...(profiles ?? []).filter((profile) => !adminIds.has(profile.id)).map((profile) => profile.id));
             if (!profiles || profiles.length < 1000) break;
           }
         } else {
@@ -459,7 +462,7 @@ Deno.serve(async (req: Request) => {
             for (let offset = 0; offset < 100000; offset += 1000) {
               const { data: orders, error: ordersError } = await admin.from("orders")
                 .select("user_id,product_code").in("product_code", productCodes)
-                .order("created_at", { ascending: false }).range(offset, offset + 999);
+                .order("created_at", { ascending: false }).order("id", { ascending: true }).range(offset, offset + 999);
               if (ordersError) return json({ error: "تعذر تحديد الزبائن المهتمين بهذه الفئة." }, 500);
               for (const order of orders ?? []) if (order.user_id) matchedUsers.add(order.user_id);
               if (!orders || orders.length < 1000) break;
