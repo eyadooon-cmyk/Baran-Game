@@ -78,7 +78,8 @@ jobs:
             ['signup accepts an optional referral code', html.includes('id="signupReferralCode"') && html.includes('referral_code:referralCode')],
             ['referral tracking is server-only', readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').toLowerCase().includes('enable row level security') && readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').toLowerCase().includes('revoke all on table public.customer_referrals from anon, authenticated')],
             ['first completed order qualifies a referral', readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').includes('qualify_customer_referral_on_first_completed_order')],
-            ['customer center displays referral tracking', readFileSync('customer-center.js', 'utf8').includes('renderReferrals(result)') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('customer_referrals')]
+            ['customer center displays referral tracking', readFileSync('customer-center.js', 'utf8').includes('renderReferrals(result)') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('customer_referrals')],
+            ['customer center displays last-seen history', readFileSync('customer-center.js', 'utf8').includes('renderRecentCustomers(result.recent || [])') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('is_online: new Date(row.last_seen_at)')]
           ];
           for (const [label, ok] of checks) {
             console.log((ok ? 'PASS ' : 'FAIL ') + label);
