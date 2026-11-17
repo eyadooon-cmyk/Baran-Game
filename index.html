@@ -2617,6 +2617,17 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <section class="deposit-card overview-panel announcement-panel" aria-label="إرسال إعلان عام للزبائن">
         <h2>📢 إرسال إعلان لجميع الزبائن</h2>
         <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
+        <label for="baranAnnouncementAudience">الفئة المستهدفة</label>
+        <select id="baranAnnouncementAudience">
+          <option value="all">كل الزبائن</option>
+          <option value="pubg">زبائن PUBG Mobile (سبق لهم الشراء)</option>
+          <option value="freefire">زبائن Free Fire (سبق لهم الشراء)</option>
+          <option value="jawaker">زبائن جواكر (سبق لهم الشراء)</option>
+          <option value="ai">زبائن خدمات الذكاء الاصطناعي</option>
+          <option value="vpn">زبائن اشتراكات VPN</option>
+          <option value="gift_card">زبائن بطاقات الهدايا</option>
+          <option value="app">زبائن التطبيقات المدفوعة</option>
+        </select>
         <label for="baranAnnouncementTitle">عنوان الإعلان</label>
         <input id="baranAnnouncementTitle" maxlength="100" placeholder="مثلاً: عودة الخدمة للعمل">
         <label for="baranAnnouncementBody">نص الإعلان</label>
@@ -4663,20 +4674,24 @@ async function sendBaranAnnouncement(){
   const status=document.getElementById("baranAnnouncementStatus");
   const notificationTitle=title?.value.trim()||"";
   const notificationBody=body?.value.trim()||"";
+  const audienceSegment=document.getElementById("baranAnnouncementAudience")?.value||"all";
+  const segmentLabels={all:"كل الزبائن",pubg:"زبائن PUBG Mobile",freefire:"زبائن Free Fire",jawaker:"زبائن جواكر",ai:"زبائن خدمات الذكاء الاصطناعي",vpn:"زبائن VPN",gift_card:"زبائن بطاقات الهدايا",app:"زبائن التطبيقات المدفوعة"};
   if(notificationTitle.length<3||notificationBody.length<5){
     if(status)status.textContent="اكتب عنواناً من 3 أحرف على الأقل ونصاً من 5 أحرف على الأقل.";
     return;
   }
-  if(!confirm("تأكيد إرسال هذا الإعلان إلى جميع حسابات الزبائن؟ سيصل فوراً داخل المتجر، وإلى الهواتف التي فعّلت الإشعارات."))return;
+  if(!confirm("تأكيد إرسال الإعلان إلى: "+(segmentLabels[audienceSegment]||"الفئة المحددة")+"؟ سيظهر داخل صندوق الإشعارات، وتصل نسخة فورية للأجهزة المفعّلة حسب تفضيلات كل زبون."))return;
   if(button)button.disabled=true;
   if(status)status.textContent="جاري إرسال الإعلان...";
   try{
     const result=await callAdminApi("POST",{
       action:"broadcast_announcement",
       notification_title:notificationTitle,
-      notification_body:notificationBody
+      notification_body:notificationBody,
+      audience_segment:audienceSegment
     });
-    if(status)status.textContent="تم إرسال الإعلان داخل المتجر إلى "+Number(result.sent_to||0).toLocaleString("ar")+" حساب. إشعارات الهاتف ستصل للأجهزة المفعّلة بعد إكمال إعداد الإرسال.";
+    if(status)status.textContent="تم إرسال الإعلان إلى "+Number(result.sent_to||0).toLocaleString("ar")+" حساب ضمن فئة "+(segmentLabels[audienceSegment]||"المحددة")+". وصول Push يخضع لتفضيلات كل زبون.";
+    const audienceInput=document.getElementById("baranAnnouncementAudience");if(audienceInput)audienceInput.value="all";
     title.value="";body.value="";
   }catch(error){
     if(status)status.textContent="تعذر إرسال الإعلان: "+error.message;
