@@ -349,7 +349,7 @@ Deno.serve(async (req: Request) => {
         category?: string;
         name?: string;
         description?: string;
-        price_usd?: number;
+        price_usd?: number | string | null;
         price_syp?: number;
         is_active?: boolean;
         sort_order?: number;
@@ -396,6 +396,9 @@ Deno.serve(async (req: Request) => {
         points_delta?: number;
         notification_title?: string;
         notification_body?: string;
+        audience_segment?: string;
+        products?: any[];
+        input_schema?: any;
       };
       try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
 
