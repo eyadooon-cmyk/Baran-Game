@@ -79,6 +79,13 @@ async function loadMyNotifications(){
 
 async function openBaranNotificationTarget(item,audience){
   if(!item)return;
+  // Close the notification overlay synchronously, before any awaited read or navigation work.
+  if(typeof closeCustomerNotifications==="function")closeCustomerNotifications();
+  const notificationModal=document.getElementById("customerNotificationsModal");
+  if(notificationModal){
+    notificationModal.classList.add("hidden");
+    notificationModal.setAttribute("aria-hidden","true");
+  }
   const isAdmin=audience==="admin";
   const entityType=String(item.entity_type||"").toLowerCase();
   const kind=String(item.kind||"").toLowerCase();
