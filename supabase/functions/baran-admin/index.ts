@@ -471,24 +471,44 @@ Deno.serve(async (req: Request) => {
           duration === "7d" ? "168h" : "720h";
         const { data: targetUser, error: targetLookupError } = await admin.auth.admin.getUserById(targetId);
         if (targetLookupError || !targetUser?.user) return json({ error: "حساب العميل غير موجود." }, 404);
+        const { data: previousControl, error: previousControlError } = await admin.from("customer_account_controls")
+          .select("user_id,status,reason,banned_until,updated_by,updated_at")
+          .eq("user_id", targetId).maybeSingle();
+        if (previousControlError) return json({ error: "تعذر قراءة حالة الحماية السابقة." }, 500);
+        const bannedUntil = duration === "none" || duration === "permanent" ? null : new Date(Date.now() +
+          (duration === "1h" ? 3600000 : duration === "24h" ? 86400000 :
+           duration === "7d" ? 604800000 : 2592000000)).toISOString();
+        const nextControl = {
+          user_id: targetId, status: duration === "none" ? "active" : "banned",
+          reason: duration === "none" ? null : reason, banned_until: bannedUntil,
+          updated_by: user.id, updated_at: new Date().toISOString(),
+        };
+        // Save the server-side deny state first so an old JWT is blocked during the Auth update.
+        const { error: controlError } = await admin.from("customer_account_controls")
+          .upsert(nextControl, { onConflict: "user_id" });
+        if (controlError) {
+          console.error("baran-admin: customer control save failed", controlError.message);
+          return json({ error: "تعذر حفظ حالة حماية الحساب؛ لم يتم تغيير جلسة الدخول." }, 500);
+        }
         const { data: authUpdate, error: authUpdateError } = await admin.auth.admin.updateUserById(targetId, {
           ban_duration: banDuration,
         });
         if (authUpdateError) {
-          console.error("baran-admin: customer ban update failed", authUpdateError.message);
-          return json({ error: "تعذر تطبيق الحظر على جلسة العميل." }, 500);
-        }
-        const bannedUntil = duration === "none" || duration === "permanent" ? null : new Date(Date.now() +
-          (duration === "1h" ? 3600000 : duration === "24h" ? 86400000 :
-           duration === "7d" ? 604800000 : 2592000000)).toISOString();
-        const { error: controlError } = await admin.from("customer_account_controls").upsert({
-          user_id: targetId, status: duration === "none" ? "active" : "banned",
-          reason: duration === "none" ? null : reason, banned_until: bannedUntil,
-          updated_by: user.id, updated_at: new Date().toISOString(),
-        }, { onConflict: "user_id" });
-        if (controlError) {
-          console.error("baran-admin: customer control save failed", controlError.message);
-          return json({ error: "تم تحديث جلسة الدخول لكن تعذر حفظ سجل حالة الحظر؛ راجع السجل الإداري." }, 500);
+          console.error("baran-admin: customer ban auth sync failed", authUpdateError.message);
+          if (previousControl) {
+            const { error: rollbackError } = await admin.from("customer_account_controls")
+              .upsert(previousControl, { onConflict: "user_id" });
+            if (rollbackError) console.error("baran-admin: customer ban rollback failed", rollbackError.message);
+          } else {
+            const { error: rollbackError } = await admin.from("customer_account_controls")
+              .delete().eq("user_id", targetId);
+            if (rollbackError) console.error("baran-admin: customer ban rollback failed", rollbackError.message);
+          }
+          await admin.from("customer_security_events").insert({
+            user_id: targetId, actor_id: user.id, event_type: "customer_ban_auth_sync_failed",
+            severity: "critical", details: { requested_duration: duration, error: authUpdateError.message.slice(0, 300) },
+          });
+          return json({ error: "تعذر مزامنة الحظر مع تسجيل الدخول. تم التراجع عن تغيير الحالة؛ تحقق من سجل الحماية." }, 500);
         }
         const { error: securityEventError } = await admin.from("customer_security_events").insert({
           user_id: targetId, actor_id: user.id,
