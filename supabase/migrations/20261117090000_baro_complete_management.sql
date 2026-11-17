@@ -187,7 +187,7 @@ begin
   end if;
   if (p_usd_syp_rate is not null and (p_usd_syp_rate<=0 or p_usd_syp_rate>1000000000))
      or p_low_margin_percent is null or p_low_margin_percent<0 or p_low_margin_percent>100
-     or p_default_currency not in ('USD','SYP') then
+     or p_default_currency is null or p_default_currency not in ('USD','SYP') then
     raise exception using errcode='22023',message='إعدادات العملات وهامش الربح غير صحيحة.';
   end if;
   update public.baro_manual_settings
@@ -353,7 +353,7 @@ begin
         order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,idempotency_key,created_by
       ) values (
         new.id,'sale_received','تحصيل طلب BARO',v_amount,v_currency,v_rate,v_usd,'posted',
-        'تسجيل تلقائي بعد تأكيد استلام الدفع يدوياً','baro-sale-'||new.id::text,new.user_id
+        'تسجيل تلقائي بعد تأكيد استلام الدفع يدوياً','baro-sale-'||new.id::text,null
       ) on conflict do nothing;
     end if;
   end if;
@@ -501,3 +501,59 @@ revoke all on function public.baro_manual_add_supplier_event_atomic(uuid,uuid,uu
 grant execute on function public.baro_manual_add_supplier_event_atomic(uuid,uuid,uuid,text,smallint,text) to service_role;
 
 -- BARO's private finance and supplier tables are reachable only through the authenticated Edge Function.
+
+
+create or replace function public.baro_manual_supplier_product_save_atomic(
+  p_admin_id uuid,p_supplier_id uuid,p_product_code text,p_supplier_sku text,
+  p_unit_cost numeric,p_currency text,p_lead_time_hours integer,p_is_preferred boolean,
+  p_is_active boolean,p_notes text
+) returns jsonb
+language plpgsql security definer set search_path=''
+as $function$
+declare v_rate numeric; v_cost_usd numeric; v_row public.baro_manual_supplier_products%rowtype;
+begin
+  if p_admin_id is null or not public.baro_manual_has_permission(p_admin_id,'suppliers') then
+    raise exception using errcode='42501',message='BARO supplier permission required';
+  end if;
+  if p_supplier_id is null or p_product_code is null
+     or p_unit_cost is null or p_unit_cost<0 or p_unit_cost>1000000000
+     or p_currency not in ('USD','SYP')
+     or (p_lead_time_hours is not null and p_lead_time_hours<0)
+     or char_length(coalesce(p_supplier_sku,''))>160
+     or char_length(coalesce(p_notes,''))>1000 then
+    raise exception using errcode='22023',message='بيانات ربط المورد بالمنتج غير صحيحة.';
+  end if;
+  select usd_syp_rate into v_rate from public.baro_manual_settings where id='main';
+  if p_currency='SYP' then
+    if coalesce(v_rate,0)<=0 then
+      raise exception using errcode='22023',message='أدخل سعر صرف الدولار مقابل الليرة في إعدادات BARO أولاً.';
+    end if;
+    v_cost_usd:=p_unit_cost/v_rate;
+  else
+    v_cost_usd:=p_unit_cost;
+  end if;
+  perform set_config('app.baro_actor_id',p_admin_id::text,true);
+  insert into public.baro_manual_supplier_products(
+    supplier_id,product_code,supplier_sku,unit_cost,currency,lead_time_hours,is_preferred,is_active,notes,updated_at
+  ) values(
+    p_supplier_id,p_product_code,nullif(btrim(coalesce(p_supplier_sku,'')),''),p_unit_cost,p_currency,
+    p_lead_time_hours,coalesce(p_is_preferred,false),coalesce(p_is_active,true),coalesce(p_notes,''),now()
+  )
+  on conflict(supplier_id,product_code) do update set
+    supplier_sku=excluded.supplier_sku,unit_cost=excluded.unit_cost,currency=excluded.currency,
+    lead_time_hours=excluded.lead_time_hours,is_preferred=excluded.is_preferred,
+    is_active=excluded.is_active,notes=excluded.notes,updated_at=now()
+  returning * into v_row;
+  update public.leo_manual_products
+  set supplier_id=p_supplier_id,supplier_sku=nullif(btrim(coalesce(p_supplier_sku,'')),''),
+      supplier_cost_currency=p_currency,supplier_cost_usd=v_cost_usd,updated_at=now()
+  where product_code=p_product_code;
+  if not found then raise exception using errcode='P0002',message='BARO product not found'; end if;
+  insert into public.admin_audit_log(admin_id,action,entity_type,entity_id,details)
+  values(p_admin_id,'baro_supplier_product_updated','baro_manual_supplier_product',v_row.id::text,
+    jsonb_build_object('supplier_id',p_supplier_id,'product_code',p_product_code,'cost',p_unit_cost,'currency',p_currency));
+  return jsonb_build_object('supplier_product',to_jsonb(v_row),'supplier_cost_usd',v_cost_usd);
+end;
+$function$;
+revoke all on function public.baro_manual_supplier_product_save_atomic(uuid,uuid,text,text,numeric,text,integer,boolean,boolean,text) from public,anon,authenticated;
+grant execute on function public.baro_manual_supplier_product_save_atomic(uuid,uuid,text,text,numeric,text,integer,boolean,boolean,text) to service_role;
