@@ -289,14 +289,14 @@ function baroRenderCustomerProductCards(){
   submit.disabled=!baroManualEnabled;
  }
 }
-async function loadBaroCustomer(){
+loadBaroCustomer=async function(){
  await baroBaseLoadCustomer();
  baroRenderCustomerProductCards();
  const catalog=baroEl("baroCustomerCatalog");
  if(catalog&&!baroManualEnabled)catalog.textContent="هذه معاينة BARO فقط. الأسعار ظاهرة على بطاقات المنتجات، واستقبال الطلبات مغلق حالياً.";
-}
+};
 const baroBaseRenderCustomerOrders=renderBaroCustomerOrders;
-function renderBaroCustomerOrders(rows){
+renderBaroCustomerOrders=function(rows){
  baroBaseRenderCustomerOrders(rows);
  const box=baroEl("baroCustomerOrders");
  if(!box||!Array.isArray(rows))return;
@@ -307,4 +307,4 @@ function renderBaroCustomerOrders(rows){
   snapshot.textContent="السعر وقت الطلب: "+baroMoney(order.displayed_price_usd_snapshot,"USD")+" | "+baroMoney(order.displayed_price_syp_snapshot,"SYP");
   card.append(snapshot);
  });
-}
+};
