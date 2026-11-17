@@ -1168,7 +1168,7 @@ footer{color:#9f91aa}
 .baro-ai-widget{margin:16px 0;padding:14px;border:1px solid #8b6ba8;border-radius:16px;background:linear-gradient(145deg,#21182b,#110d16);box-shadow:0 8px 24px #0005}
 .baro-ai-title{display:flex;align-items:center;gap:10px;color:#e9def2}.baro-ai-title>span:first-child{font-size:26px}.baro-ai-title>div{display:flex;flex-direction:column;flex:1}.baro-ai-title strong{font-size:17px;color:#d7c4e8}.baro-ai-title small{font-size:11px;color:#b9a9c9}.baro-ai-live{font-size:10px;color:#b9f0d6;border:1px solid #326c56;border-radius:20px;padding:4px 8px}.baro-ai-messages{height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:10px;margin:10px 0;background:#0d0a11;border:1px solid #40334b;border-radius:12px}.baro-ai-bubble{max-width:90%;padding:9px 11px;border-radius:12px;font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.baro-ai-bubble.bot{align-self:flex-start;background:#292033;color:#f1eaf7;border:1px solid #493b55}.baro-ai-bubble.user{align-self:flex-end;background:#57436a;color:white}.baro-ai-bubble.error{border-color:#8b4c62;color:#ffd9e1}.baro-ai-form{display:flex;gap:7px}.baro-ai-form input{flex:1;min-width:0;margin:0;font-size:14px}.baro-ai-form button{padding:10px 14px;white-space:nowrap}.baro-ai-form button:disabled{opacity:.55}.baro-ai-status{min-height:18px;padding-top:5px;font-size:11px;color:#b9a9c9}
 </style>
-<link rel="stylesheet" href="./baran-premium.css?v=20261117-sidebar-1">
+<link rel="stylesheet" href="./baran-premium.css?v=20261117-admin-center-1">
 <style>
 .customer-directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0 18px}
 .customer-stat-card{display:flex;align-items:center;gap:10px;min-width:0;padding:13px;background:linear-gradient(145deg,#211a2b,#15111b);border:1px solid #493b55;border-radius:15px}
@@ -2377,40 +2377,44 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
     <section id="admin" class="hidden">
       <h2>لوحة الإدارة 🔐</h2>
       <div id="adminHub" class="admin-hub">
-        <div class="admin-hub-intro"><strong>مركز إدارة Baran Game</strong><p class="small">اختر القسم الذي تريد العمل عليه. كل قسم يفتح وحده حتى تبقى الشاشة مرتبة وواضحة على الهاتف.</p></div>
-        <div class="admin-hub-groups">
-          <section class="admin-hub-group">
-            <div class="admin-hub-group-title"><span>01</span><div><strong>مركز التشغيل</strong><small>ابدأ من هنا لمتابعة المتجر وتجهيز الطلبات.</small></div></div>
-            <div class="admin-hub-grid">
-              <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>الرئيسية والإحصائيات</strong><small>ملخص المتجر، المراقبة ومساعد الإدارة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>متابعة الطلبات</strong><small>حالات الطلبات وتحديثاتها.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card admin-hub-card-primary" onclick="showAdminPanel('baro')"><span class="admin-hub-icon">🟣</span><strong>BARO – الشحن اليدوي</strong><small>إدارة منتجات ليو، عروض الأسعار، تأكيد الدفع ومتابعة الشحن اليدوي.</small><span class="admin-hub-open">فتح القسم داخل BARAN ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والمنتجات</strong><small>الموردون والربط والأسعار والتكاليف.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-            </div>
-          </section>
-          <section class="admin-hub-group">
-            <div class="admin-hub-group-title"><span>02</span><div><strong>الزبائن والدعم</strong><small>الحسابات والتذاكر وخدمة العملاء.</small></div></div>
-            <div class="admin-hub-grid">
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>إدارة المستخدمين</strong><small>حسابات الزبائن ومحافظهم للمتابعة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card" id="staffManagementHubCard" onclick="showAdminPanel('staff-management')"><span class="admin-hub-icon">🛡️</span><strong>إدارة المشرفين</strong><small>إضافة مشرفة بصلاحيات محدودة أو إلغاء صلاحيتها.</small><span class="admin-hub-open">للمالك فقط ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>الدعم والردود الآلية</strong><small>الردود التلقائية والتذاكر ورسائل الزبائن.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('loyalty')"><span class="admin-hub-icon">🎁</span><strong>نقاط الولاء</strong><small>متابعة النقاط وسجل المكافآت.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('promotions')"><span class="admin-hub-icon">🏷️</span><strong>العروض والكوبونات</strong><small>إنشاء مسودات العروض والكوبونات وربطها بالمنتجات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>التحقق من الملكية قبل الاستعادة.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-            </div>
-          </section>
-          <section class="admin-hub-group">
-            <div class="admin-hub-group-title"><span>03</span><div><strong>المالية والحماية</strong><small>الأموال والإيداعات وسجلات الأمان — انتبه قبل أي إجراء.</small></div></div>
-            <div class="admin-hub-grid">
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>الحسابات المالية</strong><small>الأرباح ورأس المال والمصاريف والحركات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card" onclick="showAdminPanel('payment-gateway')"><span class="admin-hub-icon">💳</span><strong>بوابة الدفع والتحصيل</strong><small>إعداد ربط ShamCash API واستقبال إشعارات الحوالات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button id="shamCashAutoControlCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" onclick="showAdminPanel('shamcash-control')"><span class="admin-hub-icon">⚡</span><strong>تحكم الشحن التلقائي</strong><small>حالة ShamCash وحدود الإيداع ونطاق الاختبار.</small><span class="admin-hub-open">للمالك فقط ←</span></button>
-              <button type="button" class="admin-hub-card admin-hub-card-sensitive" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>التذاكر المالية</strong><small>حالات الحوالات والأرصدة التي تحتاج مراجعتك.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button type="button" class="admin-hub-card admin-hub-card-sensitive" onclick="showAdminPanel('security')"><span class="admin-hub-icon">🛡️</span><strong>الأمان والإيداعات</strong><small>طلبات الشحن وسجل الإدارة والتنبيهات.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-              <button id="ownerWalletFinanceCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" onclick="showAdminPanel('wallet-finance')"><span class="admin-hub-icon">💳</span><strong>محفظة المالك</strong><small>أرصدة المالك والتحويلات وطلبات التمويل.</small><span class="admin-hub-open">فتح القسم ←</span></button>
-            </div>
-          </section>
+        <div class="admin-command-hero">
+          <div class="admin-command-copy"><span class="admin-command-kicker">BARAN GAME · CONTROL CENTER</span><h3>كل المتجر تحت عينك.</h3><p>مساحة الإدارة صارت أوضح: اختَر مجال العمل أولاً، ثم افتح الأداة المطلوبة. كل وظيفة بمكانها، وكل صلاحية بحدودها.</p></div>
+          <div class="admin-command-emblem" aria-hidden="true"><span>B</span><i></i></div>
+          <div class="admin-command-foot"><span><b></b> مركز الإدارة</span><span>تنظيم • متابعة • حماية</span></div>
         </div>
+        <div class="admin-hub-tools">
+          <label class="admin-hub-search-wrap" for="adminHubSearch"><span>⌕</span><input id="adminHubSearch" type="search" placeholder="ابحث عن قسم… مثل: الطلبات، الأرباح، الموردون" oninput="filterAdminHub(this.value)" autocomplete="off"><button type="button" onclick="clearAdminHubSearch()" aria-label="مسح البحث">×</button></label>
+          <div id="adminHubSearchStatus" class="admin-hub-search-status" aria-live="polite">اختر مجالاً للبدء أو اكتب اسم القسم للوصول إليه مباشرة.</div>
+        </div>
+        <div class="admin-hub-groups">
+          <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>01</span><div><strong>غرفة القيادة والتشغيل</strong><small>الصورة العامة للمتجر، سير الطلبات، ومتابعة الأداء اليومي.</small></div><em>OPERATIONS</em></div><div class="admin-hub-grid">
+            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="الرئيسية الاحصائيات التقارير المراقبة النظام لوحة القيادة overview" onclick="showAdminPanel('overview')"><span class="admin-hub-icon">📊</span><strong>مركز القيادة والإحصائيات</strong><small>راقب نبض المتجر، المؤشرات، التنبيهات، ومساعد الإدارة من شاشة واحدة.</small><span class="admin-hub-open">ادخل إلى مركز القيادة <b>←</b></span></button>
+            <button type="button" class="admin-hub-card" data-admin-search="الطلبات متابعة الطلبات حالات شحن شراء orders" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>غرفة متابعة الطلبات</strong><small>راجع الطلبات وحالاتها وتفاصيل التنفيذ، وتابع ما يحتاج إلى تدخل.</small><span class="admin-hub-open">متابعة الطلبات <b>←</b></span></button>
+          </div></section>
+          <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>02</span><div><strong>المنتجات والتجارة</strong><small>إدارة ما نبيعه، جاهزية الكتالوج، العروض، وبرامج الولاء.</small></div><em>CATALOG & SALES</em></div><div class="admin-hub-grid">
+            <button type="button" class="admin-hub-card" data-admin-search="الموردون المنتجات الاسعار التكلفة الربط api catalog suppliers" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والكتالوج</strong><small>تابع الموردين، أسعار التكلفة، ربط المنتجات، وجاهزية البيع.</small><span class="admin-hub-open">إدارة المنتجات والموردين <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="baro بَارو الشحن اليدوي كتالوج ليو طلبات يدوية عروض اسعار" onclick="showAdminPanel('baro')"><span class="admin-hub-icon">🟣</span><strong>BARO · الشحن اليدوي</strong><small>مساحة مستقلة لكتالوج BARO وطلباته اليدوية وعروض الأسعار، بعيداً عن الشحن الآلي.</small><span class="admin-hub-open">الدخول إلى BARO <b>←</b></span></button>
+            <button type="button" class="admin-hub-card" data-admin-search="العروض الكوبونات الخصومات promotions" onclick="showAdminPanel('promotions')"><span class="admin-hub-icon">🏷️</span><strong>العروض والكوبونات</strong><small>جهّز العروض والكوبونات ونظّم حملات المتجر.</small><span class="admin-hub-open">إدارة العروض <b>←</b></span></button>
+            <button type="button" class="admin-hub-card" data-admin-search="نقاط الولاء المكافآت rewards loyalty" onclick="showAdminPanel('loyalty')"><span class="admin-hub-icon">🎁</span><strong>الولاء والمكافآت</strong><small>تابع نقاط العملاء وسجل المكافآت وبرنامج الاحتفاظ بالزبائن.</small><span class="admin-hub-open">متابعة الولاء <b>←</b></span></button>
+          </div></section>
+          <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>03</span><div><strong>العملاء وخدمة المتجر</strong><small>حسابات العملاء، طلبات المساعدة، واستعادة الوصول للحسابات.</small></div><em>CUSTOMER CARE</em></div><div class="admin-hub-grid">
+            <button type="button" class="admin-hub-card" data-admin-search="المستخدمين العملاء الزبائن الحسابات محافظ المستخدم users" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>ملفات العملاء</strong><small>اعرض حسابات الزبائن ومعلومات محافظهم ضمن صلاحياتك.</small><span class="admin-hub-open">إدارة العملاء <b>←</b></span></button>
+            <button type="button" class="admin-hub-card" data-admin-search="الدعم الرسائل التذاكر الردود الآلية مساعد الزبائن support" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>مركز خدمة العملاء</strong><small>تابع الرسائل والتذاكر والردود الآلية، واعرف ما ينتظر تدخلك.</small><span class="admin-hub-open">فتح مركز الدعم <b>←</b></span></button>
+            <button type="button" class="admin-hub-card" data-admin-search="استعادة الحساب كلمة المرور recovery" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>راجع طلبات الاستعادة وتحقق من الملكية قبل أي إجراء.</small><span class="admin-hub-open">مراجعة الاستعادة <b>←</b></span></button>
+          </div></section>
+          <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>04</span><div><strong>المال والتحصيل</strong><small>الأرباح، المحافظ، الحوالات، والتكاملات المالية الحساسة.</small></div><em>FINANCE</em></div><div class="admin-hub-grid">
+            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="الحسابات المالية الارباح رأس المال المصاريف سجل الحركات finance" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>مركز الحسابات والأرباح</strong><small>تابع الإيرادات والتكاليف والأرباح والحركات المالية المسجلة.</small><span class="admin-hub-open">عرض الحسابات المالية <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-sensitive" data-admin-search="التذاكر المالية حوالات أرصدة شحن مالي financial support" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>مراجعة التذاكر المالية</strong><small>حوالات وأرصدة تحتاج تدقيقاً ومراجعة قبل اعتماد أي معالجة.</small><span class="admin-hub-open">فتح المراجعة المالية <b>←</b></span></button>
+            <button type="button" class="admin-hub-card" data-admin-search="بوابة الدفع شام كاش shamcash api webhook تحصيل payment" onclick="showAdminPanel('payment-gateway')"><span class="admin-hub-icon">💳</span><strong>بوابة الدفع والتحصيل</strong><small>إعداد استقبال إشعارات ShamCash ومتابعة تكامل الدفع.</small><span class="admin-hub-open">إعداد بوابة الدفع <b>←</b></span></button>
+            <button id="shamCashAutoControlCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" data-admin-search="تحكم الشحن التلقائي shamcash حدود الإيداع اختبار" onclick="showAdminPanel('shamcash-control')"><span class="admin-hub-icon">⚡</span><strong>تحكم الشحن التلقائي</strong><small>حالة التكامل وحدود الحماية ونطاق الاختبار — للمالك فقط.</small><span class="admin-hub-open">لوحة تحكم المالك <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-sensitive" data-admin-search="الأمان الايداعات طلبات شحن سجل الادارة التنبيهات security" onclick="showAdminPanel('security')"><span class="admin-hub-icon">🛡️</span><strong>الإيداعات وسجل الأمان</strong><small>راجع طلبات الشحن وسجلات العمليات والتنبيهات الحساسة.</small><span class="admin-hub-open">فتح مركز الحماية <b>←</b></span></button>
+            <button id="ownerWalletFinanceCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" data-admin-search="محفظة المالك التحويلات التمويل أرصدة owner wallet" onclick="showAdminPanel('wallet-finance')"><span class="admin-hub-icon">🏦</span><strong>الحساب المالي للمالك</strong><small>إدارة محفظة المالك والتحويلات وطلبات التمويل — للمالك فقط.</small><span class="admin-hub-open">فتح حساب المالك <b>←</b></span></button>
+          </div></section>
+          <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>05</span><div><strong>الفريق والحوكمة</strong><small>إدارة الوصول والصلاحيات وسلامة العمل داخل المتجر.</small></div><em>PEOPLE & SECURITY</em></div><div class="admin-hub-grid">
+            <button type="button" class="admin-hub-card admin-hub-card-sensitive" data-admin-search="المشرفين الموظفين الصلاحيات فريق العمل staff management" id="staffManagementHubCard" onclick="showAdminPanel('staff-management')"><span class="admin-hub-icon">🛡️</span><strong>إدارة الفريق والصلاحيات</strong><small>إضافة المشرفين وتحديد صلاحياتهم ومراجعة الوصول — للمالك فقط.</small><span class="admin-hub-open">إدارة صلاحيات الفريق <b>←</b></span></button>
+          </div></section>
+        </div>
+        <div id="adminHubNoResults" class="admin-hub-no-results hidden">ما لقينا قسم بهذا الاسم. جرّب كلمة أقصر أو ابحث باسم الوظيفة.</div>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="payment-gateway">
@@ -3409,6 +3413,17 @@ function buildAdminSectionNav(panel,id){
   const old=panel.querySelector(":scope > .admin-section-nav");
   if(old)old.remove();
 }
+function filterAdminHub(query){
+  const root=document.getElementById("adminHub");if(!root)return;
+  const q=String(query||"").trim().toLocaleLowerCase("ar");
+  const cards=[...root.querySelectorAll(".admin-hub-card")];let shown=0;
+  cards.forEach(card=>{const hay=(card.innerText+" "+(card.dataset.adminSearch||"")).toLocaleLowerCase("ar");const match=!q||hay.includes(q);card.classList.toggle("admin-search-hidden",!match);if(match&&!card.classList.contains("hidden"))shown++;});
+  root.querySelectorAll("[data-admin-group]").forEach(group=>{const visible=[...group.querySelectorAll(".admin-hub-card")].some(card=>!card.classList.contains("admin-search-hidden")&&!card.classList.contains("hidden"));group.classList.toggle("admin-search-hidden",!visible);});
+  const status=document.getElementById("adminHubSearchStatus"),empty=document.getElementById("adminHubNoResults");
+  if(status)status.textContent=q?(shown+" قسم متاح لبحثك. اختر النتيجة المناسبة للمتابعة."):"اختر مجالاً للبدء أو اكتب اسم القسم للوصول إليه مباشرة.";
+  if(empty)empty.classList.toggle("hidden",!q||shown>0);
+}
+function clearAdminHubSearch(){const input=document.getElementById("adminHubSearch");if(input)input.value="";filterAdminHub("");if(input)input.focus();}
 function showAdminPanel(id){
   if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return;}
   const admin=document.getElementById("admin");
