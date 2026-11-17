@@ -128,14 +128,28 @@ function renderBaroCustomerCatalog(products){
    groupHead.append(groupIcon,groupCopy,groupCount);groupSection.append(groupHead);
    const grid=document.createElement("div");grid.className="baro-catalog-product-grid";
    items.forEach((p,productIndex)=>{
-    const card=document.createElement("article");card.className="baro-catalog-product-card";
+    const card=document.createElement("article");card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;
     const cardTop=document.createElement("div");cardTop.className="baro-catalog-product-card-top";
-    const productMark=document.createElement("span");productMark.className="baro-catalog-product-mark";productMark.textContent=groupInfo.icon;
-    const preview=document.createElement("span");preview.className="baro-catalog-preview-tag";preview.textContent="معاينة";
-    cardTop.append(productMark,preview);
-    const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=p.product_name||"منتج رقمي";
+    const art=document.createElement("div");art.className="baro-catalog-product-art";
+    const artIcon=document.createElement("span");artIcon.className="baro-catalog-product-art-icon";
+    const artLabel=document.createElement("small");artLabel.className="baro-catalog-product-art-label";
+    const productName=String(p.product_name||"منتج رقمي");
+    let visualIcon=groupInfo.icon,visualLabel=groupInfo.label;
+    if(category==="pubg"&&group==="uc"){visualIcon="💎";visualLabel="UNKNOWN CASH";}
+    else if(category==="pubg"&&group==="growth"){
+     visualIcon=/prime plus/i.test(productName)?"👑":/prime/i.test(productName)?"✦":"🎁";
+     visualLabel=/prime plus/i.test(productName)?"PRIME PLUS":/prime/i.test(productName)?"PRIME":"PUBG BUNDLES";
+    }else if(category==="freefire"&&group==="diamonds"){visualIcon="💠";visualLabel="DIAMONDS";}
+    else if(category==="freefire"&&group==="memberships"){visualIcon="👑";visualLabel="MEMBERSHIP";}
+    else if(category==="jawaker"&&group==="tokens"){visualIcon="🪙";visualLabel="JAWAKER TOKENS";}
+    else if(category==="jawaker"&&group==="boosters"){visualIcon="⚡";visualLabel="BOOSTERS";}
+    artIcon.textContent=visualIcon;artLabel.textContent=visualLabel;
+    art.append(artIcon,artLabel);
+    const preview=document.createElement("span");preview.className="baro-catalog-preview-tag";preview.textContent="معاينة فقط";
+    cardTop.append(art,preview);
+    const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=productName;
     const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
-    const status=document.createElement("span");status.textContent="الشحن اليدوي غير متاح حالياً";
+    const status=document.createElement("span");status.textContent="الطلب غير متاح حالياً";
     const indexMark=document.createElement("span");indexMark.className="baro-catalog-product-index";indexMark.textContent=String(productIndex+1).padStart(2,"0");
     footer.append(status,indexMark);card.append(cardTop,name,footer);grid.append(card);
    });
