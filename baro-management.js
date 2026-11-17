@@ -141,7 +141,7 @@
       selectField("تعديل مورد موجود (اتركه فارغاً لإضافة جديد)","baroSupplierEditId",[["","إضافة مورد جديد"],...suppliers.map(s=>[s.id,s.name])])+
       field("اسم المورد","baroSupplierName","text","اسم المورد")+field("جهة التواصل","baroSupplierContact","text","اختياري")+
       field("رقم الهاتف","baroSupplierPhone","text","اختياري")+field("البريد الإلكتروني","baroSupplierEmail","email","اختياري")+
-      '<label>ملاحظات<textarea id="baroSupplierNotes" rows="2"></textarea></label><button type="button" id="baroSupplierSave">حفظ المورد</button></div></div>'+
+      '<label>ملاحظات<textarea id="baroSupplierNotes" rows="2"></textarea></label><button type="button" id="baroSupplierLoad" class="secondary">تحميل بيانات المورد المحدد</button><button type="button" id="baroSupplierSave">حفظ المورد</button></div></div>'+
       '<div class="baro-mgmt-panel"><h3>ربط مورد بمنتج وتكلفته</h3><div class="baro-mgmt-form">'+
       selectField("المورد","baroSupplierLinkId",suppliers.map(s=>[s.id,s.name]))+
       selectField("المنتج","baroSupplierProductCode",products.map(p=>[p.product_code,p.product_name]))+
@@ -157,9 +157,19 @@
       '<h3>الموردون</h3>'+table(["المورد","جهة التواصل","الهاتف","الحالة","متوسط التقييم","روابط المنتجات"],suppliers.map(s=>{const rs=events.filter(e=>e.supplier_id===s.id&&e.rating);const avg=rs.length?(rs.reduce((n,e)=>n+Number(e.rating),0)/rs.length).toFixed(1):"—";return row([s.name,s.contact_name,s.contact_phone,s.is_active?"نشط":"موقوف",avg,links.filter(l=>l.supplier_id===s.id).length]);}))+
       '<h3>تكاليف الموردين المرتبطة بالمنتجات</h3>'+table(["المورد","رمز المنتج","SKU","التكلفة","العملة","المدة","مفضل"],links.map(l=>row([suppliers.find(s=>s.id===l.supplier_id)?.name,l.product_code,l.supplier_sku,l.unit_cost,l.currency,l.lead_time_hours,l.is_preferred?"نعم":"لا"])))+
       '<h3>سجل أداء الموردين</h3>'+table(["التاريخ","المورد","النوع","التقييم","التفاصيل"],events.map(e=>row([new Date(e.created_at).toLocaleString("ar"),suppliers.find(s=>s.id===e.supplier_id)?.name,e.event_type,e.rating,e.details])));
+    $("baroSupplierLoad").onclick=()=>{
+      const s=suppliers.find(x=>x.id===$("baroSupplierEditId").value);
+      if(!s){msg("اختر مورداً موجوداً أولاً.");return;}
+      $("baroSupplierName").value=s.name||"";
+      $("baroSupplierContact").value=s.contact_name||"";
+      $("baroSupplierPhone").value=s.contact_phone||"";
+      $("baroSupplierEmail").value=s.contact_email||"";
+      $("baroSupplierNotes").value=s.notes||"";
+      msg("تم تحميل بيانات المورد للتعديل.");
+    };
     $("baroSupplierSave").onclick=async()=>{
       const name=$("baroSupplierName").value.trim();if(name.length<2){msg("أدخل اسم المورد.");return;}
-      try{await post({action:"supplier_save",name,contact_name:$("baroSupplierContact").value,contact_phone:$("baroSupplierPhone").value,contact_email:$("baroSupplierEmail").value,notes:$("baroSupplierNotes").value,is_active:true});msg("تم حفظ المورد.");await loadSuppliers();}catch(e){msg(e.message);}
+      try{await post({action:"supplier_save",supplier_id:$("baroSupplierEditId").value||null,name,contact_name:$("baroSupplierContact").value,contact_phone:$("baroSupplierPhone").value,contact_email:$("baroSupplierEmail").value,notes:$("baroSupplierNotes").value,is_active:true});msg("تم حفظ المورد.");await loadSuppliers();}catch(e){msg(e.message);}
     };
     $("baroSupplierLinkSave").onclick=async()=>{
       const supplier_id=$("baroSupplierLinkId").value,product_code=$("baroSupplierProductCode").value,cost=Number($("baroSupplierCost").value);
