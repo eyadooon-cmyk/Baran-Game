@@ -81,7 +81,12 @@ const styleText=`
 #baranCommunicationCenter .bcc-tab[aria-selected=true]{background:linear-gradient(135deg,#75469a,#43265d);border-color:#c49be2;color:#fff;box-shadow:0 4px 14px #0005}
 #baranCommunicationCenter .bcc-pane[hidden]{display:none!important}
 #baranCommunicationCenter .bcc-pane>section,#baranCommunicationCenter .bcc-pane>.support-view{margin:12px 0}
-#baranCommunicationCenter .bcc-pane .announcement-panel{margin-top:14px}
+#baranCommunicationCenter .bcc-pane .announcement-panel{margin:12px 0 0!important}
+#baranCommunicationCenter .bcc-announcements{margin:14px 0;border:1px solid #59436d;border-radius:13px;background:#17111f;overflow:hidden}
+#baranCommunicationCenter .bcc-announcements>summary{padding:14px;color:#eadcf5;font-weight:900;cursor:pointer;list-style:none}
+#baranCommunicationCenter .bcc-announcements>summary::-webkit-details-marker{display:none}
+#baranCommunicationCenter .bcc-announcements[open]>summary{border-bottom:1px solid #59436d;background:#21182c}
+#baranCommunicationCenter .bcc-announcements .announcement-panel{box-shadow:none;border:0;background:transparent!important}
 #baranCommunicationCenter .bcc-report{padding:13px;margin:12px 0;border:1px solid #59436d;border-radius:13px;background:#17111f}
 #baranCommunicationCenter .bcc-report h3{margin:0 0 5px;color:#e8d9f4;font-size:15px}
 #baranCommunicationCenter .bcc-report p{margin:4px 0 10px;color:#bbaacb;font-size:12px;line-height:1.6}
@@ -108,7 +113,7 @@ function mount(){
  const tickets=byId("supportTicketsView");
  const auto=byId("baranAutoSupportPanel");
  const assistant=byId("baranAdminAssistant");
- const announcement=document.querySelector(".announcement-panel");
+ const announcement=adminPanel.querySelector(".announcement-panel");
  if(!notifications||!tickets||!auto||!assistant||!announcement)return;
  injectStyle();
  const root=document.createElement("section");root.id=ROOT_ID;
@@ -129,7 +134,15 @@ function mount(){
  if(preferences)sibling=preferences.previousElementSibling;
  const toolbar=sibling?.classList.contains("baran-comm-toolbar")?sibling:null;
  move(toolbar,notificationContent);move(preferences,notificationContent);move(notifications,notificationContent);
- move(announcement,notificationContent);
+ if(announcement){
+  const announcementDetails=document.createElement("details");
+  announcementDetails.className="bcc-announcements";
+  const announcementSummary=document.createElement("summary");
+  announcementSummary.textContent="📢 الإعلانات الجماعية — إرسال تحديث للزبائن";
+  announcementDetails.appendChild(announcementSummary);
+  move(announcement,announcementDetails);
+  notificationContent.appendChild(announcementDetails);
+ }
  notificationsPane.pane.appendChild(notificationContent);
  tickets.classList.remove("hidden");tickets.hidden=false;
  messagesPane.pane.appendChild(tickets);

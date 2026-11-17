@@ -547,6 +547,9 @@ section,.auth-card{border-color:#49345f}
 .support-section-head .small{margin:0;line-height:1.7}
 .support-refresh{width:auto;min-width:88px;flex:0 0 auto}
 .support-filters{display:grid;grid-template-columns:1fr;gap:0}
+.support-empty-state{display:grid;gap:5px;padding:18px!important;text-align:center;border:1px dashed #765b8d!important;background:linear-gradient(145deg,#21182c,#15101b)!important}
+.support-empty-state strong{color:#eadcf5;font-size:15px}
+.support-empty-state p{margin:0;line-height:1.8}
 .support-filters .ops-form{margin:6px 0;padding:12px}
 .support-filters input,.support-filters select{width:100%;min-width:0;box-sizing:border-box}
 #baranAutoSupportStats .ops-card{background:#21182c;border-color:#604779}
@@ -3025,7 +3028,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
                   <label for="adminFeedbackTypeFilter">نوع الرسالة</label>
                   <select id="adminFeedbackTypeFilter" onchange="filterAdminFeedback()"><option value="all">كل الرسائل</option><option value="support">تذاكر الدعم فقط</option><option value="review">التقييمات والاقتراحات</option></select>
                   <label for="adminFeedbackStatusFilter">حالة التذكرة</label>
-                  <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()"><option value="all">كل الحالات</option><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المتابعة</option><option value="completed">مكتملة</option><option value="rejected">مغلقة/مرفوضة</option><option value="approved">تقييم معتمد</option></select>\n                  <label for="adminFeedbackPriorityFilter">أولوية التذكرة</label><select id="adminFeedbackPriorityFilter" onchange="filterAdminFeedback()"><option value="all">كل الأولويات</option><option value="urgent">عاجلة</option><option value="high">عالية</option><option value="normal">عادية</option><option value="low">منخفضة</option></select>
+                  <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()"><option value="all">كل الحالات</option><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المتابعة</option><option value="completed">مكتملة</option><option value="rejected">مغلقة/مرفوضة</option><option value="approved">تقييم معتمد</option></select>
+                  <label for="adminFeedbackPriorityFilter">أولوية التذكرة</label><select id="adminFeedbackPriorityFilter" onchange="filterAdminFeedback()"><option value="all">كل الأولويات</option><option value="urgent">عاجلة</option><option value="high">عالية</option><option value="normal">عادية</option><option value="low">منخفضة</option></select>
                 </div>
               </div>
               <div id="adminFeedback" class="ops-list">جاري تحميل الرسائل...</div>
@@ -3294,7 +3298,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
 <script src="./community.js?v=20261117-attachments-gate-1"></script>
-<script src="./communication-center.js?v=20261117-unified-1"></script>
+<script src="./communication-center.js?v=20261117-unified-2"></script>
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
@@ -3547,7 +3551,7 @@ function buildAdminSectionNav(panel,id){
   // التبويبات الموجودة في الدعم والأمان هي طريقة التنقل الأساسية لهذين القسمين.
   if(panel.querySelector(":scope .support-tabs,:scope .security-tabs"))return;
   const headings=[...panel.querySelectorAll("h2,h3")].filter(heading=>{
-    if(heading.closest(".admin-subpanel-head,.baran-section-assistant,.admin-workspace-index"))return false;
+    if(heading.closest(".admin-subpanel-head,.baran-section-assistant,.admin-workspace-index,.announcement-panel"))return false;
     if(heading.closest(".hidden,[hidden]"))return false;
     const label=(heading.textContent||"").replace(/\s+/g," ").trim();
     return label.length>2;
@@ -5193,9 +5197,17 @@ function filterAdminFeedback(){
   });
   box.replaceChildren();
   if(!rows.length){
-    const empty=document.createElement("div");empty.className="ops-item";
-    empty.textContent=baranAdminFeedbackRows.length?"ما في رسائل مطابقة للبحث أو الفلتر المحدد.":"ما وصلتنا رسائل أو تذاكر بعد.";
-    box.appendChild(empty);return;
+    const empty=document.createElement("div");empty.className="ops-item support-empty-state";
+    const title=document.createElement("strong");
+    const detail=document.createElement("p");detail.className="ops-muted";
+    if(baranAdminFeedbackRows.length){
+      title.textContent="ما في نتائج مطابقة";
+      detail.textContent="جرّب تغيير كلمة البحث أو نوع الرسالة أو الحالة أو الأولوية.";
+    }else{
+      title.textContent="صندوق الدعم فارغ حالياً";
+      detail.textContent="لم تصل تذاكر أو رسائل بعد. عندما يرسل أحد الزبائن رسالة من صفحة الدعم ستظهر هنا، ويمكنك الضغط على «تحديث» لإعادة تحميل القائمة.";
+    }
+    empty.append(title,detail);box.appendChild(empty);return;
   }
   rows.forEach(item=>{
     const card=document.createElement("article");card.className="ops-item notification-feedback-target";
