@@ -289,6 +289,7 @@
       window.location.reload();
     }catch(error){window.alert(error.message||"تعذر تنفيذ الإجراء.");}
   }
+  window.openBaranCustomerProfile = openProfile;
   window.renderBaranCustomerExperience = render;
   const observer = new MutationObserver(attachProfileButtons);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => {
