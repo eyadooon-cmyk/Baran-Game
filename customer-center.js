@@ -98,6 +98,17 @@
     listBox.setAttribute("aria-live", "polite");
     listBox.textContent = "اضغط تحديث لعرض المتصلين حالياً.";
     section.append(head, stats, listBox);
+    const referralPanel = node("div", "ops-form");
+    referralPanel.id = "baranCustomerReferralPanel";
+    referralPanel.append(node("strong", "", "🎁 برنامج دعوة الأصدقاء"));
+    referralPanel.append(node("p", "small", "يُسجّل رمز عضوية الصديق عند إنشاء الحساب. تتحول الدعوة إلى مؤهلة بعد أول طلب مكتمل، وتبقى المكافأة بانتظار مراجعة المدير."));
+    const referralStats = node("div", "ops-grid");
+    referralStats.id = "baranCustomerReferralStats";
+    const referralList = node("div", "ops-list");
+    referralList.id = "baranCustomerReferralList";
+    referralList.textContent = "جارٍ تحميل سجل الدعوات...";
+    referralPanel.append(referralStats, referralList);
+    section.append(referralPanel);
     list.insertAdjacentElement("afterend", section);
 
     const customerTools = node("div", "ops-form");
@@ -147,6 +158,7 @@
       const updated = node("div", "small", "آخر تحديث: " + new Date(result.checked_at).toLocaleTimeString("ar"));
       stats.append(updated);
       box.replaceChildren();
+      renderReferrals(result);
       if (!result.online?.length) {
         box.append(node("div", "customer-directory-empty", "لا يوجد عملاء متصلون حالياً."));
         return;
@@ -161,6 +173,34 @@
     } catch (error) {
       box.textContent = "تعذر تحديث المتصلين: " + (error?.message || "خطأ غير معروف");
     }
+  }
+
+  function renderReferrals(result) {
+    const statsBox = document.getElementById("baranCustomerReferralStats");
+    const listBox = document.getElementById("baranCustomerReferralList");
+    if (!statsBox || !listBox) return;
+    const stats = result.referral_stats || {};
+    statsBox.replaceChildren();
+    [["دعوات جديدة",stats.pending||0],["مؤهلة",stats.qualified||0],["مكافآت مسجلة",stats.rewarded||0],["مرفوضة",stats.rejected||0]].forEach(([label,value]) => {
+      const card = node("div","ops-card");
+      card.append(node("div","ops-muted",label),node("div","ops-value",String(value)));
+      statsBox.append(card);
+    });
+    listBox.replaceChildren();
+    const rows = Array.isArray(result.referrals) ? result.referrals : [];
+    if (!rows.length) {
+      listBox.append(node("div","customer-directory-empty","ما في دعوات مسجلة لحد الآن."));
+      return;
+    }
+    const labels = {pending:"بانتظار أول طلب مكتمل",qualified:"مؤهلة — بانتظار مراجعة المكافأة",rewarded:"تم تسجيل المكافأة",rejected:"مرفوضة"};
+    rows.forEach(referral => {
+      const card = node("article","ops-item");
+      card.append(node("strong","", "دعوة من "+(referral.referrer_name||"عميل")+" إلى "+(referral.referred_name||"عميل")));
+      card.append(node("p","small","رمز الدعوة: "+(referral.referral_code||"—")+" · "+(labels[referral.status]||referral.status)));
+      card.append(node("p","small","تاريخ التسجيل: "+new Date(referral.created_at).toLocaleString("ar")+(referral.qualified_at?" · تأهلت: "+new Date(referral.qualified_at).toLocaleString("ar"):"")));
+      if (referral.admin_note) card.append(node("p","small","ملاحظة المدير: "+referral.admin_note));
+      listBox.append(card);
+    });
   }
 
   function updateSegments() {
