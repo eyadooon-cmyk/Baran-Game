@@ -170,10 +170,13 @@ test("Channel SECURITY DEFINER trigger functions are not callable through the Da
 });
 
 
-test("Every visible BARO product card shows both currencies and the closed gate hides the real order form", () => {
-  assert.match(ui, /baroCustomerProductCards/);
-  assert.match(ui, /baroMoney\(p\.sale_price_usd,"USD"\)/);
-  assert.match(ui, /baroMoney\(p\.sale_price_syp,"SYP"\)/);
+test("BARO customer catalogue shows products without prices and the closed gate hides the real order form", () => {
+  const customerCatalogue = ui.slice(ui.indexOf("function baroRenderCustomerProductCards"), ui.indexOf("loadBaroCustomer=async function()"));
+  assert.match(customerCatalogue, /baroCustomerProductCards/);
+  assert.match(customerCatalogue, /heading\.textContent="كتالوج BARO · معاينة المنتجات"/);
+  assert.match(customerCatalogue, /groupLabels\[p\.group_id\]/);
+  assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_usd,"USD"\)/);
+  assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_syp,"SYP"\)/);
   assert.match(ui, /checkout\.classList\.toggle\("hidden",!baroManualEnabled\)/);
   assert.match(ui, /submit\.hidden=!baroManualEnabled/);
   assert.match(baroFinance, /displayed_price_usd_snapshot/);

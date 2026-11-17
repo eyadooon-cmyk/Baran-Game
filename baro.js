@@ -218,7 +218,7 @@ async function loadBaroAdmin(){
 }
 
 
-/* BARO customer catalogue: visible USD + SYP prices on every product card. */
+/* BARO customer catalogue: product-only preview; never expose sale prices here. */
 const baroBaseLoadCustomer=loadBaroCustomer;
 function baroRenderCustomerProductCards(){
  const section=baroEl("baroManual");
@@ -234,51 +234,41 @@ function baroRenderCustomerProductCards(){
  }
  grid.replaceChildren();
  const heading=document.createElement("h3");
- heading.textContent="منتجات BARO وأسعارها";
+ heading.textContent="كتالوج BARO · معاينة المنتجات";
  grid.append(heading);
+ const intro=document.createElement("p");
+ intro.className="small";
+ intro.textContent="تعرّف على المنتجات والباقات المتاحة في القسم اليدوي. الأسعار غير معروضة حالياً.";
+ grid.append(intro);
  if(!baroCustomerProducts.length){
   const empty=document.createElement("p");
   empty.className="small";
   empty.textContent="لا توجد منتجات ظاهرة حالياً.";
   grid.append(empty);
  }else{
+  const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"جواكر"};
+  const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
   baroCustomerProducts.forEach(p=>{
    const card=document.createElement("article");
    card.className="baro-customer-product-card";
    const name=document.createElement("strong");
-   name.textContent=p.product_name;
+   name.textContent=p.product_name||"منتج BARO";
    const category=document.createElement("div");
    category.className="small";
-   category.textContent=({pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"جواكر"}[p.category_id]||p.category_id);
-   const prices=document.createElement("div");
-   prices.className="baro-card-prices";
-   const usd=document.createElement("strong");
-   usd.className="baro-price-usd";
-   usd.textContent=baroMoney(p.sale_price_usd,"USD");
-   const syp=document.createElement("strong");
-   syp.className="baro-price-syp";
-   syp.textContent=baroMoney(p.sale_price_syp,"SYP");
-   prices.append(usd,syp);
+   category.textContent=categoryLabels[p.category_id]||p.category_id||"منتج رقمي";
+   const group=document.createElement("div");
+   group.className="small";
+   group.textContent=groupLabels[p.group_id]||"";
    const status=document.createElement("div");
    status.className="small";
-   status.textContent=p.purchase_enabled?"متاح عند فتح استقبال الطلبات":"متوقف مؤقتاً";
-   card.append(name,category,prices,status);
-   if(baroManualEnabled&&p.purchase_enabled){
-    const choose=document.createElement("button");
-    choose.type="button";
-    choose.textContent="اختيار هذه الباقة";
-    choose.addEventListener("click",()=>{
-     const select=baroEl("baroProductSelect");
-     if(select){select.value=p.product_code;baroUpdateQuantityField();}
-     checkout?.scrollIntoView({behavior:"smooth",block:"start"});
-    });
-    card.append(choose);
-   }else{
-    const note=document.createElement("span");
-    note.className="baro-preview-label";
-    note.textContent=baroManualEnabled?"غير متاح حالياً":"معاينة فقط · الطلبات مغلقة";
-    card.append(note);
-   }
+   status.textContent=p.purchase_enabled?"المنتج ضمن الكتالوج · الطلبات مغلقة للمعاينة":"المنتج معروض للمعاينة فقط";
+   card.append(name,category);
+   if(group.textContent)card.append(group);
+   card.append(status);
+   const note=document.createElement("span");
+   note.className="baro-preview-label";
+   note.textContent="معاينة فقط · لا يوجد شراء حالياً";
+   card.append(note);
    grid.append(card);
   });
  }
@@ -293,7 +283,7 @@ loadBaroCustomer=async function(){
  await baroBaseLoadCustomer();
  baroRenderCustomerProductCards();
  const catalog=baroEl("baroCustomerCatalog");
- if(catalog&&!baroManualEnabled)catalog.textContent="هذه معاينة BARO فقط. الأسعار ظاهرة على بطاقات المنتجات، واستقبال الطلبات مغلق حالياً.";
+ if(catalog)catalog.textContent="كتالوج BARO للمعاينة فقط. الأسعار مخفية واستقبال الطلبات مغلق حالياً.";
 };
 const baroBaseRenderCustomerOrders=renderBaroCustomerOrders;
 renderBaroCustomerOrders=function(rows){
