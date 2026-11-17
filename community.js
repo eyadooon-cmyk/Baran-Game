@@ -529,14 +529,24 @@ function renderSupportConversation(data,audience){
     if(status)status.value=ticket.status||"pending";
     const priority=document.getElementById("adminSupportConversationPriority");
     if(priority)priority.value=ticket.priority||"normal";
+    const assignee=document.getElementById("adminSupportConversationAssignee");
+    if(assignee){
+      const staff=Array.isArray(data.staff)?data.staff:[];
+      const selected=ticket.assigned_admin_id||"";
+      assignee.replaceChildren();
+      const unassigned=document.createElement("option");unassigned.value="";unassigned.textContent="غير مسندة";assignee.appendChild(unassigned);
+      staff.forEach(member=>{const option=document.createElement("option");option.value=member.user_id;option.textContent=member.full_name||("موظف "+member.user_id.slice(0,8));assignee.appendChild(option);});
+      assignee.value=selected;
+    }
   }
 }
-async function updateSupportTicketMeta(){
+async async function updateSupportTicketMeta(){
   if(!activeSupportConversation.id||activeSupportConversation.audience!=="admin")return;
   const status=document.getElementById("adminSupportConversationStatus")?.value||"pending";
   const priority=document.getElementById("adminSupportConversationPriority")?.value||"normal";
+  const assigned=document.getElementById("adminSupportConversationAssignee")?.value||"";
   try{
-    await supportCenterRequest("POST",null,{action:"update_ticket",ticket_id:activeSupportConversation.id,status,priority});
+    await supportCenterRequest("POST",null,{action:"update_ticket",ticket_id:activeSupportConversation.id,status,priority,assigned_admin_id:assigned||null});
     const meta=document.getElementById("adminSupportConversationMeta");
     if(meta)meta.dataset.saved="1";
     await openSupportConversation(activeSupportConversation.id,"admin");
@@ -563,6 +573,11 @@ function ensureSupportComposerExtras(){
     [["low","منخفضة"],["normal","عادية"],["high","عالية"],["urgent","عاجلة"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;select.appendChild(o);});
     select.addEventListener("change",updateSupportTicketMeta);
     tools.append(label,select);
+    const assigneeLabel=document.createElement("label");assigneeLabel.htmlFor="adminSupportConversationAssignee";assigneeLabel.textContent="الموظف المسؤول";
+    const assignee=document.createElement("select");assignee.id="adminSupportConversationAssignee";
+    const unassigned=document.createElement("option");unassigned.value="";unassigned.textContent="غير مسندة";assignee.appendChild(unassigned);
+    assignee.addEventListener("change",updateSupportTicketMeta);
+    tools.append(assigneeLabel,assignee);
     const status=document.getElementById("adminSupportConversationStatus");if(status)status.addEventListener("change",updateSupportTicketMeta);
   }
 }
