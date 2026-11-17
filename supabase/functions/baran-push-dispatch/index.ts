@@ -51,8 +51,12 @@ Deno.serve(async (req: Request) => {
       : /order|top.?up|purchase|طلب|شحن|شراء/.test(textForCategory) ? "orders"
       : /security|login|password|أمان|دخول|حماية/.test(textForCategory) ? "security"
       : /announcement|promotion|offer|coupon|إعلان|عرض|كوبون|خصم/.test(textForCategory) ? "offers" : "general";
-    const preferenceKey = category === "general" ? null : category + "_enabled";
-    if (preferenceKey && preferences && preferences[preferenceKey] === false) {
+    const categoryEnabled = category === "support" ? preferences?.support_enabled
+      : category === "wallet" ? preferences?.wallet_enabled
+      : category === "orders" ? preferences?.orders_enabled
+      : category === "offers" ? preferences?.offers_enabled
+      : category === "security" ? preferences?.security_enabled : true;
+    if (categoryEnabled === false) {
       return json({ success: true, sent: 0, reason: "category_muted", category });
     }
     if (preferences?.quiet_hours_enabled) {
