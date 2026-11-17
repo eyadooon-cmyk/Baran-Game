@@ -5877,10 +5877,10 @@ async function markBaranNotificationCardRead(item,button,audience,card,state){
   }
 }
 function buildBaranNotificationCard(item,audience){
-  card.dataset.notificationId=String(item.id||"");
-  card.dataset.notificationKind=String(item.kind||"");
   const meta=baranNotificationMeta(item);
   const card=document.createElement("article");
+  card.dataset.notificationId=String(item.id||"");
+  card.dataset.notificationKind=String(item.kind||"");
   card.className="notification-item notification-tone-"+meta.tone+(item.read_at?"":" unread")+(audience==="customer"?" notification-clickable":"");
   if(audience==="customer"||audience==="admin"){
     card.tabIndex=0;card.setAttribute("role","button");
