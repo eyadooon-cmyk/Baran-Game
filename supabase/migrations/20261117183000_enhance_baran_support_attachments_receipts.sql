@@ -70,3 +70,9 @@ comment on column public.baran_support_messages.read_at is
   'Timestamp when the other conversation party read this message.';
 comment on column public.baran_support_messages.attachment_path is
   'Private Storage object path; downloads are served with short-lived signed URLs by baran-support-center.';
+
+alter table public.customer_feedback
+  add column if not exists assigned_admin_id uuid references auth.users(id) on delete set null;
+create index if not exists customer_feedback_support_assignee_idx
+  on public.customer_feedback(assigned_admin_id,updated_at desc)
+  where feedback_type='support';
