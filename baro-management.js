@@ -53,6 +53,10 @@
     if (node && !access.is_admin) {
       const map = {overview:"view",finance:"finance",suppliers:"suppliers",settings:"settings",history:"audit",staff:"staff"};
       node.querySelectorAll("[data-tab]").forEach(b => { b.hidden = !can(map[b.dataset.tab]); });
+      const productList=$("baroAdminProducts");
+      if(productList){productList.hidden=!can("catalog");if(productList.previousElementSibling)productList.previousElementSibling.hidden=!can("catalog");if(productList.previousElementSibling?.previousElementSibling)productList.previousElementSibling.previousElementSibling.hidden=!can("catalog");}
+      const orderList=$("baroAdminOrders");
+      if(orderList){orderList.hidden=!can("orders");if(orderList.previousElementSibling)orderList.previousElementSibling.hidden=!can("orders");if(orderList.previousElementSibling?.previousElementSibling)orderList.previousElementSibling.previousElementSibling.hidden=!can("orders");}
     }
   }
   async function loadAdmin() {
