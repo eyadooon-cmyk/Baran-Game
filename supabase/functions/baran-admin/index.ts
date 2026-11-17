@@ -478,9 +478,9 @@ Deno.serve(async (req: Request) => {
           console.error("baran-admin: customer ban update failed", authUpdateError.message);
           return json({ error: "تعذر تطبيق الحظر على جلسة العميل." }, 500);
         }
-        const bannedUntil = duration === "none" ? null : new Date(Date.now() +
+        const bannedUntil = duration === "none" || duration === "permanent" ? null : new Date(Date.now() +
           (duration === "1h" ? 3600000 : duration === "24h" ? 86400000 :
-           duration === "7d" ? 604800000 : duration === "30d" ? 2592000000 : 31536000000000)).toISOString();
+           duration === "7d" ? 604800000 : 2592000000)).toISOString();
         const { error: controlError } = await admin.from("customer_account_controls").upsert({
           user_id: targetId, status: duration === "none" ? "active" : "banned",
           reason: duration === "none" ? null : reason, banned_until: bannedUntil,
