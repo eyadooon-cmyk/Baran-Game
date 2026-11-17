@@ -170,15 +170,20 @@ test("Channel SECURITY DEFINER trigger functions are not callable through the Da
 });
 
 
-test("BARO customer catalogue shows products without prices and the closed gate hides the real order form", () => {
-  const customerCatalogue = ui.slice(ui.indexOf("function baroRenderCustomerProductCards"), ui.indexOf("loadBaroCustomer=async function()"));
-  assert.match(customerCatalogue, /baroCustomerProductCards/);
-  assert.match(customerCatalogue, /heading\.textContent="كتالوج BARO · معاينة المنتجات"/);
-  assert.match(customerCatalogue, /groupLabels\[p\.group_id\]/);
+test("BARO customer catalogue keeps grouped sections and is not overwritten by the legacy renderer", () => {
+  const customerCatalogue = ui.slice(ui.indexOf("function renderBaroCustomerCatalog(products)"), ui.indexOf("async function loadBaroCustomer()"));
+  assert.match(customerCatalogue, /const categoryOrder=\["pubg","freefire","jawaker"\]/);
+  assert.match(customerCatalogue, /const groupOrder=/);
+  assert.match(customerCatalogue, /baro-catalog-category/);
+  assert.doesNotMatch(ui, /function baroRenderCustomerProductCards\(\)/);
+  assert.doesNotMatch(ui, /loadBaroCustomer=async function\(\)/);
+  assert.doesNotMatch(ui, /catalog\.textContent="كتالوج BARO للمعاينة فقط/);
+  assert.match(ui, /renderBaroCustomerCatalog\(baroCustomerProducts\)/);
   assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_usd,"USD"\)/);
   assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_syp,"SYP"\)/);
-  assert.match(ui, /checkout\.classList\.toggle\("hidden",!baroManualEnabled\)/);
-  assert.match(ui, /submit\.hidden=!baroManualEnabled/);
+  const app = read("../index.html");
+  assert.match(app, /class="game-checkout hidden"/);
+  assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
   assert.match(baroFinance, /displayed_price_usd_snapshot/);
   assert.match(baroFinance, /displayed_price_syp_snapshot/);
   assert.match(baroFinance, /displayed_exchange_rate_snapshot/);
