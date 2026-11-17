@@ -34,6 +34,8 @@ jobs:
           node --check community.js
       - name: Check support Edge Function syntax
         run: deno check supabase/functions/baran-support-center/index.ts
+deno check supabase/functions/baran-push-dispatch/index.ts
+          deno check supabase/functions/baran-admin/index.ts
       - name: Check communication UI wiring
         run: |
           node --input-type=module <<'NODE'
@@ -46,7 +48,12 @@ jobs:
             ['customer and admin notification lists are wired', js.includes('createToolbar("customerNotificationsList"') && js.includes('createToolbar("adminNotifications"')],
             ['bulk read uses the existing server RPC', js.includes('mark_baran_notifications_read')],
             ['quick replies are available for both support roles', js.includes('customerSupportConversationInput') && js.includes('adminSupportConversationInput')],
-            ['existing broadcast form is not duplicated', (html.match(/id="baranAnnouncementTitle"/g)||[]).length === 1]
+            ['notification preferences are connected', js.includes('baran_notification_preferences') && js.includes('quiet_hours_enabled')],
+            ['support attachment upload is wired', readFileSync('community.js', 'utf8').includes('baran-support-attachments')],
+            ['ticket priority and assignment controls are wired', readFileSync('community.js', 'utf8').includes('adminSupportConversationAssignee')],
+            ['existing broadcast form is not duplicated', (html.match(/id="baranAnnouncementTitle"/g)||[]).length === 1],
+            ['notification preference migration exists', readFileSync('supabase/migrations/20261117190000_add_notification_preferences.sql', 'utf8').includes('baran_notification_preferences')],
+            ['support attachment migration exists', readFileSync('supabase/migrations/20261117183000_enhance_baran_support_attachments_receipts.sql', 'utf8').includes('baran-support-attachments')]
           ];
           for (const [label, ok] of checks) {
             console.log((ok ? 'PASS ' : 'FAIL ') + label);
