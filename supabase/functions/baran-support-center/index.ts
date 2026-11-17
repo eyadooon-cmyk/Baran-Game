@@ -52,18 +52,26 @@ Deno.serve(async (req: Request) => {
         return json({ error: "معرّف التذكرة غير صحيح." }, 400);
       }
       let ticketQuery = admin.from("customer_feedback")
-        .select("id,user_id,feedback_type,ticket_code,subject,message,order_id,status,admin_reply,admin_read_at,created_at,updated_at")
+        .select("id,user_id,feedback_type,ticket_code,subject,message,order_id,status,priority,admin_reply,admin_read_at,created_at,updated_at")
         .eq("id", ticketId).eq("feedback_type", "support");
       if (!isStaff) ticketQuery = ticketQuery.eq("user_id", user.id);
       const { data: ticket, error: ticketError } = await ticketQuery.maybeSingle();
       if (ticketError) return json({ error: "تعذر تحميل التذكرة." }, 500);
       if (!ticket) return json({ error: "التذكرة غير موجودة أو لا تملك صلاحية الوصول إليها." }, 404);
 
+      await admin.from("baran_support_messages").update({ read_at: new Date().toISOString() })
+        .eq("feedback_id", ticket.id).is("read_at", null)
+        .neq("sender_role", isStaff ? "admin" : "customer");
       const { data: messages, error: messagesError } = await admin.from("baran_support_messages")
-        .select("id,feedback_id,sender_id,sender_role,message,message_type,created_at")
+        .select("id,feedback_id,sender_id,sender_role,message,message_type,created_at,read_at,attachment_path,attachment_name,attachment_mime,attachment_size")
         .eq("feedback_id", ticket.id).order("created_at", { ascending: true }).limit(250);
       if (messagesError) return json({ error: "تعذر تحميل سجل المحادثة." }, 500);
-      const thread = [...(messages ?? [])];
+      const thread = await Promise.all((messages ?? []).map(async (item) => {
+        if (!item.attachment_path) return item;
+        const { data: signed } = await admin.storage.from("baran-support-attachments")
+          .createSignedUrl(item.attachment_path, 300);
+        return { ...item, attachment_url: signed?.signedUrl ?? null };
+      }));
       if (!thread.some((m) => m.message_type === "ticket_opened")) {
         thread.unshift({ id: "ticket-" + ticket.id, feedback_id: ticket.id, sender_id: ticket.user_id,
           sender_role: "customer", message: ticket.message, message_type: "ticket_opened", created_at: ticket.created_at });
@@ -93,7 +101,52 @@ Deno.serve(async (req: Request) => {
     let body: Record<string, unknown>;
     try { body = await req.json(); } catch { return json({ error: "بيانات الطلب غير صالحة." }, 400); }
     const ticketId = typeof body.ticket_id === "string" ? body.ticket_id : "";
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ticketId)) {
+      return json({ error: "معرّف التذكرة غير صحيح." }, 400);
+    }
+    if (body.action === "update_ticket") {
+      if (!isStaff) return json({ error: "هذه العملية متاحة لفريق الإدارة فقط." }, 403);
+      const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (body.status !== undefined) {
+        if (!["pending","in_progress","completed","rejected"].includes(String(body.status)))
+          return json({ error: "حالة التذكرة غير صحيحة." }, 400);
+        updates.status = body.status;
+      }
+      if (body.priority !== undefined) {
+        if (!["low","normal","high","urgent"].includes(String(body.priority)))
+          return json({ error: "أولوية التذكرة غير صحيحة." }, 400);
+        updates.priority = body.priority;
+      }
+      const { data: updated, error: updateError } = await admin.from("customer_feedback")
+        .update(updates).eq("id", ticketId).eq("feedback_type", "support")
+        .select("id,status,priority,updated_at").maybeSingle();
+      if (updateError || !updated) return json({ error: "تعذر تحديث التذكرة." }, 400);
+      await admin.from("admin_audit_log").insert({
+        admin_id: user.id, action: "support_ticket_update", entity_type: "customer_feedback",
+        entity_id: ticketId, details: { status: updated.status, priority: updated.priority },
+      });
+      return json({ success: true, ticket: updated });
+    }
     const message = typeof body.message === "string" ? body.message.trim() : "";
+    const attachmentPath = typeof body.attachment_path === "string" ? body.attachment_path : "";
+    const attachmentName = typeof body.attachment_name === "string" ? body.attachment_name.trim().slice(0,180) : "";
+    const attachmentMime = typeof body.attachment_mime === "string" ? body.attachment_mime : "";
+    const attachmentSize = Number(body.attachment_size || 0);
+    const hasAttachment = !!attachmentPath;
+    if (!message && !hasAttachment) return json({ error: "اكتب رسالة أو أرفق ملفاً." }, 400);
+    if (message.length > 2000) return json({ error: "الرسالة طويلة جداً." }, 400);
+    if (hasAttachment) {
+      const allowed = ["image/jpeg","image/png","image/webp","application/pdf"];
+      const expectedPrefix = ticketId + "/" + user.id + "/";
+      if (!attachmentPath.startsWith(expectedPrefix) || attachmentPath.includes("..") ||
+          !attachmentName || !allowed.includes(attachmentMime) ||
+          !Number.isInteger(attachmentSize) || attachmentSize < 1 || attachmentSize > 10485760) {
+        return json({ error: "بيانات المرفق غير صالحة أو لا تملك صلاحية استخدامه." }, 400);
+      }
+      const { data: objectSigned, error: objectError } = await admin.storage.from("baran-support-attachments")
+        .createSignedUrl(attachmentPath, 60);
+      if (objectError || !objectSigned?.signedUrl) return json({ error: "تعذر التحقق من الملف المرفق." }, 400);
+    }
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ticketId)) {
       return json({ error: "معرّف التذكرة غير صحيح." }, 400);
     }
@@ -107,8 +160,12 @@ Deno.serve(async (req: Request) => {
 
     const { data: inserted, error: insertError } = await admin.from("baran_support_messages").insert({
       feedback_id: ticket.id, sender_id: user.id, sender_role: isStaff ? "admin" : "customer",
-      message, message_type: "message",
-    }).select("id,feedback_id,sender_id,sender_role,message,message_type,created_at").single();
+      message: message || "أرفق ملفاً", message_type: "message",
+      attachment_path: hasAttachment ? attachmentPath : null,
+      attachment_name: hasAttachment ? attachmentName : null,
+      attachment_mime: hasAttachment ? attachmentMime : null,
+      attachment_size: hasAttachment ? attachmentSize : null,
+    }).select("id,feedback_id,sender_id,sender_role,message,message_type,created_at,read_at,attachment_path,attachment_name,attachment_mime,attachment_size").single();
     if (insertError) {
       console.error("baran-support-center: message insert failed", insertError.message);
       return json({ error: "تعذر إرسال الرسالة. حاول مرة أخرى." }, 500);
