@@ -90,7 +90,7 @@ function baroOpenProductCheckout(product){
  const message=baroEl("baroOrderMessage");
  if(message)message.textContent=baroManualEnabled&&product.purchase_enabled===true?"أدخل ID وتأكد من صحته قبل إرسال الطلب.":"المعاينة متاحة، لكن استقبال الطلبات مغلق حالياً ولن يتم إرسال أي طلب.";
  baroUpdateQuantityField();baroUpdateOrderSubmitState();
- if(baroCheckoutModal){baroCheckoutModal.modal.classList.add("is-open");baroCheckoutModal.modal.setAttribute("aria-hidden","false");baroEl("baroPlayerId")?.focus();}
+ if(baroCheckoutModal){baroCheckoutModal.modal.querySelector(".baro-checkout-dialog")?.append(baroEl("baroSubmitOrder")?.closest(".game-checkout"));baroCheckoutModal.modal.classList.add("is-open");baroCheckoutModal.modal.setAttribute("aria-hidden","false");baroEl("baroPlayerId")?.focus();}
 }
 function renderBaroCustomerCatalog(products){
  const box=baroEl("baroCustomerCatalog");if(!box)return;
