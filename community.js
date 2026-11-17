@@ -540,7 +540,7 @@ function renderSupportConversation(data,audience){
     }
   }
 }
-async async function updateSupportTicketMeta(){
+async function updateSupportTicketMeta(){
   if(!activeSupportConversation.id||activeSupportConversation.audience!=="admin")return;
   const status=document.getElementById("adminSupportConversationStatus")?.value||"pending";
   const priority=document.getElementById("adminSupportConversationPriority")?.value||"normal";
