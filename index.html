@@ -3390,7 +3390,9 @@ const baranSectionAssistantHistory={};
 function ensureBaranSectionAssistant(sectionId){
   const config=BARAN_SECTION_ASSISTANTS[sectionId];
   const panel=document.querySelector('[data-admin-panel="'+sectionId+'"]');
-  if(!config||!panel||panel.querySelector(".baran-section-assistant"))return;
+  if(!config||!panel)return;
+  const existing=panel.querySelector(".baran-section-assistant");
+  if(existing){panel.appendChild(existing);return;}
   const card=document.createElement("section");
   card.className="baran-section-assistant";
   card.style.cssText="margin:18px 0;padding:15px;background:linear-gradient(145deg,#21182c,#100d15);border:1px solid #8b6ba8;border-radius:15px";
@@ -3634,7 +3636,20 @@ function showAdminPanel(id){
     if(typeof loadOwnerFundingHistory==="function")loadOwnerFundingHistory();
   }
   window.scrollTo({top:0,behavior:"smooth"});
-  return panelLoad;
+  return panelLoad.then(result=>{
+    if(BARAN_SECTION_ASSISTANTS[id]){
+      ensureBaranSectionAssistant(id);
+      const activePanel=admin.querySelector('.admin-subpanel[data-admin-panel="'+id+'"]');
+      if(activePanel){
+        // اجمع مساعدي هذا القسم في النهاية بعد اكتمال تحميل محتواه الديناميكي.
+        [".baran-section-assistant","#baranAdminAssistant","#supplierManagerAi"].forEach(selector=>{
+          const assistant=activePanel.querySelector(selector);
+          if(assistant)activePanel.appendChild(assistant);
+        });
+      }
+    }
+    return result;
+  });
 }
 function closeAdminPanel(){
   const admin=document.getElementById("admin");
