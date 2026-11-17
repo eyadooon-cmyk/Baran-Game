@@ -142,11 +142,18 @@
     const list = $("opsCustomers");
     if (!list) return;
     list.querySelectorAll(".customer-directory-item").forEach(card => {
-      const details = card.querySelector(".customer-directory-details");
-      if (!details || card.querySelector(".baran-open-full-profile")) return;
+      if (card.querySelector(".baran-open-full-profile")) return;
       const summary = card.querySelector(".customer-directory-toggle");
-      const label = summary?.querySelector(".customer-directory-identity strong")?.textContent || "";
-      const customer = (current?.customers || []).find(c => c.id === card.dataset.customerId) || (current?.customers || []).find(c => (c.full_name || c.email || "زبون") === label);
+      if (!summary) return;
+      const label = summary.querySelector(".customer-directory-identity strong")?.textContent || "";
+      // The directory and the experience endpoint may return different customer shapes.
+      // Resolve from both sources and normalize IDs before matching.
+      const sources = [
+        ...(Array.isArray(current?.customers) ? current.customers : []),
+        ...(Array.isArray(window.baranCustomerDirectory) ? window.baranCustomerDirectory : [])
+      ];
+      const customer = sources.find(c => String(c.id || c.user_id || "") === String(card.dataset.customerId || "")) ||
+        sources.find(c => (c.full_name || c.email || "زبون") === label);
       if (!customer) return;
       const button = node("button", "baran-open-full-profile", "فتح الملف الشامل ←");
       button.type = "button";
