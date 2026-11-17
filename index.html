@@ -5542,7 +5542,20 @@ function filterBaranCustomerDirectory(){
       summary.setAttribute("aria-expanded",isOpen?"true":"false");
       hint.textContent=isOpen?"إخفاء التفاصيل":"تفاصيل";
     });
-    card.append(summary,details);box.appendChild(card);
+    card.append(summary,details);
+    const profileButton=document.createElement("button");
+    profileButton.type="button";
+    profileButton.className="baran-open-full-profile";
+    profileButton.textContent="فتح الملف الشامل ←";
+    profileButton.setAttribute("aria-label","فتح الملف الشامل للعميل "+(item.full_name||item.email||""));
+    profileButton.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof window.openBaranCustomerProfile==="function")window.openBaranCustomerProfile(item);
+      else window.alert("تعذر فتح الملف الشامل حالياً. حدّث الصفحة وحاول مجدداً.");
+    });
+    card.appendChild(profileButton);
+    box.appendChild(card);
   });
 }
 
