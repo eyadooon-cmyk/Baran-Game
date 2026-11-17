@@ -3311,7 +3311,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
-<script src="./baro.js?v=20261117-illustrated-cards-1"></script>
+<script src="./baro.js?v=20261117-horizontal-art-2"></script>
 <script src="./baro-management.js?v=20261117-baro-management-4"></script>
 <script src="./baro-ai.js?v=20261117-baro-ai-1"></script>
 <script>
@@ -6920,6 +6920,29 @@ button.baran-back-button:focus-visible{
  #baroCustomerCatalog .baro-catalog-product-card{padding:9px;min-height:120px}
 }
 @media(prefers-reduced-motion:reduce){#baroCustomerCatalog .baro-catalog-chevron{transition:none}}
+
+/* BARO artwork: keep labels horizontal and give long Jawaker names enough room. */
+#baroCustomerCatalog .baro-catalog-product-card-top{
+ display:flex;flex-direction:column-reverse;align-items:stretch;justify-content:flex-start;gap:6px;min-height:0
+}
+#baroCustomerCatalog .baro-catalog-product-art{
+ display:flex;flex:0 0 62px;width:100%;min-width:0;height:62px;box-sizing:border-box
+}
+#baroCustomerCatalog .baro-catalog-preview-tag{align-self:flex-end;line-height:1.2}
+#baroCustomerCatalog .baro-catalog-product-art-label{
+ display:block;flex:1 1 auto;min-width:0;max-width:100%;
+ direction:ltr;text-align:left;writing-mode:horizontal-tb;
+ white-space:nowrap;word-break:keep-all;overflow-wrap:normal;
+ font-size:clamp(6px,1.8vw,8px);letter-spacing:.2px;line-height:1.2;
+ overflow:hidden;text-overflow:clip
+}
+@media(max-width:380px){
+ #baroCustomerCatalog .baro-catalog-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ #baroCustomerCatalog .baro-catalog-product-card{padding:8px;min-height:158px}
+ #baroCustomerCatalog .baro-catalog-product-art{gap:6px;padding:7px}
+ #baroCustomerCatalog .baro-catalog-product-art-icon{flex-basis:34px;width:34px;height:34px;font-size:21px}
+ #baroCustomerCatalog .baro-catalog-product-art-label{font-size:6px;letter-spacing:0}
+}
 </style>
 
 </body>
