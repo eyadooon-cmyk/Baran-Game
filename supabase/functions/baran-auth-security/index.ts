@@ -32,9 +32,12 @@ Deno.serve(async (req: Request) => {
   try {
     const url = Deno.env.get("SUPABASE_URL");
     const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? readKeyObject("SUPABASE_SECRET_KEYS");
-    const publicKey = Deno.env.get("SUPABASE_ANON_KEY") ?? readKeyObject("SUPABASE_PUBLISHABLE_KEYS");
-    if (!url || !service || !publicKey) return json({ error: "Server configuration incomplete" }, 503);
-    if (req.headers.get("apikey") !== publicKey) return json({ error: "Invalid API key" }, 401);
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const publishableKey = readKeyObject("SUPABASE_PUBLISHABLE_KEYS");
+    if (!url || !service || (!anonKey && !publishableKey)) return json({ error: "Server configuration incomplete" }, 503);
+    const suppliedKey = req.headers.get("apikey") ?? "";
+    const acceptedKeys = [anonKey, publishableKey].filter((key): key is string => Boolean(key));
+    if (!acceptedKeys.includes(suppliedKey)) return json({ error: "Invalid API key" }, 401);
     const body = await req.json().catch(() => null) as { identifier_hash?: string } | null;
     const identifierHash = body?.identifier_hash ?? "";
     if (!/^[0-9a-f]{64}$/.test(identifierHash)) return json({ error: "Invalid telemetry payload" }, 400);

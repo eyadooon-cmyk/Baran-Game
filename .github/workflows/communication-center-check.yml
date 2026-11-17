@@ -94,6 +94,7 @@ jobs:
             ['failed login reports are rate-limited and marked unverified', readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('baran_record_login_failure') && readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('verified_by_auth_server')],
             ['login form hashes the email and never sends the password to telemetry', html.includes('reportFailedLogin(email)') && html.includes('identifier_hash:identifierHash') && !/reportFailedLogin\([^)]*password/.test(html)],
             ['admin customer profile includes security monitoring', readFileSync('customer-experience-suite.js', 'utf8').includes('مراقبة الدخول والأجهزة') && readFileSync('supabase/functions/baran-admin/index.ts', 'utf8').includes('customer_security_events')],
+            ['customer experience bundle cache version is refreshed', html.includes('./customer-experience-suite.js?v=20261117-suite-2')],
           ];
           for (const [label, ok] of checks) {
             console.log((ok ? 'PASS ' : 'FAIL ') + label);
