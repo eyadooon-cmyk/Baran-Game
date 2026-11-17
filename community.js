@@ -506,17 +506,84 @@ function renderSupportConversation(data,audience){
   messages.forEach(item=>{
     const bubble=document.createElement("article");bubble.className="support-message "+(item.sender_role||"system");
     const content=document.createElement("div");content.textContent=item.message||"";
+    bubble.appendChild(content);
+    if(item.attachment_url){
+      const attachment=document.createElement("a");attachment.className="support-message-attachment";
+      attachment.href=item.attachment_url;attachment.target="_blank";attachment.rel="noopener noreferrer";
+      attachment.textContent=(item.attachment_mime||"").startsWith("image/")?"عرض الصورة المرفقة":"عرض الملف المرفق";
+      if((item.attachment_mime||"").startsWith("image/")){
+        const image=document.createElement("img");image.src=item.attachment_url;image.alt="مرفق من المحادثة";
+        image.loading="lazy";image.className="support-message-attachment-image";attachment.appendChild(image);
+      }else{attachment.textContent="📎 "+(item.attachment_name||"ملف مرفق")+" · فتح الملف";}
+      bubble.appendChild(attachment);
+    }
     const stamp=document.createElement("time");stamp.className="support-message-meta";
     const role=item.sender_role==="customer"?"الزبون":item.sender_role==="assistant"?"مساعد باران":item.sender_role==="admin"?"فريق الإدارة":"النظام";
-    stamp.textContent=role+" · "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"");
-    bubble.append(content,stamp);list.appendChild(bubble);
+    const receipt=item.sender_role===(audience==="admin"?"admin":"customer")?(item.read_at?" · قُرئت":" · تم الإرسال"):"";
+    stamp.textContent=role+" · "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"")+receipt;
+    bubble.appendChild(stamp);list.appendChild(bubble);
   });
   list.scrollTop=list.scrollHeight;
   if(audience==="admin"){
     const status=document.getElementById("adminSupportConversationStatus");
     if(status)status.value=ticket.status||"pending";
+    const priority=document.getElementById("adminSupportConversationPriority");
+    if(priority)priority.value=ticket.priority||"normal";
+    const assignee=document.getElementById("adminSupportConversationAssignee");
+    if(assignee){
+      const staff=Array.isArray(data.staff)?data.staff:[];
+      const selected=ticket.assigned_admin_id||"";
+      assignee.replaceChildren();
+      const unassigned=document.createElement("option");unassigned.value="";unassigned.textContent="غير مسندة";assignee.appendChild(unassigned);
+      staff.forEach(member=>{const option=document.createElement("option");option.value=member.user_id;option.textContent=member.full_name||("موظف "+member.user_id.slice(0,8));assignee.appendChild(option);});
+      assignee.value=selected;
+    }
   }
 }
+async function updateSupportTicketMeta(){
+  if(!activeSupportConversation.id||activeSupportConversation.audience!=="admin")return;
+  const status=document.getElementById("adminSupportConversationStatus")?.value||"pending";
+  const priority=document.getElementById("adminSupportConversationPriority")?.value||"normal";
+  const assigned=document.getElementById("adminSupportConversationAssignee")?.value||"";
+  try{
+    await supportCenterRequest("POST",null,{action:"update_ticket",ticket_id:activeSupportConversation.id,status,priority,assigned_admin_id:assigned||null});
+    const meta=document.getElementById("adminSupportConversationMeta");
+    if(meta)meta.dataset.saved="1";
+    await openSupportConversation(activeSupportConversation.id,"admin");
+  }catch(error){alert("تعذر تحديث التذكرة: "+error.message);}
+}
+function ensureSupportComposerExtras(){
+  ["customer","admin"].forEach(audience=>{
+    const prefix=audience==="admin"?"admin":"customer";
+    const form=document.querySelector("#"+prefix+"SupportConversation .support-conversation-compose");
+    if(form&&!document.getElementById(prefix+"SupportAttachment")){
+      const wrap=document.createElement("div");wrap.className="support-attachment-controls";
+      const label=document.createElement("label");label.textContent="📎 إرفاق صورة أو PDF (حتى 10MB)";
+      label.htmlFor=prefix+"SupportAttachment";
+      const file=document.createElement("input");file.type="file";file.id=prefix+"SupportAttachment";
+      file.accept="image/jpeg,image/png,image/webp,application/pdf";
+      const status=document.createElement("small");status.id=prefix+"SupportAttachmentStatus";status.className="small";status.setAttribute("role","status");
+      wrap.append(label,file,status);form.insertBefore(wrap,form.firstChild);
+    }
+  });
+  const tools=document.querySelector("#adminSupportConversation .support-conversation-admin-tools");
+  if(tools&&!document.getElementById("adminSupportConversationPriority")){
+    const label=document.createElement("label");label.htmlFor="adminSupportConversationPriority";label.textContent="أولوية التذكرة";
+    const select=document.createElement("select");select.id="adminSupportConversationPriority";
+    [["low","منخفضة"],["normal","عادية"],["high","عالية"],["urgent","عاجلة"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;select.appendChild(o);});
+    select.addEventListener("change",updateSupportTicketMeta);
+    tools.append(label,select);
+    const assigneeLabel=document.createElement("label");assigneeLabel.htmlFor="adminSupportConversationAssignee";assigneeLabel.textContent="الموظف المسؤول";
+    const assignee=document.createElement("select");assignee.id="adminSupportConversationAssignee";
+    const unassigned=document.createElement("option");unassigned.value="";unassigned.textContent="غير مسندة";assignee.appendChild(unassigned);
+    assignee.addEventListener("change",updateSupportTicketMeta);
+    tools.append(assigneeLabel,assignee);
+    const status=document.getElementById("adminSupportConversationStatus");if(status)status.addEventListener("change",updateSupportTicketMeta);
+  }
+}
+document.addEventListener("DOMContentLoaded",ensureSupportComposerExtras);
+new MutationObserver(ensureSupportComposerExtras).observe(document.documentElement,{childList:true,subtree:true});
+ensureSupportComposerExtras();
 async function openSupportConversation(ticketId,audience){
   const prefix=audience==="admin"?"admin":"customer";
   const box=document.getElementById(prefix+"SupportConversation");
@@ -540,17 +607,37 @@ async function sendSupportConversationMessage(event,audience){
   const button=document.getElementById(prefix+"SupportConversationSend");
   const message=String(input?.value||"").trim();
   const ticketId=activeSupportConversation.id;
+  const fileInput=document.getElementById(prefix+"SupportAttachment");
+  const file=fileInput?.files?.[0]||null;
   if(!ticketId||activeSupportConversation.audience!==audience){alert("افتح التذكرة أولاً.");return;}
-  if(!message){input?.focus();return;}
+  if(!message&&!file){input?.focus();return;}
   if(message.length>2000){alert("الرسالة طويلة جداً.");return;}
+  if(file){
+    const allowed=["image/jpeg","image/png","image/webp","application/pdf"];
+    if(!allowed.includes(file.type)){alert("المسموح صور JPG وPNG وWEBP أو PDF فقط.");return;}
+    if(file.size>10*1024*1024){alert("حجم الملف الأقصى 10 ميغابايت.");return;}
+  }
   if(button)button.disabled=true;
+  const sendStatus=document.getElementById(prefix+"SupportAttachmentStatus");
   try{
     const payload={ticket_id:ticketId,message};
     if(audience==="admin")payload.status=document.getElementById("adminSupportConversationStatus")?.value||"in_progress";
+    if(file){
+      if(sendStatus)sendStatus.textContent="جاري رفع المرفق بأمان...";
+      const {data:{session},error:sessionError}=await sb.auth.getSession();
+      if(sessionError||!session)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
+      const extension=({ "image/jpeg":"jpg","image/png":"png","image/webp":"webp","application/pdf":"pdf" })[file.type];
+      const path=ticketId+"/"+session.user.id+"/"+crypto.randomUUID()+"."+extension;
+      const {error:uploadError}=await sb.storage.from("baran-support-attachments").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type});
+      if(uploadError)throw new Error("تعذر رفع المرفق: "+uploadError.message);
+      payload.attachment_path=path;payload.attachment_name=file.name;payload.attachment_mime=file.type;payload.attachment_size=file.size;
+    }
     await supportCenterRequest("POST",null,payload);
     if(input)input.value="";
+    if(fileInput)fileInput.value="";
+    if(sendStatus)sendStatus.textContent="";
     await openSupportConversation(ticketId,audience);
     if(audience==="customer")await loadMyFeedback();
-  }catch(error){alert("تعذر إرسال الرسالة: "+error.message);}
+  }catch(error){if(sendStatus)sendStatus.textContent="";alert("تعذر إرسال الرسالة: "+error.message);}
   finally{if(button)button.disabled=false;}
 }

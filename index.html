@@ -1718,6 +1718,59 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 @media(max-width:360px){.game-checkout{padding:12px}.game-checkout h3{font-size:15px}.game-selection-summary,.baran-unified-selection{padding:11px}.baran-package-button{min-height:160px;padding:10px}}
 </style>
 
+
+<style id="baran-communication-premium-style">
+.baran-comm-toolbar{margin:10px 0 14px;padding:12px;border:1px solid #59416e;border-radius:16px;background:linear-gradient(145deg,#21182c,#14101b);box-shadow:0 10px 28px #0004}
+.baran-comm-search,.baran-announcement-composer input,.baran-announcement-composer textarea{width:100%;min-width:0;box-sizing:border-box;background:#100c16!important;color:#f5edf9!important;border:1px solid #574267!important;border-radius:11px!important;padding:11px 13px!important}
+.baran-comm-filters{display:flex;gap:7px;overflow-x:auto;padding:10px 0 5px;scrollbar-width:thin}
+.baran-comm-filters button,.baran-comm-actions button,.baran-quick-replies button{white-space:nowrap;width:auto;min-height:34px;padding:7px 11px;border:1px solid #574267;border-radius:999px;background:#21182c;color:#e9d9f5;font-size:12px}
+.baran-comm-filters button.active{background:linear-gradient(120deg,#68418a,#38244d);border-color:#c5a3df;color:#fff;box-shadow:0 0 0 2px #a978d033}
+.baran-comm-actions{display:flex;gap:8px;flex-wrap:wrap}.baran-comm-actions button{border-radius:9px}.baran-archived{opacity:.55;filter:saturate(.65)}
+.baran-archive-action{background:#251b30!important;border:1px solid #705589!important;color:#e8d8f4!important}
+.baran-announcement-composer{margin:14px 0;padding:16px;border:1px solid #765692;border-radius:17px;background:radial-gradient(circle at 100% 0,#49305d66,transparent 48%),linear-gradient(145deg,#21182c,#120e18);box-shadow:0 12px 30px #0005}
+.baran-comm-section-head span{display:block;color:#c7a5e5;font-size:10px;letter-spacing:1.5px;font-weight:900}.baran-comm-section-head strong{display:block;margin:4px 0;font-size:16px;color:#f7efff}.baran-comm-section-head p{font-size:12px;color:#bfaecb;line-height:1.7}
+.baran-announcement-composer label{display:block;margin:10px 0 5px;color:#e4d3f0;font-size:13px}.baran-announcement-composer button{width:100%;margin-top:10px;background:linear-gradient(110deg,#8155a5,#563477);border:1px solid #b38bd0;color:#fff;border-radius:11px;padding:12px;font-weight:800}#baranAnnouncementStatus{font-size:12px;color:#d8c5e8;min-height:18px}
+.baran-quick-replies{display:flex;gap:7px;overflow-x:auto;padding:9px 0;scrollbar-width:thin}.baran-quick-replies button{border-radius:9px}
+@media(max-width:560px){.baran-comm-toolbar{padding:10px}.baran-comm-actions>*{flex:1}.baran-announcement-composer{padding:13px}.baran-quick-replies button{font-size:11px}}
+</style>
+
+<style id="baran-support-advanced-style">
+.support-attachment-controls{display:grid;gap:6px;margin:0 0 9px;padding:10px 12px;border:1px dashed #795c91;border-radius:12px;background:#20172a}
+.support-attachment-controls label{font-size:12px;color:#dfc8ef;font-weight:700}
+.support-attachment-controls input[type=file]{width:100%;max-width:100%;color:#d9c9e6;font-size:12px}
+.support-message-attachment{display:inline-flex;flex-direction:column;gap:7px;max-width:min(100%,340px);margin:9px 0;padding:9px 11px;border:1px solid #785794;border-radius:12px;background:#251a30;color:#ead8f7;text-decoration:none;font-size:12px}
+.support-message-attachment-image{display:block;max-width:100%;max-height:260px;object-fit:contain;border-radius:8px}
+#adminSupportConversationPriority{margin-top:6px}
+.support-conversation-admin-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}
+.support-conversation-admin-tools label{font-size:12px;color:#d9c7e8}
+.support-message-meta{display:block;margin-top:8px;font-size:10px;opacity:.72}
+@media(max-width:520px){.support-conversation-admin-tools{grid-template-columns:1fr}.support-message-attachment{max-width:100%}}
+</style>
+
+<style id="baran-notification-preferences-style">
+.baran-notification-preferences{margin:10px 0 14px;border:1px solid #624777;border-radius:15px;background:linear-gradient(145deg,#21182c,#15101c);overflow:hidden}
+.baran-notification-preferences>summary{padding:13px 15px;color:#eadcf4;font-weight:800;cursor:pointer;list-style:none}
+.baran-notification-preferences>summary::-webkit-details-marker{display:none}
+.baran-preferences-body{padding:0 14px 14px;border-top:1px solid #493653}
+.baran-preferences-body>p{font-size:11px;line-height:1.7;color:#bdaec9}
+.baran-preference-row{display:flex;align-items:center;gap:10px;padding:7px 0;color:#e8dcef;font-size:13px}
+.baran-preference-row input{accent-color:#a879cc;width:17px;height:17px}
+.baran-quiet-hours{display:flex;gap:12px;margin:9px 0}
+.baran-quiet-hours label{display:grid;gap:5px;flex:1;color:#cbb8da;font-size:12px}
+.baran-quiet-hours input{width:100%;padding:8px;border:1px solid #624777;border-radius:9px;background:#100c16;color:#f5edf9}
+.baran-preferences-save{width:100%;padding:11px;border:1px solid #b38bd0;border-radius:10px;background:linear-gradient(110deg,#8155a5,#563477);color:#fff;font-weight:800}
+.baran-preferences-status{display:block;margin-top:8px;color:#d6c2e6;font-size:11px}
+.support-conversation-admin-tools select{min-width:0;width:100%}
+</style>
+
+<style id="baran-ticket-priority-style">
+.support-ticket-priority,.support-ticket-overdue{display:inline-flex;align-items:center;width:max-content;max-width:100%;margin:5px 5px 5px 0;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.support-ticket-priority{background:#352543;border:1px solid #73518d;color:#ead9f6}
+.support-ticket-priority.priority-urgent{background:#49252e;border-color:#a95361;color:#ffd5d9}
+.support-ticket-priority.priority-high{background:#493322;border-color:#a97942;color:#ffe2bd}
+.support-ticket-priority.priority-low{opacity:.75}
+.support-ticket-overdue{background:#49252e;border:1px solid #a95361;color:#ffd5d9}
+</style>
 </head>
 <body>
 
@@ -2564,6 +2617,17 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <section class="deposit-card overview-panel announcement-panel" aria-label="إرسال إعلان عام للزبائن">
         <h2>📢 إرسال إعلان لجميع الزبائن</h2>
         <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
+        <label for="baranAnnouncementAudience">الفئة المستهدفة</label>
+        <select id="baranAnnouncementAudience">
+          <option value="all">كل الزبائن</option>
+          <option value="pubg">زبائن PUBG Mobile (سبق لهم الشراء)</option>
+          <option value="freefire">زبائن Free Fire (سبق لهم الشراء)</option>
+          <option value="jawaker">زبائن جواكر (سبق لهم الشراء)</option>
+          <option value="ai">زبائن خدمات الذكاء الاصطناعي</option>
+          <option value="vpn">زبائن اشتراكات VPN</option>
+          <option value="gift_card">زبائن بطاقات الهدايا</option>
+          <option value="app">زبائن التطبيقات المدفوعة</option>
+        </select>
         <label for="baranAnnouncementTitle">عنوان الإعلان</label>
         <input id="baranAnnouncementTitle" maxlength="100" placeholder="مثلاً: عودة الخدمة للعمل">
         <label for="baranAnnouncementBody">نص الإعلان</label>
@@ -2961,7 +3025,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
                   <label for="adminFeedbackTypeFilter">نوع الرسالة</label>
                   <select id="adminFeedbackTypeFilter" onchange="filterAdminFeedback()"><option value="all">كل الرسائل</option><option value="support">تذاكر الدعم فقط</option><option value="review">التقييمات والاقتراحات</option></select>
                   <label for="adminFeedbackStatusFilter">حالة التذكرة</label>
-                  <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()"><option value="all">كل الحالات</option><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المتابعة</option><option value="completed">مكتملة</option><option value="rejected">مغلقة/مرفوضة</option><option value="approved">تقييم معتمد</option></select>
+                  <select id="adminFeedbackStatusFilter" onchange="filterAdminFeedback()"><option value="all">كل الحالات</option><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المتابعة</option><option value="completed">مكتملة</option><option value="rejected">مغلقة/مرفوضة</option><option value="approved">تقييم معتمد</option></select>\n                  <label for="adminFeedbackPriorityFilter">أولوية التذكرة</label><select id="adminFeedbackPriorityFilter" onchange="filterAdminFeedback()"><option value="all">كل الأولويات</option><option value="urgent">عاجلة</option><option value="high">عالية</option><option value="normal">عادية</option><option value="low">منخفضة</option></select>
                 </div>
               </div>
               <div id="adminFeedback" class="ops-list">جاري تحميل الرسائل...</div>
@@ -3230,6 +3294,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
 <script src="./community.js?v=20261117-notification-dismiss-1"></script>
+<script src="./communication-center.js?v=20261117-premium-1"></script>
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
@@ -4609,20 +4674,24 @@ async function sendBaranAnnouncement(){
   const status=document.getElementById("baranAnnouncementStatus");
   const notificationTitle=title?.value.trim()||"";
   const notificationBody=body?.value.trim()||"";
+  const audienceSegment=document.getElementById("baranAnnouncementAudience")?.value||"all";
+  const segmentLabels={all:"كل الزبائن",pubg:"زبائن PUBG Mobile",freefire:"زبائن Free Fire",jawaker:"زبائن جواكر",ai:"زبائن خدمات الذكاء الاصطناعي",vpn:"زبائن VPN",gift_card:"زبائن بطاقات الهدايا",app:"زبائن التطبيقات المدفوعة"};
   if(notificationTitle.length<3||notificationBody.length<5){
     if(status)status.textContent="اكتب عنواناً من 3 أحرف على الأقل ونصاً من 5 أحرف على الأقل.";
     return;
   }
-  if(!confirm("تأكيد إرسال هذا الإعلان إلى جميع حسابات الزبائن؟ سيصل فوراً داخل المتجر، وإلى الهواتف التي فعّلت الإشعارات."))return;
+  if(!confirm("تأكيد إرسال الإعلان إلى: "+(segmentLabels[audienceSegment]||"الفئة المحددة")+"؟ سيظهر داخل صندوق الإشعارات، وتصل نسخة فورية للأجهزة المفعّلة حسب تفضيلات كل زبون."))return;
   if(button)button.disabled=true;
   if(status)status.textContent="جاري إرسال الإعلان...";
   try{
     const result=await callAdminApi("POST",{
       action:"broadcast_announcement",
       notification_title:notificationTitle,
-      notification_body:notificationBody
+      notification_body:notificationBody,
+      audience_segment:audienceSegment
     });
-    if(status)status.textContent="تم إرسال الإعلان داخل المتجر إلى "+Number(result.sent_to||0).toLocaleString("ar")+" حساب. إشعارات الهاتف ستصل للأجهزة المفعّلة بعد إكمال إعداد الإرسال.";
+    if(status)status.textContent="تم إرسال الإعلان إلى "+Number(result.sent_to||0).toLocaleString("ar")+" حساب ضمن فئة "+(segmentLabels[audienceSegment]||"المحددة")+". وصول Push يخضع لتفضيلات كل زبون.";
+    const audienceInput=document.getElementById("baranAnnouncementAudience");if(audienceInput)audienceInput.value="all";
     title.value="";body.value="";
   }catch(error){
     if(status)status.textContent="تعذر إرسال الإعلان: "+error.message;
@@ -5114,9 +5183,11 @@ function filterAdminFeedback(){
   const query=String(document.getElementById("adminFeedbackSearch")?.value||"").trim().toLocaleLowerCase("ar");
   const type=document.getElementById("adminFeedbackTypeFilter")?.value||"all";
   const status=document.getElementById("adminFeedbackStatusFilter")?.value||"all";
+  const priority=document.getElementById("adminFeedbackPriorityFilter")?.value||"all";
   const rows=baranAdminFeedbackRows.filter(item=>{
     if(type!=="all"&&item.feedback_type!==type)return false;
     if(status!=="all"&&item.status!==status)return false;
+    if(priority!=="all"&&item.feedback_type==="support"&&(item.priority||"normal")!==priority)return false;
     const haystack=[item.ticket_code,item.subject,item.message,item.customer_email,item.admin_reply].filter(Boolean).join(" ").toLocaleLowerCase("ar");
     return !query||haystack.includes(query);
   });
@@ -5136,6 +5207,12 @@ function filterAdminFeedback(){
     const statuses={pending:"بانتظار الرد",in_progress:"قيد المتابعة",completed:"مكتملة",rejected:"مغلقة/مرفوضة",approved:"تقييم معتمد"};
     meta.textContent="الحالة: "+(statuses[item.status]||item.status||"غير محددة")+" | "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"—");
     card.append(heading,meta);
+    if(item.feedback_type==="support"){
+      const priorityLabels={low:"منخفضة",normal:"عادية",high:"عالية",urgent:"عاجلة"};
+      const priority=document.createElement("span");priority.className="support-ticket-priority priority-"+(item.priority||"normal");priority.textContent="الأولوية: "+(priorityLabels[item.priority||"normal"]||"عادية");card.appendChild(priority);
+      const age=Date.now()-new Date(item.updated_at||item.created_at||Date.now()).getTime();
+      if(["pending","in_progress"].includes(item.status)&&age>12*60*60*1000){const overdue=document.createElement("span");overdue.className="support-ticket-overdue";overdue.textContent="متأخرة — تحتاج متابعة";card.appendChild(overdue);}
+    }
     if(item.subject){const subject=document.createElement("p");subject.textContent="الموضوع: "+item.subject;card.appendChild(subject);}
     const message=document.createElement("p");message.textContent="رسالة الزبون: "+(item.message||"—");card.appendChild(message);
     if(item.customer_email){const customer=document.createElement("p");customer.className="ops-muted";customer.textContent="البريد: "+item.customer_email;card.appendChild(customer);}
@@ -5863,6 +5940,8 @@ async function markBaranNotificationCardRead(item,button,audience,card,state){
 function buildBaranNotificationCard(item,audience){
   const meta=baranNotificationMeta(item);
   const card=document.createElement("article");
+  card.dataset.notificationId=String(item.id||"");
+  card.dataset.notificationKind=String(item.kind||"");
   card.className="notification-item notification-tone-"+meta.tone+(item.read_at?"":" unread")+(audience==="customer"?" notification-clickable":"");
   if(audience==="customer"||audience==="admin"){
     card.tabIndex=0;card.setAttribute("role","button");
