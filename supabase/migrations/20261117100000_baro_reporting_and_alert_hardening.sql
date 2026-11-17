@@ -13,7 +13,7 @@ create or replace function public.baro_manual_finance_entry_atomic(
 ) returns jsonb
 language plpgsql security definer set search_path=''
 as $function$
-declare v_entry public.baro_manual_finance_entries%rowtype; v_usd numeric;
+declare v_entry public.baro_manual_finance_entries%rowtype; v_usd numeric; v_inserted boolean:=false;
 begin
   if p_admin_id is null or not public.baro_manual_has_permission(p_admin_id,'finance') then
     raise exception using errcode='42501',message='BARO finance permission required';
@@ -40,7 +40,8 @@ begin
   )
   on conflict (idempotency_key) do nothing
   returning * into v_entry;
-  if v_entry.id is null and p_idempotency_key is not null then
+  v_inserted:=v_entry.id is not null;
+  if not v_inserted and p_idempotency_key is not null then
     select * into v_entry from public.baro_manual_finance_entries where idempotency_key=p_idempotency_key;
     if not found or v_entry.entry_type is distinct from p_entry_type
        or v_entry.order_id is distinct from p_order_id
@@ -50,7 +51,7 @@ begin
     end if;
   end if;
   if v_entry.id is null then raise exception using errcode='40001',message='تعذر تسجيل الحركة المالية.'; end if;
-  if v_entry.created_by=p_admin_id and v_entry.created_at>now()-interval '2 seconds' then
+  if v_inserted then
     insert into public.admin_audit_log(admin_id,action,entity_type,entity_id,details)
     values(p_admin_id,'baro_finance_entry_created','baro_manual_finance_entry',v_entry.id::text,
       jsonb_build_object('entry_type',v_entry.entry_type,'amount',v_entry.amount,'currency',v_entry.currency,'order_id',v_entry.order_id));
