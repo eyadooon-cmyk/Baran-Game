@@ -4367,7 +4367,7 @@ async function loadDepositRequests(){
   }catch(error){
     container.textContent="تعذر تحميل الطلبات: "+error.message;
   }
-  void loadWalletTransactions();
+  await loadWalletTransactions();
 }
 
 async function loadWalletTransactions(){
