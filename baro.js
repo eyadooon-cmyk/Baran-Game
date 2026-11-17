@@ -54,6 +54,44 @@ function baroUpdateQuantityField(){
  if(wrap)wrap.classList.toggle("hidden",!isTokens);
  if(input){input.min=isTokens?"10000":"1";input.max=isTokens?"1000000":"1";input.step=isTokens?"1000":"1";input.value=isTokens?"10000":"1";}
 }
+let baroCheckoutModal=null,baroCheckoutPlaceholder=null,baroCheckoutSummary=null;
+function baroPrepareCheckout(){
+ const checkout=baroEl("baroSubmitOrder")?.closest(".game-checkout");
+ if(!checkout||baroCheckoutModal)return;
+ baroCheckoutPlaceholder=document.createComment("BARO checkout placeholder");
+ checkout.parentNode.insertBefore(baroCheckoutPlaceholder,checkout);
+ const style=document.createElement("style");
+ style.id="baro-product-checkout-modal-style";
+ style.textContent=".baro-catalog-product-card{appearance:none;-webkit-appearance:none;width:100%;font:inherit;color:inherit;text-align:inherit;cursor:pointer}.baro-catalog-product-card:focus-visible{outline:2px solid #c18bed;outline-offset:3px}.baro-catalog-product-card:active{transform:scale(.985)}.baro-checkout-modal{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(5,3,9,.82);backdrop-filter:blur(8px)}.baro-checkout-modal.is-open{display:flex}.baro-checkout-dialog{position:relative;width:min(520px,100%);max-height:90vh;overflow:auto;padding:17px;border:1px solid #76518f;border-radius:20px;background:linear-gradient(150deg,#241a30,#100c16);box-shadow:0 24px 80px #000b}.baro-checkout-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.baro-checkout-modal-head strong{color:#f3e8fb;font-size:17px}.baro-checkout-close{width:38px;height:38px;flex:0 0 38px;border:1px solid #76518f;border-radius:11px;background:#30203f;color:#fff;font-size:21px}.baro-checkout-product{margin:0 0 13px;padding:11px 13px;border:1px solid #76518f;border-radius:12px;background:#a56bd61c;color:#e8d5f6;font-weight:800}.baro-checkout-dialog .game-checkout{margin:0;padding:0;border:0;background:transparent}.baro-checkout-dialog #baroProductSelect{display:none}.baro-checkout-dialog .game-checkout h3{display:none}.baro-checkout-dialog #baroOrderMessage{margin-top:10px;line-height:1.8}.baro-checkout-dialog .baro-id-confirm{display:flex;align-items:flex-start;gap:9px;line-height:1.8}.baro-checkout-dialog .baro-id-confirm input{width:auto;flex:0 0 auto;margin-top:5px}.baro-checkout-dialog textarea{width:100%;box-sizing:border-box}@media(max-width:520px){.baro-checkout-modal{align-items:flex-end;padding:8px}.baro-checkout-dialog{max-height:88vh;border-radius:20px 20px 14px 14px;padding:15px}}";
+ document.head.append(style);
+ const modal=document.createElement("div");modal.className="baro-checkout-modal";modal.setAttribute("aria-hidden","true");
+ const dialog=document.createElement("div");dialog.className="baro-checkout-dialog";dialog.setAttribute("role","dialog");dialog.setAttribute("aria-modal","true");dialog.setAttribute("aria-labelledby","baroCheckoutTitle");
+ const head=document.createElement("div");head.className="baro-checkout-modal-head";
+ const title=document.createElement("strong");title.id="baroCheckoutTitle";title.textContent="إتمام طلب الشحن اليدوي";
+ const close=document.createElement("button");close.type="button";close.className="baro-checkout-close";close.textContent="×";close.setAttribute("aria-label","إغلاق");
+ head.append(title,close);
+ baroCheckoutSummary=document.createElement("div");baroCheckoutSummary.className="baro-checkout-product";
+ dialog.append(head,baroCheckoutSummary,checkout);modal.append(dialog);document.body.append(modal);
+ const closeModal=()=>{modal.classList.remove("is-open");modal.setAttribute("aria-hidden","true");if(baroCheckoutPlaceholder?.parentNode)baroCheckoutPlaceholder.parentNode.insertBefore(checkout,baroCheckoutPlaceholder.nextSibling);};
+ close.addEventListener("click",closeModal);
+ modal.addEventListener("click",event=>{if(event.target===modal)closeModal();});
+ document.addEventListener("keydown",event=>{if(event.key==="Escape"&&modal.classList.contains("is-open"))closeModal();});
+ baroCheckoutModal={modal,closeModal};
+}
+function baroOpenProductCheckout(product){
+ if(!product)return;
+ const select=baroEl("baroProductSelect");
+ if(select)select.value=product.product_code;
+ const player=baroEl("baroPlayerId"),confirmed=baroEl("baroPlayerIdConfirmed"),note=baroEl("baroCustomerNote");
+ if(player)player.value="";
+ if(confirmed)confirmed.checked=false;
+ if(note)note.value="";
+ if(baroCheckoutSummary)baroCheckoutSummary.textContent=String(product.product_name||"منتج BARO")+" · "+(product.category_id==="pubg"?"PUBG MOBILE":product.category_id==="freefire"?"FREE FIRE":product.category_id==="jawaker"?"JAWAKER":"BARO");
+ const message=baroEl("baroOrderMessage");
+ if(message)message.textContent=baroManualEnabled&&product.purchase_enabled===true?"أدخل ID وتأكد من صحته قبل إرسال الطلب.":"المعاينة متاحة، لكن استقبال الطلبات مغلق حالياً ولن يتم إرسال أي طلب.";
+ baroUpdateQuantityField();baroUpdateOrderSubmitState();
+ if(baroCheckoutModal){baroCheckoutModal.modal.classList.add("is-open");baroCheckoutModal.modal.setAttribute("aria-hidden","false");baroEl("baroPlayerId")?.focus();}
+}
 function renderBaroCustomerCatalog(products){
  const box=baroEl("baroCustomerCatalog");if(!box)return;
  box.replaceChildren();
@@ -128,7 +166,7 @@ function renderBaroCustomerCatalog(products){
    groupHead.append(groupIcon,groupCopy,groupCount);groupSection.append(groupHead);
    const grid=document.createElement("div");grid.className="baro-catalog-product-grid";
    items.forEach((p,productIndex)=>{
-    const card=document.createElement("article");card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;
+    const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;card.setAttribute("aria-label","اختيار "+String(p.product_name||"منتج BARO")+" وإدخال ID");card.addEventListener("click",()=>baroOpenProductCheckout(p));
     const cardTop=document.createElement("div");cardTop.className="baro-catalog-product-card-top";
     const art=document.createElement("div");art.className="baro-catalog-product-art";
     const artIcon=document.createElement("span");artIcon.className="baro-catalog-product-art-icon";
@@ -173,6 +211,7 @@ async function loadBaroCustomer(){
   const checkout=submitButton?.closest(".game-checkout");
   const canOrder=baroManualEnabled&&baroCustomerProducts.some(p=>p.purchase_enabled===true);
   if(checkout)checkout.classList.remove("hidden");
+  baroPrepareCheckout();
   if(submitButton){submitButton.hidden=!canOrder;submitButton.disabled=!canOrder;}
   renderBaroCustomerCatalog(baroCustomerProducts);
   const select=baroEl("baroProductSelect");
