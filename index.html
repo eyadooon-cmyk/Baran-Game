@@ -1853,6 +1853,9 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <button class="baran-clean-category" type="button" onclick="showSection('mobileTopup',null)">
           <span class="baran-clean-category-icon">📱</span><span class="baran-clean-category-copy"><strong>شحن رصيد الهاتف</strong><small>الخدمات المتاحة عند تفعيلها</small></span><span class="baran-clean-arrow">←</span>
         </button>
+        <button class="baran-clean-category" type="button" onclick="showSection('baroManual',this);loadBaroCustomer()" style="border-color:#8c66ad">
+          <span class="baran-clean-category-icon">🟣</span><span class="baran-clean-category-copy"><strong>BARO · الشحن اليدوي</strong><small>قسم مستقل للشحن اليدوي · منفصل عن الشحن الآلي</small></span><span class="baran-clean-arrow">←</span>
+        </button>
       </div>
 
       <div class="baran-clean-shortcuts" aria-label="اختصارات حسابك">
@@ -1877,15 +1880,12 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE">
           <span class="item-content"><strong>FREE FIRE</strong><span>ادخل إلى متجر جواهر Free Fire والطلبات الخاصة باللعبة</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
-        <button class="item" type="button" onclick="showSection('baroManual',this);loadBaroCustomer()" style="text-align:right;cursor:pointer;border-color:#8c66ad">
-          <span class="item-content"><strong>BARO · الشحن اليدوي</strong><span>اطلب الشحن اليدوي وتابع السعر والتنفيذ من حسابك</span><span class="small">فتح BARO ←</span></span>
-        </button>
       </div>
     </section>
 
         <section id="baroManual" class="hidden">
-      <button class="secondary games-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الألعاب</button>
-      <div class="hero"><h2>BARO · الشحن اليدوي</h2><p>استعرض المنتجات وأسعارها بالدولار والليرة السورية. استقبال الطلبات اليدوية مغلق حالياً.</p></div>
+      <button class="secondary games-back-button" type="button" onclick="showSection('home',null)">← العودة إلى الأقسام الرئيسية</button>
+      <div class="hero"><h2>BARO · الشحن اليدوي المستقل</h2><p>استعرض المنتجات وأسعارها بالدولار والليرة السورية. استقبال الطلبات اليدوية مغلق حالياً.</p></div>
       <div class="deposit-card"><strong>معاينة BARO الآمنة</strong><p class="small">هذا القسم مخصص حالياً لمعاينة المنتجات والتصميم والأسعار فقط.</p><p class="small">لا يتم إرسال بيانات أو إنشاء طلبات أو خصم رصيد أو الاتصال بأي مورد. سيظهر نموذج الطلب فقط بعد اعتماد الإدارة وفتح استقبال الطلبات.</p></div>
       <div id="baroCustomerCatalog" class="deposit-card" aria-live="polite">جاري تحميل كتالوج BARO...</div>
       <div class="game-checkout hidden"><h3>إنشاء طلب يدوي</h3>
