@@ -58,6 +58,9 @@
       heartbeatTimer = setInterval(() => {
         if (document.visibilityState === "visible") void sendPresence("heartbeat");
       }, 45000);
+    } else if (window.baranCustomerCenterPoll) {
+      clearInterval(window.baranCustomerCenterPoll);
+      window.baranCustomerCenterPoll = null;
     }
   });
   void syncSession();
@@ -170,9 +173,9 @@
       const last = customer.last_order_at ? new Date(customer.last_order_at).getTime() : 0;
       const days = last ? (Date.now() - last) / 86400000 : Infinity;
       if (!count) counts.new++;
+      else if (days > 30) counts.inactive++;
       else if (count >= 5) counts.loyal++;
-      else if (days <= 30) counts.active++;
-      else counts.inactive++;
+      else counts.active++;
     });
     box.replaceChildren();
     [["🆕","جدد",counts.new],["⚡","نشطون",counts.active],["⭐","دائمون",counts.loyal],["🌙","غير نشطين",counts.inactive]].forEach(([icon,label,count]) => {
