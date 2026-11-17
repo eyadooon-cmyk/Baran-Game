@@ -201,18 +201,18 @@
     const confirmText=duration==="none"?"تأكيد إلغاء حظر هذا العميل؟":"تأكيد حظر العميل؟";
     if(!window.confirm(confirmText))return;
     try{
-      const {data:{session},error:sessionError}=await window.sb.auth.getSession();
+      const {data:{session},error:sessionError}=await sb.auth.getSession();
       if(sessionError||!session)throw new Error("انتهت جلسة المدير.");
-      const response=await fetch(window.SUPABASE_URL+"/functions/v1/baran-admin",{
+      const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin",{
         method:"POST",
-        headers:{"Authorization":"Bearer "+session.access_token,"apikey":window.SUPABASE_KEY,"Content-Type":"application/json"},
+        headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
         body:JSON.stringify({action:"customer_account_ban",target_user_id:userId,ban_duration:duration,ban_reason:reason.trim()})
       });
       const result=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(result.error||"تعذر تنفيذ الإجراء.");
       window.alert(duration==="none"?"تم إلغاء الحظر.":"تم تطبيق الحظر.");
       if(modal)modal.remove();
-      if(typeof window.loadOperationsDashboard==="function")await window.loadOperationsDashboard();
+      window.location.reload();
     }catch(error){window.alert(error.message||"تعذر تنفيذ الإجراء.");}
   }
   window.renderBaranCustomerExperience = render;
