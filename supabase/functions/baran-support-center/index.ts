@@ -23,8 +23,9 @@ Deno.serve(async (req: Request) => {
   try {
     const url = Deno.env.get("SUPABASE_URL");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? readKeyObject("SUPABASE_PUBLISHABLE_KEYS");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? readKeyObject("SUPABASE_SECRET_KEYS");
-    if (!url || !anonKey || !serviceKey) return json({ error: "Server configuration is incomplete" }, 500);
+    const legacyServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const secretKey = readKeyObject("SUPABASE_SECRET_KEYS");
+    if (!url || !anonKey || !legacyServiceKey) return json({ error: "Server configuration is incomplete" }, 500);
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
     if (!token) return json({ error: "Authentication required" }, 401);
@@ -37,7 +38,10 @@ Deno.serve(async (req: Request) => {
     const user = authData?.user;
     if (authError || !user) return json({ error: "Invalid session" }, 401);
 
-    const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const admin = createClient(url, secretKey ?? legacyServiceKey, {
+      global: { headers: { Authorization: `Bearer ${legacyServiceKey}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
     const { data: isAdmin, error: adminCheckError } = await admin.rpc("admin_is_user", { p_user_id: user.id });
     if (adminCheckError) return json({ error: "Could not verify support permissions" }, 500);
     const isStaff = isAdmin === true;
