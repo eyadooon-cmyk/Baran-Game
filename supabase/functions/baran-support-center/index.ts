@@ -71,10 +71,11 @@ Deno.serve(async (req: Request) => {
       if (ticket.admin_reply && !thread.some((m) => m.message === ticket.admin_reply)) {
         const { data: queue } = await admin.from("baran_auto_support_queue")
           .select("generated_reply,state").eq("feedback_id", ticket.id).maybeSingle();
-        thread.push({ id: "legacy-" + ticket.id, feedback_id: ticket.id, sender_id: user.id,
+        thread.push({ id: "legacy-" + ticket.id, feedback_id: ticket.id, sender_id: ticket.user_id,
           sender_role: queue?.state === "sent" && queue.generated_reply === ticket.admin_reply ? "assistant" : "admin",
           message: ticket.admin_reply, message_type: "message", created_at: ticket.updated_at ?? ticket.created_at });
       }
+      thread.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       if (isStaff && !ticket.admin_read_at) {
         await admin.from("customer_feedback").update({ admin_read_at: new Date().toISOString() }).eq("id", ticket.id);
       }
@@ -114,12 +115,14 @@ Deno.serve(async (req: Request) => {
     }
 
     const now = new Date().toISOString();
-    await admin.from("customer_feedback").update({
+    const { error: ticketUpdateError } = await admin.from("customer_feedback").update({
       updated_at: now,
       ...(isStaff ? { admin_reply: message, admin_read_at: now,
         status: body.status === "pending" || body.status === "in_progress" || body.status === "completed" || body.status === "rejected"
-          ? body.status : "in_progress" } : {}),
+          ? body.status : "in_progress" }
+        : { admin_read_at: null, ...(ticket.status === "completed" || ticket.status === "rejected" ? { status: "in_progress" } : {}) }),
     }).eq("id", ticket.id);
+    if (ticketUpdateError) console.error("baran-support-center: ticket activity update failed", ticketUpdateError.message);
 
     if (isStaff) {
       const { error: notifyError } = await admin.from("baran_notifications").insert({
