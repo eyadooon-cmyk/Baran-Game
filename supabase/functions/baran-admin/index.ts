@@ -430,12 +430,16 @@ Deno.serve(async (req: Request) => {
         if (!allowedSegments.includes(segment)) return json({ error: "فئة المستلمين غير صالحة." }, 400);
         let recipientIds: string[] = [];
         if (segment === "all") {
-          const { data: profiles, error: profilesError } = await admin.from("profiles").select("id").limit(5000);
-          if (profilesError) {
-            console.error("baran-admin: announcement recipients failed", profilesError.message);
-            return json({ error: "تعذر تحميل قائمة الزبائن." }, 500);
+          for (let offset = 0; offset < 100000; offset += 1000) {
+            const { data: profiles, error: profilesError } = await admin.from("profiles")
+              .select("id").order("id").range(offset, offset + 999);
+            if (profilesError) {
+              console.error("baran-admin: announcement recipients failed", profilesError.message);
+              return json({ error: "تعذر تحميل قائمة الزبائن." }, 500);
+            }
+            recipientIds.push(...(profiles ?? []).map((profile) => profile.id));
+            if (!profiles || profiles.length < 1000) break;
           }
-          recipientIds = (profiles ?? []).map((profile) => profile.id);
         } else {
           const { data: products, error: productsError } = await admin.from("products")
             .select("product_code,category").eq("is_active", true);
@@ -448,10 +452,16 @@ Deno.serve(async (req: Request) => {
             return product.category === segment;
           }).map((product) => product.product_code);
           if (productCodes.length) {
-            const { data: orders, error: ordersError } = await admin.from("orders")
-              .select("user_id,product_code").in("product_code", productCodes).limit(20000);
-            if (ordersError) return json({ error: "تعذر تحديد الزبائن المهتمين بهذه الفئة." }, 500);
-            recipientIds = [...new Set((orders ?? []).map((order) => order.user_id).filter(Boolean))];
+            const matchedUsers = new Set<string>();
+            for (let offset = 0; offset < 100000; offset += 1000) {
+              const { data: orders, error: ordersError } = await admin.from("orders")
+                .select("user_id,product_code").in("product_code", productCodes)
+                .order("created_at", { ascending: false }).range(offset, offset + 999);
+              if (ordersError) return json({ error: "تعذر تحديد الزبائن المهتمين بهذه الفئة." }, 500);
+              for (const order of orders ?? []) if (order.user_id) matchedUsers.add(order.user_id);
+              if (!orders || orders.length < 1000) break;
+            }
+            recipientIds = [...matchedUsers];
           }
         }
         const recipients = [...new Set(recipientIds)].map((recipient_id) => ({
@@ -459,10 +469,12 @@ Deno.serve(async (req: Request) => {
           title, body: message, entity_type: null, entity_id: null,
         }));
         if (!recipients.length) return json({ success: true, sent_to: 0, segment });
-        const { error: insertError } = await admin.from("baran_notifications").insert(recipients);
-        if (insertError) {
-          console.error("baran-admin: announcement insert failed", insertError.message);
-          return json({ error: "تعذر إرسال الإعلان." }, 500);
+        for (let offset = 0; offset < recipients.length; offset += 500) {
+          const { error: insertError } = await admin.from("baran_notifications").insert(recipients.slice(offset, offset + 500));
+          if (insertError) {
+            console.error("baran-admin: announcement insert failed", insertError.message);
+            return json({ error: "تعذر إرسال الإعلان بالكامل. راجع سجل الإدارة قبل إعادة المحاولة لتجنب التكرار." }, 500);
+          }
         }
         await admin.from("admin_audit_log").insert({
           admin_id: user.id, action: "broadcast_announcement",
