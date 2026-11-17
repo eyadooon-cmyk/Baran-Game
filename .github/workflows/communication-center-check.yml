@@ -69,7 +69,7 @@ jobs:
             ['communication report routes through read-only admin analysis', js.includes('أنشئ تقريراً إدارياً عن التواصل') && js.includes('ولا تنفذ أي إجراء أو تغيير')],
             ['notification preference migration exists', readFileSync('supabase/migrations/20261117190000_add_notification_preferences.sql', 'utf8').includes('baran_notification_preferences')],
             ['support attachment migration exists', readFileSync('supabase/migrations/20261117183000_enhance_baran_support_attachments_receipts.sql', 'utf8').includes('baran-support-attachments')],
-            ['customer center script is loaded', html.includes('./customer-center.js?v=20261117-customer-center-1')],
+            ['customer center script is loaded', html.includes('./customer-center.js?v=20261117-customer-center-2')],
             ['customer center sends authenticated heartbeat and admin dashboard requests', readFileSync('customer-center.js', 'utf8').includes('sendPresence("heartbeat")') && readFileSync('customer-center.js', 'utf8').includes('action: "dashboard"')],
             ['customer presence endpoint enforces admin access for dashboard', readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('admin_is_user') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('Administrator access required')],
             ['presence migration keeps rows server-only', readFileSync('supabase/migrations/20261117220000_customer_presence_tracking.sql', 'utf8').toLowerCase().includes('enable row level security') && readFileSync('supabase/migrations/20261117220000_customer_presence_tracking.sql', 'utf8').toLowerCase().includes('revoke all on table public.customer_presence from anon, authenticated')],
@@ -78,7 +78,8 @@ jobs:
             ['signup accepts an optional referral code', html.includes('id="signupReferralCode"') && html.includes('referral_code:referralCode')],
             ['referral tracking is server-only', readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').toLowerCase().includes('enable row level security') && readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').toLowerCase().includes('revoke all on table public.customer_referrals from anon, authenticated')],
             ['first completed order qualifies a referral', readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').includes('qualify_customer_referral_on_first_completed_order')],
-            ['customer center displays referral tracking', readFileSync('customer-center.js', 'utf8').includes('renderReferrals(result)') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('customer_referrals')]
+            ['customer center displays referral tracking', readFileSync('customer-center.js', 'utf8').includes('renderReferrals(result)') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('customer_referrals')],
+            ['customer center displays last-seen history', readFileSync('customer-center.js', 'utf8').includes('renderRecentCustomers(result.recent || [])') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('is_online: new Date(row.last_seen_at)')]
           ];
           for (const [label, ok] of checks) {
             console.log((ok ? 'PASS ' : 'FAIL ') + label);

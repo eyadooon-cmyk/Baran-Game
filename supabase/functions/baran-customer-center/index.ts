@@ -74,12 +74,11 @@ Deno.serve(async (req: Request) => {
       }
       if (isAdmin !== true) return json({ error: "Administrator access required" }, 403);
 
-      const cutoff = new Date(Date.now() - 120_000).toISOString();
+      const cutoffMs = Date.now() - 120_000;
       const { data: rows, error } = await admin.from("customer_presence")
         .select("user_id,last_seen_at")
-        .gte("last_seen_at", cutoff)
         .order("last_seen_at", { ascending: false })
-        .limit(1000);
+        .limit(500);
       if (error) {
         console.error("customer center presence query failed", error.message);
         return json({ error: "تعذر تحميل العملاء المتصلين." }, 500);
@@ -101,12 +100,14 @@ Deno.serve(async (req: Request) => {
         return json({ error: "تعذر تحميل بيانات العملاء المتصلين." }, 500);
       }
       const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]));
-      const online = customerRows.map((row) => ({
+      const recent = customerRows.map((row) => ({
         user_id: row.user_id,
         full_name: profileById.get(row.user_id)?.full_name || "عميل",
         member_code: profileById.get(row.user_id)?.member_code || null,
         last_seen_at: row.last_seen_at,
+        is_online: new Date(row.last_seen_at).getTime() >= cutoffMs,
       }));
+      const online = recent.filter((row) => row.is_online);
       const { data: referralRows, error: referralError } = await admin.from("customer_referrals")
         .select("id,referrer_user_id,referred_user_id,referral_code,status,created_at,qualified_at,reward_points,admin_note")
         .order("created_at", { ascending: false }).limit(100);
@@ -135,7 +136,7 @@ Deno.serve(async (req: Request) => {
         const status = String(row.status || "");
         if (Object.prototype.hasOwnProperty.call(referral_stats, status)) referral_stats[status] += 1;
       }
-      return json({ success: true, online, online_count: online.length, referrals, referral_stats,
+      return json({ success: true, online, recent, online_count: online.length, referrals, referral_stats,
         checked_at: new Date().toISOString(), stale_after_seconds: 120 });
     }
 

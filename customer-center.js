@@ -97,7 +97,11 @@
     listBox.id = "baranCustomerCenterOnlineList";
     listBox.setAttribute("aria-live", "polite");
     listBox.textContent = "اضغط تحديث لعرض المتصلين حالياً.";
-    section.append(head, stats, listBox);
+    const recentTitle = node("h4", "", "آخر ظهور للعملاء");
+    const recentBox = node("div", "ops-list");
+    recentBox.id = "baranCustomerCenterRecentList";
+    recentBox.textContent = "لا توجد بيانات ظهور سابقة بعد.";
+    section.append(head, stats, listBox, recentTitle, recentBox);
     const referralPanel = node("div", "ops-form");
     referralPanel.id = "baranCustomerReferralPanel";
     referralPanel.append(node("strong", "", "🎁 برنامج دعوة الأصدقاء"));
@@ -159,6 +163,7 @@
       stats.append(updated);
       box.replaceChildren();
       renderReferrals(result);
+      renderRecentCustomers(result.recent || []);
       if (!result.online?.length) {
         box.append(node("div", "customer-directory-empty", "لا يوجد عملاء متصلون حالياً."));
         return;
@@ -173,6 +178,23 @@
     } catch (error) {
       box.textContent = "تعذر تحديث المتصلين: " + (error?.message || "خطأ غير معروف");
     }
+  }
+
+  function renderRecentCustomers(rows) {
+    const box = document.getElementById("baranCustomerCenterRecentList");
+    if (!box) return;
+    box.replaceChildren();
+    const offline = (Array.isArray(rows) ? rows : []).filter(row => !row.is_online).slice(0,10);
+    if (!offline.length) {
+      box.append(node("div","customer-directory-empty","لا توجد سجلات ظهور سابقة لعملاء غير متصلين بعد."));
+      return;
+    }
+    offline.forEach(customer => {
+      const item = node("article","ops-item");
+      item.append(node("strong","",customer.full_name || "عميل"));
+      item.append(node("p","small",(customer.member_code || "عضو في BARAN GAME")+" · آخر ظهور: "+new Date(customer.last_seen_at).toLocaleString("ar")));
+      box.append(item);
+    });
   }
 
   function renderReferrals(result) {
