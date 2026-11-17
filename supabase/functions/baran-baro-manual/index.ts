@@ -84,7 +84,7 @@ Deno.serve(async (req: Request) => {
           ? admin.from("leo_manual_products").select("product_code,product_name,category_id,group_id").order("category_id").order("group_id").order("product_name")
           : Promise.resolve({ data: [], error: null }));
       tasks.push(canOrders
-        ? admin.from("leo_manual_orders").select("id,user_id,product_code,player_id,product_name_snapshot,quantity,customer_note,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,displayed_exchange_rate_snapshot,supplier_id_snapshot,supplier_cost_usd_snapshot,payment_status,payment_method,customer_message,supplier_cost_usd,supplier_reference,status,internal_notes,exception_reason,created_at,updated_at,completed_at")
+        ? admin.from("leo_manual_orders").select("id,user_id,product_code,player_id,product_name_snapshot,quantity,customer_note,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,displayed_exchange_rate_snapshot,payment_exchange_rate_snapshot,supplier_id_snapshot,supplier_cost_usd_snapshot,payment_status,payment_method,customer_message,supplier_cost_usd,supplier_reference,status,internal_notes,exception_reason,created_at,updated_at,completed_at")
           .order("created_at", { ascending: false }).limit(150)
         : Promise.resolve({ data: [], error: null }));
       tasks.push(canSettings
@@ -129,7 +129,7 @@ Deno.serve(async (req: Request) => {
       if (!(await hasPermission("suppliers"))) return json({ error: "لا تملك صلاحية إدارة موردي BARO." }, 403);
       const [suppliers, links, events] = await Promise.all([
         admin.from("baro_manual_suppliers").select("id,name,contact_name,contact_phone,contact_email,notes,is_active,created_at,updated_at").order("name"),
-        admin.from("baro_manual_supplier_products").select("id,supplier_id,product_code,supplier_sku,unit_cost,currency,lead_time_hours,is_preferred,is_active,notes,created_at,updated_at").order("product_code"),
+        admin.from("baro_manual_supplier_products").select("id,supplier_id,product_code,supplier_sku,unit_cost,currency,exchange_rate_snapshot,lead_time_hours,is_preferred,is_active,notes,created_at,updated_at").order("product_code"),
         admin.from("baro_manual_supplier_events").select("id,supplier_id,order_id,event_type,rating,details,created_by,created_at").order("created_at", { ascending: false }).limit(200)
       ]);
       if (suppliers.error || links.error || events.error) return json({ error: "تعذر تحميل بيانات الموردين." }, 500);
