@@ -272,6 +272,13 @@ Deno.serve(async (req: Request) => {
         if (!page || page.length < customerPageSize) break;
       }
       const loyaltyByUser = new Map((loyaltyRows ?? []).map((row) => [row.user_id, Number(row.points_balance ?? 0)]));
+      const { data: accountControlRows, error: accountControlError } = await admin
+        .from("customer_account_controls").select("user_id,status,reason,banned_until,updated_at");
+      if (accountControlError) {
+        console.error("baran-admin: customer account controls failed", accountControlError.message);
+        return json({ error: "تعذر تحميل حالات حماية الحسابات." }, 500);
+      }
+      const accountControlsByUser = new Map((accountControlRows ?? []).map((row) => [row.user_id, row]));
       const customers = await Promise.all(customerProfiles.map(async (profile) => {
         const { data: authResult, error: authLookupError } = await admin.auth.admin.getUserById(profile.id);
         if (authLookupError) console.error("baran-admin: customer email lookup failed", authLookupError.message);
@@ -282,7 +289,8 @@ Deno.serve(async (req: Request) => {
           has_balance:Number(wallet?.balance_usd ?? 0) > 0 || Number(wallet?.balance_syp ?? 0) > 0,
           order_count:activity?.count ?? 0, lifetime_spend_usd:activity?.spendUsd ?? 0,
           lifetime_spend_syp:activity?.spendSyp ?? 0, last_order_at:activity?.lastOrderAt ?? null,
-          loyalty_points:loyaltyByUser.get(profile.id) ?? 0 };
+          loyalty_points:loyaltyByUser.get(profile.id) ?? 0,
+          account_control:accountControlsByUser.get(profile.id) ?? { status: "active", reason: null, banned_until: null } };
       }));
       const fulfillmentByOrder = new Map((fulfillmentRows ?? []).map((row) => [row.order_id, row]));
       const orderCustomers = await Promise.all((orders ?? []).map(async (item) => {
