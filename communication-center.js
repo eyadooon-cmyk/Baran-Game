@@ -3,10 +3,10 @@
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id), ARCHIVE_KEY="baran.communication.archived.v1";
-const FILTERS=[["all","الكل"],["unread","غير مقروء"],["support","الدعم"],["wallet","المحفظة"],["order","الطلبات"],["offer","العروض"]];
+const FILTERS=[["all","الكل"],["unread","غير مقروء"],["support","الدعم"],["wallet","المحفظة"],["order","الطلبات"],["offer","العروض"],["security","الأمان"]];
 const archived=()=>{try{return new Set(JSON.parse(localStorage.getItem(ARCHIVE_KEY)||"[]"));}catch(_){return new Set();}};
 const saveArchived=set=>{try{localStorage.setItem(ARCHIVE_KEY,JSON.stringify([...set].slice(-500)));}catch(_){}};
-const classify=card=>{const c=String(card.className||"");if(c.includes("notification-tone-support"))return"support";if(c.includes("notification-tone-wallet"))return"wallet";if(c.includes("notification-tone-order"))return"order";if(c.includes("notification-tone-offer"))return"offer";return"general";};
+const classify=card=>{const c=String(card.className||"");if(c.includes("notification-tone-support"))return"support";if(c.includes("notification-tone-wallet"))return"wallet";if(c.includes("notification-tone-order"))return"order";if(c.includes("notification-tone-offer"))return"offer";if(c.includes("notification-tone-security"))return"security";return"general";};
 function createToolbar(containerId,kind){
  const container=$(containerId);if(!container||container.dataset.communicationToolbar==="1")return;
  container.dataset.communicationToolbar="1";
