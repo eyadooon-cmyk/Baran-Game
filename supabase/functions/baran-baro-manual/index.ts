@@ -77,7 +77,7 @@ Deno.serve(async (req: Request) => {
       const access = await Promise.all(["catalog", "orders", "settings"].map(hasPermission));
       const [canCatalog, canOrders, canSettings] = access;
       if (!access.some(Boolean)) return json({ error: "لا تملك صلاحية عرض لوحة BARO." }, 403);
-      const tasks: Promise<any>[] = [];
+      const tasks: any[] = [];
       tasks.push(canCatalog
         ? admin.from("leo_manual_products").select("*").order("category_id").order("group_id").order("product_name")
         : Promise.resolve({ data: [], error: null }));
