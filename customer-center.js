@@ -115,14 +115,6 @@
     section.append(referralPanel);
     list.insertAdjacentElement("afterend", section);
 
-    const customerTools = node("div", "ops-form");
-    customerTools.append(node("strong", "", "تصنيف العملاء"));
-    customerTools.append(node("p", "small", "يعتمد التصنيف على عدد الطلبات وتاريخ آخر طلب، ويُحدّث عند تحميل بيانات الإدارة."));
-    const segmentBox = node("div", "ops-grid");
-    segmentBox.id = "baranCustomerSegments";
-    segmentBox.textContent = "تُعرض التصنيفات بعد تحديث بيانات الإدارة.";
-    customerTools.append(segmentBox);
-    section.append(customerTools);
     void loadOnline();
     if (!window.baranCustomerCenterPoll) {
       window.baranCustomerCenterPoll = setInterval(() => {
@@ -225,30 +217,7 @@
     });
   }
 
-  function updateSegments() {
-    const box = document.getElementById("baranCustomerSegments");
-    if (!box || !Array.isArray(window.baranCustomerDirectory)) return;
-    const rows = window.baranCustomerDirectory;
-    const counts = {new:0, active:0, loyal:0, inactive:0};
-    rows.forEach(customer => {
-      const count = Number(customer.order_count || 0);
-      const last = customer.last_order_at ? new Date(customer.last_order_at).getTime() : 0;
-      const days = last ? (Date.now() - last) / 86400000 : Infinity;
-      if (!count) counts.new++;
-      else if (days > 30) counts.inactive++;
-      else if (count >= 5) counts.loyal++;
-      else counts.active++;
-    });
-    box.replaceChildren();
-    [["🆕","جدد",counts.new],["⚡","نشطون",counts.active],["⭐","دائمون",counts.loyal],["🌙","غير نشطين",counts.inactive]].forEach(([icon,label,count]) => {
-      const card=node("div","ops-card");
-      card.append(node("div","ops-muted",icon+" "+label),node("div","ops-value",String(count)));
-      box.append(card);
-    });
-  }
-
   window.loadBaranCustomerCenter = loadOnline;
-  window.refreshBaranCustomerSegments = updateSegments;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installPanel);
   else installPanel();
   const observer = new MutationObserver(() => {
