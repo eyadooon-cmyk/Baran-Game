@@ -42,6 +42,34 @@ select{display:block;width:100%;padding:14px;margin:10px 0;background:#0b0910;co
 .deposit-row{padding:12px;margin:9px 0;background:#201b26;border:1px solid #40334b;border-radius:10px;line-height:1.8}
 .deposit-status{font-weight:bold;color:var(--green)}
 .deposit-card label{display:block;margin-top:12px;color:var(--muted);font-size:14px}
+/* بطاقات طلبات الإيداع — تصميم موحد ومتجاوب */
+.deposit-request-card{padding:14px;margin:12px 0;border:1px solid #554064;border-radius:17px;background:linear-gradient(150deg,#21182b,#15111c 78%);box-shadow:0 8px 22px #0003;overflow:hidden;scroll-margin-top:90px}
+.deposit-request-card.notification-target-highlight{border-color:#c49be7;box-shadow:0 0 0 2px #a878cf55,0 10px 26px #0005}
+.deposit-request-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.deposit-request-heading{display:grid;gap:4px;min-width:0}
+.deposit-request-eyebrow{font-size:10px;font-weight:800;color:#b99acb}
+.deposit-request-title{font-size:15px;color:#f4eafa;line-height:1.5}
+.deposit-request-status{flex:0 0 auto;padding:5px 10px;border-radius:30px;font-size:10px;font-weight:900;white-space:nowrap}
+.deposit-request-status.pending{color:#ffe4a6;background:#5b421c66;border:1px solid #a9823f}
+.deposit-request-status.approved{color:#b9f4d0;background:#174a3566;border:1px solid #438b68}
+.deposit-request-status.rejected{color:#ffc2cc;background:#5b243166;border:1px solid #a84b60}
+.deposit-request-amount{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:13px 0;padding:12px;border:1px solid #674b7b;border-radius:13px;background:linear-gradient(100deg,#352443,#241a30)}
+.deposit-request-amount span{font-size:11px;color:#c6b2d5}
+.deposit-request-amount strong{font-size:20px;color:#f0dcff;font-weight:900;direction:ltr}
+.deposit-request-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.deposit-request-detail{min-width:0;padding:9px 10px;border:1px solid #3e3249;border-radius:11px;background:#100d16}
+.deposit-request-detail span{display:block;margin-bottom:4px;font-size:10px;color:#a997b8}
+.deposit-request-detail strong{display:block;font-size:12px;line-height:1.5;color:#eee3f5;overflow-wrap:anywhere}
+.deposit-request-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:9px;margin-top:12px;padding-top:10px;border-top:1px solid #3e3249}
+.deposit-request-id{max-width:100%;font-size:9px;color:#93849e;overflow-wrap:anywhere}
+.deposit-receipt-link{display:inline-flex;padding:8px 11px;border:1px solid #765792;border-radius:10px;background:#30213d;color:#ead8f8;text-decoration:none;font-size:11px;font-weight:800}
+.deposit-no-receipt{font-size:11px;color:#a99caf}
+.deposit-request-warning{margin:10px 0 0;padding:9px 10px;border-radius:10px;background:#3b2b18;color:#f1d8a9;font-size:11px}
+.deposit-request-actions{margin-top:12px;padding-top:10px;border-top:1px solid #3e3249}
+.deposit-request-actions button{min-height:43px;border-radius:11px;font-size:11px}
+.deposit-empty-state{padding:18px;margin:10px 0;text-align:center;border:1px dashed #5a4868;border-radius:14px;background:#17121e;color:#b9a9c7;font-size:13px}
+@media(max-width:380px){.deposit-request-card{padding:11px}.deposit-request-details{grid-template-columns:1fr}.deposit-request-title{font-size:14px}.deposit-request-amount strong{font-size:18px}.deposit-request-footer{align-items:flex-start;flex-direction:column}}
+
 .admin-request{padding:14px;margin:12px 0;background:#19151e;border:1px solid #493b55;border-radius:12px;line-height:1.8;overflow-wrap:anywhere}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .admin-actions button{flex:1;min-width:110px}
@@ -5241,32 +5269,51 @@ function renderBaranAutoSupportQueue(rows,feedbackRows){
 function renderAdminDepositRequestList(container,requests,isOwner=false){
   if(!container)return;
   container.replaceChildren();
-  if(!requests.length){container.textContent=isOwner?"لا توجد طلبات شحن للمالك حتى الآن.":"لا توجد طلبات شحن للزبائن حالياً.";return;}
+  if(!requests.length){
+    const empty=document.createElement("div");empty.className="deposit-empty-state";
+    empty.textContent=isOwner?"لا توجد طلبات شحن للمالك حتى الآن.":"لا توجد طلبات شحن للزبائن حالياً.";
+    container.appendChild(empty);return;
+  }
   requests.forEach(item=>{
-    const card=document.createElement("div");card.className="admin-request";
     const isOwnerSale=item.request_source==="owner_usd_sale";
-    const title=document.createElement("strong");title.textContent=(isOwnerSale?"بيع رصيد دولار للزبون ":isOwner?"طلب شحن محفظة المالك ":"طلب شحن زبون ")+item.id;
-    const details=document.createElement("p");
-    details.textContent=(isOwnerSale?"الزبون المستلم: "+(item.recipient_email||item.recipient_id||"—"):isOwner?"النوع: شحن محفظة المالك":"الزبون: "+(item.customer_email||item.user_id))+
-      " | المبلغ: "+Number(item.amount).toLocaleString("en-US")+" "+item.currency+
-      " | رقم العملية: "+item.transfer_reference+
-      (isOwnerSale?" | سيُخصم المقابل بالليرة من محفظة المالك عند الموافقة":"")+
-      " | الحالة: "+({pending:"قيد المراجعة",approved:"مقبول",rejected:"مرفوض"}[item.status]||item.status)+
-      " | التاريخ: "+new Date(item.created_at).toLocaleString("ar");
-    card.append(title,details);
-    if(item.receipt_url){
-      const link=document.createElement("a");link.href=item.receipt_url;link.target="_blank";
-      link.rel="noopener noreferrer";link.textContent="فتح صورة إثبات التحويل";link.className="small";card.appendChild(link);
-    }else{
-      const noReceipt=document.createElement("p");noReceipt.className="small";
-      noReceipt.textContent="لا توجد صورة مرفقة لهذا الطلب.";card.appendChild(noReceipt);
-    }
+    const labels={pending:"قيد المراجعة",approved:"مقبول",rejected:"مرفوض"};
+    const card=document.createElement("article");card.className="admin-request deposit-request-card";
+    card.dataset.depositRequestId=String(item.id||"");
+    const head=document.createElement("div");head.className="deposit-request-head";
+    const heading=document.createElement("div");heading.className="deposit-request-heading";
+    const eyebrow=document.createElement("span");eyebrow.className="deposit-request-eyebrow";
+    eyebrow.textContent=isOwnerSale?"بيع رصيد دولار":isOwner?"تمويل محفظة المالك":"طلب إيداع";
+    const title=document.createElement("strong");title.className="deposit-request-title";
+    title.textContent=isOwnerSale?"شحن دولار للزبون":isOwner?"شحن محفظة المالك":"طلب شحن محفظة";
+    heading.append(eyebrow,title);
+    const badge=document.createElement("span");badge.className="deposit-request-status "+(item.status==="pending"?"pending":item.status==="approved"?"approved":"rejected");
+    badge.textContent=labels[item.status]||item.status||"غير محدد";head.append(heading,badge);card.appendChild(head);
+    const amountBox=document.createElement("div");amountBox.className="deposit-request-amount";
+    const amountLabel=document.createElement("span");amountLabel.textContent="المبلغ المطلوب";
+    const amount=document.createElement("strong");amount.textContent=Number(item.amount||0).toLocaleString("en-US")+" "+(item.currency||"");
+    amountBox.append(amountLabel,amount);card.appendChild(amountBox);
+    const details=document.createElement("div");details.className="deposit-request-details";
+    const addDetail=(label,value,dir)=>{
+      const cell=document.createElement("div");cell.className="deposit-request-detail";
+      const caption=document.createElement("span");caption.textContent=label;
+      const valueNode=document.createElement("strong");valueNode.textContent=value||"—";if(dir)valueNode.dir=dir;
+      cell.append(caption,valueNode);details.appendChild(cell);
+    };
+    addDetail(isOwnerSale?"الزبون المستلم":isOwner?"نوع الطلب":"حساب الزبون",
+      isOwnerSale?(item.recipient_email||item.recipient_id):isOwner?"شحن محفظة المالك":(item.customer_email||item.user_id),"auto");
+    addDetail("رقم العملية",item.transfer_reference,"ltr");
+    addDetail("تاريخ الطلب",item.created_at?new Date(item.created_at).toLocaleString("ar"):"—");
+    card.appendChild(details);
+    if(isOwnerSale){const note=document.createElement("p");note.className="deposit-request-warning";note.textContent="عند الموافقة يُخصم المقابل بالليرة من محفظة المالك.";card.appendChild(note);}
+    const footer=document.createElement("div");footer.className="deposit-request-footer";
+    const id=document.createElement("span");id.className="deposit-request-id";id.textContent="رقم الطلب: "+item.id;id.dir="ltr";footer.appendChild(id);
+    if(item.receipt_url){const link=document.createElement("a");link.href=item.receipt_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="🖼️ عرض إثبات التحويل";link.className="deposit-receipt-link";footer.appendChild(link);}
+    else{const noReceipt=document.createElement("span");noReceipt.className="deposit-no-receipt";noReceipt.textContent="لا يوجد إثبات مرفق";footer.appendChild(noReceipt);}
+    card.appendChild(footer);
     if(item.status==="pending"){
-      const actions=document.createElement("div");actions.className="admin-actions";
-      const approve=document.createElement("button");approve.textContent="تأكيد وصول الحوالة والموافقة";
-      approve.onclick=()=>reviewDeposit(item.id,"approved");
-      const reject=document.createElement("button");reject.textContent="رفض الطلب";reject.className="secondary";
-      reject.onclick=()=>reviewDeposit(item.id,"rejected");
+      const actions=document.createElement("div");actions.className="admin-actions deposit-request-actions";
+      const approve=document.createElement("button");approve.textContent="تأكيد الحوالة والموافقة";approve.onclick=()=>reviewDeposit(item.id,"approved");
+      const reject=document.createElement("button");reject.textContent="رفض الطلب";reject.className="secondary";reject.onclick=()=>reviewDeposit(item.id,"rejected");
       actions.append(approve,reject);card.appendChild(actions);
     }
     container.appendChild(card);
