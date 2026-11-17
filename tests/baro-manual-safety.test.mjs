@@ -245,3 +245,16 @@ test("BARO snapshots the exchange rate used when SYP payment is actually verifie
   assert.match(edge, /payment_exchange_rate_snapshot/);
   assert.match(management, /سعر الصرف/);
 });
+
+
+test("BARO customer order form is hidden in static HTML until the backend confirms the gate is open", () => {
+  const app = read("../index.html");
+  assert.match(app, /class="game-checkout hidden"/);
+  assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
+  assert.match(ui, /submit\\.hidden=!baroManualEnabled/);
+});
+
+test("BARO staff without catalog or order permissions cannot see those admin panels", () => {
+  assert.match(management, /productList\\.hidden=!can\\("catalog"\\)/);
+  assert.match(management, /orderList\\.hidden=!can\\("orders"\\)/);
+});
