@@ -6012,18 +6012,28 @@ async function disableBaranPushNotifications(){
 async function openBaranPushNotificationFromUrl(){
   const params=new URLSearchParams(window.location.search);
   const notificationId=params.get("baran_notification");
-  if(!notificationId||!currentUser)return;
-  params.delete("baran_notification");
+  const entityType=params.get("baran_entity_type");
+  const entityId=params.get("baran_entity_id");
+  const kind=params.get("baran_kind")||"";
+  const audience=params.get("baran_audience")||(currentUser?.id===BARAN_OWNER_ID?"admin":"customer");
+  if((!notificationId&&!(entityType&&entityId))||!currentUser)return;
+  ["baran_notification","baran_entity_type","baran_entity_id","baran_kind","baran_audience"].forEach(key=>params.delete(key));
   const query=params.toString();
   const cleanUrl=window.location.pathname+(query?"?"+query:"")+window.location.hash;
   window.history.replaceState({},document.title,cleanUrl);
   try{
-    const {data:item,error}=await sb.from("baran_notifications")
-      .select("id,recipient_id,audience,kind,title,body,entity_type,entity_id,read_at,created_at")
-      .eq("id",notificationId).eq("recipient_id",currentUser.id).maybeSingle();
-    if(error)throw error;
+    let item=null;
+    if(notificationId){
+      const {data,error}=await sb.from("baran_notifications")
+        .select("id,recipient_id,audience,kind,title,body,entity_type,entity_id,read_at,created_at")
+        .eq("id",notificationId).eq("recipient_id",currentUser.id).maybeSingle();
+      if(error)throw error;
+      item=data;
+    }else{
+      item={entity_type:entityType,entity_id:entityId,kind,audience,read_at:new Date().toISOString()};
+    }
     if(item&&typeof openBaranNotificationTarget==="function"){
-      await openBaranNotificationTarget(item,item.audience);
+      await openBaranNotificationTarget(item,item.audience||audience);
     }
   }catch(error){console.warn("تعذر فتح وجهة إشعار الهاتف:",error);}
 }
