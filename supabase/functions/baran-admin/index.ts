@@ -422,37 +422,54 @@ Deno.serve(async (req: Request) => {
       if (body.action === "broadcast_announcement") {
         const title = typeof body.notification_title === "string" ? body.notification_title.trim() : "";
         const message = typeof body.notification_body === "string" ? body.notification_body.trim() : "";
+        const segment = typeof body.audience_segment === "string" ? body.audience_segment : "all";
+        const allowedSegments = ["all","pubg","freefire","jawaker","ai","vpn","gift_card","app"];
         if (title.length < 3 || title.length > 100 || message.length < 5 || message.length > 500) {
           return json({ error: "عنوان الإعلان من 3 إلى 100 حرف، ونصه من 5 إلى 500 حرف." }, 400);
         }
-        const { data: profiles, error: profilesError } = await admin
-          .from("profiles").select("id").limit(5000);
-        if (profilesError) {
-          console.error("baran-admin: announcement recipients failed", profilesError.message);
-          return json({ error: "تعذر تحميل قائمة الزبائن." }, 500);
+        if (!allowedSegments.includes(segment)) return json({ error: "فئة المستلمين غير صالحة." }, 400);
+        let recipientIds: string[] = [];
+        if (segment === "all") {
+          const { data: profiles, error: profilesError } = await admin.from("profiles").select("id").limit(5000);
+          if (profilesError) {
+            console.error("baran-admin: announcement recipients failed", profilesError.message);
+            return json({ error: "تعذر تحميل قائمة الزبائن." }, 500);
+          }
+          recipientIds = (profiles ?? []).map((profile) => profile.id);
+        } else {
+          const { data: products, error: productsError } = await admin.from("products")
+            .select("product_code,category").eq("is_active", true);
+          if (productsError) return json({ error: "تعذر تحديد منتجات الفئة المطلوبة." }, 500);
+          const productCodes = (products ?? []).filter((product) => {
+            const code = String(product.product_code || "").toUpperCase();
+            if (segment === "pubg") return code.startsWith("PUBG_");
+            if (segment === "freefire") return code.startsWith("FREEFIRE_");
+            if (segment === "jawaker") return code.startsWith("JAWAKER_");
+            return product.category === segment;
+          }).map((product) => product.product_code);
+          if (productCodes.length) {
+            const { data: orders, error: ordersError } = await admin.from("orders")
+              .select("user_id,product_code").in("product_code", productCodes).limit(20000);
+            if (ordersError) return json({ error: "تعذر تحديد الزبائن المهتمين بهذه الفئة." }, 500);
+            recipientIds = [...new Set((orders ?? []).map((order) => order.user_id).filter(Boolean))];
+          }
         }
-        const recipients = (profiles ?? []).map((profile) => ({
-          recipient_id: profile.id,
-          audience: "customer",
-          kind: "announcement",
-          title,
-          body: message,
-          entity_type: null,
-          entity_id: null,
+        const recipients = [...new Set(recipientIds)].map((recipient_id) => ({
+          recipient_id, audience: "customer", kind: "announcement",
+          title, body: message, entity_type: null, entity_id: null,
         }));
-        if (!recipients.length) return json({ success: true, sent_to: 0 });
+        if (!recipients.length) return json({ success: true, sent_to: 0, segment });
         const { error: insertError } = await admin.from("baran_notifications").insert(recipients);
         if (insertError) {
           console.error("baran-admin: announcement insert failed", insertError.message);
           return json({ error: "تعذر إرسال الإعلان." }, 500);
         }
         await admin.from("admin_audit_log").insert({
-          admin_id: user.id,
-          action: "broadcast_announcement",
+          admin_id: user.id, action: "broadcast_announcement",
           entity_type: "baran_notifications",
-          details: { title, recipients: recipients.length },
+          details: { title, recipients: recipients.length, segment },
         });
-        return json({ success: true, sent_to: recipients.length });
+        return json({ success: true, sent_to: recipients.length, segment });
       }
 
       if (body.action === "recovery_search") {
