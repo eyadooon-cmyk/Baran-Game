@@ -37,6 +37,7 @@ jobs:
           node --check community.js
           node --check customer-center.js
           node --check baro.js
+          node --check customer-experience-suite.js
       - name: Check support Edge Function syntax
         run: |
           deno check supabase/functions/baran-baro-manual/index.ts
@@ -44,6 +45,9 @@ jobs:
           deno check supabase/functions/baran-push-dispatch/index.ts
           deno check supabase/functions/baran-admin/index.ts
           deno check supabase/functions/baran-customer-center/index.ts
+          deno check supabase/functions/baran-order-gateway/index.ts
+          deno check supabase/functions/baran-shamcash-verify/index.ts
+          deno check supabase/functions/baran-auth-security/index.ts
       - name: Check communication UI wiring
         run: |
           node --input-type=module <<'NODE'
@@ -79,7 +83,14 @@ jobs:
             ['referral tracking is server-only', readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').toLowerCase().includes('enable row level security') && readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').toLowerCase().includes('revoke all on table public.customer_referrals from anon, authenticated')],
             ['first completed order qualifies a referral', readFileSync('supabase/migrations/20261117222000_customer_referral_tracking.sql', 'utf8').includes('qualify_customer_referral_on_first_completed_order')],
             ['customer center displays referral tracking', readFileSync('customer-center.js', 'utf8').includes('renderReferrals(result)') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('customer_referrals')],
-            ['customer center displays last-seen history', readFileSync('customer-center.js', 'utf8').includes('renderRecentCustomers(result.recent || [])') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('is_online: new Date(row.last_seen_at)')]
+            ['customer center displays last-seen history', readFileSync('customer-center.js', 'utf8').includes('renderRecentCustomers(result.recent || [])') && readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('is_online: new Date(row.last_seen_at)')],
+            ['ban guard is enforced on customer center and support routes', readFileSync('supabase/functions/baran-customer-center/index.ts', 'utf8').includes('customer_account_controls') && readFileSync('supabase/functions/baran-support-center/index.ts', 'utf8').includes('customer_account_controls')],
+            ['ban guard is enforced on BARO, ShamCash and order preflight', readFileSync('supabase/functions/baran-baro-manual/index.ts', 'utf8').includes('customer_account_controls') && readFileSync('supabase/functions/baran-shamcash-verify/index.ts', 'utf8').includes('customer_account_controls') && readFileSync('supabase/functions/baran-order-gateway/index.ts', 'utf8').includes('customer_account_controls')],
+            ['database blocks banned users across customer write tables', readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('block_banned_customer_orders') && readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('block_banned_customer_wallets')],
+            ['new-device events are captured from real Supabase sessions', readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('after insert on auth.sessions') && readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('customer_new_device_detected')],
+            ['failed login reports are rate-limited and marked unverified', readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('baran_record_login_failure') && readFileSync('supabase/migrations/20261117223000_customer_security_enforcement.sql', 'utf8').includes('verified_by_auth_server', false) === false],
+            ['login form hashes the email and never sends the password to telemetry', html.includes('reportFailedLogin(email)') && html.includes('identifier_hash:identifierHash') && !/reportFailedLogin\([^)]*password/.test(html)],
+            ['admin customer profile includes security monitoring', readFileSync('customer-experience-suite.js', 'utf8').includes('مراقبة الدخول والأجهزة') && readFileSync('supabase/functions/baran-admin/index.ts', 'utf8').includes('customer_security_events')],
           ];
           for (const [label, ok] of checks) {
             console.log((ok ? 'PASS ' : 'FAIL ') + label);
