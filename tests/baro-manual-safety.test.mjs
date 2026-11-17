@@ -93,10 +93,10 @@ test("BARO data tables remain private and legacy update RPC is removed", () => {
   assert.match(settingsIndex, /baro_manual_settings_updated_by_idx/);
 });
 
-test("Customer catalogue exposes approved USD and SYP prices but never supplier cost", () => {
+test("Customer BARO catalogue exposes names only and never price or supplier fields", () => {
   const catalogBlock = edge.split('if (req.method === "GET" && view === "catalog")')[1]?.split('if (req.method === "GET" && view === "my_orders")')[0] ?? "";
-  assert.match(catalogBlock, /sale_price_usd,sale_price_syp/);
-  assert.doesNotMatch(catalogBlock, /supplier_cost_usd/);
+  assert.match(catalogBlock, /product_code,category_id,group_id,product_name,input_label/);
+  assert.doesNotMatch(catalogBlock, /sale_price_usd|sale_price_syp|supplier_cost_usd/);
 });
 
 

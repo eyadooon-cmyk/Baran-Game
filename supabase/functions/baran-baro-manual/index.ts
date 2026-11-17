@@ -48,7 +48,7 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET" && view === "catalog") {
       const [{ data: products, error }, { data: settings, error: settingsError }] = await Promise.all([
-        admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_usd,sale_price_syp")
+        admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label")
           .eq("catalog_visible", true).order("category_id").order("group_id").order("product_name"),
         admin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle()
       ]);
