@@ -5816,6 +5816,9 @@ function buildBaranNotificationCard(item,audience){
   const footer=document.createElement("div");footer.className="notification-item-footer";
   const date=document.createElement("time");date.dateTime=item.created_at||"";date.textContent=notificationDate(item.created_at);
   footer.appendChild(date);
+  const openButton=document.createElement("button");openButton.type="button";openButton.className="notification-open-action";openButton.textContent="عرض التفاصيل";
+  openButton.onclick=event=>{event.stopPropagation();openBaranNotificationTarget(item,audience);};
+  footer.appendChild(openButton);
   if(!item.read_at){
     const button=document.createElement("button");button.type="button";button.className="notification-read-action";button.textContent="تحديد كمقروء";
     button.onclick=event=>{event.stopPropagation();markBaranNotificationCardRead(item,button,audience,card,state);};
