@@ -145,11 +145,11 @@ function renderBaroCustomerCatalog(products){
     else if(category==="jawaker"&&group==="boosters"){visualIcon="⚡";visualLabel="BOOSTERS";}
     artIcon.textContent=visualIcon;artLabel.textContent=visualLabel;
     art.append(artIcon,artLabel);
-    const preview=document.createElement("span");preview.className="baro-catalog-preview-tag";preview.textContent="معاينة فقط";
+    const preview=document.createElement("span");preview.className="baro-catalog-preview-tag";preview.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"معاينة فقط";
     cardTop.append(art,preview);
     const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=productName;
     const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
-    const status=document.createElement("span");status.textContent="الطلب غير متاح حالياً";
+    const status=document.createElement("span");status.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"الطلب غير متاح حالياً";
     const indexMark=document.createElement("span");indexMark.className="baro-catalog-product-index";indexMark.textContent=String(productIndex+1).padStart(2,"0");
     footer.append(status,indexMark);card.append(cardTop,name,footer);grid.append(card);
    });
@@ -169,7 +169,11 @@ async function loadBaroCustomer(){
   const [c,o]=await Promise.all([baroApi("GET",null,"catalog"),baroApi("GET",null,"my_orders")]);
   baroCustomerProducts=Array.isArray(c.products)?c.products:[];
   baroManualEnabled=c.manual_enabled===true;
-  const submitButton=baroEl("baroSubmitOrder");if(submitButton)submitButton.disabled=true;
+  const submitButton=baroEl("baroSubmitOrder");
+  const checkout=submitButton?.closest(".game-checkout");
+  const canOrder=baroManualEnabled&&baroCustomerProducts.some(p=>p.purchase_enabled===true);
+  if(checkout)checkout.classList.toggle("hidden",!canOrder);
+  if(submitButton){submitButton.hidden=!canOrder;submitButton.disabled=!canOrder;}
   renderBaroCustomerCatalog(baroCustomerProducts);
   const select=baroEl("baroProductSelect");
   if(select){
@@ -177,20 +181,32 @@ async function loadBaroCustomer(){
    if(!baroCustomerProducts.length){
     const option=document.createElement("option");option.value="";option.textContent="لا توجد منتجات يدوية مفعّلة حالياً";select.append(option);select.disabled=true;
    }else{
-    select.disabled=false;
+    select.disabled=!canOrder;
     const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
     const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
     const groups=new Map();
     baroCustomerProducts.forEach(p=>{
      if(!groups.has(p.category_id)){const group=document.createElement("optgroup");group.label=categoryLabels[p.category_id]||p.category_id;groups.set(p.category_id,group);select.append(group);}
      const op=document.createElement("option");op.value=p.product_code;
-     op.textContent=(groupLabels[p.group_id]?groupLabels[p.group_id]+" — ":"")+p.product_name+" — معاينة فقط";
-     op.disabled=true;groups.get(p.category_id).append(op);
+     op.textContent=(groupLabels[p.group_id]?groupLabels[p.group_id]+" — ":"")+p.product_name+(p.purchase_enabled===true?" — متاح للطلب":" — معاينة فقط");
+     op.disabled=p.purchase_enabled!==true;groups.get(p.category_id).append(op);
     });
    }
   }
+  if(canOrder){const first=baroCustomerProducts.find(p=>p.purchase_enabled===true);if(first&&select)select.value=first.product_code;}
+  const playerInput=baroEl("baroPlayerId"),confirmation=baroEl("baroPlayerIdConfirmed");
+  if(select)select.onchange=()=>{baroUpdateQuantityField();baroUpdateOrderSubmitState();};
+  if(playerInput)playerInput.oninput=baroUpdateOrderSubmitState;
+  if(confirmation)confirmation.onchange=baroUpdateOrderSubmitState;
+  baroUpdateQuantityField();baroUpdateOrderSubmitState();
   renderBaroCustomerOrders(o.orders||[]);
  }catch(e){catalog.textContent=e.message;orders.textContent="تعذر تحميل طلبات BARO.";}
+}
+function baroUpdateOrderSubmitState(){
+ const button=baroEl("baroSubmitOrder"),player=baroEl("baroPlayerId"),confirmed=baroEl("baroPlayerIdConfirmed");
+ if(!button)return;
+ const p=baroSelectedProduct();
+ button.disabled=!(baroManualEnabled&&p?.purchase_enabled===true&&player?.value.trim().length>=3&&confirmed?.checked===true);
 }
 function renderBaroCustomerOrders(rows){
  const box=baroEl("baroCustomerOrders");if(!box)return;box.replaceChildren();
@@ -213,15 +229,17 @@ async function submitBaroOrder(){
  const button=baroEl("baroSubmitOrder"),message=baroEl("baroOrderMessage"),p=baroSelectedProduct();
  if(!currentUser){message.textContent="سجّل الدخول أولاً.";return;}
  if(!baroManualEnabled){message.textContent="استقبال طلبات BARO متوقف حالياً من الإدارة.";return;}
- if(!p||!p.purchase_enabled){message.textContent="هذا المنتج غير متاح للطلب حالياً.";return;}
+ if(!p||p.purchase_enabled!==true){message.textContent="هذا المنتج غير متاح للطلب حالياً.";return;}
  const player=baroEl("baroPlayerId").value.trim(),note=baroEl("baroCustomerNote").value.trim();
+ const playerIdConfirmed=baroEl("baroPlayerIdConfirmed")?.checked===true;
+ if(!playerIdConfirmed){message.textContent="يجب تأكيد صحة رقم ID قبل إرسال الطلب.";return;}
  const tokens=p.category_id==="jawaker"&&p.group_id==="tokens";
  const quantity=Number(tokens?baroEl("baroQuantity").value:1);
  if(player.length<3||player.length>80){message.textContent="أدخل معرّف اللاعب بشكل صحيح وتأكد منه قبل الإرسال.";return;}
  if(tokens&&(!Number.isInteger(quantity)||quantity<10000||quantity>1000000)){message.textContent="كمية جواكر يجب أن تكون بين 10,000 و1,000,000.";return;}
  if(note.length>500){message.textContent="الملاحظات طويلة جداً.";return;}
  if(!confirm("تأكيد إرسال طلب BARO؟ لن يتم خصم أي مبلغ الآن. ستراجع الإدارة الطلب وترسل السعر وطريقة الدفع."))return;
- const request={product_code:p.product_code,player_id:player,quantity,customer_note:note};
+ const request={product_code:p.product_code,player_id:player,player_id_confirmed:true,quantity,customer_note:note};
  const fingerprint=await baroRequestFingerprint(request);
  if(!fingerprint){message.textContent="متصفحك لا يدعم حماية إعادة المحاولة. حدّث المتصفح قبل إرسال الطلب.";return;}
  const pending=baroGetPendingSubmission(fingerprint);
@@ -231,7 +249,7 @@ async function submitBaroOrder(){
   baroClearPendingSubmission();
   const successMessage="وصل طلبك للإدارة بنجاح. رقم الطلب: "+String(result.order_id||"").slice(0,8)+" — لا يوجد خصم من المحفظة.";
   message.textContent=successMessage;
-  baroEl("baroPlayerId").value="";baroEl("baroCustomerNote").value="";
+  baroEl("baroPlayerId").value="";baroEl("baroCustomerNote").value="";baroEl("baroPlayerIdConfirmed").checked=false;baroUpdateOrderSubmitState();
   try{await loadBaroCustomer();}catch{message.textContent=successMessage+" تعذر تحديث قائمة الطلبات؛ حدّث الصفحة لرؤية الطلب.";}
  }catch(e){message.textContent=e.message+" إذا لم يتأكد وصول الطلب، أعد إرسال نفس البيانات لتجنب إنشاء طلب مكرر.";}
  finally{button.disabled=!baroManualEnabled;}
@@ -263,6 +281,34 @@ function baroProductCard(p){
  card.append(title,code,state,referenceCost,cost,sale,form);return card;
 }
 function baroAdminMessage(text){const el=baroEl("baroAdminMessage");if(el)el.textContent=text;}
+async function baroAdminQuickOrderStatus(order,nextStatus){
+ const inProgressMessage="تم استلام طلبك، والشحن حالياً قيد التنفيذ. سنرسل لك إشعاراً فور اكتمال العملية.";
+ const completedMessage="تم شحن طلبك بنجاح! يرجى التحقق من وصول الرصيد إلى حسابك. شكراً لثقتك بـ BARAN GAME.";
+ if(nextStatus!=="in_progress"&&nextStatus!=="completed")return;
+ if(nextStatus==="in_progress"&&!confirm("تأكيد بدء الشحن اليدوي لهذا الطلب؟ سيصل إشعار للزبون بأن الشحن قيد التنفيذ."))return;
+ if(nextStatus==="completed"&&!confirm("هل تحققت بنفسك من وصول الشحن إلى حساب الزبون؟ بعد التأكيد سيصله إشعار الاكتمال."))return;
+ const quoteAmount=order.customer_price_usd!==null&&order.customer_price_usd!==undefined?Number(order.customer_price_usd):Number(order.customer_price_syp);
+ const quoteCurrency=order.customer_price_usd!==null&&order.customer_price_usd!==undefined?"USD":"SYP";
+ if(!Number.isFinite(quoteAmount)||quoteAmount<=0){baroAdminMessage("لا يمكن تحديث الحالة قبل تسجيل عرض السعر.");return;}
+ let supplierCost=Number(order.supplier_cost_usd??order.supplier_cost_usd_snapshot??0);
+ if(nextStatus==="completed"&&(!Number.isFinite(supplierCost)||supplierCost<=0)){
+  const entered=prompt("أدخل تكلفة تنفيذ الشحن الفعلية بالدولار لتسجيلها في حسابات BARO:");
+  if(entered===null)return;
+  supplierCost=Number(entered);
+  if(!Number.isFinite(supplierCost)||supplierCost<=0){alert("أدخل تكلفة فعلية أكبر من صفر.");return;}
+ }
+ try{
+  await baroApi("POST",{action:"order_admin_update",order_id:order.id,status:nextStatus,
+   quote_amount:quoteAmount,quote_currency:quoteCurrency,payment_method:order.payment_method||"شام كاش",
+   payment_status:"verified",customer_message:nextStatus==="in_progress"?inProgressMessage:completedMessage,
+   supplier_cost_usd:nextStatus==="completed"?supplierCost:(order.supplier_cost_usd??order.supplier_cost_usd_snapshot??null),
+   supplier_reference:order.supplier_reference||"",
+   exception_reason:nextStatus==="completed"?"تم التحقق يدوياً من وصول الشحن إلى حساب الزبون.":(order.exception_reason||""),
+   internal_notes:order.internal_notes||""});
+  baroAdminMessage(nextStatus==="in_progress"?"تم بدء الشحن اليدوي وإرسال تحديث حالة الطلب للزبون.":"تم تأكيد اكتمال الشحن وإرسال إشعار النجاح للزبون.");
+  await loadBaroAdmin();
+ }catch(error){baroAdminMessage(error.message);}
+}
 function renderBaroAdmin(){
  const toggle=baroEl("baroManualToggle"),toggleStatus=baroEl("baroManualToggleStatus");
  if(toggle){toggle.textContent=baroAdminManualEnabled?"إيقاف استقبال طلبات BARO":"فتح استقبال طلبات BARO";toggle.classList.toggle("secondary",baroAdminManualEnabled);toggle.setAttribute("aria-pressed",String(baroAdminManualEnabled));}
@@ -297,7 +343,12 @@ function renderBaroAdmin(){
    await baroApi("POST",{action:"order_admin_update",order_id:o.id,status:status.value,quote_amount:amount,quote_currency:quoteCurrency,payment_method:method.value,payment_status:pay,customer_message:msg.value.trim(),supplier_cost_usd:cost.value.trim()===""?null:Number(cost.value),supplier_reference:reference.value.trim(),exception_reason:exception.value.trim(),internal_notes:notes.value.trim()});
    baroAdminMessage("تم حفظ تحديث الطلب. لا يوجد خصم أو ترحيل مالي تلقائي.");await loadBaroAdmin();
   }catch(e){baroAdminMessage(e.message);}finally{save.disabled=false;}};
-  card.append(h,id,info,grid,save);orders.append(card);
+  card.append(h,id,info,grid,save);
+  const quick=document.createElement("div");quick.className="baro-order-quick-actions";
+  if(o.status==="paid"){const start=document.createElement("button");start.type="button";start.textContent="▶ بدء الشحن اليدوي";start.onclick=()=>baroAdminQuickOrderStatus(o,"in_progress");quick.append(start);}
+  if(o.status==="in_progress"){const complete=document.createElement("button");complete.type="button";complete.className="secondary";complete.textContent="✓ تأكيد اكتمال الشحن";complete.onclick=()=>baroAdminQuickOrderStatus(o,"completed");quick.append(complete);}
+  if(quick.childElementCount)card.append(quick);
+  orders.append(card);
  });
 }
 async function toggleBaroManualEnabled(){
