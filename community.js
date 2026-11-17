@@ -568,6 +568,7 @@ function ensureSupportComposerExtras(){
 }
 document.addEventListener("DOMContentLoaded",ensureSupportComposerExtras);
 new MutationObserver(ensureSupportComposerExtras).observe(document.documentElement,{childList:true,subtree:true});
+ensureSupportComposerExtras();
 async function openSupportConversation(ticketId,audience){
   const prefix=audience==="admin"?"admin":"customer";
   const box=document.getElementById(prefix+"SupportConversation");
