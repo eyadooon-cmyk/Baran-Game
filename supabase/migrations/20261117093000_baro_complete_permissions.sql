@@ -144,5 +144,5 @@ begin
   return jsonb_build_object('order',to_jsonb(v_order),'wallet_changed',false,'finance_posted',false);
 end;
 $function$;
-revoke all on function public.baro_manual_order_admin_update_atomic(uuid,uuid,text,numeric,text,text,text,numeric,text,text,text) from public,anon,authenticated;
-grant execute on function public.baro_manual_order_admin_update_atomic(uuid,uuid,text,numeric,text,text,text,numeric,text,text,text) to service_role;
+revoke all on function public.baro_manual_order_admin_update_atomic(uuid,uuid,text,numeric,text,text,text,text,numeric,text,text,text) from public,anon,authenticated;
+grant execute on function public.baro_manual_order_admin_update_atomic(uuid,uuid,text,numeric,text,text,text,text,numeric,text,text,text) to service_role;
