@@ -3033,7 +3033,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
                 <div class="support-conversation-head"><div><span class="support-conversation-kicker">BARAN GAME · SUPPORT DESK</span><h3 id="adminSupportConversationTitle">محادثة التذكرة</h3><p id="adminSupportConversationMeta" class="small"></p></div><button type="button" class="secondary" onclick="closeSupportConversation('admin')">إغلاق المحادثة</button></div>
                 <div id="adminSupportConversationMessages" class="support-conversation-messages" aria-live="polite"></div>
                 <div class="support-conversation-admin-tools"><label for="adminSupportConversationStatus">حالة التذكرة</label><select id="adminSupportConversationStatus"><option value="pending">بانتظار الرد</option><option value="in_progress">قيد المعالجة</option><option value="completed">تم الحل / مكتملة</option><option value="rejected">مغلقة / مرفوضة</option></select></div>
-                <form class="support-conversation-compose" onsubmit="sendSupportConversationMessage(event,'admin')"><textarea id="adminSupportConversationInput" rows="2" maxlength="2000" placeholder="اكتب ردك للزبون..." required></textarea><button id="adminSupportConversationSend" type="submit">إرسال الرد</button></form>
+                <form class="support-conversation-compose" onsubmit="sendSupportConversationMessage(event,'admin')"><textarea id="adminSupportConversationInput" rows="2" maxlength="2000" placeholder="اكتب ردك للزبون..."></textarea><button id="adminSupportConversationSend" type="submit">إرسال الرد</button></form>
                 <p class="support-conversation-safety">الرد يُسجّل ضمن سجل التذكرة ويصل للزبون بإشعار. لا تتضمن هذه الواجهة أي إجراء مالي.</p>
               </section>
             </section>
@@ -3198,7 +3198,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <section id="customerSupportConversation" class="support-conversation hidden" aria-label="محادثة الدعم">
           <div class="support-conversation-head"><div><span class="support-conversation-kicker">BARAN GAME · SUPPORT</span><h3 id="customerSupportConversationTitle">محادثة التذكرة</h3><p id="customerSupportConversationMeta" class="small"></p></div><button type="button" class="secondary" onclick="closeSupportConversation('customer')">إغلاق</button></div>
           <div id="customerSupportConversationMessages" class="support-conversation-messages" aria-live="polite"></div>
-          <form class="support-conversation-compose" onsubmit="sendSupportConversationMessage(event,'customer')"><textarea id="customerSupportConversationInput" rows="2" maxlength="2000" placeholder="اكتب رسالتك للدعم..." required></textarea><button id="customerSupportConversationSend" type="submit">إرسال الرسالة</button></form>
+          <form class="support-conversation-compose" onsubmit="sendSupportConversationMessage(event,'customer')"><textarea id="customerSupportConversationInput" rows="2" maxlength="2000" placeholder="اكتب رسالتك للدعم..."></textarea><button id="customerSupportConversationSend" type="submit">إرسال الرسالة</button></form>
           <p class="support-conversation-safety">لا ترسل كلمة المرور أو رموز التحقق أو بيانات البطاقة. المعاملات المالية تحتاج مراجعة الإدارة.</p>
         </section>
       </section>
