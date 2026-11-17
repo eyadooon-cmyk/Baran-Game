@@ -1813,6 +1813,9 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
   <p class="small" style="text-align:center">أنشئ حسابك للوصول إلى المتجر والمحفظة.</p>
   <label for="signupEmail">البريد الإلكتروني</label>
   <input id="signupEmail" type="email" autocomplete="email" placeholder="أدخل بريدك الإلكتروني">
+  <label for="signupReferralCode">رمز دعوة صديق (اختياري)</label>
+  <input id="signupReferralCode" type="text" maxlength="30" autocomplete="off" placeholder="مثلاً BG-000123" dir="ltr">
+  <p class="small">إذا دعاك صديق، أدخل رقم عضويته ليُسجّل ضمن برنامج الدعوات.</p>
   <label for="signupPassword">كلمة المرور</label>
   <input id="signupPassword" type="password" autocomplete="new-password" placeholder="8 أحرف على الأقل">
   <p class="small">يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم ورمز.</p>
@@ -4117,11 +4120,13 @@ async function signUp(){
   const email=document.getElementById("signupEmail").value.trim();
   const password=document.getElementById("signupPassword").value;
   const confirmPassword=document.getElementById("signupPasswordConfirm").value;
+  const referralCode=(document.getElementById("signupReferralCode")?.value||"").trim().toUpperCase();
   const note=document.getElementById("signupMessage");
   const button=document.getElementById("signupSubmitButton");
   if(!email||!document.getElementById("signupEmail").checkValidity()){
     note.textContent="أدخل بريداً إلكترونياً صحيحاً."; return;
   }
+  if(referralCode&&!/^BG-[0-9]{6}$/.test(referralCode)){note.textContent="رمز الدعوة يجب أن يكون بالشكل BG-000123، أو اتركه فارغاً.";return;}
   if(password!==confirmPassword){note.textContent="كلمتا المرور غير متطابقتين.";return;}
   if(password.length<8||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[!@#$%^&*()_+\-=[\]{};':"|<>?,./~]/.test(password)){
     note.textContent="كلمة المرور يجب أن تكون 8 أحرف على الأقل، وتحتوي حرفاً كبيراً وصغيراً ورقماً ورمزاً.";return;
@@ -4135,7 +4140,7 @@ async function signUp(){
     if(exposureCount>0){note.textContent="كلمة المرور التي اخترتها ظهرت ضمن تسريبات سابقة ("+exposureCount.toLocaleString("en-US")+" مرة). اختر كلمة مرور جديدة لم تستخدمها في أي موقع آخر.";return;}
     note.textContent="جاري إنشاء الحساب...";
     const redirect=window.location.origin+window.location.pathname;
-    const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{baran_welcome_pending:true}}});
+    const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{baran_welcome_pending:true,...(referralCode?{referral_code:referralCode}:{})}}});
     if(error)throw error;
     if(data.session&&data.user)showApp(data.user);
     else note.textContent="تم إنشاء الحساب بنجاح. افتح بريدك واضغط رابط تأكيد الحساب، ثم ارجع وسجّل الدخول.";
