@@ -104,8 +104,10 @@ async function openBaranNotificationTarget(item,audience){
     if(typeof showAdminPanel==="function")await showAdminPanel("support");
     if(typeof switchSupportTab==="function")switchSupportTab("tickets");
     const typeFilter=document.getElementById("adminFeedbackTypeFilter");
+    const statusFilter=document.getElementById("adminFeedbackStatusFilter");
     const searchInput=document.getElementById("adminFeedbackSearch");
     if(typeFilter)typeFilter.value=entityType==="customer_feedback"?"all":"support";
+    if(statusFilter)statusFilter.value="all";
     if(searchInput)searchInput.value="";
     if(typeof filterAdminFeedback==="function")filterAdminFeedback();
   }else if(isAdmin){
