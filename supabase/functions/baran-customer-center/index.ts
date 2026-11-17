@@ -38,6 +38,18 @@ Deno.serve(async (req: Request) => {
     });
     const body = await req.json().catch(() => ({})) as { action?: string; session_id?: string };
     const action = String(body.action || "");
+    // Enforce account bans server-side; a previously issued access token must not bypass a ban.
+    if (action !== "dashboard") {
+      const { data: control, error: controlError } = await admin.from("customer_account_controls")
+        .select("status,banned_until").eq("user_id", user.id).maybeSingle();
+      if (controlError) {
+        console.error("customer center account-control lookup failed", controlError.message);
+        return json({ error: "تعذر التحقق من حالة حماية الحساب." }, 500);
+      }
+      const stillBanned = control?.status === "banned" &&
+        (!control.banned_until || new Date(control.banned_until).getTime() > Date.now());
+      if (stillBanned) return json({ error: "هذا الحساب موقوف مؤقتاً أو بشكل دائم. تواصل مع الدعم." }, 403);
+    }
 
     if (action === "heartbeat") {
       const sessionId = String(body.session_id || "");

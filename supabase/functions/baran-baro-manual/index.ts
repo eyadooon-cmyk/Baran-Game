@@ -36,6 +36,16 @@ Deno.serve(async (req: Request) => {
     const user = authData?.user;
     if (authError || !user) return json({ error: "جلسة غير صالحة." }, 401);
     const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data: accountControl, error: accountControlError } = await admin.from("customer_account_controls")
+      .select("status,banned_until").eq("user_id", user.id).maybeSingle();
+    if (accountControlError) {
+      console.error("baro-manual account-control lookup failed", accountControlError.message);
+      return json({ error: "تعذر التحقق من حالة حماية الحساب." }, 500);
+    }
+    if (accountControl?.status === "banned" &&
+        (!accountControl.banned_until || new Date(accountControl.banned_until).getTime() > Date.now())) {
+      return json({ error: "هذا الحساب موقوف حالياً. لا يمكن إرسال طلب BARO." }, 403);
+    }
     const hasPermission = async (permission: string) => {
       const { data, error } = await admin.rpc("baro_manual_has_permission", { p_user_id: user.id, p_permission: permission });
       return !error && data === true;

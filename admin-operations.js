@@ -103,6 +103,7 @@ function updateAdminDrawerBadges(stats){
 }
 function renderOperationsDashboard(data){
   latestBaranOperations=data||{};
+  window.baranCustomerExperienceData=data||{};
   const stats=data.stats||{};
   updateAdminDrawerBadges(stats);
   void loadOpsMonitor();
@@ -128,6 +129,7 @@ function renderOperationsDashboard(data){
     });
   }
   renderOpsCustomers(data.customers||[]);
+  if(typeof window.renderBaranCustomerExperience==="function")window.renderBaranCustomerExperience(data||{});
   renderOpsOrders(data.orders||[]);
   renderOpsSuppliers(data.suppliers||[],data.supplier_products||[],data.products||[]);
   renderOpsSupplierIntegration(data.supplier_integration||{},data.suppliers||[]);

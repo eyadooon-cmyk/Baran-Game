@@ -272,6 +272,17 @@ Deno.serve(async (req: Request) => {
         if (!page || page.length < customerPageSize) break;
       }
       const loyaltyByUser = new Map((loyaltyRows ?? []).map((row) => [row.user_id, Number(row.points_balance ?? 0)]));
+      const { data: accountControlRows, error: accountControlError } = await admin
+        .from("customer_account_controls").select("user_id,status,reason,banned_until,updated_at");
+      if (accountControlError) {
+        console.error("baran-admin: customer account controls failed", accountControlError.message);
+        return json({ error: "تعذر تحميل حالات حماية الحسابات." }, 500);
+      }
+      const accountControlsByUser = new Map((accountControlRows ?? []).map((row) => {
+        const activeBan = row.status === "banned" &&
+          (!row.banned_until || new Date(row.banned_until).getTime() > Date.now());
+        return [row.user_id, activeBan ? row : { ...row, status: "active" }];
+      }));
       const customers = await Promise.all(customerProfiles.map(async (profile) => {
         const { data: authResult, error: authLookupError } = await admin.auth.admin.getUserById(profile.id);
         if (authLookupError) console.error("baran-admin: customer email lookup failed", authLookupError.message);
@@ -282,7 +293,8 @@ Deno.serve(async (req: Request) => {
           has_balance:Number(wallet?.balance_usd ?? 0) > 0 || Number(wallet?.balance_syp ?? 0) > 0,
           order_count:activity?.count ?? 0, lifetime_spend_usd:activity?.spendUsd ?? 0,
           lifetime_spend_syp:activity?.spendSyp ?? 0, last_order_at:activity?.lastOrderAt ?? null,
-          loyalty_points:loyaltyByUser.get(profile.id) ?? 0 };
+          loyalty_points:loyaltyByUser.get(profile.id) ?? 0,
+          account_control:accountControlsByUser.get(profile.id) ?? { status: "active", reason: null, banned_until: null } };
       }));
       const fulfillmentByOrder = new Map((fulfillmentRows ?? []).map((row) => [row.order_id, row]));
       const orderCustomers = await Promise.all((orders ?? []).map(async (item) => {
@@ -322,6 +334,14 @@ Deno.serve(async (req: Request) => {
         .from("admin_audit_log").select("id,admin_id,action,entity_type,entity_id,details,created_at")
         .order("created_at",{ascending:false}).limit(100);
       if (auditLogError) return json({ error:"Could not load administrator audit log" },500);
+      const { data: customerSecurityEvents, error: customerSecurityEventsError } = await admin
+        .from("customer_security_events")
+        .select("id,user_id,actor_id,event_type,severity,details,created_at")
+        .order("created_at", { ascending: false }).limit(100);
+      if (customerSecurityEventsError) {
+        console.error("baran-admin: customer security events failed", customerSecurityEventsError.message);
+        return json({ error: "تعذر تحميل سجل أحداث حماية العملاء." }, 500);
+      }
       const { count: productCount, error: productCountError } = await admin
         .from("products").select("id",{count:"exact",head:true});
       const { count: supplierCount, error: supplierCountError } = await admin
@@ -348,6 +368,7 @@ Deno.serve(async (req: Request) => {
         orders: orderCustomers,
         loyalty_customers: loyaltyCustomers,
         audit_log: auditLog ?? [],
+        customer_security_events: customerSecurityEvents ?? [],
         stats: { users: userCount ?? 0, orders: orderCount ?? 0,
           products: productCount ?? 0, suppliers: supplierCount ?? 0,
           order_statuses: statusCounts, pending_orders: statusCounts.pending ?? 0,
@@ -361,6 +382,8 @@ Deno.serve(async (req: Request) => {
     if (req.method === "POST") {
       let body: {
         action?: string;
+        ban_duration?: string;
+        ban_reason?: string;
         request_id?: string;
         decision?: string;
         entry_type?: string;
@@ -428,6 +451,83 @@ Deno.serve(async (req: Request) => {
         input_schema?: any;
       };
       try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+
+      if (body.action === "customer_account_ban") {
+        const targetId = body.target_user_id ?? "";
+        const reason = typeof body.ban_reason === "string" ? body.ban_reason.trim() : "";
+        const duration = body.ban_duration ?? "24h";
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        const allowedDurations = new Set(["1h","24h","7d","30d","permanent","none"]);
+        if (!uuidPattern.test(targetId) || !allowedDurations.has(duration) ||
+            (duration !== "none" && (reason.length < 5 || reason.length > 500))) {
+          return json({ error: "حدد حساباً صحيحاً وسبباً واضحاً ومدة حظر صالحة." }, 400);
+        }
+        const { data: targetAdmin, error: targetAdminError } = await admin.rpc("admin_is_user", { p_user_id: targetId });
+        if (targetAdminError) return json({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
+        if (targetAdmin === true) return json({ error: "لا يمكن حظر حساب إداري من مركز العملاء." }, 403);
+        const banDuration = duration === "none" ? "none" :
+          duration === "permanent" ? "876000h" :
+          duration === "1h" ? "1h" : duration === "24h" ? "24h" :
+          duration === "7d" ? "168h" : "720h";
+        const { data: targetUser, error: targetLookupError } = await admin.auth.admin.getUserById(targetId);
+        if (targetLookupError || !targetUser?.user) return json({ error: "حساب العميل غير موجود." }, 404);
+        const { data: previousControl, error: previousControlError } = await admin.from("customer_account_controls")
+          .select("user_id,status,reason,banned_until,updated_by,updated_at")
+          .eq("user_id", targetId).maybeSingle();
+        if (previousControlError) return json({ error: "تعذر قراءة حالة الحماية السابقة." }, 500);
+        const bannedUntil = duration === "none" || duration === "permanent" ? null : new Date(Date.now() +
+          (duration === "1h" ? 3600000 : duration === "24h" ? 86400000 :
+           duration === "7d" ? 604800000 : 2592000000)).toISOString();
+        const nextControl = {
+          user_id: targetId, status: duration === "none" ? "active" : "banned",
+          reason: duration === "none" ? null : reason, banned_until: bannedUntil,
+          updated_by: user.id, updated_at: new Date().toISOString(),
+        };
+        // Save the server-side deny state first so an old JWT is blocked during the Auth update.
+        const { error: controlError } = await admin.from("customer_account_controls")
+          .upsert(nextControl, { onConflict: "user_id" });
+        if (controlError) {
+          console.error("baran-admin: customer control save failed", controlError.message);
+          return json({ error: "تعذر حفظ حالة حماية الحساب؛ لم يتم تغيير جلسة الدخول." }, 500);
+        }
+        const { data: authUpdate, error: authUpdateError } = await admin.auth.admin.updateUserById(targetId, {
+          ban_duration: banDuration,
+        });
+        if (authUpdateError) {
+          console.error("baran-admin: customer ban auth sync failed", authUpdateError.message);
+          if (previousControl) {
+            const { error: rollbackError } = await admin.from("customer_account_controls")
+              .upsert(previousControl, { onConflict: "user_id" });
+            if (rollbackError) console.error("baran-admin: customer ban rollback failed", rollbackError.message);
+          } else {
+            const { error: rollbackError } = await admin.from("customer_account_controls")
+              .delete().eq("user_id", targetId);
+            if (rollbackError) console.error("baran-admin: customer ban rollback failed", rollbackError.message);
+          }
+          await admin.from("customer_security_events").insert({
+            user_id: targetId, actor_id: user.id, event_type: "customer_ban_auth_sync_failed",
+            severity: "critical", details: { requested_duration: duration, error: authUpdateError.message.slice(0, 300) },
+          });
+          return json({ error: "تعذر مزامنة الحظر مع تسجيل الدخول. تم التراجع عن تغيير الحالة؛ تحقق من سجل الحماية." }, 500);
+        }
+        const { error: securityEventError } = await admin.from("customer_security_events").insert({
+          user_id: targetId, actor_id: user.id,
+          event_type: duration === "none" ? "customer_unbanned" : "customer_banned",
+          severity: duration === "none" ? "info" : "warning",
+          details: { duration, reason: duration === "none" ? null : reason },
+        });
+        const { error: auditInsertError } = await admin.from("admin_audit_log").insert({
+          admin_id: user.id, action: duration === "none" ? "customer_unban" : "customer_ban",
+          entity_type: "customer", entity_id: targetId,
+          details: { duration, reason: duration === "none" ? null : reason },
+        });
+        if (securityEventError || auditInsertError) {
+          console.error("baran-admin: ban audit write failed", securityEventError?.message || auditInsertError?.message);
+          return json({ error: "تم تغيير حالة الحظر، لكن تعذر حفظ سجل التدقيق كاملاً. راجع سجلات الإدارة." }, 500);
+        }
+        return json({ success: true, user_id: targetId, status: duration === "none" ? "active" : "banned",
+          banned_until: bannedUntil, auth_user_updated: Boolean(authUpdate?.user) });
+      }
 
       if (body.action === "admin_check") return json({ success: true });
 
