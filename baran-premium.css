@@ -971,3 +971,10 @@ footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b36
  .notification-summary{padding:10px 11px}
 }
 @media(prefers-reduced-motion:reduce){.notification-item,.notification-bell{transition:none}}
+
+/* Clear tap affordance for notification deep links */
+.notification-clickable{cursor:pointer;-webkit-tap-highlight-color:rgba(193,139,237,.14)}
+.notification-clickable:hover{border-color:rgba(193,139,237,.68);transform:translateY(-1px)}
+.notification-clickable:focus-visible{outline:2px solid #c18bed;outline-offset:3px}
+.notification-open-action{width:auto;margin:0;padding:6px 10px;border:1px solid rgba(193,139,237,.48);border-radius:9px;background:rgba(137,91,174,.18);color:#ead7fb;font-size:10px;font-weight:800;box-shadow:none}
+.notification-open-action:hover{background:rgba(137,91,174,.3);box-shadow:none}

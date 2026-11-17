@@ -1,12 +1,13 @@
 self.addEventListener("push",event=>{
-  let data={title:"Baran Game",body:"لديك إشعار جديد",url:"./"};
-  try{if(event.data)data={...data,...event.data.json()};}catch(_){}
-  event.waitUntil(self.registration.showNotification(data.title||"Baran Game",{
-    body:data.body||"لديك إشعار جديد",
+  let payload={title:"Baran Game",body:"لديك إشعار جديد",url:"./"};
+  try{if(event.data)payload={...payload,...event.data.json()};}catch(_){}
+  const notificationData={...payload};
+  event.waitUntil(self.registration.showNotification(payload.title||"Baran Game",{
+    body:payload.body||"لديك إشعار جديد",
     icon:"./baran-icon.svg",
     badge:"./baran-icon.svg",
-    data:{url:data.url||"./"},
-    tag:data.tag||"baran-"+Date.now(),
+    data:notificationData,
+    tag:payload.tag||"baran-"+Date.now(),
     renotify:false,
     vibrate:[110,55,110],
     actions:[{action:"open",title:"فتح باران"}],
@@ -16,23 +17,32 @@ self.addEventListener("push",event=>{
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
-  // Resolve relative notification URLs from this app's GitHub Pages scope.
-  const target=new URL(event.notification.data?.url||"./",self.registration.scope).href;
+  const payload=event.notification.data||{};
+  const scopeUrl=new URL(self.registration.scope);
+  let target;
+  try{
+    target=new URL(payload.url||"./",self.registration.scope);
+    if(target.origin!==scopeUrl.origin||!target.pathname.startsWith(scopeUrl.pathname))target=new URL("./",self.registration.scope);
+  }catch(_){target=new URL("./",self.registration.scope);}
+  const notificationId=payload.notification_id||payload.notificationId||payload.baran_notification;
+  if(notificationId)target.searchParams.set("baran_notification",String(notificationId));
+  else if(payload.entity_type&&payload.entity_id){
+    target.searchParams.set("baran_entity_type",String(payload.entity_type));
+    target.searchParams.set("baran_entity_id",String(payload.entity_id));
+    if(payload.kind)target.searchParams.set("baran_kind",String(payload.kind));
+    if(payload.audience)target.searchParams.set("baran_audience",String(payload.audience));
+  }
+  const targetUrl=target.href;
   event.waitUntil((async()=>{
-    const list=await clients.matchAll({type:"window",includeUncontrolled:true});
-    for(const client of list){
+    const windows=await clients.matchAll({type:"window",includeUncontrolled:true});
+    for(const client of windows){
       if(!client.url.startsWith(self.registration.scope))continue;
       try{
-        const navigated=await client.navigate(target);
-        if(navigated){
-          await navigated.focus();
-          return;
-        }
-      }catch(_){
-        // Fall back to opening a fresh app window below.
-      }
+        const navigated=await client.navigate(targetUrl);
+        if(navigated){await navigated.focus();return;}
+      }catch(_){}
     }
-    await clients.openWindow(target);
+    await clients.openWindow(targetUrl);
   })());
 });
 self.addEventListener("install",event=>{self.skipWaiting();});
