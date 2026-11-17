@@ -428,3 +428,179 @@ footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b36
 @media(prefers-reduced-motion:reduce){
   .baran-clean-category,.home-feature-card,.home-category-card,.game-package-option,.baran-service-product,button{transition:none}
 }
+
+
+/* BARAN storefront layout rebuild — clear hierarchy and shopping flow */
+.baran-home-v3{
+  display:flex;flex-direction:column;gap:clamp(22px,4vw,34px);
+  width:100%;max-width:1040px;margin:0 auto;padding:4px 0 24px;
+  color:#f5eff9;
+}
+.baran-home-topline{
+  display:flex;align-items:center;gap:8px;padding:2px 4px;
+  color:#bba9c9;font-size:10px;font-weight:800;letter-spacing:1.4px;
+}
+.baran-live-dot{width:7px;height:7px;border-radius:50%;background:#9bd9bd;box-shadow:0 0 12px #9bd9bd88}
+.baran-topline-separator{color:#795c8d}
+.baran-home-hero{
+  position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(210px,.9fr);
+  min-height:310px;align-items:center;overflow:hidden;padding:clamp(24px,5vw,48px);
+  border:1px solid rgba(199,156,228,.5);border-radius:27px;
+  background:
+    radial-gradient(ellipse at 76% 50%,rgba(155,102,190,.28),transparent 34%),
+    radial-gradient(ellipse at 5% 100%,rgba(111,67,144,.28),transparent 40%),
+    linear-gradient(115deg,#30203f 0%,#1c1427 58%,#100b17 100%);
+  box-shadow:0 24px 55px #0007,inset 0 1px 0 #ffffff18;
+}
+.baran-home-hero:before{
+  content:"";position:absolute;inset:0;z-index:-1;opacity:.18;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:34px 34px;mask-image:linear-gradient(90deg,transparent,#000 65%);
+}
+.baran-home-hero-copy{position:relative;z-index:2;max-width:540px}
+.baran-home-kicker{color:#d8b8ef;font-size:10px;font-weight:900;letter-spacing:2.8px}
+.baran-home-hero h1{margin:13px 0 10px;color:#fff;font-size:clamp(29px,5vw,48px);font-weight:950;line-height:1.35;letter-spacing:-.6px}
+.baran-home-hero h1 em{color:#d7b2f0;font-style:normal;text-shadow:0 5px 24px #a56bd655}
+.baran-home-hero-copy>p{max-width:480px;margin:0;color:#c9b9d4;font-size:13px;line-height:2}
+.baran-home-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+.baran-home-hero-actions button{min-height:44px;padding:0 17px;font-size:12px;font-weight:900}
+.baran-home-primary{border:1px solid #e3c9f5;border-radius:13px;background:linear-gradient(120deg,#e5caf7,#a978cb 72%,#8757aa);color:#21132b;box-shadow:0 9px 24px #a56bd644,inset 0 1px 0 #fff9}
+.baran-home-primary span{margin-right:10px;font-size:17px}
+.baran-home-secondary{border:1px solid #9875b0;border-radius:13px;background:#ffffff0a;color:#f0e3f8}
+.baran-home-hero-art{position:relative;display:grid;place-items:center;min-height:210px}
+.baran-home-emblem{
+  position:relative;z-index:2;display:grid;place-items:center;width:148px;height:148px;
+  border:1px solid #e1c1f399;border-radius:42px;transform:rotate(-8deg);
+  background:linear-gradient(145deg,#c89de744,#613e7b55);
+  color:#f7eaff;font:900 86px/1 Orbitron,sans-serif;
+  text-shadow:0 5px 26px #c99ae9aa;box-shadow:0 0 70px #a56bd655,inset 0 1px 0 #fff5;
+}
+.baran-home-emblem span{position:absolute;top:13px;right:15px;font-size:25px;color:#f1d9ff}
+.baran-orbit{position:absolute;width:225px;height:225px;border:1px solid #d5b3ed33;border-radius:50%;transform:rotate(-24deg) scaleY(.42)}
+.orbit-two{width:270px;height:270px;transform:rotate(54deg) scaleY(.43);border-color:#d5b3ed22}
+.baran-spark{position:absolute;color:#e7cafa;font-style:normal;text-shadow:0 0 20px #c79be6}
+.spark-one{top:24%;right:17%;font-size:25px}.spark-two{bottom:22%;left:15%;font-size:29px}
+.baran-home-hero-foot{position:absolute;right:clamp(24px,5vw,48px);bottom:17px;left:clamp(24px,5vw,48px);display:flex;justify-content:space-between;color:#a995b7;font-size:8px;letter-spacing:1.8px}
+.baran-home-section-intro{display:flex;align-items:center;gap:12px;min-width:0;margin:0 2px 13px}
+.baran-section-index{display:grid;place-items:center;flex:0 0 49px;min-height:34px;border:1px solid #76558e;border-radius:10px;background:#a56bd619;color:#dcbdf2;font-size:9px;font-weight:900;letter-spacing:.4px}
+.baran-home-section-intro>div{min-width:0;flex:1}
+.baran-home-section-intro h2{margin:0;color:#f5eafa;font-size:clamp(16px,3vw,20px);font-weight:900;line-height:1.5}
+.baran-home-section-intro p{margin:2px 0 0;color:#ad9bb9;font-size:10px;line-height:1.7}
+.baran-home-text-link{padding:7px 9px;border:1px solid #6d4f82;border-radius:10px;background:#1d1527;color:#e2c8f2;font-size:10px;font-weight:800;white-space:nowrap}
+.baran-home-search{margin:0;padding:12px;border:1px solid #70528a;border-radius:17px;background:linear-gradient(145deg,#21182c,#130e19);box-shadow:0 10px 26px #0004}
+.baran-home-search .store-search-row{display:flex;align-items:center;gap:10px}
+.baran-home-search .store-search-row>span{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#a56bd622;color:#e2c7f4;font-size:25px}
+.baran-home-search input{min-width:0;min-height:42px;border:0;background:transparent;box-shadow:none;font-size:12px}
+.baran-home-search input:focus{box-shadow:none!important}
+.baran-home-search .store-search-row button{min-height:36px;padding:0 11px}
+.baran-home-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.baran-home-category{
+  position:relative;display:flex;align-items:center;gap:13px;min-width:0;min-height:106px;padding:15px;
+  overflow:hidden;text-align:right;border:1px solid #624875;border-radius:17px;
+  background:linear-gradient(145deg,#2b2037,#17111f 80%);color:#f5eafa;
+  box-shadow:0 9px 22px #0004,inset 0 1px 0 #ffffff0b;
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.baran-home-category:after{content:"";position:absolute;width:100px;height:100px;left:-35px;bottom:-57px;border:1px solid #c39ce522;border-radius:50%;box-shadow:0 0 0 14px #c39ce20a}
+.baran-home-category:hover{transform:translateY(-3px);border-color:#c49ae2;box-shadow:0 15px 29px #0006}
+.baran-home-category-icon{display:grid;place-items:center;flex:0 0 49px;width:49px;height:49px;border:1px solid #a77bc655;border-radius:15px;background:linear-gradient(145deg,#b98bd944,#754d922e);font-size:24px}
+.baran-home-category-text{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+.baran-home-category-text strong{font-size:13px;line-height:1.5}
+.baran-home-category-text small{color:#b9a9c9;font-size:9px;line-height:1.6}
+.baran-home-category-arrow{color:#d6b4ed;font-size:19px}
+.category-games{background:linear-gradient(130deg,#342343,#1a1424)}
+.category-digital{background:linear-gradient(130deg,#2d2040,#191321)}
+.category-gifts{background:linear-gradient(130deg,#30223a,#191321)}
+.category-mobile{background:linear-gradient(130deg,#28243b,#171321)}
+.baran-home-game-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.baran-home-game-card{position:relative;display:block;min-width:0;min-height:190px;padding:0;overflow:hidden;text-align:right;border:1px solid #806098;border-radius:19px;background:#191220;box-shadow:0 12px 27px #0006}
+.baran-home-game-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.baran-home-game-card:hover img{transform:scale(1.055)}
+.baran-game-card-shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(8,6,12,.96),rgba(12,8,17,.05) 80%),linear-gradient(90deg,#160f2080,transparent)}
+.baran-game-card-copy{position:absolute;right:16px;bottom:15px;left:16px;display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.baran-game-card-copy small{color:#e0c2f3;font-size:8px;font-weight:900;letter-spacing:1.7px}
+.baran-game-card-copy strong{color:#fff;font-size:clamp(14px,3vw,19px);font-weight:950;letter-spacing:.4px}
+.baran-game-card-copy em{color:#e1d2eb;font-size:10px;font-style:normal}
+.baran-game-card-copy b{margin-right:8px;color:#e0baf7;font-size:15px}
+.baran-home-service-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.baran-home-service-list button{display:flex;align-items:center;gap:11px;min-width:0;min-height:76px;padding:12px;text-align:right;border:1px solid #594165;border-radius:15px;background:linear-gradient(145deg,#241a30,#17111f);color:#f3eafa}
+.baran-home-service-list button>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
+.baran-home-service-list strong{font-size:11px;line-height:1.5}
+.baran-home-service-list small{color:#ad9bb9;font-size:9px;line-height:1.6}
+.baran-home-service-list button>b{color:#d4b1eb;font-size:17px}
+.service-symbol{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border:1px solid #9a70b955;border-radius:12px;background:#a56bd622;color:#e4c9f6;font-size:20px}
+.baran-home-baro{position:relative;display:flex;align-items:center;gap:14px;min-width:0;padding:17px;border:1px solid #8a67a6;border-radius:19px;background:radial-gradient(circle at 10% 90%,#a56bd633,transparent 42%),linear-gradient(115deg,#2d203a,#17111f);box-shadow:0 12px 27px #0005}
+.baran-baro-mark{display:grid;place-items:center;flex:0 0 52px;height:52px;border:1px solid #bd91df99;border-radius:16px;background:#a56bd633;color:#f2e3fb;font:900 23px Orbitron,sans-serif}
+.baran-baro-mark span{font-size:10px}
+.baran-baro-copy{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
+.baran-baro-copy>span{color:#d4b2ed;font-size:8px;font-weight:900;letter-spacing:1.1px}
+.baran-baro-copy strong{font-size:14px;color:#f4e9fb}
+.baran-baro-copy small{color:#c1b0cc;font-size:10px;line-height:1.7}
+.baran-home-baro>button{flex:0 0 auto;padding:10px 12px;border:1px solid #c49ae2;border-radius:11px;background:#d6b3ed;color:#24152e;font-size:10px;font-weight:900}
+.baran-baro-status{position:absolute;top:-9px;left:16px;padding:4px 9px;border:1px solid #8a683e;border-radius:20px;background:#302313;color:#f3d8a9;font-size:8px;font-weight:900}
+.baran-home-account-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.baran-home-account-grid button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;min-height:104px;padding:13px;border:1px solid #574061;border-radius:15px;background:linear-gradient(145deg,#241a30,#17111f);color:#f4eafa;text-align:right}
+.baran-home-account-grid button>span{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:#a56bd622;color:#e1c1f4;font-size:18px}
+.baran-home-account-grid strong{font-size:11px}
+.baran-home-account-grid small{color:#ad9bb9;font-size:9px;line-height:1.5}
+.baran-home-promise{display:flex;align-items:flex-start;gap:11px;padding:13px 15px;border:1px solid #493654;border-radius:14px;background:#17121f;color:#bbaac8}
+.baran-home-promise>span{color:#d7b2f0;font-size:19px}
+.baran-home-promise p{margin:0;font-size:10px;line-height:1.9}
+.baran-home-promise strong{color:#eadcf3;font-size:11px}
+@media(min-width:760px){
+ .baran-home-v3{gap:30px;padding:8px 0 32px}
+ .baran-home-hero{min-height:340px}
+ .baran-home-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .baran-home-category{min-height:130px;flex-direction:column;align-items:flex-start;justify-content:space-between}
+ .baran-home-category-icon{width:54px;height:54px;flex-basis:54px}
+ .baran-home-category-arrow{align-self:flex-end}
+ .baran-home-game-card{min-height:240px}
+ .baran-home-service-list{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .baran-home-service-list button{min-height:105px;align-items:flex-start;flex-direction:column}
+ .baran-home-account-grid button{min-height:115px;padding:17px}
+}
+@media(max-width:600px){
+ .baran-home-v3{gap:22px;padding-top:0}
+ .baran-home-hero{grid-template-columns:minmax(0,1fr) 105px;min-height:260px;padding:22px 17px 42px;border-radius:21px}
+ .baran-home-hero h1{font-size:clamp(25px,7vw,34px)}
+ .baran-home-hero-copy>p{font-size:11px}
+ .baran-home-hero-art{min-height:140px}
+ .baran-home-emblem{width:82px;height:82px;border-radius:26px;font-size:48px}
+ .baran-home-emblem span{top:7px;right:8px;font-size:15px}
+ .baran-orbit{width:140px;height:140px}
+ .orbit-two{width:170px;height:170px}
+ .baran-home-hero-foot{bottom:12px}
+ .baran-home-section-intro{gap:9px}
+ .baran-section-index{flex-basis:42px;font-size:8px}
+ .baran-home-category{min-height:100px;padding:11px 9px;gap:9px}
+ .baran-home-category-icon{flex-basis:40px;width:40px;height:40px;font-size:20px}
+ .baran-home-category-text strong{font-size:11px}
+ .baran-home-game-card{min-height:165px}
+ .baran-home-service-list{grid-template-columns:1fr}
+ .baran-home-service-list button{min-height:66px}
+ .baran-home-baro{flex-wrap:wrap;gap:10px;padding:14px}
+ .baran-home-baro>button{margin-right:auto}
+ .baran-baro-copy{flex-basis:calc(100% - 70px)}
+ .baran-baro-status{left:10px}
+}
+@media(max-width:390px){
+ .baran-home-hero{grid-template-columns:minmax(0,1fr) 74px;padding:19px 13px 42px}
+ .baran-home-hero-actions{gap:7px}
+ .baran-home-hero-actions button{padding:0 10px;font-size:10px}
+ .baran-home-emblem{width:66px;height:66px;font-size:39px}
+ .baran-orbit{width:115px;height:115px}
+ .orbit-two{width:140px;height:140px}
+ .baran-home-category-grid{gap:8px}
+ .baran-home-category{gap:7px;padding:9px 7px}
+ .baran-home-category-icon{flex-basis:34px;width:34px;height:34px;font-size:18px}
+ .baran-home-category-text strong{font-size:10px}
+ .baran-home-category-text small{font-size:8px}
+ .baran-home-game-grid{gap:8px}
+ .baran-home-game-card{min-height:140px}
+ .baran-game-card-copy{right:10px;bottom:10px;left:10px}
+ .baran-home-account-grid{gap:7px}
+ .baran-home-account-grid button{padding:10px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .baran-home-category,.baran-home-game-card img{transition:none}
+}
