@@ -107,7 +107,35 @@ Deno.serve(async (req: Request) => {
         member_code: profileById.get(row.user_id)?.member_code || null,
         last_seen_at: row.last_seen_at,
       }));
-      return json({ success: true, online, online_count: online.length, checked_at: new Date().toISOString(), stale_after_seconds: 120 });
+      const { data: referralRows, error: referralError } = await admin.from("customer_referrals")
+        .select("id,referrer_user_id,referred_user_id,referral_code,status,created_at,qualified_at,reward_points,admin_note")
+        .order("created_at", { ascending: false }).limit(100);
+      if (referralError) {
+        console.error("customer center referrals query failed", referralError.message);
+        return json({ error: "تعذر تحميل بيانات الدعوات." }, 500);
+      }
+      const referralUserIds = [...new Set((referralRows || []).flatMap((row) => [row.referrer_user_id,row.referred_user_id]))];
+      const { data: referralProfiles, error: referralProfilesError } = referralUserIds.length
+        ? await admin.from("profiles").select("id,full_name,member_code").in("id", referralUserIds)
+        : { data: [], error: null };
+      if (referralProfilesError) {
+        console.error("customer center referral profile query failed", referralProfilesError.message);
+        return json({ error: "تعذر تحميل أسماء أصحاب الدعوات." }, 500);
+      }
+      const referralProfileById = new Map((referralProfiles || []).map((profile) => [profile.id,profile]));
+      const referrals = (referralRows || []).map((row) => ({
+        ...row,
+        referrer_name: referralProfileById.get(row.referrer_user_id)?.full_name || "عميل",
+        referrer_member_code: referralProfileById.get(row.referrer_user_id)?.member_code || null,
+        referred_name: referralProfileById.get(row.referred_user_id)?.full_name || "عميل",
+        referred_member_code: referralProfileById.get(row.referred_user_id)?.member_code || null,
+      }));
+      const referral_stats = (referralRows || []).reduce((stats, row) => {
+        stats[row.status] = (stats[row.status] || 0) + 1;
+        return stats;
+      }, { pending:0, qualified:0, rewarded:0, rejected:0 });
+      return json({ success: true, online, online_count: online.length, referrals, referral_stats,
+        checked_at: new Date().toISOString(), stale_after_seconds: 120 });
     }
 
     return json({ error: "Unknown action" }, 400);
