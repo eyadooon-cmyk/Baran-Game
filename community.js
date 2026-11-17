@@ -133,13 +133,16 @@ async function openBaranNotificationTarget(item,audience){
     if(typeof loadDepositRequests==="function")await loadDepositRequests();
     else if(typeof loadWalletTransactions==="function")await loadWalletTransactions();
   }
-  const target=isAdmin&&isSupportTarget&&entityId
-    ?document.querySelector('[data-feedback-id="'+CSS.escape(String(entityId))+'"]')
-    :isAdmin&&isSupportTarget
-      ?(document.getElementById("supportTicketsView")||document.getElementById("adminFeedback"))
-      :isAdmin&&kind.includes("monitor")
-        ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
-        :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
+  if(isSupportTarget&&entityId&&typeof openSupportConversation==="function"){
+    try{await openSupportConversation(String(entityId),isAdmin?"admin":"customer");}
+    catch(error){console.warn("تعذر فتح محادثة الدعم من الإشعار:",error);}
+  }
+  const target=isSupportTarget
+    ?(entityId?document.getElementById(isAdmin?"adminSupportConversation":"customerSupportConversation")
+      :(isAdmin?(document.getElementById("supportTicketsView")||document.getElementById("adminFeedback")):null))
+    :isAdmin&&kind.includes("monitor")
+      ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
+      :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
   if(target){
     target.scrollIntoView({behavior:"smooth",block:isAdmin&&isSupportTarget&&!entityId?"start":"center"});
     target.classList.add("notification-target-highlight");
@@ -297,6 +300,12 @@ async function loadMyFeedback(){
         (item.rating?"التقييم: "+item.rating+"/5 — ":"")+
         item.message+" | الحالة: "+(feedbackStatusLabels[item.status]||item.status);
       card.append(title,details);
+      if(item.feedback_type==="support"){
+        const chat=document.createElement("button");chat.type="button";chat.className="full support-open-chat";
+        chat.textContent="💬 فتح محادثة الدعم";
+        chat.onclick=()=>openSupportConversation(item.id,"customer");
+        card.appendChild(chat);
+      }
       if(item.admin_reply){
         const reply=document.createElement("p");reply.className="small";reply.textContent="رد الإدارة: "+item.admin_reply;card.appendChild(reply);
       }
@@ -333,6 +342,13 @@ function renderAdminFeedback(items){
       item.message+" | الحالة: "+(feedbackStatusLabels[item.status]||item.status)+
       " | "+new Date(item.created_at).toLocaleString("ar");
     card.append(title,body);
+    if(item.feedback_type==="support"){
+      card.dataset.feedbackId=item.id;
+      const chat=document.createElement("button");chat.type="button";chat.className="full support-open-chat";
+      chat.textContent="💬 فتح المحادثة الكاملة";
+      chat.onclick=()=>openSupportConversation(item.id,"admin");
+      card.appendChild(chat);
+    }
     if(item.order_id){const order=document.createElement("div");order.className="small";order.textContent="رقم الطلب المرتبط: "+item.order_id;card.appendChild(order);}
     if(item.admin_reply){const previous=document.createElement("p");previous.className="small";previous.textContent="آخر رد محفوظ: "+item.admin_reply;card.appendChild(previous);}
     if(item.feedback_type==="support"&&!item.admin_read_at){
@@ -395,4 +411,90 @@ async function saveAdminFeedback(id,status,reply,button,feedbackType){
     alert("تعذر تحديث الرسالة: "+error.message);
     button.disabled=false;
   }
+}
+
+/* Unified ticket conversation center — all access is mediated by the authenticated Edge Function. */
+let activeSupportConversation={id:null,audience:null};
+async function supportCenterRequest(method,ticketId,payload){
+  const {data:{session},error:sessionError}=await sb.auth.getSession();
+  if(sessionError||!session)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
+  const endpoint=SUPABASE_URL+"/functions/v1/baran-support-center";
+  const url=method==="GET"?endpoint+"?ticket_id="+encodeURIComponent(ticketId):endpoint;
+  const response=await fetch(url,{method,headers:{
+    "Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"
+  },body:method==="GET"?undefined:JSON.stringify(payload||{})});
+  let result={};try{result=await response.json();}catch(_){}
+  if(!response.ok)throw new Error(result.error||"تعذر الاتصال بمركز الدعم.");
+  return result;
+}
+function closeSupportConversation(audience){
+  const box=document.getElementById(audience==="admin"?"adminSupportConversation":"customerSupportConversation");
+  if(box)box.classList.add("hidden");
+  if(activeSupportConversation.audience===audience)activeSupportConversation={id:null,audience:null};
+}
+function renderSupportConversation(data,audience){
+  const prefix=audience==="admin"?"admin":"customer";
+  const title=document.getElementById(prefix+"SupportConversationTitle");
+  const meta=document.getElementById(prefix+"SupportConversationMeta");
+  const list=document.getElementById(prefix+"SupportConversationMessages");
+  if(!title||!meta||!list)return;
+  const ticket=data.ticket||{};
+  title.textContent=(ticket.ticket_code||"تذكرة الدعم")+" — "+(ticket.subject||"محادثة الدعم");
+  const statusLabels={pending:"بانتظار الرد",in_progress:"قيد المعالجة",completed:"مكتملة",rejected:"مغلقة"};
+  meta.textContent="الحالة: "+(statusLabels[ticket.status]||ticket.status||"—")+
+    (data.customer?( " · الزبون: "+(data.customer.full_name||data.customer.email||"حساب زبون")):"")+
+    (ticket.order_id?" · طلب مرتبط: "+ticket.order_id:"");
+  list.replaceChildren();
+  const messages=Array.isArray(data.messages)?data.messages:[];
+  if(!messages.length){const empty=document.createElement("p");empty.className="small";empty.textContent="لا توجد رسائل بعد.";list.appendChild(empty);}
+  messages.forEach(item=>{
+    const bubble=document.createElement("article");bubble.className="support-message "+(item.sender_role||"system");
+    const content=document.createElement("div");content.textContent=item.message||"";
+    const stamp=document.createElement("time");stamp.className="support-message-meta";
+    const role=item.sender_role==="customer"?"الزبون":item.sender_role==="assistant"?"مساعد باران":item.sender_role==="admin"?"فريق الإدارة":"النظام";
+    stamp.textContent=role+" · "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"");
+    bubble.append(content,stamp);list.appendChild(bubble);
+  });
+  list.scrollTop=list.scrollHeight;
+  if(audience==="admin"){
+    const status=document.getElementById("adminSupportConversationStatus");
+    if(status)status.value=ticket.status||"pending";
+  }
+}
+async function openSupportConversation(ticketId,audience){
+  const prefix=audience==="admin"?"admin":"customer";
+  const box=document.getElementById(prefix+"SupportConversation");
+  const list=document.getElementById(prefix+"SupportConversationMessages");
+  if(!box||!list)throw new Error("واجهة المحادثة غير متاحة.");
+  activeSupportConversation={id:String(ticketId),audience};
+  box.classList.remove("hidden");list.textContent="جاري تحميل المحادثة...";
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+  try{
+    const data=await supportCenterRequest("GET",ticketId);
+    renderSupportConversation(data,audience);
+    const input=document.getElementById(prefix+"SupportConversationInput");
+    if(input)input.focus({preventScroll:true});
+    return data;
+  }catch(error){list.textContent="تعذر تحميل المحادثة: "+error.message;throw error;}
+}
+async function sendSupportConversationMessage(event,audience){
+  if(event)event.preventDefault();
+  const prefix=audience==="admin"?"admin":"customer";
+  const input=document.getElementById(prefix+"SupportConversationInput");
+  const button=document.getElementById(prefix+"SupportConversationSend");
+  const message=String(input?.value||"").trim();
+  const ticketId=activeSupportConversation.id;
+  if(!ticketId||activeSupportConversation.audience!==audience){alert("افتح التذكرة أولاً.");return;}
+  if(!message){input?.focus();return;}
+  if(message.length>2000){alert("الرسالة طويلة جداً.");return;}
+  if(button)button.disabled=true;
+  try{
+    const payload={ticket_id:ticketId,message};
+    if(audience==="admin")payload.status=document.getElementById("adminSupportConversationStatus")?.value||"in_progress";
+    await supportCenterRequest("POST",null,payload);
+    if(input)input.value="";
+    await openSupportConversation(ticketId,audience);
+    if(audience==="customer")await loadMyFeedback();
+  }catch(error){alert("تعذر إرسال الرسالة: "+error.message);}
+  finally{if(button)button.disabled=false;}
 }
