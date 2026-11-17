@@ -57,32 +57,95 @@ function baroUpdateQuantityField(){
 function renderBaroCustomerCatalog(products){
  const box=baroEl("baroCustomerCatalog");if(!box)return;
  box.replaceChildren();
- const intro=document.createElement("p");intro.className="small";intro.textContent="كتالوج معاينة فقط — الأسعار غير معروضة والطلبات مغلقة.";
- box.append(intro);
- if(!products.length){
-  const empty=document.createElement("p");empty.textContent="لا توجد منتجات معتمدة للعرض حالياً.";box.append(empty);return;
- }
- const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
- const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
+ const categoryMeta={
+  pubg:{label:"PUBG MOBILE",icon:"🎯",eyebrow:"BATTLEGROUNDS",description:"شدات UC والاشتراكات وباقات PUBG"},
+  freefire:{label:"FREE FIRE",icon:"🔥",eyebrow:"BOOYAH!",description:"جواهر فري فاير والعضويات"},
+  jawaker:{label:"JAWAKER",icon:"🃏",eyebrow:"CARD GAMES",description:"توكنز جواكر ومسرّعات اللعب"}
+ };
+ const groupMeta={
+  uc:{label:"شدات UC",icon:"💎",description:"باقات الشدات"},
+  growth:{label:"حزم واشتراكات PUBG",icon:"🚀",description:"Prime والاشتراكات والباقات"},
+  diamonds:{label:"جواهر Free Fire",icon:"💠",description:"باقات الجواهر"},
+  memberships:{label:"عضويات Free Fire",icon:"👑",description:"العضويات الأسبوعية وغيرها"},
+  tokens:{label:"جواكر توكنز",icon:"🪙",description:"السيرفر الأول والسيرفر الثاني"},
+  boosters:{label:"مسرّعات جواكر",icon:"⚡",description:"الأحمر والأزرق والأسود والذهبي"}
+ };
  const categoryOrder=["pubg","freefire","jawaker"];
- const categories=[...new Set(products.map(p=>p.category_id))].sort((a,b)=>categoryOrder.indexOf(a)-categoryOrder.indexOf(b));
- categories.forEach(category=>{
-  const section=document.createElement("section");section.className="baro-catalog-category";
-  const heading=document.createElement("h3");heading.textContent=categoryLabels[category]||category;section.append(heading);
-  const groups=[...new Set(products.filter(p=>p.category_id===category).map(p=>p.group_id))];
-  groups.forEach(group=>{
-   const groupTitle=document.createElement("h4");groupTitle.textContent=groupLabels[group]||group;section.append(groupTitle);
-   const list=document.createElement("div");list.className="ops-list";
-   products.filter(p=>p.category_id===category&&p.group_id===group).forEach(p=>{
-    const card=document.createElement("article");card.className="ops-item baro-catalog-product";
-    const name=document.createElement("strong");name.textContent=p.product_name;
-    const note=document.createElement("div");note.className="small";note.textContent="متاح للمعاينة فقط — الشحن اليدوي غير مفعّل";
-    card.append(name,note);list.append(card);
-   });
-   section.append(list);
-  });
-  box.append(section);
+ const groupOrder={pubg:["uc","growth"],freefire:["diamonds","memberships"],jawaker:["tokens","boosters"]};
+ const intro=document.createElement("div");intro.className="baro-catalog-intro";
+ const introMark=document.createElement("span");introMark.className="baro-catalog-intro-mark";introMark.textContent="✦";
+ const introCopy=document.createElement("div");
+ const introTitle=document.createElement("strong");introTitle.textContent="اكتشف منتجات BARO";
+ const introText=document.createElement("p");introText.textContent="تصفّح الأقسام واختر المنتج الذي تبحث عنه. هذه معاينة للكتالوج فقط، والطلبات غير متاحة حالياً.";
+ introCopy.append(introTitle,introText);intro.append(introMark,introCopy);box.append(intro);
+ if(!products.length){
+  const empty=document.createElement("div");empty.className="baro-catalog-empty";
+  empty.textContent="لا توجد منتجات معتمدة للعرض حالياً. سنعرض المنتجات هنا فور تجهيزها.";
+  box.append(empty);return;
+ }
+ const total=document.createElement("div");total.className="baro-catalog-total";
+ total.textContent=products.length+" منتج ضمن "+new Set(products.map(p=>p.category_id)).size+" أقسام";
+ box.append(total);
+ const categories=[...new Set(products.map(p=>p.category_id))].sort((a,b)=>{
+  const ai=categoryOrder.indexOf(a),bi=categoryOrder.indexOf(b);
+  return (ai<0?99:ai)-(bi<0?99:bi);
  });
+ categories.forEach((category,index)=>{
+  const meta=categoryMeta[category]||{label:String(category||"قسم").toUpperCase(),icon:"🎮",eyebrow:"BARO CATALOG",description:"منتجات رقمية"};
+  const section=document.createElement("details");section.className="baro-catalog-category";
+  section.open=index===0;
+  const summary=document.createElement("summary");summary.className="baro-catalog-category-head";
+  const mark=document.createElement("span");mark.className="baro-catalog-game-mark";mark.textContent=meta.icon;
+  const copy=document.createElement("span");copy.className="baro-catalog-category-copy";
+  const eyebrow=document.createElement("small");eyebrow.textContent=meta.eyebrow;
+  const heading=document.createElement("strong");heading.textContent=meta.label;
+  const description=document.createElement("span");description.textContent=meta.description;
+  copy.append(eyebrow,heading,description);
+  const count=document.createElement("span");count.className="baro-catalog-count";
+  const categoryProducts=products.filter(p=>p.category_id===category);
+  count.textContent=categoryProducts.length+" منتج";
+  const chevron=document.createElement("span");chevron.className="baro-catalog-chevron";chevron.setAttribute("aria-hidden","true");chevron.textContent="⌄";
+  summary.append(mark,copy,count,chevron);section.append(summary);
+  const content=document.createElement("div");content.className="baro-catalog-category-content";
+  const presentGroups=[...new Set(categoryProducts.map(p=>p.group_id))];
+  const preferred=groupOrder[category]||[];
+  const groups=presentGroups.sort((a,b)=>{
+   const ai=preferred.indexOf(a),bi=preferred.indexOf(b);
+   return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+  groups.forEach(group=>{
+   const groupInfo=groupMeta[group]||{label:String(group||"منتجات أخرى"),icon:"✦",description:""};
+   const groupSection=document.createElement("section");groupSection.className="baro-catalog-product-group";
+   const groupHead=document.createElement("div");groupHead.className="baro-catalog-group-head";
+   const groupIcon=document.createElement("span");groupIcon.className="baro-catalog-group-icon";groupIcon.textContent=groupInfo.icon;
+   const groupCopy=document.createElement("div");groupCopy.className="baro-catalog-group-copy";
+   const groupTitle=document.createElement("strong");groupTitle.textContent=groupInfo.label;
+   const groupDescription=document.createElement("small");groupDescription.textContent=groupInfo.description;
+   groupCopy.append(groupTitle,groupDescription);
+   const groupCount=document.createElement("span");groupCount.className="baro-catalog-group-count";
+   const items=categoryProducts.filter(p=>p.group_id===group);
+   groupCount.textContent=items.length+" باقة";
+   groupHead.append(groupIcon,groupCopy,groupCount);groupSection.append(groupHead);
+   const grid=document.createElement("div");grid.className="baro-catalog-product-grid";
+   items.forEach((p,productIndex)=>{
+    const card=document.createElement("article");card.className="baro-catalog-product-card";
+    const cardTop=document.createElement("div");cardTop.className="baro-catalog-product-card-top";
+    const productMark=document.createElement("span");productMark.className="baro-catalog-product-mark";productMark.textContent=groupInfo.icon;
+    const preview=document.createElement("span");preview.className="baro-catalog-preview-tag";preview.textContent="معاينة";
+    cardTop.append(productMark,preview);
+    const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=p.product_name||"منتج رقمي";
+    const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
+    const status=document.createElement("span");status.textContent="الشحن اليدوي غير متاح حالياً";
+    const indexMark=document.createElement("span");indexMark.className="baro-catalog-product-index";indexMark.textContent=String(productIndex+1).padStart(2,"0");
+    footer.append(status,indexMark);card.append(cardTop,name,footer);grid.append(card);
+   });
+   groupSection.append(grid);content.append(groupSection);
+  });
+  section.append(content);box.append(section);
+ });
+ const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";
+ footnote.textContent="BARO للشحن اليدوي · الأسعار مخفية في مرحلة المعاينة · لا يتم إنشاء طلب أو خصم أي رصيد.";
+ box.append(footnote);
 }
 async function loadBaroCustomer(){
  const catalog=baroEl("baroCustomerCatalog"),orders=baroEl("baroCustomerOrders");
