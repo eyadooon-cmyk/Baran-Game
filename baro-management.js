@@ -25,7 +25,7 @@
       const toggleCard = $("baroManualToggle") && $("baroManualToggle").closest(".deposit-card");
       if (toggleCard && toggleCard.parentNode) toggleCard.after(node);
       else panel.prepend(node);
-      node.innerHTML = '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2 style="margin:0">BARO CONTROL</h2><p class="baro-mgmt-muted">لوحة مستقلة للشحن اليدوي · لا تتحكم بالشحن الآلي</p></div><span class="baro-mgmt-badge">إدارة BARO</span></div><div class="baro-mgmt-tabs" role="tablist"><button type="button" data-tab="overview">الرئيسية</button><button type="button" data-tab="finance">المالية</button><button type="button" data-tab="suppliers">الموردون</button><button type="button" data-tab="settings">الإعدادات</button><button type="button" data-tab="history">السجلات والتقارير</button><button type="button" data-tab="staff">الصلاحيات</button></div><div id="baroMgmtMessage" class="baro-mgmt-message" role="status" aria-live="polite"></div><div id="baroMgmtContent"></div>';
+      node.innerHTML = '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2 style="margin:0">BARO CONTROL</h2><p class="baro-mgmt-muted">لوحة مستقلة للشحن اليدوي · لا تتحكم بالشحن الآلي</p></div><span class="baro-mgmt-badge">إدارة BARO</span></div><div class="baro-mgmt-tabs" role="tablist"><button type="button" data-tab="overview">الرئيسية</button><button type="button" data-tab="finance">المالية</button><button type="button" data-tab="suppliers">الموردون</button><button type="button" data-tab="settings">الإعدادات</button><button type="button" data-tab="history">السجلات والتقارير</button><button type="button" data-tab="staff">الصلاحيات</button><button type="button" data-tab="assistant">🤖 مساعد BARO AI</button></div><div id="baroMgmtMessage" class="baro-mgmt-message" role="status" aria-live="polite"></div><div id="baroMgmtContent"></div>';
       node.querySelectorAll("[data-tab]").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
     }
     return node;
@@ -51,7 +51,7 @@
     access = await getView("access");
     const node = root();
     if (node && !access.is_admin) {
-      const map = {overview:"view",finance:"finance",suppliers:"suppliers",settings:"settings",history:"audit",staff:"staff"};
+      const map = {overview:"view",finance:"finance",suppliers:"suppliers",settings:"settings",history:"audit",staff:"staff",assistant:"orders"};
       node.querySelectorAll("[data-tab]").forEach(b => { b.hidden = !can(map[b.dataset.tab]); });
       const productList=$("baroAdminProducts");
       if(productList){productList.hidden=!can("catalog");if(productList.previousElementSibling)productList.previousElementSibling.hidden=!can("catalog");if(productList.previousElementSibling?.previousElementSibling)productList.previousElementSibling.previousElementSibling.hidden=!can("catalog");}
@@ -249,8 +249,35 @@
       else if(tab==="settings")await loadSettings();
       else if(tab==="history")await loadHistory();
       else if(tab==="staff")await loadStaff();
+      else if(tab==="assistant")await loadAdminAssistant();
     }catch(e){msg(e.message);}
   }
+
+  const adminAiMessages = [];
+  let adminAiSending = false;
+  async function loadAdminAssistant() {
+    const content=$("baroMgmtContent"); if(!content)return;
+    content.innerHTML='<h3>🤖 BARO AI · مساعد الإدارة</h3><p class="baro-mgmt-muted">مساعد تحليلي لقسم الشحن اليدوي فقط. يراجع الطلبات والاستثناءات والكتالوج ويقترح إجراءات متابعة. لا ينفذ أي إجراء مالي أو تشغيلي.</p><div class="baro-mgmt-panel"><div class="baro-mgmt-actions"><button type="button" id="baroAdminAiSummary">حلّل وضع BARO الآن</button><button type="button" class="secondary" id="baroAdminAiClear">محادثة جديدة</button></div><div id="baroAdminAiMessages" class="baro-ai-messages" role="log" aria-live="polite" style="height:300px"><div class="baro-ai-bubble bot">أهلاً، أنا مساعد BARO للإدارة. فيني أراجع الطلبات المتأخرة، الحالات الاستثنائية، جاهزية الكتالوج، وأعطيك ملخصاً واضحاً.</div></div><form id="baroAdminAiForm" class="baro-ai-form"><input id="baroAdminAiInput" maxlength="1200" autocomplete="off" placeholder="اسأل عن الطلبات أو مشاكل BARO..." aria-label="رسالتك لمساعد BARO للإدارة"><button id="baroAdminAiSend" type="submit">إرسال</button></form><div id="baroAdminAiStatus" class="baro-mgmt-message" role="status"></div></div>';
+    const bubble=(text,role)=>{const box=$("baroAdminAiMessages");if(!box)return;const el=document.createElement("div");el.className="baro-ai-bubble "+role;el.textContent=String(text||"");box.append(el);box.scrollTop=box.scrollHeight;};
+    const send=async(text)=>{
+      if(adminAiSending||!text.trim())return;
+      adminAiMessages.push({role:"user",content:text.trim()});bubble(text.trim(),"user");
+      adminAiSending=true;$("baroAdminAiSend").disabled=true;$("baroAdminAiStatus").textContent="عم يراجع بيانات BARO...";
+      try{
+        const {data:{session},error}=await sb.auth.getSession();if(error||!session?.access_token)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
+        const response=await fetch(SUPABASE_URL+"/functions/v1/baro-ai-admin",{method:"POST",headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({messages:adminAiMessages})});
+        const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"تعذر الاتصال بالمساعد.");
+        if(typeof data.reply!=="string"||!data.reply.trim())throw new Error("وصل رد غير مكتمل.");
+        adminAiMessages.push({role:"assistant",content:data.reply});bubble(data.reply,"bot");
+        $("baroAdminAiStatus").textContent="الملخص مبني على بيانات BARO المتاحة فقط. لا يتم تنفيذ أي تغيير.";
+      }catch(e){adminAiMessages.pop();bubble(e.message||"حدث خطأ مؤقت.","error");$("baroAdminAiStatus").textContent="تعذر إكمال الطلب.";}
+      finally{adminAiSending=false;if($("baroAdminAiSend"))$("baroAdminAiSend").disabled=false;}
+    };
+    $("baroAdminAiForm").addEventListener("submit",e=>{e.preventDefault();const input=$("baroAdminAiInput"),v=input.value.trim();input.value="";send(v);});
+    $("baroAdminAiSummary").addEventListener("click",()=>send("اعطني تقريراً تنفيذياً عن وضع BARO الآن: استقبال الطلبات، الطلبات النشطة والمتأخرة، الحالات التي تحتاج تدخلاً، جاهزية المنتجات والأسعار، وأهم ثلاث أولويات للإدارة. ميّز الحقائق عن الاستنتاجات."));
+    $("baroAdminAiClear").addEventListener("click",()=>{adminAiMessages.length=0;loadAdminAssistant();});
+  }
+
   async function refreshAll(){
     if(loading)return;loading=true;msg("جاري تحديث بيانات BARO...");
     try{await loadAccess();await loadAdmin();await showTab(activeTab);msg("تم تحديث بيانات BARO.");}
