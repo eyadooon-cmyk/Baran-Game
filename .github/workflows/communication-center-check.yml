@@ -1,0 +1,47 @@
+name: Communication center checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'communication-center.js'
+      - '.github/workflows/communication-center-check.yml'
+  push:
+    branches: [feature/communication-center-premium]
+    paths:
+      - 'index.html'
+      - 'communication-center.js'
+      - '.github/workflows/communication-center-check.yml'
+
+jobs:
+  communication-center:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check communication-center.js
+      - name: Check communication UI wiring
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const html = readFileSync('index.html', 'utf8');
+          const js = readFileSync('communication-center.js', 'utf8');
+          const checks = [
+            ['communication script is loaded', html.includes('./communication-center.js?v=20261117-premium-1')],
+            ['notification cards expose their ID after creation', /const card=document\.createElement\("article"\);\s*card\.dataset\.notificationId/.test(html)],
+            ['customer and admin notification lists are wired', js.includes('createToolbar("customerNotificationsList"') && js.includes('createToolbar("adminNotifications"')],
+            ['bulk read uses the existing server RPC', js.includes('mark_baran_notifications_read')],
+            ['quick replies are available for both support roles', js.includes('customerSupportConversationInput') && js.includes('adminSupportConversationInput')],
+            ['existing broadcast form is not duplicated', (html.match(/id="baranAnnouncementTitle"/g)||[]).length === 1]
+          ];
+          for (const [label, ok] of checks) {
+            console.log((ok ? 'PASS ' : 'FAIL ') + label);
+            if (!ok) process.exitCode = 1;
+          }
+          NODE
