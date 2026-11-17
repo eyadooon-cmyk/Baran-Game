@@ -130,10 +130,11 @@ Deno.serve(async (req: Request) => {
         referred_name: referralProfileById.get(row.referred_user_id)?.full_name || "عميل",
         referred_member_code: referralProfileById.get(row.referred_user_id)?.member_code || null,
       }));
-      const referral_stats = (referralRows || []).reduce((stats, row) => {
-        stats[row.status] = (stats[row.status] || 0) + 1;
-        return stats;
-      }, { pending:0, qualified:0, rewarded:0, rejected:0 });
+      const referral_stats: Record<string, number> = { pending:0, qualified:0, rewarded:0, rejected:0 };
+      for (const row of referralRows || []) {
+        const status = String(row.status || "");
+        if (Object.prototype.hasOwnProperty.call(referral_stats, status)) referral_stats[status] += 1;
+      }
       return json({ success: true, online, online_count: online.length, referrals, referral_stats,
         checked_at: new Date().toISOString(), stale_after_seconds: 120 });
     }
