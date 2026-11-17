@@ -121,15 +121,35 @@
     panel.append(securityPanel);
     const shortcuts = node("div", "baran-experience-shortcuts");
     [
-      ["⭐", "الولاء والنقاط", "قسم الولاء الحالي"],
-      ["🎁", "الدعوات والإحالات", "برنامج الدعوات الحالي"],
-      ["💬", "الدعم والشكاوى", "تذاكر العملاء الحالية"],
-      ["📣", "الإعلانات والعروض", "أدوات الإعلانات الحالية"],
-      ["🛡️", "سجل الإدارة والحماية", "سجل التدقيق الحالي"]
-    ].forEach(([icon,title,desc]) => {
-      const item = node("div", "baran-experience-shortcut");
-      item.append(node("span", "", icon), node("div"));
+      ["⭐", "الولاء والنقاط", "فتح إدارة نقاط الولاء", "loyalty"],
+      ["🎁", "الدعوات والإحالات", "برنامج الدعوات الحالي", ""],
+      ["💬", "الدعم والشكاوى", "فتح تذاكر العملاء", "support"],
+      ["📣", "الإعلانات والعروض", "فتح إدارة العروض والكوبونات", "promotions"],
+      ["🛡️", "سجل الإدارة والحماية", "فتح سجل الأمان وعمليات الإدارة", "security-log"]
+    ].forEach(([icon,title,desc,target]) => {
+      const item = node("button", "baran-experience-shortcut", "");
+      item.type = "button";
+      item.disabled = !target;
+      item.setAttribute("aria-label", title);
+      item.append(node("span", "", icon), node("span", "baran-experience-shortcut-copy"));
       item.lastChild.append(node("strong", "", title), node("small", "", desc));
+      if (target) {
+        item.addEventListener("click", () => {
+          if (typeof window.showAdminPanel !== "function") {
+            window.alert("تعذر فتح القسم حالياً. حدّث الصفحة وحاول مجدداً.");
+            return;
+          }
+          if (target === "security-log") {
+            Promise.resolve(window.showAdminPanel("security")).then(() => {
+              if (typeof window.switchSecurityDepositTab === "function") {
+                window.switchSecurityDepositTab("security");
+              }
+            });
+          } else {
+            window.showAdminPanel(target);
+          }
+        });
+      }
       shortcuts.append(item);
     });
     panel.append(shortcuts);
