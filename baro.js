@@ -272,11 +272,11 @@ function baroRenderCustomerProductCards(){
    grid.append(card);
   });
  }
- if(checkout)checkout.classList.add("hidden");
+ if(checkout)checkout.classList.toggle("hidden",!baroManualEnabled);
  const submit=baroEl("baroSubmitOrder");
  if(submit){
-  submit.hidden=true;
-  submit.disabled=true;
+  submit.hidden=!baroManualEnabled;
+  submit.disabled=!baroManualEnabled;
  }
 }
 loadBaroCustomer=async function(){
