@@ -137,15 +137,12 @@ async function openBaranNotificationTarget(item,audience){
     try{await openSupportConversation(String(entityId),isAdmin?"admin":"customer");}
     catch(error){console.warn("تعذر فتح محادثة الدعم من الإشعار:",error);}
   }
-  const target=isSupportTarget&&entityId
-    ?document.getElementById(isAdmin?"adminSupportConversation":"customerSupportConversation")
-    :isAdmin&&isSupportTarget&&entityId
-    ?document.querySelector('[data-feedback-id="'+CSS.escape(String(entityId))+'"]')
-    :isAdmin&&isSupportTarget
-      ?(document.getElementById("supportTicketsView")||document.getElementById("adminFeedback"))
-      :isAdmin&&kind.includes("monitor")
-        ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
-        :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
+  const target=isSupportTarget
+    ?(entityId?document.getElementById(isAdmin?"adminSupportConversation":"customerSupportConversation")
+      :(isAdmin?(document.getElementById("supportTicketsView")||document.getElementById("adminFeedback")):null))
+    :isAdmin&&kind.includes("monitor")
+      ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
+      :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
   if(target){
     target.scrollIntoView({behavior:"smooth",block:isAdmin&&isSupportTarget&&!entityId?"start":"center"});
     target.classList.add("notification-target-highlight");
