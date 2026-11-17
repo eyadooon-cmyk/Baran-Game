@@ -5485,7 +5485,7 @@ function filterBaranCustomerDirectory(){
     box.appendChild(empty);return;
   }
   rows.forEach(item=>{
-    const card=document.createElement("div");card.className="customer-directory-item";
+    const card=document.createElement("div");card.className="customer-directory-item";card.dataset.customerId=item.id||"";
     const summary=document.createElement("button");summary.type="button";summary.className="customer-directory-toggle";summary.setAttribute("aria-expanded","false");
     const avatar=document.createElement("span");avatar.className="customer-directory-avatar";avatar.textContent="👤";
     const identity=document.createElement("span");identity.className="customer-directory-identity";
