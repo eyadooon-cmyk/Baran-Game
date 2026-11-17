@@ -6629,6 +6629,87 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
 .support-conversation-admin-tools select{margin:0;min-width:0}
 .support-open-chat{margin-top:10px}
 @media(max-width:420px){.support-conversation{padding:11px}.support-conversation-compose{flex-direction:column}.support-conversation-compose button{width:100%}.support-message{max-width:94%}.support-conversation-head h3{font-size:15px}}
+/* Premium unified back navigation — BARAN GAME */
+.section-back-button,
+.games-back-button,
+.admin-back,
+.shamcash-back-button,
+button[onclick*="showSection('games'"],
+button[onclick*="showSection('services'"],
+button[onclick*="showSection('home'"],
+button[onclick*="backToLogin"]{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  min-height:44px;
+  width:auto;
+  max-width:100%;
+  padding:10px 17px;
+  margin:0 0 12px;
+  border:1px solid #80609a;
+  border-radius:13px;
+  background:linear-gradient(135deg,#30213f 0%,#1b1424 58%,#24172f 100%);
+  color:#f3e9fb;
+  font-family:"Cairo",Tahoma,Arial,sans-serif;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.45;
+  letter-spacing:0;
+  white-space:nowrap;
+  box-shadow:inset 0 1px 0 #ffffff12,0 5px 14px #0005,0 0 0 1px #a879c012;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.section-back-button:hover,
+.games-back-button:hover,
+.admin-back:hover,
+.shamcash-back-button:hover,
+button[onclick*="showSection('games'"]:hover,
+button[onclick*="showSection('services'"]:hover,
+button[onclick*="showSection('home'"]:hover,
+button[onclick*="backToLogin"]:hover{
+  border-color:#c49be2;
+  background:linear-gradient(135deg,#503568 0%,#2b1d39 58%,#3b2550 100%);
+  box-shadow:inset 0 1px 0 #ffffff1c,0 7px 19px #0006,0 0 16px #a56bd622;
+  transform:translateY(-1px);
+}
+.section-back-button:active,
+.games-back-button:active,
+.admin-back:active,
+.shamcash-back-button:active,
+button[onclick*="showSection('games'"]:active,
+button[onclick*="showSection('services'"]:active,
+button[onclick*="showSection('home'"]:active,
+button[onclick*="backToLogin"]:active{
+  transform:translateY(1px) scale(.985);
+  box-shadow:inset 0 2px 5px #0005;
+}
+.section-back-button:focus-visible,
+.games-back-button:focus-visible,
+.admin-back:focus-visible,
+.shamcash-back-button:focus-visible{
+  outline:2px solid #d9b7f4;
+  outline-offset:3px;
+}
+.admin-subpanel-head .admin-back{margin:0;min-height:42px;padding:9px 14px}
+.section-back-button{min-height:42px;padding:9px 14px}
+.games-back-button{min-height:44px}
+.shamcash-back-button{margin-top:10px}
+@media(max-width:420px){
+  .section-back-button,.games-back-button,.admin-back,.shamcash-back-button,
+  button[onclick*="showSection('games'"],button[onclick*="showSection('services'"],
+  button[onclick*="showSection('home'"],button[onclick*="backToLogin"]{
+    min-height:42px;padding:9px 13px;font-size:12px;border-radius:12px
+  }
+  .admin-subpanel-head{gap:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .section-back-button,.games-back-button,.admin-back,.shamcash-back-button,
+  button[onclick*="showSection('games'"],button[onclick*="showSection('services'"],
+  button[onclick*="showSection('home'"],button[onclick*="backToLogin"]{transition:none}
+}
+
 </style>
 
 
