@@ -91,6 +91,31 @@
     }
     lower.append(segmentsBox, topBox);
     panel.append(lower);
+    const securityEvents = Array.isArray(current.customer_security_events) ? current.customer_security_events : [];
+    const loginReports = securityEvents.filter(event => event.event_type === "login_failed_reported");
+    const newDeviceEvents = securityEvents.filter(event => event.event_type === "customer_new_device_detected");
+    const securityPanel = node("section", "baran-experience-card");
+    securityPanel.append(node("h4", "", "🛡️ مراقبة الدخول والأجهزة"));
+    const securityStats = node("div", "baran-experience-stats");
+    [[ "محاولات دخول فاشلة مُبلّغ عنها", loginReports.length ], [ "أجهزة جديدة مكتشفة", newDeviceEvents.length ]].forEach(([label,value]) => {
+      const card = node("article", "baran-experience-stat");
+      card.append(node("small", "", label), node("strong", "", Number(value).toLocaleString("en-US")));
+      securityStats.append(card);
+    });
+    securityPanel.append(securityStats);
+    securityPanel.append(node("p", "baran-experience-muted", "محاولات الدخول الفاشلة مصدرها بلاغ واجهة الدخول وليست تأكيداً مستقلاً من خادم المصادقة. اكتشاف الجهاز الجديد مبني على جلسات Supabase الفعلية."));
+    const latestSecurity = securityEvents.filter(event => ["login_failed_reported","customer_new_device_detected","customer_login_session_created"].includes(event.event_type)).slice(0,8);
+    if (!latestSecurity.length) securityPanel.append(node("p", "baran-experience-muted", "لا توجد أحداث دخول مسجلة بعد."));
+    latestSecurity.forEach(event => {
+      const row = node("div", "baran-experience-segment");
+      const label = event.event_type === "login_failed_reported" ? "محاولة دخول فاشلة مُبلّغ عنها" :
+        event.event_type === "customer_new_device_detected" ? "تسجيل دخول من جهاز جديد" : "إنشاء جلسة دخول";
+      const details = event.details || {};
+      row.append(node("span", "", label + " · " + date(event.created_at)));
+      row.append(node("b", "", event.severity || "info"));
+      securityPanel.append(row);
+    });
+    panel.append(securityPanel);
     const shortcuts = node("div", "baran-experience-shortcuts");
     [
       ["⭐", "الولاء والنقاط", "قسم الولاء الحالي"],
