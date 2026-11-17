@@ -54,6 +54,36 @@ function baroUpdateQuantityField(){
  if(wrap)wrap.classList.toggle("hidden",!isTokens);
  if(input){input.min=isTokens?"10000":"1";input.max=isTokens?"1000000":"1";input.step=isTokens?"1000":"1";input.value=isTokens?"10000":"1";}
 }
+function renderBaroCustomerCatalog(products){
+ const box=baroEl("baroCustomerCatalog");if(!box)return;
+ box.replaceChildren();
+ const intro=document.createElement("p");intro.className="small";intro.textContent="كتالوج معاينة فقط — الأسعار غير معروضة والطلبات مغلقة.";
+ box.append(intro);
+ if(!products.length){
+  const empty=document.createElement("p");empty.textContent="لا توجد منتجات معتمدة للعرض حالياً.";box.append(empty);return;
+ }
+ const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
+ const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
+ const categoryOrder=["pubg","freefire","jawaker"];
+ const categories=[...new Set(products.map(p=>p.category_id))].sort((a,b)=>categoryOrder.indexOf(a)-categoryOrder.indexOf(b));
+ categories.forEach(category=>{
+  const section=document.createElement("section");section.className="baro-catalog-category";
+  const heading=document.createElement("h3");heading.textContent=categoryLabels[category]||category;section.append(heading);
+  const groups=[...new Set(products.filter(p=>p.category_id===category).map(p=>p.group_id))];
+  groups.forEach(group=>{
+   const groupTitle=document.createElement("h4");groupTitle.textContent=groupLabels[group]||group;section.append(groupTitle);
+   const list=document.createElement("div");list.className="ops-list";
+   products.filter(p=>p.category_id===category&&p.group_id===group).forEach(p=>{
+    const card=document.createElement("article");card.className="ops-item baro-catalog-product";
+    const name=document.createElement("strong");name.textContent=p.product_name;
+    const note=document.createElement("div");note.className="small";note.textContent="متاح للمعاينة فقط — الشحن اليدوي غير مفعّل";
+    card.append(name,note);list.append(card);
+   });
+   section.append(list);
+  });
+  box.append(section);
+ });
+}
 async function loadBaroCustomer(){
  const catalog=baroEl("baroCustomerCatalog"),orders=baroEl("baroCustomerOrders");
  if(!catalog||!orders||!currentUser)return;
@@ -62,27 +92,25 @@ async function loadBaroCustomer(){
   const [c,o]=await Promise.all([baroApi("GET",null,"catalog"),baroApi("GET",null,"my_orders")]);
   baroCustomerProducts=Array.isArray(c.products)?c.products:[];
   baroManualEnabled=c.manual_enabled===true;
-  const submitButton=baroEl("baroSubmitOrder");if(submitButton)submitButton.disabled=!baroManualEnabled;
-  const select=baroEl("baroProductSelect");select.replaceChildren();
-  if(!baroCustomerProducts.length){
-   const option=document.createElement("option");option.value="";option.textContent="لا توجد منتجات يدوية مفعّلة حالياً";select.append(option);select.disabled=true;
-   catalog.textContent="قسم BARO جاهز، لكن المنتجات لم تُفتح للطلبات بعد. ستظهر هنا المنتجات التي تعتمدها الإدارة.";
-  }else{
-   select.disabled=false;
-   const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
-   const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
-   const groups=new Map();
-   baroCustomerProducts.forEach(p=>{
-    if(!groups.has(p.category_id)){const group=document.createElement("optgroup");group.label=categoryLabels[p.category_id]||p.category_id;groups.set(p.category_id,group);select.append(group);}
-    const op=document.createElement("option");op.value=p.product_code;
-    op.textContent=(groupLabels[p.group_id]?groupLabels[p.group_id]+" — ":"")+p.product_name+(p.purchase_enabled?"":" — متوقف مؤقتاً");
-    op.disabled=!p.purchase_enabled;groups.get(p.category_id).append(op);
-   });
-   select.onchange=baroUpdateQuantityField;baroUpdateQuantityField();
-   const available=baroCustomerProducts.filter(p=>p.purchase_enabled).length;
-   catalog.textContent=baroManualEnabled
-    ?available+" منتج متاح للطلب اليدوي. السعر النهائي يؤكده فريق BARAN قبل الدفع."
-    :"قسم BARO ظاهر للمعاينة، لكن الإدارة أوقفت استقبال الطلبات اليدوية مؤقتاً. لن يتم إنشاء طلب الآن.";
+  const submitButton=baroEl("baroSubmitOrder");if(submitButton)submitButton.disabled=true;
+  renderBaroCustomerCatalog(baroCustomerProducts);
+  const select=baroEl("baroProductSelect");
+  if(select){
+   select.replaceChildren();
+   if(!baroCustomerProducts.length){
+    const option=document.createElement("option");option.value="";option.textContent="لا توجد منتجات يدوية مفعّلة حالياً";select.append(option);select.disabled=true;
+   }else{
+    select.disabled=false;
+    const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
+    const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
+    const groups=new Map();
+    baroCustomerProducts.forEach(p=>{
+     if(!groups.has(p.category_id)){const group=document.createElement("optgroup");group.label=categoryLabels[p.category_id]||p.category_id;groups.set(p.category_id,group);select.append(group);}
+     const op=document.createElement("option");op.value=p.product_code;
+     op.textContent=(groupLabels[p.group_id]?groupLabels[p.group_id]+" — ":"")+p.product_name+" — معاينة فقط";
+     op.disabled=true;groups.get(p.category_id).append(op);
+    });
+   }
   }
   renderBaroCustomerOrders(o.orders||[]);
  }catch(e){catalog.textContent=e.message;orders.textContent="تعذر تحميل طلبات BARO.";}
