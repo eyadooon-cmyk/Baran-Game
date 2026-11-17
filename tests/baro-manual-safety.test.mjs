@@ -182,7 +182,7 @@ test("BARO customer catalogue keeps grouped sections and is not overwritten by t
   assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_usd,"USD"\)/);
   assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_syp,"SYP"\)/);
   const app = read("../index.html");
-  assert.match(app, /class="game-checkout hidden"/);
+  assert.match(app, /<div class="game-checkout"><h3>بيانات طلب الشحن اليدوي<\/h3>/);
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
   assert.match(baroFinance, /displayed_price_usd_snapshot/);
   assert.match(baroFinance, /displayed_price_syp_snapshot/);
@@ -255,11 +255,14 @@ test("BARO snapshots the exchange rate used when SYP payment is actually verifie
 });
 
 
-test("BARO customer order form is hidden in static HTML until the backend confirms the gate is open", () => {
+test("BARO customer ID form stays visible while order submission remains gated", () => {
   const app = read("../index.html");
-  assert.match(app, /class="game-checkout hidden"/);
+  assert.match(app, /<div class="game-checkout"><h3>بيانات طلب الشحن اليدوي<\/h3>/);
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
+  assert.match(ui, /if\(checkout\)checkout\.classList\.remove\("hidden"\);/);
   assert.match(ui, /if\(submitButton\)\{submitButton\.hidden=!canOrder;submitButton\.disabled=!canOrder;\}/);
+  assert.match(ui, /op\.disabled=false/);
+  assert.match(ui, /استقبال الطلبات مغلق حالياً ولن يتم إرسال أي طلب/);
   assert.match(ui, /if\(!baroManualEnabled\)\{message\.textContent=/);
 });
 
