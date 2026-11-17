@@ -114,6 +114,24 @@ async function openBaranNotificationTarget(item,audience){
       item.read_at=new Date().toISOString();
     }catch(error){console.warn("تعذر تعليم الإشعار كمقروء:",error);}
   }
+  // Dedicated admin deposit route: open the deposits review screen, not the generic admin hub.
+  if(isAdmin&&isDepositTarget){
+    if(typeof showSection==="function")showSection("admin",null);
+    const adminRoot=document.getElementById("admin");
+    if(adminRoot)adminRoot.classList.remove("hidden");
+    if(typeof showAdminPanel==="function")await showAdminPanel("security");
+    if(typeof switchSecurityDepositTab==="function")switchSecurityDepositTab("deposits");
+    if(typeof loadAdminPanel==="function")await loadAdminPanel();
+    const requests=document.getElementById("adminRequests");
+    const exact=entityId&&requests?requests.querySelector('[data-notification-entity-id="'+CSS.escape(String(entityId))+'"]'):null;
+    const destination=exact||requests||document.getElementById("securityDepositsView");
+    if(destination){
+      destination.scrollIntoView({behavior:"smooth",block:"start"});
+      destination.classList.add("notification-target-highlight");
+    }
+    return;
+  }
+
   // Dedicated admin support route: never let a support alert fall through to the generic admin dashboard.
   if(isAdmin&&isSupportTarget){
     if(typeof showSection==="function")showSection("admin",null);
