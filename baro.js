@@ -172,7 +172,7 @@ async function loadBaroCustomer(){
   const submitButton=baroEl("baroSubmitOrder");
   const checkout=submitButton?.closest(".game-checkout");
   const canOrder=baroManualEnabled&&baroCustomerProducts.some(p=>p.purchase_enabled===true);
-  if(checkout)checkout.classList.toggle("hidden",!canOrder);
+  if(checkout)checkout.classList.remove("hidden");
   if(submitButton){submitButton.hidden=!canOrder;submitButton.disabled=!canOrder;}
   renderBaroCustomerCatalog(baroCustomerProducts);
   const select=baroEl("baroProductSelect");
@@ -181,7 +181,7 @@ async function loadBaroCustomer(){
    if(!baroCustomerProducts.length){
     const option=document.createElement("option");option.value="";option.textContent="لا توجد منتجات يدوية مفعّلة حالياً";select.append(option);select.disabled=true;
    }else{
-    select.disabled=!canOrder;
+    select.disabled=false;
     const categoryLabels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
     const groupLabels={uc:"شدات UC",growth:"حزم واشتراكات PUBG",diamonds:"جواهر Free Fire",memberships:"عضويات Free Fire",tokens:"جواكر توكنز",boosters:"مسرّعات جواكر"};
     const groups=new Map();
@@ -189,16 +189,18 @@ async function loadBaroCustomer(){
      if(!groups.has(p.category_id)){const group=document.createElement("optgroup");group.label=categoryLabels[p.category_id]||p.category_id;groups.set(p.category_id,group);select.append(group);}
      const op=document.createElement("option");op.value=p.product_code;
      op.textContent=(groupLabels[p.group_id]?groupLabels[p.group_id]+" — ":"")+p.product_name+(p.purchase_enabled===true?" — متاح للطلب":" — معاينة فقط");
-     op.disabled=p.purchase_enabled!==true;groups.get(p.category_id).append(op);
+     op.disabled=false;groups.get(p.category_id).append(op);
     });
    }
   }
-  if(canOrder){const first=baroCustomerProducts.find(p=>p.purchase_enabled===true);if(first&&select)select.value=first.product_code;}
+  if(select){const first=baroCustomerProducts.find(p=>p.purchase_enabled===true)||baroCustomerProducts[0];if(first)select.value=first.product_code;}
   const playerInput=baroEl("baroPlayerId"),confirmation=baroEl("baroPlayerIdConfirmed");
   if(select)select.onchange=()=>{baroUpdateQuantityField();baroUpdateOrderSubmitState();};
   if(playerInput)playerInput.oninput=baroUpdateOrderSubmitState;
   if(confirmation)confirmation.onchange=baroUpdateOrderSubmitState;
   baroUpdateQuantityField();baroUpdateOrderSubmitState();
+  const orderMessage=baroEl("baroOrderMessage");
+  if(orderMessage&&!canOrder)orderMessage.textContent="يمكنك إدخال ID وتأكيد صحته، لكن استقبال الطلبات مغلق حالياً ولن يتم إرسال أي طلب.";
   renderBaroCustomerOrders(o.orders||[]);
  }catch(e){catalog.textContent=e.message;orders.textContent="تعذر تحميل طلبات BARO.";}
 }
