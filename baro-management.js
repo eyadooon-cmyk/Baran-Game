@@ -116,20 +116,19 @@
       return row([p.product_name,fmtUsd(costUsd),fmtSyp(costSyp),fmtUsd(saleUsd),fmtSyp(saleSyp),fmtSyp(profitSyp),fmtUsd(profitUsd),margin.toFixed(1)+"%"]);
     });
     const typeLabels={sale_received:"مبيعات مقبوضة",supplier_cost:"تكلفة مورد",expense:"مصروف",commission:"عمولة",refund:"مبلغ مسترد",adjustment:"تسوية"};
-    content.innerHTML='<h3>الإدارة المالية المستقلة — BARO</h3>'+
-      '<div class="baro-mgmt-panel"><h3>ملخص الدفتر المالي الفعلي</h3><p class="baro-mgmt-muted">كل الأرقام التالية من الحركات المسجلة فعلياً في دفتر BARO، وليست تقديرات. العملة المعروضة USD ما لم يُذكر غير ذلك.</p><div class="baro-mgmt-grid">'+
-      stat("المبيعات المقبوضة",fmtUsd(t.sales||0))+stat("تكاليف الموردين",fmtUsd(t.supplier_costs||0))+
-      stat("المصاريف",fmtUsd(t.expenses||0))+stat("العمولات",fmtUsd(t.commissions||0))+
-      stat("المبالغ المستردة",fmtUsd(t.refunds||0))+stat("التسويات",fmtUsd(t.adjustments||0))+
-      stat("صافي الربح المحقق",fmtUsd(t.net_profit||0))+stat("الحركات المرحلة",posted.length)+
+    content.innerHTML='<h3>مالية BARO المستقلة</h3>'+
+      '<div class="baro-mgmt-panel"><h3>1) الدفتر المالي الفعلي</h3><p class="baro-mgmt-muted">الأرقام من الحركات المسجلة فعلياً بحالة «مرحّلة» فقط. كل قيمة بالدولار وبجانبها ما يعادلها بالليرة.</p><div class="baro-mgmt-grid">'+
+      stat("المبيعات المقبوضة",fmtUsd(t.sales||0)+"<br><small>"+fmtSyp((t.sales||0)*rate)+"</small>")+stat("تكاليف الموردين",fmtUsd(t.supplier_costs||0)+"<br><small>"+fmtSyp((t.supplier_costs||0)*rate)+"</small>")+
+      stat("المصاريف",fmtUsd(t.expenses||0)+"<br><small>"+fmtSyp((t.expenses||0)*rate)+"</small>")+stat("العمولات",fmtUsd(t.commissions||0)+"<br><small>"+fmtSyp((t.commissions||0)*rate)+"</small>")+
+      stat("المبالغ المستردة",fmtUsd(t.refunds||0)+"<br><small>"+fmtSyp((t.refunds||0)*rate)+"</small>")+stat("التسويات",fmtUsd(t.adjustments||0)+"<br><small>"+fmtSyp((t.adjustments||0)*rate)+"</small>")+
+      stat("صافي الربح المحقق",fmtUsd(t.net_profit||0)+"<br><small>"+fmtSyp((t.net_profit||0)*rate)+"</small>")+stat("الحركات المرحلة",posted.length)+stat("بانتظار الترحيل",pending)+
       stat("حركات اليوم",daily.length)+stat("حركات الشهر",monthly.length)+
-      stat("حركات بانتظار الترحيل",pending)+
-      '</div><p class="baro-mgmt-muted">هذا الدفتر مستقل تماماً عن محافظ الزبائن والشحن الآلي.</p></div>'+
-      '<div class="baro-mgmt-panel"><h3>تفصيل سعر وربحية كل باقة — تقديري قبل البيع</h3>'+
-      '<p class="baro-mgmt-muted">سعر الصرف المستخدم: 1 USD = '+fmtSyp(rate)+'. الحساب: تكلفة المورد بالدولار × سعر الصرف = تكلفة الوحدة بالليرة. ثم سعر البيع SYP − تكلفة الوحدة SYP = الربح المتوقع. هامش الربح = الربح المتوقع ÷ سعر البيع × 100. هذه أرقام تسعير تقديرية وليست أرباحاً محققة.</p>'+
-      (productRows.length?table(["المنتج","تكلفة المورد USD","تكلفته SYP","سعر البيع USD","سعر البيع SYP","ربح متوقع SYP","ربح متوقع USD","الهامش"],productRows):'<div class="baro-mgmt-empty">لا توجد باقات لديها تكلفة مورد وسعر بيع معتمدان حالياً.</div>')+
-      '<p class="baro-mgmt-muted">تنبيه: الربح المتوقع لا يدخل دفتر الأرباح الفعلية تلقائياً؛ يُسجل الربح الفعلي فقط من الحركات المالية المرتبطة بعمليات منفذة ومقبوضة.</p></div>'+
-
+      '</div><div class="baro-mgmt-panel"><strong>معادلة صافي الربح</strong><p class="baro-mgmt-muted">المبيعات المقبوضة − تكاليف الموردين − المصاريف − العمولات − المبالغ المستردة + التسويات. الحركات المعلقة لا تدخل في الربح المحقق.</p></div>'+
+      (entries.length===0?'<div class="baro-mgmt-empty">لا توجد حركات مالية مسجلة حالياً؛ الربح المحقق = صفر لأن لا توجد عمليات مالية مسجلة، وليس لأن المتجر خسر.</div>':'')+
+      '<p class="baro-mgmt-muted">هذا الدفتر مستقل عن محافظ الزبائن والشحن الآلي والحسابات العامة.</p></div>'+
+      '<div class="baro-mgmt-panel"><h3>2) ربح كل باقة — تقديري قبل البيع</h3><p class="baro-mgmt-muted">سعر الصرف: 1 USD = '+fmtSyp(rate)+'. مثال 110 جوهرة: تكلفة المورد $0.9423 × 156 = 147 SYP تقريباً. سعر البيع 160 SYP؛ الربح المتوقع 13 SYP للوحدة قبل أي عمولة أو مصروف إضافي.</p>'+
+      (productRows.length?table(["الباقة","تكلفة المورد USD","التكلفة SYP","سعر البيع USD","سعر البيع SYP","ربح الوحدة SYP","ربح الوحدة USD","هامش الربح"],productRows):'<div class="baro-mgmt-empty">لا توجد باقات لديها تكلفة مورد وسعر بيع معتمدان حالياً.</div>')+
+      '<div class="baro-mgmt-panel"><strong>شرح الحساب</strong><p class="baro-mgmt-muted">تكلفة المورد بالدولار × سعر الصرف = التكلفة بالليرة. سعر البيع − التكلفة = ربح الوحدة المتوقع. هامش الربح = ربح الوحدة ÷ سعر البيع × 100. مثال 110: تكلفة 147 SYP، بيع 160 SYP، ربح 13 SYP، وهامش يقارب 8.1%.</p><p class="baro-mgmt-muted">الجدول يعرض ربح الوحدة وليس مجموع أرباح المتجر. لا يتحول الربح المتوقع إلى ربح محقق إلا بعد تنفيذ الطلب وتسجيل المقبوض والتكلفة الفعلية.</p></div></div>'+
       '<div class="baro-mgmt-panel"><h3>إضافة حركة مالية</h3><div class="baro-mgmt-form">'+
       selectField("نوع الحركة","baroFinanceType",[["expense","مصروف"],["commission","عمولة"],["refund","مبلغ مسترد"],["adjustment","تسوية / تعديل"]])+
       field("العنوان","baroFinanceTitle","text","مثال: رسوم تحويل")+
