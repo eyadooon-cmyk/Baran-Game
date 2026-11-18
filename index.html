@@ -3337,7 +3337,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
 <script src="./baro.js?v=20261118-finance-status-1"></script>
-<script src="./baro-management.js?v=20261118-finance-integrity-1"></script>
+<script src="./baro-management.js?v=20261118-finance-render-2"></script>
 <script src="./baro-ai.js?v=20261117-baro-ai-1"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
@@ -3639,7 +3639,7 @@ function filterAdminHub(query){
 }
 function clearAdminHubSearch(){const input=document.getElementById("adminHubSearch");if(input)input.value="";filterAdminHub("");if(input)input.focus();}
 function showAdminPanel(id){
-  if(id==="baro-finance"){const admin=document.getElementById("admin");if(!admin||!currentUser)return Promise.resolve();const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro-finance"));window.scrollTo({top:0,behavior:"smooth"});return typeof window.loadBaroFinanceWorkspace==="function"?window.loadBaroFinanceWorkspace():Promise.resolve();}
+  if(id==="baro-finance"){const admin=document.getElementById("admin");if(!admin||!currentUser)return Promise.resolve();const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro-finance"));window.scrollTo({top:0,behavior:"smooth"});if(typeof window.loadBaroFinanceWorkspace==="function")return window.loadBaroFinanceWorkspace();const mount=document.getElementById("baroFinanceStandaloneMount");if(mount)mount.innerHTML='<div class="deposit-card" role="alert">تعذر تحميل ملف مالية BARO. حدّث الصفحة، وإذا استمرت المشكلة أرسل لنا هذه الرسالة.</div>';return Promise.resolve();}
   if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return Promise.resolve();}
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return Promise.resolve();
