@@ -66,24 +66,24 @@
       (productRows.length?table(["المنتج","تكلفة المورد USD","تكلفته SYP","سعر البيع USD","سعر البيع SYP","ربح متوقع SYP","ربح متوقع USD","الهامش"],productRows):'<div class="baro-mgmt-empty">لا توجد باقات لديها تكلفة مورد وسعر بيع معتمدان حالياً.</div>')+
       '<p class="baro-mgmt-muted">تنبيه: الربح المتوقع لا يدخل دفتر الأرباح الفعلية تلقائياً؛ يُسجل الربح الفعلي فقط من الحركات المالية المرتبطة بعمليات منفذة ومقبوضة.</p></div>'+
 
-      '</div><div class="baro-mgmt-panel"><h3>إضافة حركة مالية</h3><div class="baro-mgmt-form">'+
+      '<div class="baro-mgmt-panel"><h3>إضافة حركة مالية</h3><div class="baro-mgmt-form">'+
       selectField("نوع الحركة","baroFinanceType",[["expense","مصروف"],["commission","عمولة"],["refund","مبلغ مسترد"],["adjustment","تسوية / تعديل"]])+
       field("العنوان","baroFinanceTitle","text","مثال: رسوم تحويل")+
       field("المبلغ","baroFinanceAmount","number","0.00")+
-      selectField("العملة","baroFinanceCurrency",[["USD","دولار USD"],["SYP","ليرة سورية جديدة SYP"]])+
-      field("سعر الصرف (ليرة جديدة لكل دولار)","baroFinanceRate","number","مطلوب عند استخدام الليرة")+
+      selectField("العملة","baroFinanceCurrency",[["USD","دولار USD"],["SYP","ليرة سورية SYP"]])+
+      field("سعر الصرف (SYP لكل دولار)","baroFinanceRate","number","مطلوب عند استخدام الليرة")+
       field("رقم الطلب (اختياري)","baroFinanceOrder","text","UUID الطلب")+
       field("مرجع خارجي","baroFinanceRef","text","رقم إيصال أو حوالة")+
       '<label>ملاحظات<textarea id="baroFinanceDesc" rows="2"></textarea></label><button type="button" id="baroFinanceSave">حفظ الحركة</button></div></div>'+
       '<div class="baro-mgmt-actions"><button type="button" id="baroFinanceExport" class="secondary">تصدير كشف BARO المالي CSV</button></div><div class="baro-mgmt-panel"><h3>دفتر الحركات المالية الفعلية</h3><p class="baro-mgmt-muted">كل سطر يمثل حركة مستقلة. راجع العملة الأصلية والمكافئ بالدولار وحالة الترحيل قبل اعتماد أي تسوية.</p>'+
       (entries.length?table(["التاريخ","نوع الحركة","البيان","المبلغ والعملة الأصلية","المكافئ USD","حالة الترحيل","رقم الطلب"],entries.map(e=>row([new Date(e.created_at).toLocaleString("ar"),typeLabels[e.entry_type]||e.entry_type,e.title,e.currency==="SYP"?fmtSyp(e.amount):fmtUsd(e.amount),fmtUsd(e.amount_usd_equivalent),e.status==="posted"?"مرحّلة":e.status==="pending"?"بانتظار الترحيل":e.status,e.order_id]))):'<div class="baro-mgmt-empty">لا توجد حركات مالية فعلية مسجلة بعد. ستظهر المبيعات والتكاليف هنا بعد الطلبات المنفذة والمقبوضة.</div>')+'</div>'+
-      (can("settings")?'<div class="baro-mgmt-panel"><h3>إعدادات مالية BARO</h3><p class="baro-mgmt-muted">سعر الصرف وحد التنبيه وهما خاصان بعمليات BARO فقط، ولا يغيران إعدادات الشحن الآلي أو المحافظ.</p><div class="baro-mgmt-form">'+field("سعر الدولار مقابل الليرة السورية الجديدة","baroSettingRate","number","مثال: 156",currentSettings.usd_syp_rate)+field("حد التنبيه لهامش الربح %","baroSettingMargin","number","15",currentSettings.low_margin_percent==null?15:currentSettings.low_margin_percent)+selectField("العملة الافتراضية","baroSettingCurrency",[["USD","الدولار USD"],["SYP","الليرة الجديدة SYP"]])+'<button type="button" id="baroSettingsSave">حفظ الإعدادات المالية</button></div></div>':""));
+      (can("settings")?'<div class="baro-mgmt-panel"><h3>إعدادات مالية BARO</h3><p class="baro-mgmt-muted">سعر الصرف وحد التنبيه وهما خاصان بعمليات BARO فقط، ولا يغيران إعدادات الشحن الآلي أو المحافظ.</p><div class="baro-mgmt-form">'+field("سعر الدولار مقابل SYP","baroSettingRate","number","مثال: 156",currentSettings.usd_syp_rate)+field("حد التنبيه لهامش الربح %","baroSettingMargin","number","15",currentSettings.low_margin_percent==null?15:currentSettings.low_margin_percent)+selectField("العملة الافتراضية","baroSettingCurrency",[["USD","الدولار USD"],["SYP","الليرة السورية SYP"]])+'<button type="button" id="baroSettingsSave">حفظ الإعدادات المالية</button></div></div>':""));
     if($("baroSettingsSave")){$("baroSettingCurrency").value=currentSettings.default_currency||"USD";$("baroSettingsSave").onclick=async()=>{const rateInput=$("baroSettingRate").value.trim(),rate=rateInput===""?null:Number(rateInput),margin=Number($("baroSettingMargin").value),currency=$("baroSettingCurrency").value;if((rate!==null&&(!Number.isFinite(rate)||rate<=0))||!Number.isFinite(margin)||margin<0||margin>100){msg("تحقق من سعر الصرف وهامش الربح.");return;}try{await post({action:"settings_save",usd_syp_rate:rate,low_margin_percent:margin,default_currency:currency});msg("تم حفظ إعدادات BARO المالية.");await loadFinance();}catch(e){msg(e.message);}};}
     $("baroFinanceSave").onclick=async()=>{
       const type=$("baroFinanceType").value,title=$("baroFinanceTitle").value.trim(),value=Number($("baroFinanceAmount").value);
       const currency=$("baroFinanceCurrency").value,rateInput=$("baroFinanceRate").value.trim(),exchangeRate=rateInput===""?null:Number(rateInput);
       const order=$("baroFinanceOrder").value.trim()||null;
-      if(title.length<2||!Number.isFinite(value)||value<=0||(currency==="SYP"&&(!exchangeRate||exchangeRate<=0))){msg("أدخل عنواناً ومبلغاً صحيحاً وسعر صرف بالليرة الجديدة لكل دولار عند استخدام الليرة.");return;}
+      if(title.length<2||!Number.isFinite(value)||value<=0||(currency==="SYP"&&(!exchangeRate||exchangeRate<=0))){msg("أدخل عنواناً ومبلغاً صحيحاً وسعر صرف SYP لكل دولار عند استخدام الليرة.");return;}
       const key=globalThis.crypto?.randomUUID?.()||("baro-"+Date.now()+"-"+Math.random().toString(16).slice(2));
       try{await post({action:"finance_entry",entry_type:type,title,amount:value,currency,exchange_rate:exchangeRate,order_id:order,external_reference:$("baroFinanceRef").value.trim(),description:$("baroFinanceDesc").value.trim(),idempotency_key:key});msg("تم تسجيل الحركة في دفتر BARO فقط.");await loadFinance();}
       catch(e){msg(e.message);}
