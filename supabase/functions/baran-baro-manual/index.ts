@@ -120,24 +120,71 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET" && view === "finance") {
       if (!(await hasPermission("finance"))) return json({ error: "لا تملك صلاحية الإدارة المالية لـ BARO." }, 403);
-      const { data, error } = await admin.from("baro_manual_finance_entries")
-        .select("id,order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
-        .order("created_at", { ascending: false }).limit(500);
-      if (error) return json({ error: "تعذر تحميل السجل المالي لـ BARO." }, 500);
-      const totals = { sales: 0, supplier_costs: 0, expenses: 0, commissions: 0, refunds: 0, adjustments: 0, net_profit: 0 };
-      for (const row of data ?? []) {
+
+      // Paginate the full ledger and eligible orders for accurate lifetime totals.
+      // The UI history remains capped to the latest 500 rows for a lightweight response.
+      const pageSize = 1000;
+      const allEntries: any[] = [];
+      for (let offset = 0; ; offset += pageSize) {
+        const { data: page, error } = await admin.from("baro_manual_finance_entries")
+          .select("id,order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
+          .order("created_at", { ascending: true }).order("id", { ascending: true })
+          .range(offset, offset + pageSize - 1);
+        if (error) return json({ error: "تعذر تحميل السجل المالي الكامل لـ BARO." }, 500);
+        allEntries.push(...(page ?? []));
+        if (!page || page.length < pageSize) break;
+      }
+
+      const eligibleOrders = new Set<string>();
+      for (let offset = 0; ; offset += pageSize) {
+        const { data: page, error } = await admin.from("leo_manual_orders")
+          .select("id").eq("status", "completed").eq("payment_status", "verified")
+          .order("id", { ascending: true }).range(offset, offset + pageSize - 1);
+        if (error) return json({ error: "تعذر التحقق من جميع طلبات BARO المكتملة." }, 500);
+        for (const order of page ?? []) eligibleOrders.add(order.id);
+        if (!page || page.length < pageSize) break;
+      }
+
+      const totals = {
+        sales: 0, realized_sales: 0, unmatched_sales: 0,
+        supplier_costs: 0, realized_supplier_costs: 0,
+        expenses: 0, commissions: 0, refunds: 0, adjustments: 0, net_profit: 0
+      };
+      const salesByOrder = new Map<string, number>();
+      const costsByOrder = new Map<string, number>();
+
+      for (const row of allEntries) {
         if (row.status !== "posted" || row.amount_usd_equivalent === null) continue;
         const n = Number(row.amount_usd_equivalent);
         if (!Number.isFinite(n)) continue;
-        if (row.entry_type === "sale_received") totals.sales += n;
-        else if (row.entry_type === "supplier_cost") totals.supplier_costs += n;
-        else if (row.entry_type === "expense") totals.expenses += n;
+        if (row.entry_type === "sale_received") {
+          totals.sales += n;
+          if (row.order_id) salesByOrder.set(row.order_id, (salesByOrder.get(row.order_id) ?? 0) + n);
+        } else if (row.entry_type === "supplier_cost") {
+          totals.supplier_costs += n;
+          if (row.order_id) costsByOrder.set(row.order_id, (costsByOrder.get(row.order_id) ?? 0) + n);
+        } else if (row.entry_type === "expense") totals.expenses += n;
         else if (row.entry_type === "commission") totals.commissions += n;
         else if (row.entry_type === "refund") totals.refunds += n;
         else if (row.entry_type === "adjustment") totals.adjustments += n;
       }
-      totals.net_profit = totals.sales - totals.supplier_costs - totals.expenses - totals.commissions - totals.refunds + totals.adjustments;
-      return json({ entries: data ?? [], totals });
+
+      // Recognize order profit only when both unique posted entries exist for the same
+      // order and that order is currently payment-verified and completed.
+      for (const orderId of eligibleOrders) {
+        if (!salesByOrder.has(orderId) || !costsByOrder.has(orderId)) continue;
+        totals.realized_sales += salesByOrder.get(orderId)!;
+        totals.realized_supplier_costs += costsByOrder.get(orderId)!;
+      }
+      totals.unmatched_sales = Math.max(0, totals.sales - totals.realized_sales);
+      totals.net_profit = totals.realized_sales - totals.realized_supplier_costs
+        - totals.expenses - totals.commissions - totals.refunds + totals.adjustments;
+
+      const { data: recentEntries, error: recentError } = await admin.from("baro_manual_finance_entries")
+        .select("id,order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
+        .order("created_at", { ascending: false }).order("id", { ascending: false }).limit(500);
+      if (recentError) return json({ error: "تعذر تحميل أحدث حركات دفتر BARO." }, 500);
+      return json({ entries: recentEntries ?? [], totals, totals_scope: "all_posted_history" });
     }
 
     if (req.method === "GET" && view === "suppliers") {
@@ -252,7 +299,7 @@ Deno.serve(async (req: Request) => {
       const method = str(body.payment_method, 60), payment = typeof body.payment_status === "string" ? body.payment_status : "";
       const customerMessage = str(body.customer_message, 500), cost = amount(body.supplier_cost_usd, 1000000);
       const reference = str(body.supplier_reference, 160), exception = str(body.exception_reason, 500), notes = str(body.internal_notes, 2000);
-      if (!uuidPattern.test(id) || !["pending","awaiting_payment","paid","in_progress","completed","failed","needs_review","cancelled"].includes(status)
+      if (!uuidPattern.test(id) || !["pending","awaiting_payment","paid","in_progress","awaiting_admin_confirmation","completed","failed","needs_review","cancelled"].includes(status)
           || quote === undefined || (currency !== null && !["USD","SYP"].includes(String(currency)))
           || !["awaiting_quote","awaiting_payment","verified","failed"].includes(payment) || cost === undefined)
         return json({ error: "بيانات تحديث الطلب غير صحيحة." }, 400);

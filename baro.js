@@ -342,14 +342,14 @@ async function baroAdminQuickOrderStatus(order,nextStatus){
   if(!Number.isFinite(supplierCost)||supplierCost<=0){alert("أدخل تكلفة فعلية أكبر من صفر.");return;}
  }
  try{
-  await baroApi("POST",{action:"order_admin_update",order_id:order.id,status:nextStatus,
+  const updateResult=await baroApi("POST",{action:"order_admin_update",order_id:order.id,status:nextStatus,
    quote_amount:quoteAmount,quote_currency:quoteCurrency,payment_method:order.payment_method||"شام كاش",
    payment_status:"verified",customer_message:nextStatus==="in_progress"?inProgressMessage:completedMessage,
    supplier_cost_usd:nextStatus==="completed"?supplierCost:(order.supplier_cost_usd??order.supplier_cost_usd_snapshot??null),
    supplier_reference:order.supplier_reference||"",
    exception_reason:nextStatus==="completed"?"تم التحقق يدوياً من وصول الشحن إلى حساب الزبون.":(order.exception_reason||""),
    internal_notes:order.internal_notes||""});
-  baroAdminMessage(nextStatus==="in_progress"?"تم بدء الشحن اليدوي وإرسال تحديث حالة الطلب للزبون.":"تم تأكيد اكتمال الشحن وإرسال إشعار النجاح للزبون.");
+  baroAdminMessage(nextStatus==="in_progress"?"تم بدء الشحن اليدوي وإرسال تحديث حالة الطلب للزبون.":(updateResult.finance_posted?"تم تأكيد اكتمال الشحن وترحيل قيد المقبوض وتكلفة المورد بنجاح.":"تم تأكيد اكتمال الشحن، لكن لم يؤكد النظام اكتمال القيدين الماليين."));
   await loadBaroAdmin();
  }catch(error){baroAdminMessage(error.message);}
 }
@@ -384,8 +384,8 @@ function renderBaroAdmin(){
    const amount=quote.value.trim()===""?null:Number(quote.value);
    const quoteCurrency=amount===null?null:currency.value;
    const pay=payment.value;
-   await baroApi("POST",{action:"order_admin_update",order_id:o.id,status:status.value,quote_amount:amount,quote_currency:quoteCurrency,payment_method:method.value,payment_status:pay,customer_message:msg.value.trim(),supplier_cost_usd:cost.value.trim()===""?null:Number(cost.value),supplier_reference:reference.value.trim(),exception_reason:exception.value.trim(),internal_notes:notes.value.trim()});
-   baroAdminMessage("تم حفظ تحديث الطلب. لا يوجد خصم أو ترحيل مالي تلقائي.");await loadBaroAdmin();
+   const updateResult=await baroApi("POST",{action:"order_admin_update",order_id:o.id,status:status.value,quote_amount:amount,quote_currency:quoteCurrency,payment_method:method.value,payment_status:pay,customer_message:msg.value.trim(),supplier_cost_usd:cost.value.trim()===""?null:Number(cost.value),supplier_reference:reference.value.trim(),exception_reason:exception.value.trim(),internal_notes:notes.value.trim()});
+   baroAdminMessage(updateResult.finance_posted?"تم حفظ الطلب وترحيل قيدي المقبوض وتكلفة المورد.":(updateResult.sale_entry_posted?"تم حفظ الطلب وترحيل المقبوض؛ تبقى تكلفة المورد حتى اكتمال التنفيذ.":"تم حفظ تحديث الطلب دون ترحيل قيد مالي جديد."));await loadBaroAdmin();
   }catch(e){baroAdminMessage(e.message);}finally{save.disabled=false;}};
   card.append(h,id,info,grid,save);
   const quick=document.createElement("div");quick.className="baro-order-quick-actions";
