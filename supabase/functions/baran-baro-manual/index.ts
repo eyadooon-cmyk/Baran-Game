@@ -120,23 +120,51 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET" && view === "finance") {
       if (!(await hasPermission("finance"))) return json({ error: "لا تملك صلاحية الإدارة المالية لـ BARO." }, 403);
-      const { data, error } = await admin.from("baro_manual_finance_entries")
-        .select("id,order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
-        .order("created_at", { ascending: false }).limit(500);
-      if (error) return json({ error: "تعذر تحميل السجل المالي لـ BARO." }, 500);
-      const totals = { sales: 0, supplier_costs: 0, expenses: 0, commissions: 0, refunds: 0, adjustments: 0, net_profit: 0 };
+      const [{ data, error }, { data: orders, error: ordersError }] = await Promise.all([
+        admin.from("baro_manual_finance_entries")
+          .select("id,order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
+          .order("created_at", { ascending: false }).limit(500),
+        admin.from("leo_manual_orders").select("id,status,payment_status").limit(5000)
+      ]);
+      if (error || ordersError) return json({ error: "تعذر تحميل السجل المالي لـ BARO." }, 500);
+
+      const totals = {
+        sales: 0, realized_sales: 0, unmatched_sales: 0,
+        supplier_costs: 0, realized_supplier_costs: 0,
+        expenses: 0, commissions: 0, refunds: 0, adjustments: 0, net_profit: 0
+      };
+      const eligibleOrders = new Set((orders ?? [])
+        .filter(o => o.status === "completed" && o.payment_status === "verified")
+        .map(o => o.id));
+      const salesByOrder = new Map<string, number>();
+      const costsByOrder = new Map<string, number>();
+
       for (const row of data ?? []) {
         if (row.status !== "posted" || row.amount_usd_equivalent === null) continue;
         const n = Number(row.amount_usd_equivalent);
         if (!Number.isFinite(n)) continue;
-        if (row.entry_type === "sale_received") totals.sales += n;
-        else if (row.entry_type === "supplier_cost") totals.supplier_costs += n;
-        else if (row.entry_type === "expense") totals.expenses += n;
+        if (row.entry_type === "sale_received") {
+          totals.sales += n;
+          if (row.order_id) salesByOrder.set(row.order_id, (salesByOrder.get(row.order_id) ?? 0) + n);
+        } else if (row.entry_type === "supplier_cost") {
+          totals.supplier_costs += n;
+          if (row.order_id) costsByOrder.set(row.order_id, (costsByOrder.get(row.order_id) ?? 0) + n);
+        } else if (row.entry_type === "expense") totals.expenses += n;
         else if (row.entry_type === "commission") totals.commissions += n;
         else if (row.entry_type === "refund") totals.refunds += n;
         else if (row.entry_type === "adjustment") totals.adjustments += n;
       }
-      totals.net_profit = totals.sales - totals.supplier_costs - totals.expenses - totals.commissions - totals.refunds + totals.adjustments;
+
+      // Recognize profit only when the same order is both paid and completed,
+      // and has exactly the required posted sale and supplier-cost entries.
+      for (const orderId of eligibleOrders) {
+        if (!salesByOrder.has(orderId) || !costsByOrder.has(orderId)) continue;
+        totals.realized_sales += salesByOrder.get(orderId)!;
+        totals.realized_supplier_costs += costsByOrder.get(orderId)!;
+      }
+      totals.unmatched_sales = Math.max(0, totals.sales - totals.realized_sales);
+      totals.net_profit = totals.realized_sales - totals.realized_supplier_costs
+        - totals.expenses - totals.commissions - totals.refunds + totals.adjustments;
       return json({ entries: data ?? [], totals });
     }
 
