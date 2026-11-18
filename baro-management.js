@@ -6,10 +6,10 @@
   const money = (v, currency) => {
     const n = Number(v);
     if (!Number.isFinite(n)) return "—";
-    return currency === "SYP" ? n.toLocaleString("en-US") + " ل.س" : "$" + n.toFixed(2);
+    return currency === "SYP" ? n.toLocaleString("en-US") + " ل.س" : n.toLocaleString("en-US",{maximumFractionDigits:2}) + "$";
   };
   let access = {}, adminData = {}, financeData = {}, supplierData = {}, settingsData = {}, historyData = [], auditData = [], staffData = [];
-  let activeTab = "overview", loading = false;
+  let activeTab = "overview", loading = false, financeWorkspaceActive = false;
 
   const style = document.createElement("style");
   style.textContent = ".baro-customer-products{margin:16px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.baro-customer-products>h3{grid-column:1/-1;color:#d7c4e8;margin:8px 0}.baro-customer-product-card{padding:15px;border:1px solid #59466b;border-radius:15px;background:linear-gradient(145deg,#21182b,#110d16);display:flex;flex-direction:column;gap:8px;min-width:0}.baro-customer-product-card>strong{font-size:16px;color:#f2eafa}.baro-card-prices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0}.baro-price-usd,.baro-price-syp{padding:9px 7px;border-radius:10px;background:#30243a;color:#e8d8f4;text-align:center;font-size:16px}.baro-price-syp{background:#211c29;color:#d7c4e8}.baro-preview-label{font-size:12px;color:#bba9ca}.baro-customer-product-card button{width:100%;margin-top:5px}#baroManagementWorkspace{margin:16px 0;padding:16px;border:1px solid #59466b;border-radius:18px;background:linear-gradient(155deg,#1b1522,#100d14)}#baroManagementWorkspace h3{color:#d7c4e8;margin:5px 0 12px}.baro-mgmt-tabs{display:flex;gap:7px;overflow-x:auto;padding:4px 0 12px}.baro-mgmt-tabs button{flex:0 0 auto;padding:9px 12px;background:#2a2033;color:#eee;border:1px solid #59466b}.baro-mgmt-tabs button.active{background:#8b6ba8;color:#100b16}.baro-mgmt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px;margin:12px 0}.baro-mgmt-stat{padding:12px;border:1px solid #493b55;border-radius:12px;background:#201a28;min-width:0}.baro-mgmt-stat span{display:block;font-size:12px;color:#bba9ca}.baro-mgmt-stat strong{display:block;font-size:20px;color:#e6d8f0;overflow-wrap:anywhere;margin-top:5px}.baro-mgmt-panel{padding:12px;border:1px solid #493b55;border-radius:13px;background:#17121e;margin:10px 0}.baro-mgmt-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}.baro-mgmt-form label{display:block;font-size:12px;color:#c7b5d5}.baro-mgmt-form input,.baro-mgmt-form select,.baro-mgmt-form textarea{margin:5px 0 0;min-width:0}.baro-mgmt-form button{align-self:end}.baro-mgmt-table-wrap{overflow-x:auto;margin-top:12px}.baro-mgmt-table{width:100%;border-collapse:collapse;min-width:560px;font-size:12px}.baro-mgmt-table th,.baro-mgmt-table td{padding:9px;border-bottom:1px solid #40334b;text-align:right;vertical-align:top}.baro-mgmt-table th{color:#d7c4e8;background:#211a2b}.baro-mgmt-muted{font-size:12px;color:#b9a9c9;line-height:1.7}.baro-mgmt-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.baro-mgmt-actions button{width:auto}.baro-mgmt-message{min-height:22px;color:#d7c4e8;font-size:13px}.baro-mgmt-empty{padding:14px;border:1px dashed #59466b;border-radius:11px;color:#b9a9c9;text-align:center}.baro-mgmt-badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#30243a;color:#e4d5f0;font-size:11px}@media(max-width:520px){#baroManagementWorkspace{padding:11px}.baro-mgmt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.baro-mgmt-stat strong{font-size:17px}}";
@@ -44,6 +44,7 @@
   }
   function row(values) { return '<tr>' + values.map(v => '<td>' + esc(v == null || v === "" ? "—" : v) + '</td>').join("") + '</tr>'; }
   function stat(label,value) { return '<div class="baro-mgmt-stat"><span>' + esc(label) + '</span><strong>' + esc(value) + '</strong></div>'; }
+  function statDual(label,usd,syp) { return '<div class="baro-mgmt-stat"><span>'+esc(label)+'</span><strong>'+esc(usd)+'</strong><small style="display:block;color:#b9a9c9;margin-top:4px">'+esc(syp)+'</small></div>'; }
   async function getView(view) { return api("GET",null,view); }
   async function post(body) { return api("POST",body); }
 
@@ -94,7 +95,7 @@
     const products=(adminData.products||[]).filter(p=>Number(p.supplier_cost_usd)>0&&Number(p.sale_price_syp)>0);
     const rate=Number(currentSettings.usd_syp_rate||adminData.settings?.usd_syp_rate||156);
     const fmtSyp=v=>Number(v||0).toLocaleString("en-US",{maximumFractionDigits:0})+" SYP";
-    const fmtUsd=v=>"$"+Number(v||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+    const fmtUsd=v=>Number(v||0).toLocaleString("en-US",{maximumFractionDigits:2})+"$";
     const parts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Damascus",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
     const part=k=>parts.find(x=>x.type===k)?.value||"";
     const today=part("year")+"-"+part("month")+"-"+part("day"),month=today.slice(0,7);
@@ -118,15 +119,15 @@
     const typeLabels={sale_received:"مبيعات مقبوضة",supplier_cost:"تكلفة مورد",expense:"مصروف",commission:"عمولة",refund:"مبلغ مسترد",adjustment:"تسوية"};
     content.innerHTML='<h3>مالية BARO المستقلة</h3>'+
       '<div class="baro-mgmt-panel"><h3>1) الدفتر المالي الفعلي</h3><p class="baro-mgmt-muted">الأرقام من الحركات المسجلة فعلياً بحالة «مرحّلة» فقط. كل قيمة بالدولار وبجانبها ما يعادلها بالليرة.</p><div class="baro-mgmt-grid">'+
-      stat("المبيعات المقبوضة",fmtUsd(t.sales||0)+"<br><small>"+fmtSyp((t.sales||0)*rate)+"</small>")+stat("مبيعات لم يكتمل تنفيذها",fmtUsd(t.unmatched_sales||0)+"<br><small>"+fmtSyp((t.unmatched_sales||0)*rate)+"</small>")+stat("المبيعات المحققة",fmtUsd(t.realized_sales||0)+"<br><small>"+fmtSyp((t.realized_sales||0)*rate)+"</small>")+stat("تكاليف الموردين",fmtUsd(t.supplier_costs||0)+"<br><small>"+fmtSyp((t.supplier_costs||0)*rate)+"</small>")+
-      stat("المصاريف",fmtUsd(t.expenses||0)+"<br><small>"+fmtSyp((t.expenses||0)*rate)+"</small>")+stat("العمولات",fmtUsd(t.commissions||0)+"<br><small>"+fmtSyp((t.commissions||0)*rate)+"</small>")+
-      stat("المبالغ المستردة",fmtUsd(t.refunds||0)+"<br><small>"+fmtSyp((t.refunds||0)*rate)+"</small>")+stat("التسويات",fmtUsd(t.adjustments||0)+"<br><small>"+fmtSyp((t.adjustments||0)*rate)+"</small>")+
-      stat("صافي الربح المحقق",fmtUsd(t.net_profit||0)+"<br><small>"+fmtSyp((t.net_profit||0)*rate)+"</small>")+stat("الحركات المرحلة",posted.length)+stat("بانتظار الترحيل",pending)+
+      statDual("المبيعات المقبوضة",fmtUsd(t.sales||0),fmtSyp((t.sales||0)*rate))+statDual("مبيعات لم يكتمل تنفيذها",fmtUsd(t.unmatched_sales||0),fmtSyp((t.unmatched_sales||0)*rate))+statDual("المبيعات المحققة",fmtUsd(t.realized_sales||0),fmtSyp((t.realized_sales||0)*rate))+statDual("تكاليف الموردين",fmtUsd(t.supplier_costs||0),fmtSyp((t.supplier_costs||0)*rate))+
+      statDual("المصاريف",fmtUsd(t.expenses||0),fmtSyp((t.expenses||0)*rate))+statDual("العمولات",fmtUsd(t.commissions||0),fmtSyp((t.commissions||0)*rate))+
+      statDual("المبالغ المستردة",fmtUsd(t.refunds||0),fmtSyp((t.refunds||0)*rate))+statDual("التسويات",fmtUsd(t.adjustments||0),fmtSyp((t.adjustments||0)*rate))+
+      statDual("صافي الربح المحقق",fmtUsd(t.net_profit||0),fmtSyp((t.net_profit||0)*rate))+stat("الحركات المرحلة",posted.length)+stat("بانتظار الترحيل",pending)+
       stat("حركات اليوم",daily.length)+stat("حركات الشهر",monthly.length)+
       '</div><div class="baro-mgmt-panel"><strong>معادلة صافي الربح</strong><p class="baro-mgmt-muted">المبيعات المقبوضة − تكاليف الموردين − المصاريف − العمولات − المبالغ المستردة + التسويات. الحركات المعلقة لا تدخل في الربح المحقق.</p></div>'+
       (entries.length===0?'<div class="baro-mgmt-empty">لا توجد حركات مالية مسجلة حالياً؛ الربح المحقق = صفر لأن لا توجد عمليات مالية مسجلة، وليس لأن المتجر خسر.</div>':'')+
       '<p class="baro-mgmt-muted">هذا الدفتر مستقل عن محافظ الزبائن والشحن الآلي والحسابات العامة.</p></div>'+
-      '<div class="baro-mgmt-panel"><h3>2) ربح كل باقة — تقديري قبل البيع</h3><p class="baro-mgmt-muted">سعر الصرف: 1 USD = '+fmtSyp(rate)+'. مثال 110 جوهرة: تكلفة المورد $0.9423 × 156 = 147 SYP تقريباً. سعر البيع 160 SYP؛ الربح المتوقع 13 SYP للوحدة قبل أي عمولة أو مصروف إضافي.</p>'+
+      '<div class="baro-mgmt-panel"><h3>2) ربح كل باقة — تقديري قبل البيع</h3><p class="baro-mgmt-muted">سعر الصرف: 1 USD = '+fmtSyp(rate)+'. مثال 110 جوهرة: تكلفة المورد 0.94$ × 156 = 147 SYP تقريباً. سعر البيع 160 SYP؛ الربح المتوقع 13 SYP للوحدة قبل أي عمولة أو مصروف إضافي.</p>'+
       (productRows.length?table(["الباقة","تكلفة المورد USD","التكلفة SYP","سعر البيع USD","سعر البيع SYP","ربح الوحدة SYP","ربح الوحدة USD","هامش الربح"],productRows):'<div class="baro-mgmt-empty">لا توجد باقات لديها تكلفة مورد وسعر بيع معتمدان حالياً.</div>')+
       '<div class="baro-mgmt-panel"><strong>شرح الحساب</strong><p class="baro-mgmt-muted">تكلفة المورد بالدولار × سعر الصرف = التكلفة بالليرة. سعر البيع − التكلفة = ربح الوحدة المتوقع. هامش الربح = ربح الوحدة ÷ سعر البيع × 100. مثال 110: تكلفة 147 SYP، بيع 160 SYP، ربح 13 SYP، وهامش يقارب 8.1%.</p><p class="baro-mgmt-muted">الجدول يعرض ربح الوحدة وليس مجموع أرباح المتجر. لا يتحول الربح المتوقع إلى ربح محقق إلا بعد تنفيذ الطلب وتسجيل المقبوض والتكلفة الفعلية.</p></div></div>'+
       '<div class="baro-mgmt-panel"><h3>إضافة حركة مالية</h3><div class="baro-mgmt-form">'+
