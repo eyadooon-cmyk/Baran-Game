@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text("BARO Payment Bridge", style = MaterialTheme.typography.headlineSmall)
-            Text("قارئ محلي لإشعارات وشاشة تطبيق الدفع", style = MaterialTheme.typography.titleMedium)
+            Text("قارئ محلي لإشعارات وتفاصيل الحوالات الظاهرة", style = MaterialTheme.typography.titleMedium)
 
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -114,7 +114,7 @@ class MainActivity : ComponentActivity() {
             Button(
                 onClick = { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("إعداد إمكانية الوصول لقراءة سجل الحوالات") }
+            ) { Text("إعداد إمكانية الوصول لقراءة تفاصيل الحوالات") }
 
             Button(
                 onClick = {
@@ -138,14 +138,14 @@ class MainActivity : ComponentActivity() {
             ) { Text("فتح تطبيق الدفع") }
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("نصوص سجل الحوالات: ${snapshots.size}", style = MaterialTheme.typography.titleMedium)
+                Text("صفحات تفاصيل حوالات محتملة: ${snapshots.size}", style = MaterialTheme.typography.titleMedium)
                 TextButton(onClick = {
                     prefs.edit().remove(NotificationCaptureService.KEY_SCREEN_READS).apply()
                     refresh++
                 }) { Text("مسح") }
             }
             if (snapshots.isEmpty()) {
-                Text("لم تُلتقط نصوص من شاشة سجل الحوالات بعد. افتح السجل داخل تطبيق الدفع ثم ارجع واضغط تحديث.")
+                Text("لم تُلتقط تفاصيل حوالة بعد. افتح سجل الحوالات، ثم افتح حوالة واردة لعرض تفاصيلها، وبعدها ارجع واضغط تحديث. قد لا تظهر البيانات إذا لم يوفّرها شام كاش لخدمة إمكانية الوصول.")
             }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
                 items(snapshots, key = { it.optString("fingerprint") }) { item ->
