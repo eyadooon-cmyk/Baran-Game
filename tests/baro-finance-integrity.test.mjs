@@ -6,6 +6,7 @@ const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const migration = read("../supabase/migrations/20261118152000_baro_order_finance_integrity.sql");
 const edge = read("../supabase/functions/baran-baro-manual/index.ts");
 const management = read("../baro-management.js");
+const ui = read("../baro.js");
 
 test("BARO verified customer payment snapshots cannot be changed after posting", () => {
   assert.match(migration, /v_current\.payment_status='verified'/);
@@ -31,4 +32,6 @@ test("BARO realized profit only includes completed, verified orders with both le
   assert.match(edge, /totals\.net_profit = totals\.realized_sales - totals\.realized_supplier_costs/);
   assert.match(management, /مبيعات لم يكتمل تنفيذها/);
   assert.match(management, /المبيعات المحققة/);
+  assert.match(ui, /updateResult\.finance_posted/);
+  assert.doesNotMatch(ui, /لا يوجد خصم أو ترحيل مالي تلقائي/);
 });
