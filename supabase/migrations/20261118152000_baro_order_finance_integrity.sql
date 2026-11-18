@@ -23,7 +23,7 @@ begin
     raise exception using errcode='42501',message='BARO order permission required';
   end if;
   if p_order_id is null or p_status is null
-     or p_status not in ('pending','awaiting_payment','paid','in_progress','completed','failed','needs_review','cancelled')
+     or p_status not in ('pending','awaiting_payment','paid','in_progress','awaiting_admin_confirmation','completed','failed','needs_review','cancelled')
      or p_payment_status is null or p_payment_status not in ('awaiting_quote','awaiting_payment','verified','failed')
      or (p_quote_amount is not null and (p_quote_amount<=0 or p_quote_amount>1000000000000))
      or (p_quote_currency is not null and p_quote_currency not in ('USD','SYP'))
@@ -44,6 +44,7 @@ begin
   else
     v_transition_ok:=case v_current.status
       when 'pending' then p_status in ('awaiting_payment','needs_review','failed','cancelled')
+      when 'awaiting_admin_confirmation' then p_status in ('awaiting_payment','needs_review','failed','cancelled')
       when 'awaiting_payment' then p_status in ('paid','needs_review','failed','cancelled')
       when 'paid' then p_status in ('in_progress','needs_review','failed')
       when 'in_progress' then p_status in ('completed','needs_review','failed')
