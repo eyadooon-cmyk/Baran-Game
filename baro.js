@@ -6,7 +6,7 @@ let baroCustomerProducts=[],baroAdminProducts=[],baroAdminOrders=[];
 let baroManualEnabled=false,baroAdminManualEnabled=false;
 const baroEl=id=>document.getElementById(id);
 function baroEscape(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function baroMoney(value,currency){if(value===null||value===undefined||value==="")return "بانتظار تحديد السعر";const n=Number(value);return !Number.isFinite(n)?"—":currency==="USD"?"$"+n.toFixed(2):n.toLocaleString("en-US")+" ل.س";}
+function baroMoney(value,currency){if(value===null||value===undefined||value==="")return "بانتظار تحديد السعر";const n=Number(value);return !Number.isFinite(n)?"—":currency==="USD"?"$"+n.toFixed(2):n.toLocaleString("en-US")+" SYP";}
 async function baroApi(method="GET",body=null,view="admin"){
  const {data:{session},error}=await sb.auth.getSession();
  if(error||!session)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
@@ -187,7 +187,7 @@ function renderBaroCustomerCatalog(products){
     cardTop.append(art,preview);
     const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=productName;
     const price=document.createElement("strong");price.className="baro-catalog-product-price";
-    price.textContent=category==="freefire"&&group==="diamonds"&&Number.isFinite(Number(p.sale_price_syp))?Number(p.sale_price_syp).toLocaleString("en-US")+" ل.س جديدة":"السعر قيد المراجعة";
+    price.textContent=category==="freefire"&&group==="diamonds"&&Number.isFinite(Number(p.sale_price_syp))?Number(p.sale_price_syp).toLocaleString("en-US")+" SYP":"السعر قيد المراجعة";
     price.style.cssText="display:block;margin:10px 0 4px;color:#e4c5ff;font-size:1.05rem;font-weight:900;";
     const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
     const status=document.createElement("span");status.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"استقبال الطلبات مغلق حالياً";
@@ -199,7 +199,7 @@ function renderBaroCustomerCatalog(products){
   section.append(content);box.append(section);
  });
  const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";
- footnote.textContent="الأسعار المعروضة بالليرة السورية الجديدة · الطلبات والشحن اليدوي مغلقان حالياً · لا يتم إنشاء طلب أو خصم أي رصيد."
+ footnote.textContent="الأسعار المعروضة بعملة SYP · الطلبات والشحن اليدوي مغلقان حالياً · لا يتم إنشاء طلب أو خصم أي رصيد."
  box.append(footnote);
 }
 async function loadBaroCustomer(){
