@@ -183,7 +183,7 @@ test("BARO customer catalogue keeps grouped sections and is not overwritten by t
   assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_usd,"USD"\)/);
   assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_syp,"SYP"\)/);
   assert.match(customerCatalogue, /category==="freefire"&&group==="diamonds"/);
-  assert.match(customerCatalogue, /ل\.س جديدة/);
+  assert.match(customerCatalogue, /" SYP"/);
   assert.match(customerCatalogue, /استقبال الطلبات مغلق حالياً/);
   assert.match(customerCatalogue, /createElement\("article"\);card\.className="baro-catalog-product-card/);
   const app = read("../index.html");
@@ -273,9 +273,9 @@ test("BARO customer ID form stays visible while order submission remains gated",
 
 test("BARO finance separates realized ledger results from estimated catalogue unit margins", () => {
   assert.match(management, /2\\) ربح كل باقة — تقديري قبل البيع/);
-  assert.match(management, /supplier_cost_usd/);
+  assert.match(management, /costUsd\\*rate/);
   assert.match(management, /sale_price_syp/);
-  assert.match(management, /supplier_cost_usd\)\*rate/);
+  assert.match(management, /costUsd\\*rate/);
   assert.match(management, /دفتر الحركات المالية الفعلية/);
   assert.match(management, /هذا الدفتر مستقل عن محافظ الزبائن والشحن الآلي والحسابات العامة/);
   assert.match(management, /سعر الصرف: 1 USD =/);
