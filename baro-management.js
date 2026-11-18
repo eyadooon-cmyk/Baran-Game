@@ -207,11 +207,28 @@
   }
   async function loadBaroFinanceWorkspace(){
     financeWorkspaceActive=true;
+    const node=financeRoot();
+    const content=$("baroFinanceMgmtContent");
+    if(!node||!content)return;
+    content.innerHTML='<div class="baro-mgmt-empty" role="status">جاري تحميل بيانات مالية BARO...</div>';
     try{
       await loadAccess();
-      if(!can("finance")){const node=financeRoot();if(node)$("baroFinanceMgmtContent").innerHTML='<div class="baro-mgmt-empty">لا تملك صلاحية الاطلاع على مالية BARO.</div>';return;}
-      await loadAdmin();financeRoot();await loadFinance();
-    }catch(e){msg(e.message);}
+      if(!can("finance")){
+        content.innerHTML='<div class="baro-mgmt-empty">لا تملك صلاحية الاطلاع على مالية BARO. راجع صلاحيات BARO مع مدير المتجر.</div>';
+        return;
+      }
+      await loadAdmin();
+      await loadFinance();
+      if(!content.innerHTML.trim()){
+        content.innerHTML='<div class="baro-mgmt-empty">تم الاتصال، لكن لم تصل بيانات مالية للعرض. استخدم إعادة المحاولة أو راجع سجل الأخطاء.</div>';
+      }
+    }catch(e){
+      content.innerHTML='<div class="baro-mgmt-panel" style="border-color:#a65b69"><h3>تعذر تحميل مالية BARO</h3><p class="baro-mgmt-muted" id="baroFinanceLoadError" role="alert"></p><button type="button" id="baroFinanceRetry">إعادة المحاولة</button></div>';
+      const error=$("baroFinanceLoadError");
+      if(error)error.textContent=String(e?.message||"حدث خطأ غير معروف أثناء تحميل البيانات.");
+      const retry=$("baroFinanceRetry");
+      if(retry)retry.onclick=()=>loadBaroFinanceWorkspace();
+    }
   }
 
   const adminAiMessages = [];
