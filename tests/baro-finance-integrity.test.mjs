@@ -30,6 +30,9 @@ test("BARO realized profit only includes completed, verified orders with both le
   assert.match(edge, /o\.status === "completed" && o\.payment_status === "verified"/);
   assert.match(edge, /if \(!salesByOrder\.has\(orderId\) \|\| !costsByOrder\.has\(orderId\)\) continue/);
   assert.match(edge, /totals\.net_profit = totals\.realized_sales - totals\.realized_supplier_costs/);
+  assert.match(edge, /for \(let offset = 0; ; offset \+= pageSize\)/);
+  assert.match(edge, /\.range\(offset, offset \+ pageSize - 1\)/);
+  assert.match(edge, /totals_scope: "all_posted_history"/);
   assert.match(management, /مبيعات لم يكتمل تنفيذها/);
   assert.match(management, /المبيعات المحققة/);
   assert.match(ui, /updateResult\.finance_posted/);
