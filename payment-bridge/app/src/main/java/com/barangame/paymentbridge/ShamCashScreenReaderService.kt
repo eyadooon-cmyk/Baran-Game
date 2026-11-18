@@ -28,11 +28,9 @@ class ShamCashScreenReaderService : AccessibilityService() {
 
         val root = rootInActiveWindow ?: return
         if (root.packageName?.toString() != selected) return
+
         val lines = collectVisibleText(root)
-        if (lines.isEmpty()) return
-        val joined = lines.joinToString("\n")
-        if (HISTORY_TERMS.none { joined.contains(it, ignoreCase = true) }) return
-        if (SENSITIVE_TERMS.any { joined.contains(it, ignoreCase = true) }) return
+        if (lines.isEmpty() || !looksLikeTransferDetails(lines)) return
         saveSnapshot(selected, lines)
     }
 
@@ -63,8 +61,10 @@ class ShamCashScreenReaderService : AccessibilityService() {
             visited++
             try {
                 if (!node.isPassword && node.isVisibleToUser) {
-                    node.text?.toString()?.trim()?.takeIf { it.isNotBlank() }?.let { result.add(it.take(MAX_TEXT_LENGTH)) }
-                    node.contentDescription?.toString()?.trim()?.takeIf { it.isNotBlank() }?.let { result.add(it.take(MAX_TEXT_LENGTH)) }
+                    node.text?.toString()?.trim()?.takeIf { it.isNotBlank() }
+                        ?.let { result.add(it.take(MAX_TEXT_LENGTH)) }
+                    node.contentDescription?.toString()?.trim()?.takeIf { it.isNotBlank() }
+                        ?.let { result.add(it.take(MAX_TEXT_LENGTH)) }
                 }
                 for (index in 0 until node.childCount) {
                     node.getChild(index)?.let { pending.add(it) }
@@ -74,6 +74,18 @@ class ShamCashScreenReaderService : AccessibilityService() {
             }
         }
         return result.toList()
+    }
+
+    /**
+     * Capture only screens with multiple transfer indicators, or one strong transaction-detail
+     * label. This reduces accidental storage of unrelated ShamCash screens.
+     */
+    private fun looksLikeTransferDetails(lines: List<String>): Boolean {
+        val joined = lines.joinToString(" ").lowercase()
+        if (SENSITIVE_TERMS.any { joined.contains(it.lowercase()) }) return false
+        if (STRONG_DETAIL_TERMS.any { joined.contains(it.lowercase()) }) return true
+        val indicators = TRANSACTION_INDICATORS.count { joined.contains(it.lowercase()) }
+        return indicators >= 2
     }
 
     private fun saveSnapshot(packageName: String, lines: List<String>) {
@@ -91,10 +103,13 @@ class ShamCashScreenReaderService : AccessibilityService() {
             put("fingerprint", fingerprint)
             put("capturedAt", System.currentTimeMillis())
             put("text", text)
+            put("type", "possible_transfer_details")
         }
         val updated = JSONArray().apply {
             put(item)
-            for (index in 0 until minOf(current.length(), MAX_SNAPSHOTS - 1)) put(current.getJSONObject(index))
+            for (index in 0 until minOf(current.length(), MAX_SNAPSHOTS - 1)) {
+                put(current.getJSONObject(index))
+            }
         }
         prefs.edit().putString(NotificationCaptureService.KEY_SCREEN_READS, updated.toString()).apply()
     }
@@ -110,13 +125,21 @@ class ShamCashScreenReaderService : AccessibilityService() {
         private const val MAX_TEXT_LENGTH = 400
         private const val MAX_SNAPSHOT_LENGTH = 8000
         private const val MAX_SNAPSHOTS = 30
-        private val HISTORY_TERMS = listOf(
-            "سجل الحوالات", "الحوالات", "الحركات", "العمليات", "تفاصيل الحوالة",
-            "transaction history", "transactions", "transfer history"
+
+        private val STRONG_DETAIL_TERMS = listOf(
+            "تفاصيل الحوالة", "تفاصيل التحويل", "رقم العملية", "رقم الحوالة",
+            "transaction details", "transaction id", "transfer details", "transfer id",
+            "reference number"
+        )
+        private val TRANSACTION_INDICATORS = listOf(
+            "حوالة واردة", "حوالة", "تحويل", "المرسل", "اسم المرسل", "المبلغ",
+            "تاريخ العملية", "رقم العملية", "رقم الحوالة", "الوارد",
+            "incoming transfer", "transfer", "transaction", "sender", "amount",
+            "reference", "date"
         )
         private val SENSITIVE_TERMS = listOf(
-            "كلمة المرور", "رمز التحقق", "رمز الدخول", "رمز otp", "password",
-            "passcode", "one-time", "verification code", "تسجيل الدخول"
+            "كلمة المرور", "الرقم السري", "رمز التحقق", "رمز الدخول", "رمز otp",
+            "password", "passcode", "one-time password", "verification code", "pin code"
         )
     }
 }
