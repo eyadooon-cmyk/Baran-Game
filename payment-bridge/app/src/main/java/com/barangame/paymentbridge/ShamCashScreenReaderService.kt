@@ -7,8 +7,9 @@ import android.view.accessibility.AccessibilityNodeInfo
 import org.json.JSONArray
 import org.json.JSONObject
 import java.security.MessageDigest
+import java.util.ArrayDeque
 
-/** Read-only, opt-in reader scoped to the one payment app selected by the owner. */
+/** Opt-in, read-only screen text reader. It never clicks, gestures, or transmits data. */
 class ShamCashScreenReaderService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -16,27 +17,23 @@ class ShamCashScreenReaderService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        val prefs = getSharedPreferences(NotificationCaptureService.PREFS, MODE_PRIVATE)
-        val selectedPackage = prefs.getString(NotificationCaptureService.KEY_SOURCE_PACKAGE, null) ?: return
-        applySelectedPackageFilter(selectedPackage)
+        val selected = getSharedPreferences(NotificationCaptureService.PREFS, MODE_PRIVATE)
+            .getString(NotificationCaptureService.KEY_SOURCE_PACKAGE, null) ?: return
+        applySelectedPackageFilter(selected)
 
-        if (event == null || event.packageName?.toString() != selectedPackage) return
+        if (event == null || event.packageName?.toString() != selected) return
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
             event.eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED &&
             event.eventType != AccessibilityEvent.TYPE_VIEW_SCROLLED) return
 
         val root = rootInActiveWindow ?: return
-        try {
-            if (root.packageName?.toString() != selectedPackage) return
-            val lines = collectVisibleText(root)
-            if (lines.isEmpty()) return
-            val joined = lines.joinToString("\n")
-            if (HISTORY_TERMS.none { joined.contains(it, ignoreCase = true) }) return
-            if (SENSITIVE_TERMS.any { joined.contains(it, ignoreCase = true) }) return
-            saveSnapshot(selectedPackage, lines)
-        } finally {
-            root.recycle()
-        }
+        if (root.packageName?.toString() != selected) return
+        val lines = collectVisibleText(root)
+        if (lines.isEmpty()) return
+        val joined = lines.joinToString("\n")
+        if (HISTORY_TERMS.none { joined.contains(it, ignoreCase = true) }) return
+        if (SENSITIVE_TERMS.any { joined.contains(it, ignoreCase = true) }) return
+        saveSnapshot(selected, lines)
     }
 
     override fun onInterrupt() = Unit
@@ -64,12 +61,16 @@ class ShamCashScreenReaderService : AccessibilityService() {
         while (pending.isNotEmpty() && visited < MAX_NODES && result.size < MAX_TEXT_ITEMS) {
             val node = pending.removeFirst()
             visited++
-            if (!node.isPassword) {
-                node.text?.toString()?.trim()?.takeIf { it.isNotBlank() }?.let { result.add(it.take(MAX_TEXT_LENGTH)) }
-                node.contentDescription?.toString()?.trim()?.takeIf { it.isNotBlank() }?.let { result.add(it.take(MAX_TEXT_LENGTH)) }
-            }
-            for (index in 0 until node.childCount) {
-                node.getChild(index)?.let { pending.add(it) }
+            try {
+                if (!node.isPassword && node.isVisibleToUser) {
+                    node.text?.toString()?.trim()?.takeIf { it.isNotBlank() }?.let { result.add(it.take(MAX_TEXT_LENGTH)) }
+                    node.contentDescription?.toString()?.trim()?.takeIf { it.isNotBlank() }?.let { result.add(it.take(MAX_TEXT_LENGTH)) }
+                }
+                for (index in 0 until node.childCount) {
+                    node.getChild(index)?.let { pending.add(it) }
+                }
+            } finally {
+                node.recycle()
             }
         }
         return result.toList()
@@ -88,7 +89,6 @@ class ShamCashScreenReaderService : AccessibilityService() {
 
         val item = JSONObject().apply {
             put("fingerprint", fingerprint)
-            put("packageName", packageName)
             put("capturedAt", System.currentTimeMillis())
             put("text", text)
         }
