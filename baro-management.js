@@ -118,7 +118,7 @@
     const typeLabels={sale_received:"مبيعات مقبوضة",supplier_cost:"تكلفة مورد",expense:"مصروف",commission:"عمولة",refund:"مبلغ مسترد",adjustment:"تسوية"};
     content.innerHTML='<h3>مالية BARO المستقلة</h3>'+
       '<div class="baro-mgmt-panel"><h3>1) الدفتر المالي الفعلي</h3><p class="baro-mgmt-muted">الأرقام من الحركات المسجلة فعلياً بحالة «مرحّلة» فقط. كل قيمة بالدولار وبجانبها ما يعادلها بالليرة.</p><div class="baro-mgmt-grid">'+
-      stat("المبيعات المقبوضة",fmtUsd(t.sales||0)+"<br><small>"+fmtSyp((t.sales||0)*rate)+"</small>")+stat("تكاليف الموردين",fmtUsd(t.supplier_costs||0)+"<br><small>"+fmtSyp((t.supplier_costs||0)*rate)+"</small>")+
+      stat("المبيعات المقبوضة",fmtUsd(t.sales||0)+"<br><small>"+fmtSyp((t.sales||0)*rate)+"</small>")+stat("مبيعات لم يكتمل تنفيذها",fmtUsd(t.unmatched_sales||0)+"<br><small>"+fmtSyp((t.unmatched_sales||0)*rate)+"</small>")+stat("المبيعات المحققة",fmtUsd(t.realized_sales||0)+"<br><small>"+fmtSyp((t.realized_sales||0)*rate)+"</small>")+stat("تكاليف الموردين",fmtUsd(t.supplier_costs||0)+"<br><small>"+fmtSyp((t.supplier_costs||0)*rate)+"</small>")+
       stat("المصاريف",fmtUsd(t.expenses||0)+"<br><small>"+fmtSyp((t.expenses||0)*rate)+"</small>")+stat("العمولات",fmtUsd(t.commissions||0)+"<br><small>"+fmtSyp((t.commissions||0)*rate)+"</small>")+
       stat("المبالغ المستردة",fmtUsd(t.refunds||0)+"<br><small>"+fmtSyp((t.refunds||0)*rate)+"</small>")+stat("التسويات",fmtUsd(t.adjustments||0)+"<br><small>"+fmtSyp((t.adjustments||0)*rate)+"</small>")+
       stat("صافي الربح المحقق",fmtUsd(t.net_profit||0)+"<br><small>"+fmtSyp((t.net_profit||0)*rate)+"</small>")+stat("الحركات المرحلة",posted.length)+stat("بانتظار الترحيل",pending)+
