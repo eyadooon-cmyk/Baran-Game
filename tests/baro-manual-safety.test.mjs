@@ -281,6 +281,19 @@ test("BARO finance separates realized ledger results from estimated catalogue un
   assert.match(management, /ليرة جديدة لكل دولار/);
 });
 
+test("BARO financial workspace is a dedicated admin hub section separate from BARO operations", () => {
+  const index = read("../index.html");
+  assert.match(index, /data-admin-panel="baro-finance"/);
+  assert.match(index, /onclick="showAdminPanel\('baro-finance'\)"/);
+  assert.match(index, /id="baroFinanceStandaloneMount"/);
+  assert.match(management, /function financeRoot\(\)/);
+  assert.match(management, /window\.loadBaroFinanceWorkspace=loadBaroFinanceWorkspace/);
+  assert.doesNotMatch(management, /data-tab="finance"/);
+  assert.doesNotMatch(management, /data-tab="settings"/);
+  assert.match(management, /جميع التكاليف وسعر الصرف والمبيعات والأرباح والحركات المالية موجودة في قسم/);
+  assert.match(management, /إعدادات مالية BARO/);
+});
+
 test("BARO staff without catalog or order permissions cannot see those admin panels", () => {
   assert.match(management, /productList\.hidden=!can\("catalog"\)/);
   assert.match(management, /orderList\.hidden=!can\("orders"\)/);

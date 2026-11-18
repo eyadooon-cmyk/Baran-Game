@@ -2511,6 +2511,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
           </div></section>
           <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>04</span><div><strong>المال والتحصيل</strong><small>الأرباح، المحافظ، الحوالات، والتكاملات المالية الحساسة.</small></div><em>FINANCE</em></div><div class="admin-hub-grid">
             <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="الحسابات المالية الارباح رأس المال المصاريف سجل الحركات finance" onclick="showAdminPanel('finance')"><span class="admin-hub-icon">📈</span><strong>مركز الحسابات والأرباح</strong><small>تابع الإيرادات والتكاليف والأرباح والحركات المالية المسجلة.</small><span class="admin-hub-open">عرض الحسابات المالية <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-primary" id="baroFinanceHubCard" data-admin-search="مالية بارو BARO حسابات الشحن اليدوي تكلفة ليو مبيعات مصاريف ارباح دفتر الحركات" onclick="showAdminPanel('baro-finance')"><span class="admin-hub-icon">🟣</span><strong>مالية BARO المستقلة</strong><small>دفتر الشحن اليدوي، تكلفة المورد، المبيعات، المصاريف، الأرباح، وسعر الصرف.</small><span class="admin-hub-open">فتح مالية BARO <b>←</b></span></button>
             <button type="button" class="admin-hub-card admin-hub-card-sensitive" data-admin-search="التذاكر المالية حوالات أرصدة شحن مالي financial support" onclick="showAdminPanel('financial-support')"><span class="admin-hub-icon">💰</span><strong>مراجعة التذاكر المالية</strong><small>حوالات وأرصدة تحتاج تدقيقاً ومراجعة قبل اعتماد أي معالجة.</small><span class="admin-hub-open">فتح المراجعة المالية <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="بوابة الدفع شام كاش shamcash api webhook تحصيل payment" onclick="showAdminPanel('payment-gateway')"><span class="admin-hub-icon">💳</span><strong>بوابة الدفع والتحصيل</strong><small>إعداد استقبال إشعارات ShamCash ومتابعة تكامل الدفع.</small><span class="admin-hub-open">إعداد بوابة الدفع <b>←</b></span></button>
             <button id="shamCashAutoControlCard" type="button" class="admin-hub-card hidden admin-hub-card-sensitive" data-admin-search="تحكم الشحن التلقائي shamcash حدود الإيداع اختبار" onclick="showAdminPanel('shamcash-control')"><span class="admin-hub-icon">⚡</span><strong>تحكم الشحن التلقائي</strong><small>حالة التكامل وحدود الحماية ونطاق الاختبار — للمالك فقط.</small><span class="admin-hub-open">لوحة تحكم المالك <b>←</b></span></button>
@@ -2727,6 +2728,11 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
         <div class="deposit-card"><strong>BARO · الشحن اليدوي</strong><p class="small">مسار مستقل: إدارة كتالوج ليو، استقبال الطلبات، مراجعة السعر، تأكيد الدفع يدوياً، ثم تسجيل تكلفة التنفيذ ومرجعه. لا يوجد خصم محفظة أو ترحيل مالي تلقائي.</p><button id="baroManualToggle" class="secondary" type="button" onclick="toggleBaroManualEnabled()" aria-pressed="false">تحميل حالة BARO...</button><p id="baroManualToggleStatus" class="small" role="status" aria-live="polite">جاري التحقق من حالة استقبال الطلبات.</p><button class="secondary" type="button" onclick="loadBaroAdmin()">↻ تحديث BARO</button><div id="baroAdminMessage" class="small" role="status" aria-live="polite"></div></div>
         <h3>كتالوج BARO والمنتجات المتاحة للزبائن</h3><p class="small">راجع تكلفة ليو الحالية وسعر البيع قبل إظهار المنتج والسماح باستقبال الطلبات.</p><div id="baroAdminProducts" class="ops-list">جاري تحميل المنتجات...</div>
         <h3>طلبات BARO اليدوية</h3><p class="small">حدّد السعر وطريقة الدفع أولاً، ولا تعتمد الدفع إلا بعد التأكد من استلام المبلغ فعلياً.</p><div id="baroAdminOrders" class="ops-list">جاري تحميل الطلبات...</div>
+      </div>
+      <div class="admin-subpanel hidden" data-admin-panel="baro-finance">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مالية BARO المستقلة 🟣</h2></div>
+        <p class="small">هذا المركز خاص بالشحن اليدوي BARO فقط. لا يخلط حسابات الشحن الآلي أو محافظ الزبائن أو الحسابات العامة للمتجر.</p>
+        <div id="baroFinanceStandaloneMount"></div>
       </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
@@ -3331,7 +3337,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
 <script src="./baro.js?v=20261118-freefire-prices-1"></script>
-<script src="./baro-management.js?v=20261118-finance-report-1"></script>
+<script src="./baro-management.js?v=20261118-finance-standalone-1"></script>
 <script src="./baro-ai.js?v=20261117-baro-ai-1"></script>
 <script>
 const SUPABASE_URL="https://yabpmdzsiuyxxkcqakfs.supabase.co";
@@ -3633,6 +3639,7 @@ function filterAdminHub(query){
 }
 function clearAdminHubSearch(){const input=document.getElementById("adminHubSearch");if(input)input.value="";filterAdminHub("");if(input)input.focus();}
 function showAdminPanel(id){
+  if(id==="baro-finance"){const admin=document.getElementById("admin");if(!admin||!currentUser)return Promise.resolve();const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro-finance"));window.scrollTo({top:0,behavior:"smooth"});return typeof window.loadBaroFinanceWorkspace==="function"?window.loadBaroFinanceWorkspace():Promise.resolve();}
   if(id==="baro"){const admin=document.getElementById("admin");if(!admin||!currentUser)return;const hub=document.getElementById("adminHub");if(hub)hub.classList.add("hidden");admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!=="baro"));loadBaroAdmin();window.scrollTo({top:0,behavior:"smooth"});return Promise.resolve();}
   const admin=document.getElementById("admin");
   if(!admin||!currentUser)return Promise.resolve();
