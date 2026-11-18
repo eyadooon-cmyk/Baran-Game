@@ -1,0 +1,28 @@
+name: BARO Finance Integrity Tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/functions/baran-baro-manual/**"
+      - "baro.js"
+      - "baro-management.js"
+      - "tests/baro-finance-integrity.test.mjs"
+      - ".github/workflows/baro-finance-integrity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baro-finance-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run BARO finance regression tests
+        run: node --test tests/baro-finance-integrity.test.mjs
