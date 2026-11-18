@@ -42,7 +42,7 @@
     settingsData=can("settings")?await getView("settings").catch(()=>({settings:{}})):{settings:{}};
     const currentSettings=settingsData.settings||{};
     const entries=financeData.entries||[],t=financeData.totals||{};
-    const products=(adminData.products||[]).filter(p=>p.catalog_visible===true&&p.purchase_enabled===false&&Number(p.supplier_cost_usd)>0&&Number(p.sale_price_syp)>0);
+    const products=(adminData.products||[]).filter(p=>Number(p.supplier_cost_usd)>0&&Number(p.sale_price_syp)>0);
     const rate=Number(adminData.settings?.usd_syp_rate||156);
     const parts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Damascus",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
     const part=k=>parts.find(x=>x.type===k)?.value||"";
