@@ -56,7 +56,9 @@ with input(product_code, cost_syp, sale_syp, note) as (
 )
 update public.leo_manual_products p
 set supplier_cost_usd = round(i.cost_syp / 156, 4),
-    supplier_cost_currency = 'SYP',
+    -- supplier_cost_usd is the canonical USD-equivalent cost consumed by BARO UI/reporting.
+    -- Preserve the original SYP amount in admin_notes and price-history metadata.
+    supplier_cost_currency = 'USD',
     sale_price_usd = round(i.sale_syp / 156, 4),
     sale_price_syp = i.sale_syp,
     catalog_visible = false,
@@ -86,6 +88,14 @@ select
       when 'LEO_FREEFIRE_DIAMONDS_583' then 727
       when 'LEO_FREEFIRE_DIAMONDS_1188' then 1483
       when 'LEO_FREEFIRE_DIAMONDS_2420' then 2906 end,
+    'supplier_cost_usd_equivalent', round((case b.product_code
+      when 'LEO_FREEFIRE_DIAMONDS_110' then 147
+      when 'LEO_FREEFIRE_DIAMONDS_210' then 293
+      when 'LEO_FREEFIRE_DIAMONDS_583' then 727
+      when 'LEO_FREEFIRE_DIAMONDS_1188' then 1483
+      when 'LEO_FREEFIRE_DIAMONDS_2420' then 2906 end)::numeric / 156, 4),
+    'supplier_cost_currency', 'USD',
+    'source_cost_currency', 'SYP',
     'sale_price_syp', case b.product_code
       when 'LEO_FREEFIRE_DIAMONDS_110' then 160
       when 'LEO_FREEFIRE_DIAMONDS_210' then 310
