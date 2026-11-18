@@ -3336,7 +3336,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
-<script src="./baro.js?v=20261118-freefire-prices-1"></script>
+<script src="./baro.js?v=20261118-syp-price-format-1"></script>
 <script src="./baro-management.js?v=20261118-finance-standalone-2"></script>
 <script src="./baro-ai.js?v=20261117-baro-ai-1"></script>
 <script>
@@ -5864,7 +5864,7 @@ async function loadAdminPanel(){
 function financeMoney(value,currency){
   const amount=Number(value||0);
   const digits=currency==="SYP"?0:2;
-  return amount.toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits})+(currency==="USD"?" $":" ل.س");
+  return amount.toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits})+(currency==="USD"?" $":" SYP");
 }
 
 function renderFinance(finance){
