@@ -203,7 +203,7 @@ test("BARO has a separate append-only finance ledger and records confirmed payme
   assert.match(baroReporting, /payment_status='verified'/);
   assert.match(baroReporting, /new\.status='completed'/);
   assert.match(edge, /baro_manual_finance_entry_atomic/);
-  assert.match(management, /الإدارة المالية المستقلة/);
+  assert.match(management, /مالية BARO المستقلة/);
   assert.match(management, /تصدير كشف BARO المالي CSV/);
 });
 
@@ -272,13 +272,13 @@ test("BARO customer ID form stays visible while order submission remains gated",
 });
 
 test("BARO finance separates realized ledger results from estimated catalogue unit margins", () => {
-  assert.match(management, /ربحية باقات الكتالوج — تقديرية وليست أرباحاً محققة/);
+  assert.match(management, /2\\) ربح كل باقة — تقديري قبل البيع/);
   assert.match(management, /supplier_cost_usd/);
   assert.match(management, /sale_price_syp/);
   assert.match(management, /supplier_cost_usd\)\*rate/);
   assert.match(management, /دفتر الحركات المالية الفعلية/);
-  assert.match(management, /لا تشمل محافظ الزبائن ولا الشحن الآلي/);
-  assert.match(management, /ليرة جديدة لكل دولار/);
+  assert.match(management, /هذا الدفتر مستقل عن محافظ الزبائن والشحن الآلي والحسابات العامة/);
+  assert.match(management, /سعر الصرف: 1 USD =/);
 });
 
 test("BARO financial workspace is a dedicated admin hub section separate from BARO operations", () => {
