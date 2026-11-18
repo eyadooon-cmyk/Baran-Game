@@ -272,10 +272,10 @@ test("BARO customer ID form stays visible while order submission remains gated",
 });
 
 test("BARO finance separates realized ledger results from estimated catalogue unit margins", () => {
-  assert.match(management, /2\\) ربح كل باقة — تقديري قبل البيع/);
-  assert.match(management, /costUsd\\*rate/);
+  assert.match(management, /ربح كل باقة — تقديري قبل البيع/);
+  assert.match(management, /costUsd.*rate/);
   assert.match(management, /sale_price_syp/);
-  assert.match(management, /costUsd\\*rate/);
+  assert.match(management, /costUsd.*rate/);
   assert.match(management, /دفتر الحركات المالية الفعلية/);
   assert.match(management, /هذا الدفتر مستقل عن محافظ الزبائن والشحن الآلي والحسابات العامة/);
   assert.match(management, /سعر الصرف: 1 USD =/);
