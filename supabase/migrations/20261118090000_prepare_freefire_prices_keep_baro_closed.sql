@@ -12,6 +12,20 @@ begin
   end if;
 end $$;
 
+do $
+begin
+  if (
+    select count(*) from public.leo_manual_products
+    where product_code in (
+      'LEO_FREEFIRE_DIAMONDS_110','LEO_FREEFIRE_DIAMONDS_210',
+      'LEO_FREEFIRE_DIAMONDS_583','LEO_FREEFIRE_DIAMONDS_1188',
+      'LEO_FREEFIRE_DIAMONDS_2420'
+    )
+  ) <> 5 then
+    raise exception 'Expected all five Free Fire diamond products; refusing partial pricing update.';
+  end if;
+end $;
+
 update public.baro_manual_settings
 set enabled = false,
     usd_syp_rate = 156,
