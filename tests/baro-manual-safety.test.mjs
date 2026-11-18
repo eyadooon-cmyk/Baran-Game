@@ -294,3 +294,30 @@ test("BARO status quick actions send customer-facing in-progress and completion 
   assert.match(notificationMigration, /تم شحن طلبك بنجاح/);
   assert.match(notificationMigration, /baran_notifications/);
 });
+
+
+test("Prepared Free Fire prices are internal only and all BARO purchase gates stay closed", () => {
+  const pricing = read("../supabase/migrations/20261118090000_prepare_freefire_prices_keep_baro_closed.sql");
+  assert.match(pricing, /usd_syp_rate = 156/);
+  for (const [code, cost, sale] of [
+    ["LEO_FREEFIRE_DIAMONDS_110", "147", "160"],
+    ["LEO_FREEFIRE_DIAMONDS_210", "293", "310"],
+    ["LEO_FREEFIRE_DIAMONDS_583", "727", "790"],
+    ["LEO_FREEFIRE_DIAMONDS_1188", "1483", "1595"],
+    ["LEO_FREEFIRE_DIAMONDS_2420", "2906", "3165"]
+  ]) {
+    assert.ok(pricing.includes(code), code + " is present");
+    assert.ok(pricing.includes(cost + "::numeric"), code + " has the agreed supplier cost");
+    assert.ok(pricing.includes(sale + "::numeric"), code + " has the agreed sale price");
+  }
+  assert.match(pricing, /supplier_cost_currency = 'USD'/);
+  assert.match(pricing, /supplier_cost_usd_equivalent/);
+  assert.match(pricing, /source_cost_currency', 'SYP'/);
+  assert.match(pricing, /set enabled = false/);
+  assert.match(pricing, /LEO_FREEFIRE_DIAMONDS_110\x27, 147::numeric, 160::numeric/);
+  assert.match(pricing, /catalog_visible = false/);
+  assert.match(pricing, /purchase_enabled = false/);
+  assert.match(pricing, /price_history/);
+  assert.doesNotMatch(pricing, /insert into public\.leo_manual_orders/i);
+  assert.doesNotMatch(pricing, /insert into public\.baro_manual_finance_entries/i);
+});
