@@ -299,7 +299,7 @@ Deno.serve(async (req: Request) => {
       const method = str(body.payment_method, 60), payment = typeof body.payment_status === "string" ? body.payment_status : "";
       const customerMessage = str(body.customer_message, 500), cost = amount(body.supplier_cost_usd, 1000000);
       const reference = str(body.supplier_reference, 160), exception = str(body.exception_reason, 500), notes = str(body.internal_notes, 2000);
-      if (!uuidPattern.test(id) || !["pending","awaiting_payment","paid","in_progress","completed","failed","needs_review","cancelled"].includes(status)
+      if (!uuidPattern.test(id) || !["pending","awaiting_payment","paid","in_progress","awaiting_admin_confirmation","completed","failed","needs_review","cancelled"].includes(status)
           || quote === undefined || (currency !== null && !["USD","SYP"].includes(String(currency)))
           || !["awaiting_quote","awaiting_payment","verified","failed"].includes(payment) || cost === undefined)
         return json({ error: "بيانات تحديث الطلب غير صحيحة." }, 400);
