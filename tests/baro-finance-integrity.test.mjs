@@ -8,6 +8,11 @@ const edge = read("../supabase/functions/baran-baro-manual/index.ts");
 const management = read("../baro-management.js");
 const ui = read("../baro.js");
 
+test("BARO preserves the database-supported awaiting_admin_confirmation status", () => {
+  assert.match(migration, /awaiting_admin_confirmation/);
+  assert.match(edge, /awaiting_admin_confirmation/);
+});
+
 test("BARO verified customer payment snapshots cannot be changed after posting", () => {
   assert.match(migration, /v_current\.payment_status='verified'/);
   assert.match(migration, /p_payment_status<>'verified'/);
