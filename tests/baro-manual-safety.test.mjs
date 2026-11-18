@@ -271,6 +271,16 @@ test("BARO customer ID form stays visible while order submission remains gated",
   assert.match(ui, /if\(!baroManualEnabled\)\{message\.textContent=/);
 });
 
+test("BARO finance separates realized ledger results from estimated catalogue unit margins", () => {
+  assert.match(management, /ربحية باقات الكتالوج — تقديرية وليست أرباحاً محققة/);
+  assert.match(management, /supplier_cost_usd/);
+  assert.match(management, /sale_price_syp/);
+  assert.match(management, /supplier_cost_usd\)\*rate/);
+  assert.match(management, /دفتر الحركات المالية الفعلية/);
+  assert.match(management, /لا تشمل محافظ الزبائن ولا الشحن الآلي/);
+  assert.match(management, /ليرة جديدة لكل دولار/);
+});
+
 test("BARO staff without catalog or order permissions cannot see those admin panels", () => {
   assert.match(management, /productList\.hidden=!can\("catalog"\)/);
   assert.match(management, /orderList\.hidden=!can\("orders"\)/);

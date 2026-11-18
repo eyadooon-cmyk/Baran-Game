@@ -104,33 +104,56 @@
     if(!can("finance")){content.innerHTML='<div class="baro-mgmt-empty">لا تملك صلاحية هذا القسم.</div>';return;}
     financeData=await getView("finance");
     const entries=financeData.entries||[],t=financeData.totals||{};
-    const today=new Date().toISOString().slice(0,10),month=today.slice(0,7);
-    const daily=entries.filter(e=>String(e.created_at).slice(0,10)===today),monthly=entries.filter(e=>String(e.created_at).slice(0,7)===month);
-    const sum=rows=>rows.reduce((n,e)=>n+(e.status==="posted"?Number(e.amount_usd_equivalent||0):0),0);
-    content.innerHTML='<h3>الإدارة المالية المستقلة</h3><div class="baro-mgmt-grid">'+
-      stat("المبيعات المحصلة",money(t.sales||0))+stat("تكاليف الموردين",money(t.supplier_costs||0))+
-      stat("المصاريف والعمولات",money((t.expenses||0)+(t.commissions||0)))+stat("صافي الربح",money(t.net_profit||0))+
-      stat("حركات اليوم",daily.length)+stat("قيمة حركات اليوم",money(sum(daily)))+
-      stat("حركات الشهر",monthly.length)+stat("قيمة حركات الشهر",money(sum(monthly)))+
-      '</div><p class="baro-mgmt-muted">تسجيل الحركة هنا محاسبي فقط؛ لا ينفذ تحويلاً أو خصماً أو استرداداً فعلياً. لا تُسجل المبيعات كأموال محصلة إلا بعد تأكيد الدفع.</p>'+
-      '<div class="baro-mgmt-panel"><h3>إضافة حركة مالية</h3><div class="baro-mgmt-form">'+
+    const products=(adminData.products||[]).filter(p=>p.catalog_visible===true&&p.purchase_enabled===false&&Number(p.supplier_cost_usd)>0&&Number(p.sale_price_syp)>0);
+    const rate=Number(adminData.settings?.usd_syp_rate||156);
+    const parts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Damascus",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+    const part=k=>parts.find(x=>x.type===k)?.value||"";
+    const today=part("year")+"-"+part("month")+"-"+part("day"),month=today.slice(0,7);
+    const dateKey=value=>{
+      const d=new Date(value);if(!Number.isFinite(d.getTime()))return "";
+      const ps=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Damascus",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(d);
+      const get=k=>ps.find(x=>x.type===k)?.value||"";
+      return get("year")+"-"+get("month")+"-"+get("day");
+    };
+    const posted=entries.filter(e=>e.status==="posted");
+    const pending=entries.length-posted.length;
+    const daily=entries.filter(e=>dateKey(e.created_at)===today);
+    const monthly=entries.filter(e=>dateKey(e.created_at).slice(0,7)===month);
+    const productRows=products.map(p=>{
+      const cost=Number(p.supplier_cost_usd)*rate,sale=Number(p.sale_price_syp),profit=sale-cost;
+      const margin=sale>0?profit/sale*100:0;
+      return row([p.product_name,money(cost,"SYP"),money(sale,"SYP"),money(profit,"SYP"),margin.toFixed(1)+"%"]);
+    });
+    const typeLabels={sale_received:"مبيعات مقبوضة",supplier_cost:"تكلفة مورد",expense:"مصروف",commission:"عمولة",refund:"مبلغ مسترد",adjustment:"تسوية"};
+    content.innerHTML='<h3>الإدارة المالية المستقلة — BARO</h3><div class="baro-mgmt-grid">'+
+      stat("المبيعات المقبوضة",money(t.sales||0))+stat("تكاليف الموردين",money(t.supplier_costs||0))+
+      stat("المصاريف",money(t.expenses||0))+stat("العمولات",money(t.commissions||0))+
+      stat("المبالغ المستردة",money(t.refunds||0))+stat("التسويات",money(t.adjustments||0))+
+      stat("صافي الربح المحقق",money(t.net_profit||0))+stat("الحركات المرحلة",posted.length)+
+      stat("حركات اليوم",daily.length)+stat("حركات الشهر",monthly.length)+
+      stat("حركات بانتظار الترحيل",pending)+
+      '</div><p class="baro-mgmt-muted">الأرقام المالية الفعلية أعلاه محسوبة من دفتر BARO فقط وبالمكافئ USD. لا تشمل محافظ الزبائن ولا الشحن الآلي.</p>'+
+      '<div class="baro-mgmt-panel"><h3>ربحية باقات الكتالوج — تقديرية وليست أرباحاً محققة</h3>'+
+      '<p class="baro-mgmt-muted">تحسب تكلفة المورد بالدولار × سعر الصرف المحفوظ ('+rate.toLocaleString("en-US")+' ليرة لكل دولار)، ثم تقارنها بسعر البيع المعروض. لا تُسجل هذه التقديرات كإيراد أو ربح قبل تنفيذ طلب وقبضه.</p>'+
+      (productRows.length?table(["المنتج","تكلفة المورد","سعر البيع","الربح المتوقع للوحدة","هامش الربح"],productRows):'<div class="baro-mgmt-empty">لا توجد باقات ظاهرة لها تكلفة وسعر بيع معتمدان حالياً.</div>')+
+      '</div><div class="baro-mgmt-panel"><h3>إضافة حركة مالية</h3><div class="baro-mgmt-form">'+
       selectField("نوع الحركة","baroFinanceType",[["expense","مصروف"],["commission","عمولة"],["refund","مبلغ مسترد"],["adjustment","تسوية / تعديل"]])+
       field("العنوان","baroFinanceTitle","text","مثال: رسوم تحويل")+
       field("المبلغ","baroFinanceAmount","number","0.00")+
-      selectField("العملة","baroFinanceCurrency",[["USD","دولار USD"],["SYP","ليرة سورية SYP"]])+
-      field("سعر الصرف (ليرة لكل دولار)","baroFinanceRate","number","مطلوب عند استخدام الليرة")+
+      selectField("العملة","baroFinanceCurrency",[["USD","دولار USD"],["SYP","ليرة سورية جديدة SYP"]])+
+      field("سعر الصرف (ليرة جديدة لكل دولار)","baroFinanceRate","number","مطلوب عند استخدام الليرة")+
       field("رقم الطلب (اختياري)","baroFinanceOrder","text","UUID الطلب")+
       field("مرجع خارجي","baroFinanceRef","text","رقم إيصال أو حوالة")+
       '<label>ملاحظات<textarea id="baroFinanceDesc" rows="2"></textarea></label><button type="button" id="baroFinanceSave">حفظ الحركة</button></div></div>'+
-      '<div class="baro-mgmt-actions"><button type="button" id="baroFinanceExport" class="secondary">تصدير كشف BARO المالي CSV</button></div><h3>دفتر الحركات المالية</h3>'+
-      table(["التاريخ","النوع","الوصف","المبلغ","المكافئ USD","الحالة","رقم الطلب"],entries.map(e=>row([new Date(e.created_at).toLocaleString("ar"),e.entry_type,e.title,money(e.amount,e.currency),money(e.amount_usd_equivalent),e.status,e.order_id])));
+      '<div class="baro-mgmt-actions"><button type="button" id="baroFinanceExport" class="secondary">تصدير كشف BARO المالي CSV</button></div><h3>دفتر الحركات المالية الفعلية</h3>'+
+      (entries.length?table(["التاريخ","النوع","الوصف","المبلغ","المكافئ USD","الحالة","رقم الطلب"],entries.map(e=>row([new Date(e.created_at).toLocaleString("ar"),typeLabels[e.entry_type]||e.entry_type,e.title,money(e.amount,e.currency),money(e.amount_usd_equivalent),e.status,e.order_id]))):'<div class="baro-mgmt-empty">لا توجد حركات مالية فعلية مسجلة بعد. ستظهر المبيعات والتكاليف هنا بعد الطلبات المنفذة والمقبوضة.</div>');
     $("baroFinanceSave").onclick=async()=>{
       const type=$("baroFinanceType").value,title=$("baroFinanceTitle").value.trim(),value=Number($("baroFinanceAmount").value);
-      const currency=$("baroFinanceCurrency").value,rate=$("baroFinanceRate").value.trim()===""?null:Number($("baroFinanceRate").value);
+      const currency=$("baroFinanceCurrency").value,rateInput=$("baroFinanceRate").value.trim(),exchangeRate=rateInput===""?null:Number(rateInput);
       const order=$("baroFinanceOrder").value.trim()||null;
-      if(title.length<2||!Number.isFinite(value)||value<=0||(currency==="SYP"&&(!rate||rate<=0))){msg("أدخل عنواناً ومبلغاً صحيحاً وسعر صرف عند استخدام الليرة.");return;}
+      if(title.length<2||!Number.isFinite(value)||value<=0||(currency==="SYP"&&(!exchangeRate||exchangeRate<=0))){msg("أدخل عنواناً ومبلغاً صحيحاً وسعر صرف بالليرة الجديدة لكل دولار عند استخدام الليرة.");return;}
       const key=globalThis.crypto?.randomUUID?.()||("baro-"+Date.now()+"-"+Math.random().toString(16).slice(2));
-      try{await post({action:"finance_entry",entry_type:type,title,amount:value,currency,exchange_rate:rate,order_id:order,external_reference:$("baroFinanceRef").value.trim(),description:$("baroFinanceDesc").value.trim(),idempotency_key:key});msg("تم تسجيل الحركة في دفتر BARO فقط.");await loadFinance();}
+      try{await post({action:"finance_entry",entry_type:type,title,amount:value,currency,exchange_rate:exchangeRate,order_id:order,external_reference:$("baroFinanceRef").value.trim(),description:$("baroFinanceDesc").value.trim(),idempotency_key:key});msg("تم تسجيل الحركة في دفتر BARO فقط.");await loadFinance();}
       catch(e){msg(e.message);}
     };
     $("baroFinanceExport").onclick=()=>exportCsv("baro-finance.csv",[["date","type","title","amount","currency","usd_equivalent","status","order_id"],...entries.map(e=>[e.created_at,e.entry_type,e.title,e.amount,e.currency,e.amount_usd_equivalent,e.status,e.order_id])]);
