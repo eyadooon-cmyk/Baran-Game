@@ -27,7 +27,7 @@ test("BARO cannot commit a completed order unless both posted financial entries 
 });
 
 test("BARO realized profit only includes completed, verified orders with both ledger entries", () => {
-  assert.match(edge, /o\.status === "completed" && o\.payment_status === "verified"/);
+  assert.match(edge, /\.eq\("status", "completed"\)\.eq\("payment_status", "verified"\)/);
   assert.match(edge, /if \(!salesByOrder\.has\(orderId\) \|\| !costsByOrder\.has\(orderId\)\) continue/);
   assert.match(edge, /totals\.net_profit = totals\.realized_sales - totals\.realized_supplier_costs/);
   assert.match(edge, /for \(let offset = 0; ; offset \+= pageSize\)/);
