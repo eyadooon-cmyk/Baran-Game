@@ -93,10 +93,11 @@ test("BARO data tables remain private and legacy update RPC is removed", () => {
   assert.match(settingsIndex, /baro_manual_settings_updated_by_idx/);
 });
 
-test("Customer BARO catalogue exposes names only and never price or supplier fields", () => {
+test("Customer BARO catalogue exposes approved Free Fire SYP sale prices only, never supplier costs", () => {
   const catalogBlock = edge.split('if (req.method === "GET" && view === "catalog")')[1]?.split('if (req.method === "GET" && view === "my_orders")')[0] ?? "";
-  assert.match(catalogBlock, /product_code,category_id,group_id,product_name,input_label/);
-  assert.doesNotMatch(catalogBlock, /sale_price_usd|sale_price_syp|supplier_cost_usd/);
+  assert.match(catalogBlock, /product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_syp/);
+  assert.match(catalogBlock, /p\.category_id === "freefire" && p\.group_id === "diamonds" \? p\.sale_price_syp : null/);
+  assert.doesNotMatch(catalogBlock, /sale_price_usd|supplier_cost_usd|supplier_cost_currency/);
 });
 
 
@@ -181,6 +182,10 @@ test("BARO customer catalogue keeps grouped sections and is not overwritten by t
   assert.match(ui, /renderBaroCustomerCatalog\(baroCustomerProducts\)/);
   assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_usd,"USD"\)/);
   assert.doesNotMatch(customerCatalogue, /baroMoney\(p\.sale_price_syp,"SYP"\)/);
+  assert.match(customerCatalogue, /category==="freefire"&&group==="diamonds"/);
+  assert.match(customerCatalogue, /ل\.س جديدة/);
+  assert.match(customerCatalogue, /استقبال الطلبات مغلق حالياً/);
+  assert.match(customerCatalogue, /createElement\("article"\);card\.className="baro-catalog-product-card/);
   const app = read("../index.html");
   assert.match(app, /<div class="game-checkout"><h3>بيانات طلب الشحن اليدوي<\/h3>/);
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
