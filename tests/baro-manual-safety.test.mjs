@@ -310,6 +310,9 @@ test("Prepared Free Fire prices are internal only and all BARO purchase gates st
     assert.ok(pricing.includes(cost + "::numeric"), code + " has the agreed supplier cost");
     assert.ok(pricing.includes(sale + "::numeric"), code + " has the agreed sale price");
   }
+  assert.match(pricing, /supplier_cost_currency = 'USD'/);
+  assert.match(pricing, /supplier_cost_usd_equivalent/);
+  assert.match(pricing, /source_cost_currency', 'SYP'/);
   assert.match(pricing, /set enabled = false/);
   assert.match(pricing, /LEO_FREEFIRE_DIAMONDS_110\x27, 147::numeric, 160::numeric/);
   assert.match(pricing, /catalog_visible = false/);
