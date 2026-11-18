@@ -300,7 +300,7 @@ test("Prepared Free Fire prices are internal only and all BARO purchase gates st
   const pricing = read("../supabase/migrations/20261118090000_prepare_freefire_prices_keep_baro_closed.sql");
   assert.match(pricing, /usd_syp_rate = 156/);
   for (const [code, cost, sale] of [
-    ["LEO_FREEFIRE_DIAMONDS_110", "147", "null"],
+    ["LEO_FREEFIRE_DIAMONDS_110", "147", "160"],
     ["LEO_FREEFIRE_DIAMONDS_210", "293", "310"],
     ["LEO_FREEFIRE_DIAMONDS_583", "727", "790"],
     ["LEO_FREEFIRE_DIAMONDS_1188", "1483", "1595"],
@@ -308,10 +308,10 @@ test("Prepared Free Fire prices are internal only and all BARO purchase gates st
   ]) {
     assert.ok(pricing.includes(code), code + " is present");
     assert.ok(pricing.includes(cost + "::numeric"), code + " has the agreed supplier cost");
-    if (sale === "null") assert.match(pricing, new RegExp(code + "[\\s\\S]{0,150}147::numeric, null::numeric"));
-    else assert.ok(pricing.includes(sale + "::numeric"), code + " has the agreed sale price");
+    assert.ok(pricing.includes(sale + "::numeric"), code + " has the agreed sale price");
   }
   assert.match(pricing, /set enabled = false/);
+  assert.match(pricing, /LEO_FREEFIRE_DIAMONDS_110\x27, 147::numeric, 160::numeric/);
   assert.match(pricing, /catalog_visible = false/);
   assert.match(pricing, /purchase_enabled = false/);
   assert.match(pricing, /price_history/);
