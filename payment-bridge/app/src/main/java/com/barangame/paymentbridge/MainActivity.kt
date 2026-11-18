@@ -27,6 +27,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.json.JSONArray
+import org.json.JSONObject
 import java.text.DateFormat
 import java.util.Date
 
@@ -41,9 +42,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    BridgeScreen()
-                }
+                Surface(modifier = Modifier.fillMaxSize()) { BridgeScreen() }
             }
         }
     }
@@ -55,15 +54,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun screenReadAccessEnabled(): Boolean {
+        val enabled = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES).orEmpty()
+        val expected = ComponentName(this, ShamCashScreenReaderService::class.java)
+        return enabled.split(":").any { ComponentName.unflattenFromString(it) == expected }
+    }
+
     private fun installedApps(): List<LaunchableApp> {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
         return packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-            .map {
-                LaunchableApp(
-                    it.loadLabel(packageManager).toString(),
-                    it.activityInfo.packageName
-                )
-            }
+            .map { LaunchableApp(it.loadLabel(packageManager).toString(), it.activityInfo.packageName) }
             .distinctBy { it.packageName }
             .filter { it.packageName != packageName }
             .sortedBy { it.label.lowercase() }
@@ -73,72 +73,92 @@ class MainActivity : ComponentActivity() {
     private fun BridgeScreen() {
         var selectedPackage by remember { mutableStateOf(prefs.getString(NotificationCaptureService.KEY_SOURCE_PACKAGE, null)) }
         var selectedLabel by remember { mutableStateOf(selectedPackage?.let { appLabel(it) } ?: "لم يتم اختيار تطبيق") }
-        var access by remember { mutableStateOf(notificationAccessEnabled()) }
+        var notificationAccess by remember { mutableStateOf(notificationAccessEnabled()) }
+        var screenAccess by remember { mutableStateOf(screenReadAccessEnabled()) }
         var showApps by remember { mutableStateOf(false) }
         var refresh by remember { mutableIntStateOf(0) }
+
         val captured = remember(refresh) {
-            val raw = prefs.getString(NotificationCaptureService.KEY_CAPTURED, "[]") ?: "[]"
-            try {
-                val arr = JSONArray(raw)
-                (0 until arr.length()).map { arr.getJSONObject(it) }
-            } catch (_: Exception) { emptyList() }
+            readArray(NotificationCaptureService.KEY_CAPTURED)
+        }
+        val snapshots = remember(refresh) {
+            readArray(NotificationCaptureService.KEY_SCREEN_READS)
         }
 
         Column(
             modifier = Modifier.fillMaxSize().padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text("BARO Payment Bridge", style = MaterialTheme.typography.headlineSmall)
-            Text("قارئ إشعارات محلي لحساب شام كاش", style = MaterialTheme.typography.titleMedium)
+            Text("قارئ محلي لإشعارات وشاشة تطبيق الدفع", style = MaterialTheme.typography.titleMedium)
+
             Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("الخصوصية والأمان", style = MaterialTheme.typography.titleMedium)
-                    Text("هذه النسخة تجريبية محلية فقط. لا تتصل بالإنترنت ولا ترسل أي بيانات إلى BARAN GAME. لا تسجل دخولك البنكي ولا تطلب كلمة مرور أو رمز QR.")
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("الخصوصية", style = MaterialTheme.typography.titleMedium)
+                    Text("القراءة اختيارية ومحلية. لا يوجد اتصال بالإنترنت أو إرسال إلى BARAN GAME. لا يقرأ كلمات المرور ولا ينفذ نقرات أو تحويلات.")
                 }
             }
-            Text("1. اختر تطبيق الدفع")
+
+            Text("التطبيق المحدد: $selectedLabel")
             OutlinedButton(onClick = { showApps = true }, modifier = Modifier.fillMaxWidth()) {
-                Text(selectedLabel)
+                Text("اختيار / تغيير تطبيق الدفع")
             }
-            Text("2. فعّل إذن قراءة الإشعارات")
-            Text(if (access) "الإذن مفعّل" else "الإذن غير مفعّل")
-            Button(
-                onClick = {
-                    startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                },
+
+            Text("إذن الإشعارات: ${if (notificationAccess) "مفعّل" else "غير مفعّل"}")
+            OutlinedButton(
+                onClick = { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("فتح إعدادات الوصول للإشعارات") }
+            ) { Text("إعداد إذن الإشعارات") }
+
+            Text("إذن قراءة الشاشة: ${if (screenAccess) "مفعّل" else "غير مفعّل"}")
+            Button(
+                onClick = { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("إعداد إمكانية الوصول لقراءة سجل الحوالات") }
+
             Button(
                 onClick = {
-                    access = notificationAccessEnabled()
+                    notificationAccess = notificationAccessEnabled()
+                    screenAccess = screenReadAccessEnabled()
                     selectedPackage = prefs.getString(NotificationCaptureService.KEY_SOURCE_PACKAGE, null)
                     selectedLabel = selectedPackage?.let { appLabel(it) } ?: "لم يتم اختيار تطبيق"
                     refresh++
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("تحديث الحالة") }
+            ) { Text("تحديث الحالة والسجلات") }
+
+            Button(
+                onClick = {
+                    val target = selectedPackage ?: return@Button
+                    val launch = packageManager.getLaunchIntentForPackage(target)
+                    if (launch != null) startActivity(launch)
+                },
+                enabled = selectedPackage != null,
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("فتح تطبيق الدفع") }
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("الإشعارات الملتقطة: ${captured.size}", style = MaterialTheme.typography.titleMedium)
+                Text("نصوص سجل الحوالات: ${snapshots.size}", style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = {
+                    prefs.edit().remove(NotificationCaptureService.KEY_SCREEN_READS).apply()
+                    refresh++
+                }) { Text("مسح") }
+            }
+            if (snapshots.isEmpty()) {
+                Text("لم تُلتقط نصوص من شاشة سجل الحوالات بعد. افتح السجل داخل تطبيق الدفع ثم ارجع واضغط تحديث.")
+            }
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
+                items(snapshots, key = { it.optString("fingerprint") }) { item ->
+                    SnapshotCard(item)
+                }
+            }
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("إشعارات التطبيق: ${captured.size}", style = MaterialTheme.typography.titleSmall)
                 TextButton(onClick = {
                     prefs.edit().remove(NotificationCaptureService.KEY_CAPTURED).apply()
                     refresh++
-                }) { Text("مسح السجل") }
-            }
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(captured, key = { it.optString("fingerprint") }) { item ->
-                    Card(Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                            Text(item.optString("title", "إشعار"), style = MaterialTheme.typography.titleSmall)
-                            Text(item.optString("text", "لا يوجد نص"))
-                            val time = item.optLong("receivedAt")
-                            Text(
-                                DateFormat.getDateTimeInstance().format(Date(time)),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                    }
-                }
+                }) { Text("مسح الإشعارات") }
             }
         }
 
@@ -146,7 +166,7 @@ class MainActivity : ComponentActivity() {
             val apps = remember { installedApps() }
             AlertDialog(
                 onDismissRequest = { showApps = false },
-                title = { Text("اختر تطبيق شام كاش") },
+                title = { Text("اختر شام كاش") },
                 text = {
                     LazyColumn {
                         items(apps) { app ->
@@ -167,19 +187,33 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 },
-                confirmButton = {
-                    TextButton(onClick = { showApps = false }) { Text("إغلاق") }
-                }
+                confirmButton = { TextButton(onClick = { showApps = false }) { Text("إغلاق") } }
             )
         }
+    }
+
+    @Composable
+    private fun SnapshotCard(item: JSONObject) {
+        val capturedAt = item.optLong("capturedAt")
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(DateFormat.getDateTimeInstance().format(Date(capturedAt)), style = MaterialTheme.typography.labelSmall)
+                Text(item.optString("text"), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+
+    private fun readArray(key: String): List<JSONObject> {
+        return try {
+            val array = JSONArray(prefs.getString(key, "[]") ?: "[]")
+            (0 until array.length()).map { array.getJSONObject(it) }
+        } catch (_: Exception) { emptyList() }
     }
 
     private fun appLabel(packageName: String): String {
         return try {
             val info = packageManager.getApplicationInfo(packageName, 0)
             packageManager.getApplicationLabel(info).toString()
-        } catch (_: Exception) {
-            packageName
-        }
+        } catch (_: Exception) { packageName }
     }
 }
