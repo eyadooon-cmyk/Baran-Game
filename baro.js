@@ -114,7 +114,7 @@ function renderBaroCustomerCatalog(products){
  const introMark=document.createElement("span");introMark.className="baro-catalog-intro-mark";introMark.textContent="✦";
  const introCopy=document.createElement("div");
  const introTitle=document.createElement("strong");introTitle.textContent="اكتشف منتجات BARO";
- const introText=document.createElement("p");introText.textContent="تصفّح الأقسام واختر المنتج الذي تبحث عنه. هذه معاينة للكتالوج فقط، والطلبات غير متاحة حالياً.";
+ const introText=document.createElement("p");introText.textContent="تصفّح باقات الجواهر وشاهد أسعار البيع المعتمدة. عرض الأسعار فقط؛ استقبال الطلبات والشحن غير متاحين حالياً."
  introCopy.append(introTitle,introText);intro.append(introMark,introCopy);box.append(intro);
  if(!products.length){
   const empty=document.createElement("div");empty.className="baro-catalog-empty";
@@ -166,7 +166,7 @@ function renderBaroCustomerCatalog(products){
    groupHead.append(groupIcon,groupCopy,groupCount);groupSection.append(groupHead);
    const grid=document.createElement("div");grid.className="baro-catalog-product-grid";
    items.forEach((p,productIndex)=>{
-    const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;card.setAttribute("aria-label","اختيار "+String(p.product_name||"منتج BARO")+" وإدخال ID");card.addEventListener("click",()=>baroOpenProductCheckout(p));
+    const card=document.createElement("article");card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;
     const cardTop=document.createElement("div");cardTop.className="baro-catalog-product-card-top";
     const art=document.createElement("div");art.className="baro-catalog-product-art";
     const artIcon=document.createElement("span");artIcon.className="baro-catalog-product-art-icon";
@@ -186,17 +186,20 @@ function renderBaroCustomerCatalog(products){
     const preview=document.createElement("span");preview.className="baro-catalog-preview-tag";preview.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"معاينة فقط";
     cardTop.append(art,preview);
     const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=productName;
+    const price=document.createElement("strong");price.className="baro-catalog-product-price";
+    price.textContent=category==="freefire"&&group==="diamonds"&&Number.isFinite(Number(p.sale_price_syp))?Number(p.sale_price_syp).toLocaleString("en-US")+" ل.س جديدة":"السعر قيد المراجعة";
+    price.style.cssText="display:block;margin:10px 0 4px;color:#e4c5ff;font-size:1.05rem;font-weight:900;";
     const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
-    const status=document.createElement("span");status.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"الطلب غير متاح حالياً";
+    const status=document.createElement("span");status.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"استقبال الطلبات مغلق حالياً";
     const indexMark=document.createElement("span");indexMark.className="baro-catalog-product-index";indexMark.textContent=String(productIndex+1).padStart(2,"0");
-    footer.append(status,indexMark);card.append(cardTop,name,footer);grid.append(card);
+    footer.append(status,indexMark);card.append(cardTop,name,price,footer);grid.append(card);
    });
    groupSection.append(grid);content.append(groupSection);
   });
   section.append(content);box.append(section);
  });
  const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";
- footnote.textContent="BARO للشحن اليدوي · الأسعار مخفية في مرحلة المعاينة · لا يتم إنشاء طلب أو خصم أي رصيد.";
+ footnote.textContent="الأسعار المعروضة بالليرة السورية الجديدة · الطلبات والشحن اليدوي مغلقان حالياً · لا يتم إنشاء طلب أو خصم أي رصيد."
  box.append(footnote);
 }
 async function loadBaroCustomer(){

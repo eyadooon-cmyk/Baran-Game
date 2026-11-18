@@ -58,12 +58,17 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET" && view === "catalog") {
       const [{ data: products, error }, { data: settings, error: settingsError }] = await Promise.all([
-        admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,purchase_enabled")
+        admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_syp")
           .eq("catalog_visible", true).order("category_id").order("group_id").order("product_name"),
         admin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle()
       ]);
       if (error || settingsError) return json({ error: "تعذر تحميل كتالوج BARO." }, 500);
-      return json({ products: products ?? [], manual_enabled: settings?.enabled === true });
+      return json({ products: (products ?? []).map((p: any) => ({
+        product_code: p.product_code, category_id: p.category_id, group_id: p.group_id,
+        product_name: p.product_name, input_label: p.input_label, purchase_enabled: p.purchase_enabled,
+        // Customer API exposes sale price only for the approved Free Fire diamonds catalogue.
+        sale_price_syp: p.category_id === "freefire" && p.group_id === "diamonds" ? p.sale_price_syp : null
+      })), manual_enabled: settings?.enabled === true });
     }
 
     if (req.method === "GET" && view === "my_orders") {
