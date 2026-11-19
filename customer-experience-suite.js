@@ -24,14 +24,18 @@
   }
   function render(data) {
     current = data || {};
-    const host = document.querySelector('[data-admin-panel="users"]');
+    const host = document.querySelector('[data-admin-panel="customer-experience"]') || document.querySelector('[data-admin-panel="users"]');
     const search = $("opsCustomerSearch");
     if (!host || !search) return;
     let panel = $("baranExperienceSuite");
+    const mount = $("baranExperienceSuiteMount");
     if (!panel) {
       panel = node("section", "baran-experience");
       panel.id = "baranExperienceSuite";
-      search.insertAdjacentElement("beforebegin", panel);
+      if (mount) mount.append(panel);
+      else search.insertAdjacentElement("beforebegin", panel);
+    } else if (mount && panel.parentElement !== mount) {
+      mount.append(panel);
     }
     const customers = Array.isArray(current.customers) ? current.customers : [];
     const orders = Array.isArray(current.orders) ? current.orders : [];
@@ -289,6 +293,17 @@
     copyId.type = "button";
     copyId.addEventListener("click", () => copyCustomerId(customer.member_code));
     title.append(copyId);
+    const directChat = node("button", "baran-ban-action", "💬 مراسلة العميل مباشرة");
+    directChat.type = "button";
+    directChat.addEventListener("click", () => {
+      if (typeof window.openBaranDirectChatAdmin !== "function") {
+        window.alert("صفحة المحادثات غير جاهزة حالياً. حدّث الصفحة وحاول مجدداً.");
+        return;
+      }
+      modal.remove();
+      window.openBaranDirectChatAdmin(customer.id);
+    });
+    title.append(directChat);
     const close = node("button", "baran-profile-close", "×");
     close.type = "button"; close.setAttribute("aria-label","إغلاق");
     close.addEventListener("click", () => modal.remove());
