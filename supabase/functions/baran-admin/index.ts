@@ -283,6 +283,13 @@ Deno.serve(async (req: Request) => {
           (!row.banned_until || new Date(row.banned_until).getTime() > Date.now());
         return [row.user_id, activeBan ? row : { ...row, status: "active" }];
       }));
+      const { data: customerAdminNotes, error: customerAdminNotesError } = await admin
+        .from("customer_admin_notes").select("user_id,note,updated_at,updated_by");
+      if (customerAdminNotesError) {
+        console.error("baran-admin: customer admin notes failed", customerAdminNotesError.message);
+        return json({ error: "تعذر تحميل الملاحظات الإدارية للعملاء." }, 500);
+      }
+      const customerNotesByUser = new Map((customerAdminNotes ?? []).map((row) => [row.user_id, row]));
       const customers = await Promise.all(customerProfiles.map(async (profile) => {
         const { data: authResult, error: authLookupError } = await admin.auth.admin.getUserById(profile.id);
         if (authLookupError) console.error("baran-admin: customer email lookup failed", authLookupError.message);
@@ -297,11 +304,14 @@ Deno.serve(async (req: Request) => {
         return { ...profile, email:authResult?.user?.email ?? null,
           display_name:displayName,
           avatar_url:avatarUrl,
+          last_sign_in_at:authResult?.user?.last_sign_in_at ?? null,
           balance_usd:Number(wallet?.balance_usd ?? 0), balance_syp:Number(wallet?.balance_syp ?? 0),
           has_balance:Number(wallet?.balance_usd ?? 0) > 0 || Number(wallet?.balance_syp ?? 0) > 0,
           order_count:activity?.count ?? 0, lifetime_spend_usd:activity?.spendUsd ?? 0,
           lifetime_spend_syp:activity?.spendSyp ?? 0, last_order_at:activity?.lastOrderAt ?? null,
           loyalty_points:loyaltyByUser.get(profile.id) ?? 0,
+          admin_note:customerNotesByUser.get(profile.id)?.note ?? "",
+          admin_note_updated_at:customerNotesByUser.get(profile.id)?.updated_at ?? null,
           account_control:accountControlsByUser.get(profile.id) ?? { status: "active", reason: null, banned_until: null } };
       }));
       const fulfillmentByOrder = new Map((fulfillmentRows ?? []).map((row) => [row.order_id, row]));
@@ -460,6 +470,40 @@ Deno.serve(async (req: Request) => {
         input_schema?: any;
       };
       try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+
+      if (body.action === "customer_admin_note_update") {
+        const targetId = typeof body.target_user_id === "string" ? body.target_user_id : "";
+        const note = typeof body.note === "string" ? body.note.trim() : "";
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidPattern.test(targetId) || note.length > 1000) {
+          return json({ error: "تحقق من معرّف العميل. الحد الأقصى للملاحظة 1000 حرف." }, 400);
+        }
+        const { data: targetAdmin, error: targetAdminError } = await admin.rpc("admin_is_user", { p_user_id: targetId });
+        if (targetAdminError) return json({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
+        if (targetAdmin === true) return json({ error: "لا يمكن إضافة ملاحظة إلى حساب إداري من مركز العملاء." }, 403);
+        const { data: targetProfile, error: targetProfileError } = await admin.from("profiles")
+          .select("id").eq("id", targetId).maybeSingle();
+        if (targetProfileError) return json({ error: "تعذر التحقق من حساب العميل." }, 500);
+        if (!targetProfile) return json({ error: "حساب العميل غير موجود." }, 404);
+        const saved = note
+          ? await admin.from("customer_admin_notes").upsert({
+              user_id: targetId, note, updated_by: user.id, updated_at: new Date().toISOString(),
+            }, { onConflict: "user_id" }).select("user_id,note,updated_at").single()
+          : await admin.from("customer_admin_notes").delete().eq("user_id", targetId).select("user_id").maybeSingle();
+        if (saved.error) {
+          console.error("baran-admin: customer note save failed", saved.error.message);
+          return json({ error: "تعذر حفظ الملاحظة الإدارية." }, 500);
+        }
+        const { error: auditError } = await admin.from("admin_audit_log").insert({
+          admin_id: user.id, action: "customer_admin_note_update", entity_type: "customer", entity_id: targetId,
+          details: { note_saved: Boolean(note), note_length: note.length },
+        });
+        if (auditError) {
+          console.error("baran-admin: customer note audit failed", auditError.message);
+          return json({ error: "تم حفظ الملاحظة لكن تعذر تسجيل العملية في سجل الإدارة." }, 500);
+        }
+        return json({ success: true, user_id: targetId, note: note || "", updated_at: saved.data?.updated_at ?? null });
+      }
 
       if (body.action === "customer_profile_update") {
         const targetId = typeof body.target_user_id === "string" ? body.target_user_id : "";
