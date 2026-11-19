@@ -458,7 +458,7 @@ Deno.serve(async (req: Request) => {
 
       if (body.action === "customer_profile_update") {
         const targetId = typeof body.target_user_id === "string" ? body.target_user_id : "";
-        const displayName = typeof body.display_name === "string" ? body.display_name.trim().replace(/\\s+/g, " ") : "";
+        const displayName = typeof body.display_name === "string" ? body.display_name.trim().replace(/\s+/g, " ") : "";
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
         if (!uuidPattern.test(targetId) || displayName.length < 2 || displayName.length > 60) {
           return json({ error: "الاسم يجب أن يكون بين حرفين و60 حرفاً." }, 400);
