@@ -297,6 +297,13 @@ Deno.serve(async (req: Request) => {
       }
       const { data: customerAdminNotes, error: customerAdminNotesError } = await admin
         .from("customer_admin_notes").select("user_id,note,updated_at,updated_by");
+      const { data: customerVipRows, error: customerVipError } = await admin
+        .from("customer_vip_tags").select("user_id,is_vip,updated_at,updated_by");
+      if (customerVipError) {
+        console.error("baran-admin: customer VIP tags failed", customerVipError.message);
+        return json({ error: "تعذر تحميل شارات VIP للعملاء." }, 500);
+      }
+      const customerVipByUser = new Map((customerVipRows ?? []).map((row) => [row.user_id, row]));
       if (customerAdminNotesError) {
         console.error("baran-admin: customer admin notes failed", customerAdminNotesError.message);
         return json({ error: "تعذر تحميل الملاحظات الإدارية للعملاء." }, 500);
@@ -325,6 +332,8 @@ Deno.serve(async (req: Request) => {
           loyalty_points:loyaltyByUser.get(profile.id) ?? 0,
           admin_note:customerNotesByUser.get(profile.id)?.note ?? "",
           admin_note_updated_at:customerNotesByUser.get(profile.id)?.updated_at ?? null,
+          is_vip:customerVipByUser.get(profile.id)?.is_vip === true,
+          vip_updated_at:customerVipByUser.get(profile.id)?.updated_at ?? null,
           account_control:accountControlsByUser.get(profile.id) ?? { status: "active", reason: null, banned_until: null } };
       }));
       const fulfillmentByOrder = new Map((fulfillmentRows ?? []).map((row) => [row.order_id, row]));
