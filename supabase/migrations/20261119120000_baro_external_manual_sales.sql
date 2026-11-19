@@ -133,8 +133,8 @@ begin
        or v_sale.sale_currency is distinct from p_sale_currency
        or v_sale.supplier_cost_amount is distinct from p_supplier_cost_amount
        or v_sale.supplier_cost_currency is distinct from p_supplier_cost_currency
-       or v_sale.sale_exchange_rate is distinct from case when p_sale_currency='USD' then 1 else p_sale_exchange_rate end
-       or v_sale.supplier_cost_exchange_rate is distinct from case when p_supplier_cost_currency='USD' then 1 else p_supplier_cost_exchange_rate end
+       or v_sale.sale_exchange_rate is distinct from v_sale_rate
+       or v_sale.supplier_cost_exchange_rate is distinct from v_cost_rate
        or v_sale.customer_name is distinct from btrim(coalesce(p_customer_name,''))
        or v_sale.player_id is distinct from btrim(coalesce(p_player_id,''))
        or v_sale.payment_method is distinct from p_payment_method
