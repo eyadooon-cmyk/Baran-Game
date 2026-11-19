@@ -4342,13 +4342,13 @@ async function enableBaranPushFromInvite(){
   if(button)button.disabled=true;
   if(message)message.textContent="جاري تجهيز إشعارات الهاتف...";
   try{
-    await enableBaranPushNotifications();
-    if("Notification" in window&&Notification.permission==="granted"){
+    const enabled=await enableBaranPushNotifications();
+    if(enabled){
       if(invite)invite.classList.add("hidden");
     }else if(message){
-      message.textContent=Notification.permission==="denied"
+      message.textContent=("Notification" in window&&Notification.permission==="denied")
         ?"تم رفض الإذن. يمكنك تفعيله لاحقاً من إعدادات الموقع في Chrome."
-        :"لم يتم تفعيل الإشعارات. يمكنك المحاولة لاحقاً من الإعدادات.";
+        :"لم يكتمل التفعيل. يمكنك المحاولة لاحقاً من الإعدادات.";
     }
   }finally{if(button)button.disabled=false;}
 }
@@ -6485,14 +6485,14 @@ function baranUrlBase64ToUint8Array(value){
 async function enableBaranPushNotifications(){
   const button=document.getElementById("enablePushButton");
   const message=document.getElementById("pushSettingsMessage");
-  if(!currentUser){if(message)message.textContent="سجّل الدخول أولاً.";return;}
+  if(!currentUser){if(message)message.textContent="سجّل الدخول أولاً.";return false;}
   if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
     if(message)message.textContent="هذا المتصفح لا يدعم إشعارات الويب. جرّب Chrome على أندرويد.";
-    return;
+    return false;
   }
   if(Notification.permission==="denied"){
     if(message)message.textContent="الإشعارات محظورة من إعدادات المتصفح. اسمح بها من إعدادات الموقع ثم أعد المحاولة.";
-    return;
+    return false;
   }
   if(button)button.disabled=true;
   if(message)message.textContent="جاري تفعيل إشعارات الهاتف...";
@@ -6520,8 +6520,10 @@ async function enableBaranPushNotifications(){
     const result=await response.json().catch(()=>({}));
     if(!response.ok||result.success!==true)throw new Error(result.error||"تعذر حفظ اشتراك الإشعارات.");
     if(message)message.textContent="تم تفعيل إشعارات الهاتف لهذا الجهاز بنجاح.";
+    return true;
   }catch(error){
     if(message)message.textContent=error.message||"تعذر تفعيل الإشعارات.";
+    return false;
   }finally{if(button)button.disabled=false;}
 }
 
