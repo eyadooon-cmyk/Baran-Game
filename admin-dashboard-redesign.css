@@ -1,0 +1,198 @@
+/* BARAN GAME — Admin command center redesign
+   Presentation-only. Keeps existing IDs, forms, handlers, data loading and permissions intact. */
+[data-admin-panel="overview"]{
+  --adm-bg:#100c16;--adm-panel:#1b1422;--adm-panel-2:#241a30;--adm-line:#493653;
+  --adm-purple:#a77bc5;--adm-lilac:#e9d9f4;--adm-muted:#b8a8c5;
+  direction:rtl!important;position:relative;isolation:isolate;
+  padding:clamp(13px,2.8vw,25px)!important;
+  border:1px solid #493653!important;border-radius:22px!important;
+  background:radial-gradient(ellipse at 95% 0%,#56386b25,transparent 35%),linear-gradient(180deg,#17111f 0%,#100c16 55%,#0e0b13 100%)!important;
+  color:#f6effb!important;overflow:hidden;
+}
+[data-admin-panel="overview"] *{box-sizing:border-box}
+[data-admin-panel="overview"]>.admin-subpanel-head{
+  position:sticky!important;top:0;z-index:20;display:flex;align-items:center;gap:10px;
+  margin:-2px 0 17px!important;padding:10px 0 13px!important;
+  border-bottom:1px solid #493653!important;background:#140f1bed!important;
+  backdrop-filter:blur(14px);
+}
+[data-admin-panel="overview"]>.admin-subpanel-head h2{
+  margin:0!important;color:#f4eafa!important;font-size:clamp(16px,3.8vw,21px)!important;font-weight:900;
+}
+[data-admin-panel="overview"]>.admin-subpanel-head .admin-back{
+  min-height:41px!important;padding:8px 12px!important;border:1px solid #674b7d!important;
+  border-radius:12px!important;background:#241a30!important;color:#eadcf4!important;font-size:12px!important;
+}
+[data-admin-panel="overview"]>.admin-workgroup-label{display:none!important}
+[data-admin-panel="overview"] .overview-welcome{
+  position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  min-height:142px;margin:0 0 22px!important;padding:clamp(19px,4vw,27px)!important;
+  overflow:hidden;border:1px solid #795895!important;border-radius:21px!important;
+  background:radial-gradient(ellipse at 12% 0%,#9b6cba55,transparent 48%),linear-gradient(120deg,#382448 0%,#21172d 57%,#17111f 100%)!important;
+  box-shadow:0 15px 35px #0005!important;
+}
+[data-admin-panel="overview"] .overview-welcome:after{
+  content:"BARAN";position:absolute;left:8px;bottom:-28px;color:#fff;opacity:.035;
+  font:900 clamp(54px,12vw,100px) Orbitron,Arial,sans-serif;letter-spacing:3px;pointer-events:none;
+}
+[data-admin-panel="overview"] .overview-kicker{color:#d8b5ef!important;font-size:10px;font-weight:900;letter-spacing:1.5px}
+[data-admin-panel="overview"] .overview-welcome h3{
+  margin:8px 0!important;color:#fff!important;font-size:clamp(21px,4.7vw,29px)!important;font-weight:900;
+}
+[data-admin-panel="overview"] .overview-welcome p{
+  max-width:560px;margin:0!important;color:#d0c0da!important;font-size:13px!important;line-height:1.9!important;
+}
+[data-admin-panel="overview"] .overview-live{
+  flex:0 0 auto;position:relative;z-index:2;padding:8px 12px!important;
+  border:1px solid #806394!important;border-radius:30px!important;background:#17111fdd!important;
+  color:#e8d8f3!important;font-size:11px!important;font-weight:800;
+}
+[data-admin-panel="overview"] .overview-section-heading{
+  display:flex!important;align-items:center!important;gap:12px!important;
+  margin:25px 0 12px!important;padding:0 2px!important;
+}
+[data-admin-panel="overview"] .overview-section-heading>span{
+  display:grid!important;place-items:center!important;flex:0 0 38px!important;height:38px!important;
+  border:1px solid #76598d!important;border-radius:13px!important;
+  background:linear-gradient(145deg,#3b294b,#21172c)!important;color:#f0defa!important;
+  font-size:12px!important;font-weight:900!important;box-shadow:0 5px 13px #0003;
+}
+[data-admin-panel="overview"] .overview-section-heading h3{
+  margin:0!important;color:#f0e4f7!important;font-size:16px!important;font-weight:900!important;
+}
+[data-admin-panel="overview"] .overview-section-heading p{
+  margin:3px 0 0!important;color:#aFA0ba!important;font-size:11px!important;line-height:1.6;
+}
+[data-admin-panel="overview"]>#opsStats{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;
+  margin:0!important;padding:0!important;
+}
+[data-admin-panel="overview"]>#opsStats .ops-card{
+  position:relative;display:flex!important;flex-direction:column!important;justify-content:center!important;
+  gap:5px!important;min-width:0;min-height:103px!important;margin:0!important;padding:15px!important;
+  overflow:hidden;border:1px solid #554064!important;border-radius:17px!important;
+  background:linear-gradient(145deg,#2a2036,#191320 78%)!important;box-shadow:0 8px 20px #0003!important;
+  color:#c7b8d2!important;font-size:12px!important;
+}
+[data-admin-panel="overview"]>#opsStats .ops-card:after{
+  content:"";position:absolute;left:-18px;bottom:-24px;width:75px;height:75px;
+  border:1px solid #b48bd522;border-radius:50%;pointer-events:none;
+}
+[data-admin-panel="overview"]>#opsStats .ops-value{
+  color:#f5eafa!important;font-size:clamp(25px,5vw,32px)!important;font-weight:900!important;
+  line-height:1.15;font-variant-numeric:tabular-nums;
+}
+[data-admin-panel="overview"] .overview-panel{
+  display:block!important;visibility:visible!important;min-width:0!important;
+  margin:0 0 14px!important;padding:clamp(15px,3vw,21px)!important;
+  border:1px solid #4c395d!important;border-radius:19px!important;
+  background:linear-gradient(150deg,#211929 0%,#17111e 72%,#14101a 100%)!important;
+  box-shadow:0 10px 26px #0003!important;
+}
+[data-admin-panel="overview"] .overview-panel h2,
+[data-admin-panel="overview"] .overview-panel h3{
+  margin-top:0!important;color:#f0e3f8!important;font-weight:900!important;line-height:1.5;
+}
+[data-admin-panel="overview"] .overview-panel>p.small{
+  color:#bbaec8!important;font-size:12px!important;line-height:1.9!important;
+}
+[data-admin-panel="overview"] #baranAutoMonitor{
+  border-color:#466457!important;
+  background:radial-gradient(ellipse at 95% 0%,#2b725522,transparent 44%),linear-gradient(150deg,#19251f,#151b19)!important;
+}
+[data-admin-panel="overview"] #baranAutoMonitor h3{color:#d9f0e2!important}
+[data-admin-panel="overview"] #opsMonitorStatus{
+  margin:12px 0!important;padding:12px!important;border:1px solid #42614e!important;
+  border-radius:13px!important;background:#102018!important;color:#d2ead9!important;line-height:1.9;
+}
+[data-admin-panel="overview"] #opsMonitorAlerts{
+  padding:10px!important;border:1px solid #354c3d!important;border-radius:13px!important;background:#111a15!important;
+}
+[data-admin-panel="overview"] #baranAdminAssistant{
+  border-color:#775591!important;
+  background:radial-gradient(ellipse at 100% 0%,#68418130,transparent 45%),linear-gradient(145deg,#251a31,#17111e)!important;
+}
+[data-admin-panel="overview"] #baranAdminAssistantMessages{
+  height:clamp(190px,32vh,310px)!important;max-height:42vh!important;min-height:180px;
+  padding:13px!important;border:1px solid #513d62!important;border-radius:15px!important;
+  background:#100c16!important;overflow-y:auto;
+}
+[data-admin-panel="overview"] #baranAdminAssistantForm{
+  display:flex!important;align-items:stretch!important;gap:9px!important;margin:12px 0!important;
+}
+[data-admin-panel="overview"] #baranAdminAssistantForm input{
+  flex:1 1 auto!important;min-width:0!important;min-height:48px!important;
+  border:1px solid #604873!important;border-radius:13px!important;background:#100c16!important;color:#fff!important;
+}
+[data-admin-panel="overview"] #baranAdminAssistantForm button{
+  flex:0 0 auto!important;min-width:78px!important;min-height:48px!important;border-radius:13px!important;
+  background:linear-gradient(130deg,#8559a2,#57366f)!important;
+}
+[data-admin-panel="overview"] #baranAdminAssistant .ops-actions{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;
+}
+[data-admin-panel="overview"] #baranAdminAssistant .ops-actions button{
+  min-width:0!important;min-height:43px!important;margin:0!important;padding:9px!important;
+  border:1px solid #554064!important;border-radius:12px!important;background:#241a30!important;
+  color:#eadcf4!important;font-size:11px!important;line-height:1.5;
+}
+[data-admin-panel="overview"] #baranAdminAssistant a.secondary{
+  min-height:44px!important;border-radius:12px!important;
+}
+[data-admin-panel="overview"] .safe-panel{
+  border-color:#70558b!important;
+  background:radial-gradient(ellipse at 100% 0%,#79529b22,transparent 42%),linear-gradient(145deg,#21182c,#15101b)!important;
+}
+[data-admin-panel="overview"] #baranSafeActionsHost{
+  min-width:0;margin-top:13px;padding:13px;border:1px solid #58436b;border-radius:15px;background:#130f19;
+}
+[data-admin-panel="overview"] .announcement-panel{
+  border-color:#59456c!important;
+  background:radial-gradient(ellipse at 100% 0%,#61417a24,transparent 42%),linear-gradient(145deg,#21182c,#15101b)!important;
+}
+[data-admin-panel="overview"] .announcement-panel label{
+  display:block!important;margin:12px 0 6px!important;color:#e5d7ef!important;font-size:12px!important;font-weight:800;
+}
+[data-admin-panel="overview"] .announcement-panel input,
+[data-admin-panel="overview"] .announcement-panel select,
+[data-admin-panel="overview"] .announcement-panel textarea{
+  display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+  min-height:47px!important;margin:0 0 10px!important;padding:11px 13px!important;
+  border:1px solid #59436d!important;border-radius:12px!important;
+  background:#100c16!important;color:#f7effb!important;font:inherit!important;font-size:13px!important;
+}
+[data-admin-panel="overview"] .announcement-panel textarea{min-height:108px!important;resize:vertical}
+[data-admin-panel="overview"] .announcement-panel #baranAnnouncementSend{
+  width:100%!important;min-height:49px!important;margin:6px 0 0!important;border-radius:13px!important;
+  background:linear-gradient(120deg,#80549b,#56366d)!important;font-weight:900;
+}
+[data-admin-panel="overview"] .overview-panel .small,
+[data-admin-panel="overview"] .overview-panel .ops-muted{line-height:1.85!important}
+[data-admin-panel="overview"] .overview-panel button{max-width:100%;white-space:normal}
+@media(min-width:720px){
+  [data-admin-panel="overview"]>#opsStats{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  [data-admin-panel="overview"] .overview-welcome{min-height:160px}
+  [data-admin-panel="overview"] #baranAdminAssistant .ops-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:560px){
+  [data-admin-panel="overview"]{padding:11px!important;border-radius:16px!important}
+  [data-admin-panel="overview"]>.admin-subpanel-head{gap:8px!important;padding:8px 0 11px!important}
+  [data-admin-panel="overview"]>.admin-subpanel-head .admin-back{min-height:39px!important;padding:7px 9px!important;font-size:11px!important}
+  [data-admin-panel="overview"]>.admin-subpanel-head h2{font-size:15px!important}
+  [data-admin-panel="overview"] .overview-welcome{align-items:flex-start!important;flex-direction:column!important;min-height:0;padding:18px!important}
+  [data-admin-panel="overview"] .overview-live{align-self:flex-start}
+  [data-admin-panel="overview"] .overview-section-heading{margin:21px 0 10px!important}
+  [data-admin-panel="overview"]>#opsStats .ops-card{min-height:88px!important;padding:12px!important;border-radius:14px!important}
+  [data-admin-panel="overview"]>#opsStats .ops-value{font-size:25px!important}
+  [data-admin-panel="overview"] .overview-panel{padding:13px!important;border-radius:16px!important}
+  [data-admin-panel="overview"] #baranAdminAssistantForm{flex-direction:column!important}
+  [data-admin-panel="overview"] #baranAdminAssistantForm button{width:100%!important}
+  [data-admin-panel="overview"] #baranAdminAssistant .ops-actions{grid-template-columns:1fr!important}
+}
+@media(max-width:350px){
+  [data-admin-panel="overview"]>#opsStats{grid-template-columns:1fr!important}
+  [data-admin-panel="overview"] .overview-section-heading h3{font-size:14px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  [data-admin-panel="overview"] *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+}
