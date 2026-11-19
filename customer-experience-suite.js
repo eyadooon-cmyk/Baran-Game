@@ -174,9 +174,9 @@
   }
 
   function attachProfileButtons() {
-    const list = $("opsCustomers");
-    if (!list) return;
-    list.querySelectorAll(".customer-directory-item").forEach(card => {
+    const lists = [ $("opsCustomers"), $("baranUserDirectoryList") ].filter(Boolean);
+    if (!lists.length) return;
+    lists.forEach(list => list.querySelectorAll(".customer-directory-item").forEach(card => {
       if (card.querySelector(".baran-open-full-profile")) return;
       const summary = card.querySelector(".customer-directory-toggle");
       if (!summary) return;
@@ -206,12 +206,12 @@
         openProfile(customer);
       });
       card.append(button);
-    });
+    }));
   }
   function applySegmentFilter(segment) {
     const lists = [ $("opsCustomers"), $("baranUserDirectoryList") ].filter(Boolean);
     lists.forEach(list => list.querySelectorAll(".customer-directory-item").forEach(card => {
-      card.hidden = segment !== "all" && card.dataset.customerSegment !== segment;
+      card.style.display = segment !== "all" && card.dataset.customerSegment !== segment ? "none" : "";
     }));
   }
   function openProfile(customer) {
