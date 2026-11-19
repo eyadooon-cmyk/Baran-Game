@@ -58,7 +58,7 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET" && view === "catalog") {
       const [{ data: products, error }, { data: settings, error: settingsError }] = await Promise.all([
-        admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_syp")
+        admin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_usd,sale_price_syp")
           .eq("catalog_visible", true).order("category_id").order("group_id").order("product_name"),
         admin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle()
       ]);
@@ -66,8 +66,7 @@ Deno.serve(async (req: Request) => {
       return json({ products: (products ?? []).map((p: any) => ({
         product_code: p.product_code, category_id: p.category_id, group_id: p.group_id,
         product_name: p.product_name, input_label: p.input_label, purchase_enabled: p.purchase_enabled,
-        // Customer API exposes sale price only for the approved Free Fire diamonds catalogue.
-        sale_price_syp: p.category_id === "freefire" && p.group_id === "diamonds" ? p.sale_price_syp : null
+        sale_price_usd: p.sale_price_usd, sale_price_syp: p.sale_price_syp
       })), manual_enabled: settings?.enabled === true });
     }
 
@@ -76,7 +75,20 @@ Deno.serve(async (req: Request) => {
         .select("id,product_code,player_id,product_name_snapshot,quantity,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,status,payment_status,payment_method,customer_message,created_at,updated_at,completed_at")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
       if (error) return json({ error: "تعذر تحميل طلبات BARO." }, 500);
-      return json({ orders: data ?? [] });
+      const ids = (data ?? []).map((o: any) => o.id);
+      const { data: holds, error: holdError } = ids.length
+        ? await admin.from("baro_manual_wallet_holds").select("order_id,amount,currency,status").in("order_id", ids)
+        : { data: [], error: null };
+      if (holdError) return json({ error: "تعذر تحميل تسويات محفظة BARO." }, 500);
+      const holdMap = new Map((holds ?? []).map((h: any) => [h.order_id, h]));
+      return json({ orders: (data ?? []).map((o: any) => ({...o,wallet_hold:holdMap.get(o.id) ?? null})) });
+    }
+
+    if (req.method === "GET" && view === "my_wallet") {
+      const { data, error } = await admin.from("wallets")
+        .select("balance_usd,balance_syp").eq("user_id", user.id).maybeSingle();
+      if (error) return json({ error: "تعذر تحميل رصيد محفظتك." }, 500);
+      return json({ wallet: data ?? {balance_usd:0,balance_syp:0} });
     }
 
     if (req.method === "GET" && view === "access") {
@@ -266,14 +278,15 @@ Deno.serve(async (req: Request) => {
       if (body.player_id_confirmed !== true) return json({ error: "يجب تأكيد صحة رقم ID قبل إرسال الطلب." }, 400);
       const qty = typeof body.quantity === "number" ? body.quantity : Number(body.quantity ?? 1);
       const note = str(body.customer_note, 500);
-      if (!/^LEO_[A-Z0-9_]{3,56}$/.test(code) || player.length < 3 || !Number.isInteger(qty) || qty < 1 || qty > 1000000)
-        return json({ error: "تحقق من المنتج ومعرّف اللاعب والكمية." }, 400);
+      const walletCurrency = body.wallet_currency === "USD" ? "USD" : body.wallet_currency === "SYP" ? "SYP" : "";
+      if (!/^LEO_[A-Z0-9_]{3,56}$/.test(code) || player.length < 3 || !Number.isInteger(qty) || qty < 1 || qty > 1000000 || !walletCurrency)
+        return json({ error: "تحقق من المنتج ومعرّف اللاعب والكمية وعملة المحفظة." }, 400);
       const idempotencyKey = typeof body.idempotency_key === "string" ? body.idempotency_key : "";
       if (!uuidPattern.test(idempotencyKey)) return json({ error: "تعذر التحقق من رقم محاولة الطلب. أعد المحاولة." }, 400);
       const { data, error } = await admin.rpc("baro_manual_create_customer_order", {
         p_user_id: user.id, p_product_code: code, p_player_id: player,
         p_quantity: qty, p_customer_note: note, p_idempotency_key: idempotencyKey,
-        p_player_id_confirmed: true
+        p_player_id_confirmed: true, p_wallet_currency: walletCurrency
       });
       if (error) return json({ error: error.message || "تعذر تسجيل طلب BARO." }, 400);
       return json(data ?? { success: true });
