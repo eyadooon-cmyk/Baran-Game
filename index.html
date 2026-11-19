@@ -5905,7 +5905,11 @@ function filterBaranCustomerDirectory(){
     const identity=document.createElement("span");identity.className="customer-directory-identity";
     const title=document.createElement("strong");title.textContent=displayName;
     const subtitle=document.createElement("small");subtitle.textContent="ID: "+(item.member_code||"غير متوفر");
-    identity.append(title,subtitle);
+    const lastSeenValue=item.last_activity_at||item.last_seen_at||item.last_sign_in_at||item.last_order_at||null;
+    const lastSeen=document.createElement("small");
+    lastSeen.className="customer-directory-last-seen";
+    lastSeen.textContent="🕒 آخر ظهور: "+(lastSeenValue?new Date(lastSeenValue).toLocaleString("ar",{dateStyle:"short",timeStyle:"short"}):"لا يوجد ظهور مسجل");
+    identity.append(title,subtitle,lastSeen);
     const balance=document.createElement("span");balance.className="customer-directory-balance";
     balance.textContent=financeMoney(item.balance_usd,"USD");
     const hint=document.createElement("span");hint.className="customer-directory-chevron";hint.textContent="تفاصيل";
@@ -5923,7 +5927,7 @@ function filterBaranCustomerDirectory(){
       ["🪪","معرّف ID",item.member_code||"غير متوفر"],
       ["🏷️","حالة العميل",segment],
       ["📦","عدد الطلبات",activityCount.toLocaleString("en-US")],
-      ["🕒","آخر نشاط",lastActivity?new Date(lastActivity).toLocaleString("ar"):"لا يوجد نشاط مسجل"],
+      ["🕒","آخر ظهور",lastActivity?new Date(lastActivity).toLocaleString("ar"):"لا يوجد ظهور مسجل"],
       ["🛒","آخر طلب",lastOrder],
       ["💳","إجمالي المشتريات بالدولار",financeMoney(item.lifetime_spend_usd,"USD")],
       ["💰","إجمالي المشتريات بالليرة",financeMoney(item.lifetime_spend_syp,"SYP")],
