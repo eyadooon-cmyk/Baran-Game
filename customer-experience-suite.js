@@ -192,6 +192,11 @@
       if (!customer) return;
       const segment = customerSegment(customer);
       card.dataset.customerSegment = segment;
+      if (customer.is_vip && !card.querySelector(".baran-customer-vip-chip")) {
+        const vipChip = node("span", "baran-customer-vip-chip", "👑 VIP");
+        vipChip.style.cssText = "display:inline-flex;margin:4px;padding:4px 9px;border-radius:20px;background:linear-gradient(120deg,#72521b,#b88b35);color:#fff4ce;font-size:10px;font-weight:900";
+        summary.append(vipChip);
+      }
       if (!card.querySelector(".baran-customer-segment-chip")) {
         const chip = node("span", "baran-customer-segment-chip", segment === "وفيّ" ? "⭐ عميل وفيّ" : segment === "نشط" ? "نشط" : segment === "غير نشط" ? "غير نشط" : "جديد");
         chip.style.cssText = "display:inline-flex;align-items:center;margin:5px 4px;padding:4px 9px;border:1px solid #765792;border-radius:20px;background:#2b1b3a;color:#e8d5f6;font-size:10px;font-weight:800";
@@ -267,6 +272,14 @@
       segmentName==="غير نشط"?"عميل غير نشط — مرّ أكثر من 30 يوماً على آخر طلب.":
       "عميل جديد — لا توجد طلبات مسجلة له بعد."));
     dialog.append(segmentBox);
+    const vipBox=node("section","baran-profile-section");
+    vipBox.append(node("h4","","👑 عضوية VIP"));
+    vipBox.append(node("p","baran-experience-muted",customer.is_vip?"هذا العميل مُميّز بشارة VIP يدوياً من الإدارة.":"يمكنك منح العميل شارة VIP يدوياً لتمييزه في قائمة المستخدمين."));
+    const vipButton=node("button","baran-ban-action",customer.is_vip?"إزالة شارة VIP":"منح شارة VIP");
+    vipButton.type="button";
+    vipButton.addEventListener("click",()=>updateCustomerVip(customer,!customer.is_vip,vipButton,vipBox));
+    vipBox.append(vipButton);
+    dialog.append(vipBox);
     const info=node("section","baran-profile-section");info.append(node("h4","","بيانات الحساب"));
     [["البريد",customer.email],["الهاتف",customer.phone],["تاريخ التسجيل",date(customer.created_at)],["آخر نشاط",date(customer.last_activity_at||customer.last_sign_in_at||customer.last_order_at)],["آخر طلب",date(customer.last_order_at)],["الرصيد USD",money(customer.balance_usd,"USD")],["الرصيد SYP",money(customer.balance_syp,"SYP")]].forEach(([k,v])=>{
       const row=node("div","baran-profile-row");row.append(node("span","",k),node("strong","",v||"—"));info.append(row);
@@ -355,6 +368,30 @@
     try{await navigator.clipboard.writeText(code);window.alert("تم نسخ معرّف العميل.");}
     catch(error){window.prompt("انسخ معرّف العميل:",code);}
   }
+  async function updateCustomerVip(customer,isVip,button,container){
+    if(!window.confirm(isVip?"منح هذا العميل شارة VIP؟":"إزالة شارة VIP عن هذا العميل؟"))return;
+    button.disabled=true;button.textContent="جارٍ الحفظ...";
+    try{
+      const {data:{session},error:sessionError}=await sb.auth.getSession();
+      if(sessionError||!session)throw new Error("انتهت جلسة المدير.");
+      const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({action:"customer_vip_update",target_user_id:customer.id,is_vip:isVip})
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok||result.success!==true)throw new Error(result.error||"تعذر تحديث شارة VIP.");
+      customer.is_vip=isVip;
+      const sources=[...(Array.isArray(current?.customers)?current.customers:[]),...(Array.isArray(window.baranCustomerDirectory)?window.baranCustomerDirectory:[])];
+      sources.forEach(item=>{if(String(item.id||item.user_id||"")===String(customer.id))item.is_vip=isVip;});
+      container.querySelector("p").textContent=isVip?"هذا العميل مُميّز بشارة VIP يدوياً من الإدارة.":"يمكنك منح العميل شارة VIP يدوياً لتمييزه في قائمة المستخدمين.";
+      button.textContent=isVip?"إزالة شارة VIP":"منح شارة VIP";
+      button.disabled=false;
+      attachProfileButtons();
+      window.alert(isVip?"تم منح شارة VIP.":"تمت إزالة شارة VIP.");
+    }catch(error){button.disabled=false;button.textContent=customer.is_vip?"إزالة شارة VIP":"منح شارة VIP";window.alert(error.message||"تعذر تحديث الشارة.");}
+  }
+
   async function saveCustomerAdminNote(customer,value,button,status){
     const note=String(value||"").trim();
     if(note.length>1000){window.alert("الملاحظة يجب ألا تتجاوز 1000 حرف.");return;}
