@@ -3480,6 +3480,19 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
   </div>
 </div>
 
+<div id="baranPushInvite" class="baran-welcome-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="baranPushInviteTitle">
+  <div class="baran-welcome-card" dir="rtl">
+    <div class="baran-welcome-art" aria-hidden="true"><div class="baran-welcome-orb">🔔</div></div>
+    <div class="baran-welcome-content">
+      <h2 id="baranPushInviteTitle">خليك قريب من كل جديد</h2>
+      <p>فعّل الإشعارات لتصلك تحديثات طلباتك ورسائل الدعم والعروض المهمة، حتى عندما يكون الموقع بالخلفية.</p>
+      <button id="baranPushInviteEnable" type="button" onclick="enableBaranPushFromInvite()">تفعيل الإشعارات</button>
+      <button type="button" class="secondary" onclick="dismissBaranPushInvite()">لاحقاً</button>
+      <small id="baranPushInviteMessage" role="status" aria-live="polite">التفعيل اختياري بالكامل، ويمكنك تغييره بأي وقت من الإعدادات.</small>
+    </div>
+  </div>
+</div>
+
 <script src="./products.js"></script>
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
@@ -4303,6 +4316,41 @@ function updateBaranAccountIdentity(user){
 function closeBaranFirstWelcome(){
   const overlay=document.getElementById("baranFirstWelcome");
   if(overlay)overlay.classList.add("hidden");
+  window.setTimeout(showBaranPushInvite,250);
+}
+
+function showBaranPushInvite(){
+  if(!currentUser||!("Notification" in window)||Notification.permission!=="default")return;
+  try{
+    const dismissedUntil=Number(localStorage.getItem("baran_push_invite_dismissed_until")||0);
+    if(dismissedUntil>Date.now())return;
+  }catch(error){}
+  const invite=document.getElementById("baranPushInvite");
+  if(invite)invite.classList.remove("hidden");
+}
+
+function dismissBaranPushInvite(){
+  const invite=document.getElementById("baranPushInvite");
+  if(invite)invite.classList.add("hidden");
+  try{localStorage.setItem("baran_push_invite_dismissed_until",String(Date.now()+30*24*60*60*1000));}catch(error){}
+}
+
+async function enableBaranPushFromInvite(){
+  const invite=document.getElementById("baranPushInvite");
+  const message=document.getElementById("baranPushInviteMessage");
+  const button=document.getElementById("baranPushInviteEnable");
+  if(button)button.disabled=true;
+  if(message)message.textContent="جاري تجهيز إشعارات الهاتف...";
+  try{
+    await enableBaranPushNotifications();
+    if("Notification" in window&&Notification.permission==="granted"){
+      if(invite)invite.classList.add("hidden");
+    }else if(message){
+      message.textContent=Notification.permission==="denied"
+        ?"تم رفض الإذن. يمكنك تفعيله لاحقاً من إعدادات الموقع في Chrome."
+        :"لم يتم تفعيل الإشعارات. يمكنك المحاولة لاحقاً من الإعدادات.";
+    }
+  }finally{if(button)button.disabled=false;}
 }
 
 async function showBaranFirstWelcome(user){
@@ -7621,6 +7669,12 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 
 <script src="./customer-experience-suite.js?v=20261118-suite-6"></script>
 <script src="./customer-center.js?v=20261117-customer-center-3"></script>
+<style id="baran-push-invite-polish-20261119">
+#baranPushInvite{z-index:100001}
+#baranPushInvite .baran-welcome-content{display:flex;flex-direction:column;gap:12px}
+#baranPushInvite .baran-welcome-content button.secondary{background:transparent;border:1px solid var(--line,#40334b);color:var(--muted,#d0c4da)}
+#baranPushInviteMessage{display:block;line-height:1.7;min-height:20px}
+</style>
 <script src="./notification-enhancements.js?v=20261119-collapse-v2"></script>
 </body>
 </html>
