@@ -288,7 +288,10 @@ Deno.serve(async (req: Request) => {
         if (authLookupError) console.error("baran-admin: customer email lookup failed", authLookupError.message);
         const wallet = customerWalletByUser.get(profile.id);
         const activity = customerOrderStats.get(profile.id);
+        const metadata = authResult?.user?.user_metadata ?? {};
         return { ...profile, email:authResult?.user?.email ?? null,
+          display_name:profile.full_name || metadata.full_name || metadata.name || null,
+          avatar_url:metadata.avatar_url || metadata.picture || metadata.avatar || null,
           balance_usd:Number(wallet?.balance_usd ?? 0), balance_syp:Number(wallet?.balance_syp ?? 0),
           has_balance:Number(wallet?.balance_usd ?? 0) > 0 || Number(wallet?.balance_syp ?? 0) > 0,
           order_count:activity?.count ?? 0, lifetime_spend_usd:activity?.spendUsd ?? 0,
@@ -409,6 +412,7 @@ Deno.serve(async (req: Request) => {
         admin_reply?: string;
         search_query?: string;
         target_user_id?: string;
+        display_name?: string;
         verification_notes?: string;
         verified_facts?: string[];
         notification_id?: string;
@@ -451,6 +455,35 @@ Deno.serve(async (req: Request) => {
         input_schema?: any;
       };
       try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+
+      if (body.action === "customer_profile_update") {
+        const targetId = typeof body.target_user_id === "string" ? body.target_user_id : "";
+        const displayName = typeof body.display_name === "string" ? body.display_name.trim().replace(/\\s+/g, " ") : "";
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidPattern.test(targetId) || displayName.length < 2 || displayName.length > 60) {
+          return json({ error: "الاسم يجب أن يكون بين حرفين و60 حرفاً." }, 400);
+        }
+        const { data: targetAdmin, error: targetAdminError } = await admin.rpc("admin_is_user", { p_user_id: targetId });
+        if (targetAdminError) return json({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
+        if (targetAdmin === true) return json({ error: "لا يمكن تعديل اسم حساب إداري من مركز العملاء." }, 403);
+        const { data: updatedProfile, error: profileUpdateError } = await admin
+          .from("profiles").update({ full_name: displayName }).eq("id", targetId)
+          .select("id,full_name").maybeSingle();
+        if (profileUpdateError) {
+          console.error("baran-admin: customer profile name update failed", profileUpdateError.message);
+          return json({ error: "تعذر حفظ اسم العميل." }, 500);
+        }
+        if (!updatedProfile) return json({ error: "حساب العميل غير موجود." }, 404);
+        const { error: auditError } = await admin.from("admin_audit_log").insert({
+          admin_id: user.id, action: "customer_name_update", entity_type: "customer", entity_id: targetId,
+          details: { full_name: displayName },
+        });
+        if (auditError) {
+          console.error("baran-admin: customer name audit failed", auditError.message);
+          return json({ error: "تم حفظ الاسم، لكن تعذر تسجيل العملية في سجل الإدارة." }, 500);
+        }
+        return json({ success: true, user_id: targetId, full_name: updatedProfile.full_name });
+      }
 
       if (body.action === "customer_account_ban") {
         const targetId = body.target_user_id ?? "";
