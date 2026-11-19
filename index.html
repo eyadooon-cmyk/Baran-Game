@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./customer-management-redesign.css?v=20261119-v2">
 <style>
 :root{--green:#8b6ba8;--bg:#09080d;--panel:#17131b;--line:#40334b;--muted:#b9a9c9}
 *{box-sizing:border-box}
@@ -2704,6 +2705,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
           <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>03</span><div><strong>العملاء وخدمة المتجر</strong><small>حسابات العملاء، طلبات المساعدة، واستعادة الوصول للحسابات.</small></div><em>CUSTOMER CARE</em></div><div class="admin-hub-grid">
             <button type="button" class="admin-hub-card" data-admin-search="المستخدمين العملاء الزبائن الحسابات محافظ المستخدم users" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>ملفات العملاء</strong><small>اعرض حسابات الزبائن ومعلومات محافظهم ضمن صلاحياتك.</small><span class="admin-hub-open">إدارة العملاء <b>←</b></span></button>
             <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="عرض المستخدمين دليل المستخدمين قائمة العملاء البحث عن مستخدم user directory" onclick="showAdminPanel('user-directory')"><span class="admin-hub-icon">🗂️</span><strong>عرض المستخدمين</strong><small>قائمة مستقلة لكل الحسابات مع بحث سريع وفتح الملف الشامل مباشرة.</small><span class="admin-hub-open">فتح دليل المستخدمين <b>←</b></span></button>
+            <button type="button" class="admin-hub-card" data-admin-search="تجربة العملاء تحليلات شرائح العملاء الولاء نشاط المستخدمين customer experience intelligence" onclick="showAdminPanel('customer-experience')"><span class="admin-hub-icon">✦</span><strong>مركز تجربة العملاء</strong><small>إحصائيات النشاط والولاء والشرائح والأمان — منفصل عن إدارة الحسابات.</small><span class="admin-hub-open">تحليل تجربة العملاء <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="الدعم الرسائل التذاكر الردود الآلية مساعد الزبائن support" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>مركز خدمة العملاء</strong><small>تابع الرسائل والتذاكر والردود الآلية، واعرف ما ينتظر تدخلك.</small><span class="admin-hub-open">فتح مركز الدعم <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="استعادة الحساب كلمة المرور recovery" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>راجع طلبات الاستعادة وتحقق من الملكية قبل أي إجراء.</small><span class="admin-hub-open">مراجعة الاستعادة <b>←</b></span></button>
           </div></section>
@@ -2902,6 +2904,12 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
       </select>
       <div id="opsCustomers" class="customer-directory-list">جاري تحميل المستخدمين...</div>
       
+      </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="customer-experience">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>✦ مركز تجربة العملاء</h2></div>
+        <p class="small">تحليلات نشاط العملاء وشرائحهم وولائهم ومؤشرات الأمان. هذا المركز منفصل عن إدارة الحسابات والأرصدة.</p>
+        <div id="baranExperienceSuiteMount"><section id="baranExperienceSuite" class="baran-experience"><p class="small">جاري تحميل مؤشرات تجربة العملاء...</p></section></div>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="user-directory">
@@ -7764,9 +7772,9 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 }
 </style>
 
-<script src="./customer-experience-suite.js?v=20261119-click-push-count-v1"></script>
+<script src="./customer-experience-suite.js?v=20261119-customer-experience-separated-v2"></script>
 <script src="./customer-center.js?v=20261119-customer-center-session-ui"></script>
-<script src="./direct-chat.js?v=20261119-whatsapp-page-v2"></script>
+<script src="./direct-chat.js?v=20261119-whatsapp-page-v3"></script>
 <style id="baran-push-invite-polish-20261119">
 #baranPushInvite{z-index:100001}
 #baranPushInvite .baran-welcome-content{display:flex;flex-direction:column;gap:12px}

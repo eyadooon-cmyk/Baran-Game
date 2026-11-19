@@ -1,0 +1,68 @@
+name: Customer management and direct chat checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'customer-management-redesign.css'
+      - 'customer-experience-suite.js'
+      - 'direct-chat.js'
+      - 'admin-operations.js'
+      - 'supabase/functions/baran-direct-chat/**'
+      - '.github/workflows/customer-management-check.yml'
+  push:
+    branches: [feature/customer-management-redesign]
+    paths:
+      - 'index.html'
+      - 'customer-management-redesign.css'
+      - 'customer-experience-suite.js'
+      - 'direct-chat.js'
+      - 'supabase/functions/baran-direct-chat/**'
+      - '.github/workflows/customer-management-check.yml'
+
+jobs:
+  customer-management:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check JavaScript syntax
+        run: |
+          node --check customer-experience-suite.js
+          node --check direct-chat.js
+          node --check admin-operations.js
+      - name: Check direct chat Edge Function syntax
+        run: deno check supabase/functions/baran-direct-chat/index.ts
+      - name: Check page wiring and separated customer experience panel
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const html = readFileSync('index.html', 'utf8');
+          const suite = readFileSync('customer-experience-suite.js', 'utf8');
+          const chat = readFileSync('direct-chat.js', 'utf8');
+          const ops = readFileSync('admin-operations.js', 'utf8');
+          const checks = [
+            ['customer experience has a separate admin panel', html.includes('data-admin-panel="customer-experience"') && html.includes('baranExperienceSuiteMount')],
+            ['customer experience script mounts into its dedicated panel', suite.includes('baranExperienceSuiteMount') && suite.includes('mount.append(panel)')],
+            ['direct chat script is loaded with refreshed cache key', html.includes('./direct-chat.js?v=20261119-whatsapp-page-v3')],
+            ['direct chat has admin and customer entry points', chat.includes('openBaranDirectChatAdmin') && chat.includes('openBaranDirectChatCustomer')],
+            ['customer profile opens a direct chat for the selected user', suite.includes('openBaranDirectChatAdmin(customer.id)')],
+            ['both customer lists expose direct chat actions', chat.includes('"baranUserDirectoryList","opsCustomers"')],
+            ['admin customer cards carry stable customer IDs for chat', ops.includes('customer-directory-item') && ops.includes('card.dataset.customerId=customer.id')],
+            ['direct messages are sent through the authenticated Edge Function', chat.includes('/functions/v1/baran-direct-chat') && chat.includes('action:"send"')],
+            ['customer and admin views refresh messages while visible', chat.includes('setInterval') && chat.includes('document.visibilityState!=="visible"')],
+          ];
+          for (const [label, ok] of checks) {
+            console.log((ok ? 'PASS ' : 'FAIL ') + label);
+            if (!ok) process.exitCode = 1;
+          }
+          NODE

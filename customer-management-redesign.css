@@ -1,0 +1,80 @@
+/* BARAN GAME — Customer management refresh (mobile-first) */
+[data-admin-panel="users"]{--cu-border:#49365d;--cu-surface:#17121f;--cu-surface-2:#21182b;--cu-accent:#b88bd8;padding:clamp(10px,2.5vw,22px)!important;background:transparent!important}
+[data-admin-panel="users"]>.admin-subpanel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;margin:0 0 16px;border:1px solid var(--cu-border);border-radius:16px;background:linear-gradient(120deg,#2b1b3a,#17121f 72%);box-shadow:0 8px 24px #0004}
+[data-admin-panel="users"]>.admin-subpanel-head h2{margin:0;color:#f0e5f8;font-size:clamp(18px,4vw,23px)}
+[data-admin-panel="users"]>hr{display:none}
+[data-admin-panel="users"]>h2{margin:18px 0 5px;color:#eadcf5;font-size:clamp(18px,4vw,22px)}
+[data-admin-panel="users"]>.small{margin:0 0 14px;color:#b9a9c9}
+[data-admin-panel="users"] .finance-section{margin:12px 0!important;padding:14px!important;border:1px solid var(--cu-border)!important;border-radius:17px!important;background:linear-gradient(145deg,#20172a,#141019)!important;box-shadow:0 8px 22px #0003}
+[data-admin-panel="users"] .finance-section-heading{align-items:center;gap:10px}
+[data-admin-panel="users"] .finance-section-heading h3{margin:4px 0;color:#f0e5f8;font-size:17px}
+[data-admin-panel="users"] .finance-section-icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid #765792;border-radius:13px;background:#30213d;font-size:21px}
+[data-admin-panel="users"] .customer-directory-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+[data-admin-panel="users"] .customer-stat-card,[data-admin-panel="users"] .customer-directory-stat{min-width:0;padding:12px;border:1px solid #49365d;border-radius:13px;background:linear-gradient(145deg,#2a1d36,#17121f)}
+[data-admin-panel="users"] .customer-stat-copy>span{font-size:11px;color:#c3b1d0;line-height:1.5}
+[data-admin-panel="users"] .customer-stat-copy strong{display:block;margin-top:4px;color:#f3eafa;font-size:clamp(17px,4vw,22px);font-weight:900}
+[data-admin-panel="users"] #opsCustomerSearch{margin:14px 0 9px;padding:13px 14px;border:1px solid #765792;border-radius:13px;background:#100c15;color:#fff}
+[data-admin-panel="users"] #opsCustomerSort,[data-admin-panel="users"] #opsCustomerStatusFilter{display:inline-block;width:calc(50% - 5px);min-width:0;margin:0 0 10px;padding:11px;border:1px solid #49365d;border-radius:12px;background:#17121f;color:#eee5f5;font-size:12px}
+[data-admin-panel="users"] .customer-directory-list{display:grid;gap:10px;margin:12px 0}
+[data-admin-panel="users"] .customer-directory-item{overflow:hidden;border:1px solid #49365d;border-radius:16px;background:linear-gradient(145deg,#21182b,#141019);box-shadow:0 6px 18px #0003}
+[data-admin-panel="users"] .customer-directory-item.expanded{border-color:#a77bc6;box-shadow:0 0 0 1px #a77bc633,0 9px 24px #0005}
+[data-admin-panel="users"] .customer-directory-toggle{display:flex;align-items:center;gap:11px;padding:13px;background:transparent}
+[data-admin-panel="users"] .customer-directory-avatar{width:46px;height:46px;flex:0 0 46px;border:1px solid #8866a1;border-radius:15px;background:#30213d}
+[data-admin-panel="users"] .customer-directory-identity{flex:1;min-width:0}
+[data-admin-panel="users"] .customer-directory-identity strong{display:block;color:#f5edf9;font-size:13px;overflow-wrap:anywhere}
+[data-admin-panel="users"] .customer-directory-identity small{display:block;margin-top:4px;color:#b9a9c9;font-size:11px;overflow-wrap:anywhere}
+[data-admin-panel="users"] .customer-directory-balance{padding:6px 8px;border:1px solid #5c456f;border-radius:10px;background:#2a1d36;color:#e8d5f6;font-size:11px;font-weight:800}
+[data-admin-panel="users"] .customer-directory-details{padding:0 13px 13px}
+[data-admin-panel="users"] .customer-detail-row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #3b2c49;font-size:12px}
+[data-admin-panel="users"] .customer-detail-row span{color:#aa99b8}
+[data-admin-panel="users"] .customer-detail-row strong{color:#eee5f5;text-align:left;overflow-wrap:anywhere}
+[data-admin-panel="users"] .baran-experience{margin:14px 0;padding:0;border:0;background:transparent}
+[data-admin-panel="users"] .baran-experience-hero{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;border:1px solid #644a79;border-radius:17px;background:radial-gradient(circle at 90% 10%,#54356c 0,transparent 42%),linear-gradient(125deg,#2c1c3b,#17121f 76%);box-shadow:0 8px 22px #0004}
+[data-admin-panel="users"] .baran-experience-hero h3{margin:5px 0;color:#f3eafa;font-size:19px}
+[data-admin-panel="users"] .baran-experience-hero p{margin:4px 0 0;color:#c4b4d1;font-size:12px}
+[data-admin-panel="users"] .baran-experience-mark{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border:1px solid #a77bc6;border-radius:14px;background:#3a264b;color:#e7c9fa;font-size:23px}
+[data-admin-panel="users"] .baran-experience-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:11px 0}
+[data-admin-panel="users"] .baran-experience-stat{min-width:0;margin:0;padding:12px;border:1px solid #49365d;border-radius:14px;background:linear-gradient(145deg,#261b31,#17121f);box-shadow:0 5px 15px #0002}
+[data-admin-panel="users"] .baran-experience-stat-icon{display:block;font-size:18px}
+[data-admin-panel="users"] .baran-experience-stat small{display:block;margin:5px 0;color:#bbaac9;font-size:11px;line-height:1.5}
+[data-admin-panel="users"] .baran-experience-stat strong{color:#f2e7f8;font-size:21px;font-weight:900}
+[data-admin-panel="users"] .baran-experience-card{margin:10px 0;padding:13px;border:1px solid #49365d;border-radius:15px;background:#17121f}
+[data-admin-panel="users"] .baran-experience-card h4{margin:0 0 10px;color:#eadcf5;font-size:14px}
+[data-admin-panel="users"] .baran-experience-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+[data-admin-panel="users"] .baran-experience-grid>.baran-experience-card{min-width:0}
+[data-admin-panel="users"] .baran-experience-muted,[data-admin-panel="users"] .baran-experience-footnote{color:#a99ab5;font-size:11px;line-height:1.7}
+[data-admin-panel="users"] .baran-experience-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+[data-admin-panel="users"] .baran-experience-shortcut{display:flex;align-items:center;gap:10px;min-width:0;margin:0;padding:12px;border:1px solid #49365d;border-radius:13px;background:#21182b;color:#eee5f5;text-align:right}
+[data-admin-panel="users"] .baran-experience-shortcut>span:first-child{font-size:20px}
+[data-admin-panel="users"] .baran-experience-shortcut-copy{display:grid;gap:3px;min-width:0}
+[data-admin-panel="users"] .baran-experience-shortcut-copy strong{font-size:12px}
+[data-admin-panel="users"] .baran-experience-shortcut-copy small{color:#b9a9c9;font-size:10px;line-height:1.4}
+[data-admin-panel="users"] .baran-experience-shortcut:disabled{opacity:.65}
+.baran-profile-overlay{padding:12px!important}
+.baran-profile-dialog{width:min(100%,620px)!important;max-height:90dvh!important;overflow:auto!important;border:1px solid #765792!important;border-radius:19px!important;background:linear-gradient(150deg,#21182b,#100d15)!important}
+@media(min-width:680px){
+ [data-admin-panel="users"] .customer-directory-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+ [data-admin-panel="users"] .baran-experience-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+ [data-admin-panel="users"] .baran-experience-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ [data-admin-panel="users"] .baran-experience-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:390px){
+ [data-admin-panel="users"] #opsCustomerSort,[data-admin-panel="users"] #opsCustomerStatusFilter{width:100%}
+ [data-admin-panel="users"] .baran-experience-grid{grid-template-columns:1fr}
+ [data-admin-panel="users"] .customer-directory-toggle{gap:8px;padding:10px}
+ [data-admin-panel="users"] .customer-directory-avatar{width:40px;height:40px;flex-basis:40px}
+}
+
+
+/* Separate customer intelligence panel + direct chat actions */
+[data-admin-panel="customer-experience"]{padding:clamp(10px,2.5vw,22px)!important}
+[data-admin-panel="customer-experience"]>.admin-subpanel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;margin:0 0 14px;border:1px solid #49365d;border-radius:16px;background:linear-gradient(120deg,#2b1b3a,#17121f 72%)}
+[data-admin-panel="customer-experience"]>.admin-subpanel-head h2{margin:0;color:#f0e5f8;font-size:20px}
+[data-admin-panel="customer-experience"] #baranExperienceSuite{margin:0}
+[data-admin-panel="customer-experience"] .baran-experience-hero{border:1px solid #765792;border-radius:17px;padding:16px;background:radial-gradient(circle at 90% 10%,#54356c 0,transparent 42%),linear-gradient(125deg,#2c1c3b,#17121f 76%)}
+[data-admin-panel="customer-experience"] .baran-experience-stat,[data-admin-panel="customer-experience"] .baran-experience-card{border:1px solid #49365d;border-radius:14px;background:linear-gradient(145deg,#261b31,#17121f);padding:12px}
+[data-admin-panel="customer-experience"] .baran-experience-stat strong{color:#f2e7f8}
+[data-admin-panel="customer-experience"] .baran-experience-shortcut{border:1px solid #49365d;border-radius:13px;background:#21182b;color:#eee5f5}
+[data-admin-panel="users"] .customer-directory-item .bcp-open,[data-admin-panel="user-directory"] .customer-directory-item .bcp-open{width:100%;margin:0 0 10px;padding:10px 12px;border:1px solid #8b62a2;border-radius:11px;background:linear-gradient(110deg,#694080,#382449);color:#fff;font-weight:800}
+.baran-profile-dialog .baran-profile-head{flex-wrap:wrap}
+@media(max-width:600px){[data-admin-panel="customer-experience"] .baran-experience-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
