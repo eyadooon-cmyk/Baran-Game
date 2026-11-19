@@ -182,6 +182,8 @@
       box.replaceChildren();
       renderReferrals(result);
       renderRecentCustomers(result.recent || []);
+      window.baranCustomerPresenceById = Object.fromEntries((result.recent || []).map(row => [row.user_id, row.is_online === true]));
+      applyCustomerPresenceDots();
       if (!result.online?.length) {
         box.append(node("div", "customer-directory-empty", "لا يوجد عملاء متصلون حالياً."));
         return;
