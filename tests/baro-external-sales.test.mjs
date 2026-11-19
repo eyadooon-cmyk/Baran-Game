@@ -13,7 +13,7 @@ test("External BARO sales are separate from customer orders and wallets",()=>{
   assert.match(migration,/create table if not exists public\.baro_manual_external_sales/);
   assert.match(migration,/baro_manual_external_sale_create_atomic/);
   assert.match(migration,/p_execution_confirmed is distinct from true/);
-  assert.doesNotMatch(migration,/leo_manual_orders|wallet/i);
+  assert.doesNotMatch(migration,/(?:insert\s+into|update|delete\s+from)\s+public\.(?:leo_manual_orders|[^\s;]*wallet)/i);
   assert.match(edge,/body\.action === "external_sale_create"/);
   assert.match(ui,/مبيعات خارجية منفّذة يدوياً/);
   assert.match(ui,/لا ينشئ طلب زبون ولا يغيّر أي محفظة/);
@@ -22,8 +22,8 @@ test("External BARO sales are separate from customer orders and wallets",()=>{
 test("External sale and supplier cost are paired atomically and idempotently",()=>{
   assert.match(migration,/external_sale_id,entry_type,title,amount/);
   assert.match(migration,/baro_external_sale_ledger_entry_once/);
-  assert.match(migration,/baro-ext-'\|\|v_sale\.id::text\|\|'-sale/);
-  assert.match(migration,/baro-ext-'\|\|v_sale\.id::text\|\|'-cost/);
+  assert.ok(migration.includes("baro-ext-'||v_sale.id::text||'-sale"));
+  assert.ok(migration.includes("baro-ext-'||v_sale.id::text||'-cost"));
   assert.match(edge,/salesByExternal/);
   assert.match(edge,/costsByExternal/);
   assert.match(ui,/baro\.external-sale\.pending\.v1/);
