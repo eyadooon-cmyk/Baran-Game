@@ -48,7 +48,8 @@
       ["👥", "إجمالي العملاء", customers.length],
       ["🛒", "طلبات مكتملة ضمن آخر السجل", completed.length],
       ["⚠️", "طلبات تحتاج انتباه", failed.length],
-      ["🎫", "تذاكر وملاحظات محمّلة", feedback.length]
+      ["🎫", "تذاكر وملاحظات محمّلة", feedback.length],
+      ["🔔", "عملاء لديهم اشتراك إشعارات", customers.filter(c => Number(c.push_subscription_count || 0) > 0).length]
     ];
     panel.replaceChildren();
     const hero = node("div", "baran-experience-hero");
@@ -72,13 +73,13 @@
     filterHead.append(node("h4", "", "🔎 تصنيف وتصفية العملاء"));
     const filterSelect = node("select", "baran-customer-segment-filter");
     filterSelect.style.cssText = "min-width:150px;max-width:100%;padding:11px;border:1px solid #665078;border-radius:10px;background:#100d16;color:#f4eafa;font:inherit";
-    [["all","كل العملاء"],["جديد","عملاء جدد"],["نشط","عملاء نشطون"],["وفيّ","عملاء أوفياء"],["غير نشط","عملاء غير نشطين"]].forEach(([value,label]) => {
+    [["all","كل العملاء"],["جديد","عملاء جدد"],["نشط","عملاء نشطون"],["وفيّ","عملاء أوفياء"],["غير نشط","عملاء غير نشطين"],["push-enabled","🔔 لديهم اشتراك إشعارات"],["push-disabled","🔕 بلا اشتراك مسجّل"]].forEach(([value,label]) => {
       const option = node("option","",label); option.value=value; filterSelect.append(option);
     });
     filterSelect.addEventListener("change", () => applySegmentFilter(filterSelect.value));
     filterHead.append(filterSelect);
     segmentFilter.append(filterHead);
-    segmentFilter.append(node("p","baran-experience-muted","تصنيف تلقائي مبني على سجل الطلبات وآخر طلب؛ لا يغيّر صلاحيات الحساب أو بياناته."));
+    segmentFilter.append(node("p","baran-experience-muted", "حالة الاشتراك المسجّل لا تؤكد أن إذن إشعارات الهاتف ما زال مفعّلاً أو أن الجهاز سيستقبل الرسائل."));
     panel.append(segmentFilter);
     const lower = node("div", "baran-experience-grid");
     const segmentsBox = node("section", "baran-experience-card");
@@ -177,7 +178,6 @@
     const lists = [ $("opsCustomers"), $("baranUserDirectoryList") ].filter(Boolean);
     if (!lists.length) return;
     lists.forEach(list => list.querySelectorAll(".customer-directory-item").forEach(card => {
-      if (card.querySelector(".baran-open-full-profile")) return;
       const summary = card.querySelector(".customer-directory-toggle");
       if (!summary) return;
       const label = summary.querySelector(".customer-directory-identity strong")?.textContent || "";
@@ -202,6 +202,14 @@
         chip.style.cssText = "display:inline-flex;align-items:center;margin:5px 4px;padding:4px 9px;border:1px solid #765792;border-radius:20px;background:#2b1b3a;color:#e8d5f6;font-size:10px;font-weight:800";
         summary.append(chip);
       }
+      const pushCount = Number(customer.push_subscription_count || 0);
+      card.dataset.pushSubscribed = pushCount > 0 ? "yes" : "no";
+      if (!card.querySelector(".baran-customer-push-chip")) {
+        const pushChip = node("span", "baran-customer-push-chip", pushCount > 0 ? ("🔔 اشتراك مسجّل" + (pushCount > 1 ? " · " + pushCount + " أجهزة" : "")) : "🔕 لا يوجد اشتراك");
+        pushChip.style.cssText = "display:inline-flex;align-items:center;margin:4px;padding:4px 9px;border:1px solid " + (pushCount > 0 ? "#39785d" : "#66556f") + ";border-radius:20px;background:" + (pushCount > 0 ? "#173528" : "#282033") + ";color:" + (pushCount > 0 ? "#b8f0cf" : "#c8b8d2") + ";font-size:10px;font-weight:850";
+        summary.append(pushChip);
+      }
+      if (!card.querySelector(".baran-open-full-profile")) {
       const button = node("button", "baran-open-full-profile", "فتح الملف الشامل ←");
       button.type = "button";
       button.setAttribute("aria-label", "فتح الملف الشامل للعميل " + (customer.full_name || customer.email || ""));
@@ -210,13 +218,18 @@
         event.stopPropagation();
         openProfile(customer);
       });
-      card.append(button);
+        card.append(button);
+      }
     }));
   }
   function applySegmentFilter(segment) {
     const lists = [ $("opsCustomers"), $("baranUserDirectoryList") ].filter(Boolean);
     lists.forEach(list => list.querySelectorAll(".customer-directory-item").forEach(card => {
-      card.style.display = segment !== "all" && card.dataset.customerSegment !== segment ? "none" : "";
+      const matches = segment === "all" ||
+        (segment === "push-enabled" && card.dataset.pushSubscribed === "yes") ||
+        (segment === "push-disabled" && card.dataset.pushSubscribed !== "yes") ||
+        card.dataset.customerSegment === segment;
+      card.style.display = matches ? "" : "none";
     }));
   }
   function openProfile(customer) {
