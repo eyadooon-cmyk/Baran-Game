@@ -214,7 +214,7 @@
       const s = result.stats;
       box.replaceChildren();
       const grid = el("div", { class: "baran-push-monitor-grid" });
-      [["إجمالي المحاولات", s.attempts], ["وصلت", s.sent], ["فشلت", s.failed], ["قيد المعالجة", s.processing], ["اشتراكات منتهية", s.expired]].forEach(([label, value]) => {
+      [["إجمالي المحاولات", s.attempts], ["أُرسلت بنجاح", s.sent], ["فشلت", s.failed], ["قيد المعالجة", s.processing], ["اشتراكات منتهية", s.expired]].forEach(([label, value]) => {
         const card = el("div", { class: "baran-push-monitor-card" });
         card.append(el("small", {}, label), el("strong", {}, String(value ?? 0)));
         grid.appendChild(card);
