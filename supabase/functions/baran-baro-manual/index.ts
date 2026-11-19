@@ -76,12 +76,21 @@ Deno.serve(async (req: Request) => {
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
       if (error) return json({ error: "تعذر تحميل طلبات BARO." }, 500);
       const ids = (data ?? []).map((o: any) => o.id);
-      const { data: holds, error: holdError } = ids.length
-        ? await admin.from("baro_manual_wallet_holds").select("order_id,amount,currency,status").in("order_id", ids)
-        : { data: [], error: null };
+      const [{ data: holds, error: holdError }, { data: events, error: eventsError }] = ids.length
+        ? await Promise.all([
+            admin.from("baro_manual_wallet_holds").select("order_id,amount,currency,status").in("order_id", ids),
+            admin.from("leo_manual_order_events").select("order_id,actor_id,event_type,details,created_at").in("order_id", ids).order("created_at", { ascending: true })
+          ])
+        : [{ data: [], error: null }, { data: [], error: null }];
       if (holdError) return json({ error: "تعذر تحميل تسويات محفظة BARO." }, 500);
+      if (eventsError) return json({ error: "تعذر تحميل سجل مراحل طلبات BARO." }, 500);
       const holdMap = new Map((holds ?? []).map((h: any) => [h.order_id, h]));
-      return json({ orders: (data ?? []).map((o: any) => ({...o,wallet_hold:holdMap.get(o.id) ?? null})) });
+      const eventMap = new Map<string, any[]>();
+      for (const event of events ?? []) {
+        if (!eventMap.has(event.order_id)) eventMap.set(event.order_id, []);
+        eventMap.get(event.order_id)!.push(event);
+      }
+      return json({ orders: (data ?? []).map((o: any) => ({...o,wallet_hold:holdMap.get(o.id) ?? null,events:eventMap.get(o.id) ?? []})) });
     }
 
     if (req.method === "GET" && view === "my_wallet") {
