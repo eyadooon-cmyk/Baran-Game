@@ -2892,6 +2892,14 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         <option value="usd">الأعلى رصيداً بالدولار</option>
         <option value="syp">الأعلى رصيداً بالليرة</option>
       </select>
+      <select id="opsCustomerStatusFilter" aria-label="تصفية حسب حالة العميل" onchange="filterBaranCustomerDirectory()">
+        <option value="all">كل حالات العملاء</option>
+        <option value="new">عملاء جدد</option>
+        <option value="active">عملاء نشطون</option>
+        <option value="loyal">عملاء دائمون</option>
+        <option value="inactive">عملاء غير نشطين</option>
+        <option value="banned">حسابات موقوفة</option>
+      </select>
       <div id="opsCustomers" class="customer-directory-list">جاري تحميل المستخدمين...</div>
       
       </div>
@@ -5835,8 +5843,12 @@ function renderBaranUserDirectory(){
     else avatar.textContent=displayName.trim().slice(0,1)||"👤";
     const identity=document.createElement("div");identity.className="customer-directory-identity";identity.style.flex="1";
     const name=document.createElement("strong");name.textContent=(index+1)+". "+displayName;
-    const email=document.createElement("small");email.textContent=item.email||item.member_code||"عضو في BARAN GAME";
-    identity.append(name,email);head.append(avatar,identity);card.appendChild(head);
+    const memberCode=document.createElement("small");memberCode.textContent="ID: "+(item.member_code||"غير متوفر");
+    identity.append(name,memberCode);head.append(avatar,identity);card.appendChild(head);
+    const copyId=document.createElement("button");copyId.type="button";copyId.className="secondary";copyId.textContent="نسخ ID";
+    copyId.style.cssText="width:auto;margin:8px 0;padding:7px 12px;font-size:11px";
+    copyId.addEventListener("click",()=>copyCustomerMemberCode(item.member_code,copyId));
+    card.appendChild(copyId);
     const meta=document.createElement("div");meta.className="customer-directory-details";meta.style.cssText="display:block;margin-top:10px";
     [["📱 الهاتف",item.phone||"غير مسجل"],["🪪 العضوية",item.member_code||"غير متوفر"],["🗓️ التسجيل",item.created_at?new Date(item.created_at).toLocaleString("ar"):"غير متوفر"],["💵 رصيد الدولار",financeMoney(item.balance_usd,"USD")],["💰 رصيد الليرة",financeMoney(item.balance_syp,"SYP")],["📦 الطلبات",Number(item.order_count||0).toLocaleString("en-US")],["⭐ نقاط الولاء",Number(item.loyalty_points||0).toLocaleString("en-US")]].forEach(([label,value])=>{const row=document.createElement("div");row.className="customer-detail-row";const key=document.createElement("span");key.textContent=label;const val=document.createElement("strong");val.textContent=String(value);row.append(key,val);meta.appendChild(row);});card.appendChild(meta);
     const open=document.createElement("button");open.type="button";open.className="baran-open-full-profile";open.textContent="📂 فتح الملف الشامل لهذا المستخدم ←";open.style.cssText="display:block!important;width:100%!important;min-height:48px!important;margin-top:12px!important;padding:12px!important;border:1px solid #b58bd2!important;border-radius:12px!important;background:linear-gradient(100deg,#694080,#382449)!important;color:#fff!important;font-size:14px!important;font-weight:900!important;cursor:pointer!important;touch-action:manipulation!important";
@@ -5845,13 +5857,30 @@ function renderBaranUserDirectory(){
   });
 }
 
+async function copyCustomerMemberCode(memberCode,button){
+  const code=String(memberCode||"").trim();
+  if(!/^BG-[0-9]{6,}$/.test(code)){window.alert("معرّف العميل غير متوفر حالياً.");return;}
+  try{
+    await navigator.clipboard.writeText(code);
+    const old=button?.textContent;
+    if(button){button.textContent="تم النسخ ✓";button.disabled=true;setTimeout(()=>{button.textContent=old||"نسخ ID";button.disabled=false;},1400);}
+  }catch(error){window.prompt("انسخ معرّف العميل:",code);}
+}
+
 function filterBaranCustomerDirectory(){
   const box=document.getElementById("opsCustomers");
   const search=document.getElementById("opsCustomerSearch");
   const sort=document.getElementById("opsCustomerSort");
   if(!box)return;
   const query=(search?.value||"").trim().toLocaleLowerCase("ar");
-  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.display_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
+  const statusFilter=document.getElementById("opsCustomerStatusFilter")?.value||"all";
+  const statusOf=item=>item.account_control?.status==="banned"?"banned":
+    !Number(item.order_count||0)?"new":
+    item.last_order_at&&(Date.now()-new Date(item.last_order_at).getTime()>30*86400000)?"inactive":
+    Number(item.order_count||0)>=5?"loyal":"active";
+  const rows=baranCustomerDirectory.filter(item=>
+    [item.member_code,item.full_name,item.display_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)) &&
+    (statusFilter==="all"||statusOf(item)===statusFilter));
   const sortMode=sort?.value||"newest";
   rows.sort((a,b)=>{
     if(sortMode==="usd")return Number(b.balance_usd||0)-Number(a.balance_usd||0);
@@ -5875,7 +5904,7 @@ function filterBaranCustomerDirectory(){
     else avatar.textContent=displayName.trim().slice(0,1)||"👤";
     const identity=document.createElement("span");identity.className="customer-directory-identity";
     const title=document.createElement("strong");title.textContent=displayName;
-    const subtitle=document.createElement("small");subtitle.textContent=item.email||item.member_code||"عضو في BARAN GAME";
+    const subtitle=document.createElement("small");subtitle.textContent="ID: "+(item.member_code||"غير متوفر");
     identity.append(title,subtitle);
     const balance=document.createElement("span");balance.className="customer-directory-balance";
     balance.textContent=financeMoney(item.balance_usd,"USD");
@@ -5885,14 +5914,17 @@ function filterBaranCustomerDirectory(){
     const activityCount=Number(item.order_count||0);
     const lastOrder=item.last_order_at?new Date(item.last_order_at).toLocaleString("ar"):"لا يوجد طلب سابق";
     const daysSinceLastOrder=item.last_order_at?(Date.now()-new Date(item.last_order_at).getTime())/86400000:Infinity;
-    const segment=!activityCount?"عميل جديد":daysSinceLastOrder>30?"غير نشط":activityCount>=5?"عميل دائم":"عميل نشط";
+    const segment=item.account_control?.status==="banned"?"موقوف":
+      !activityCount?"جديد":daysSinceLastOrder>30?"غير نشط":activityCount>=5?"دائم":"نشط";
+    const lastActivity=item.last_sign_in_at||item.last_order_at||null;
     const detailRows=[
       ["📧","البريد الإلكتروني",item.email||"غير متوفر"],
       ["📱","رقم الهاتف",item.phone||"غير مسجل"],
-      ["🪪","رقم العضوية",item.member_code||"غير متوفر"],
-      ["🏷️","تصنيف العميل",segment],
+      ["🪪","معرّف ID",item.member_code||"غير متوفر"],
+      ["🏷️","حالة العميل",segment],
       ["📦","عدد الطلبات",activityCount.toLocaleString("en-US")],
-      ["🕒","آخر طلب",lastOrder],
+      ["🕒","آخر نشاط",lastActivity?new Date(lastActivity).toLocaleString("ar"):"لا يوجد نشاط مسجل"],
+      ["🛒","آخر طلب",lastOrder],
       ["💳","إجمالي المشتريات بالدولار",financeMoney(item.lifetime_spend_usd,"USD")],
       ["💰","إجمالي المشتريات بالليرة",financeMoney(item.lifetime_spend_syp,"SYP")],
       ["⭐","نقاط الولاء",Number(item.loyalty_points||0).toLocaleString("en-US")],
@@ -5912,6 +5944,10 @@ function filterBaranCustomerDirectory(){
       summary.setAttribute("aria-expanded",isOpen?"true":"false");
       hint.textContent=isOpen?"إخفاء التفاصيل":"تفاصيل";
     });
+    const actionRow=document.createElement("div");actionRow.style.cssText="display:flex;gap:8px;flex-wrap:wrap;padding:0 12px 10px";
+    const copyIdButton=document.createElement("button");copyIdButton.type="button";copyIdButton.className="secondary";copyIdButton.textContent="📋 نسخ ID";
+    copyIdButton.style.cssText="flex:0 0 auto;width:auto;min-height:46px;margin:10px 0;padding:12px";
+    copyIdButton.addEventListener("click",()=>copyCustomerMemberCode(item.member_code,copyIdButton));
     const profileButton=document.createElement("button");
     profileButton.type="button";
     profileButton.className="baran-open-full-profile";
@@ -5924,7 +5960,9 @@ function filterBaranCustomerDirectory(){
       if(typeof window.openBaranCustomerProfile==="function")window.openBaranCustomerProfile(item);
       else window.alert("ملف العميل لم يجهز بعد. حدّث الصفحة ثم حاول مجدداً.");
     });
-    card.append(summary,profileButton,details);
+    profileButton.style.flex="1 1 180px";
+    actionRow.append(copyIdButton,profileButton);
+    card.append(summary,actionRow,details);
     box.appendChild(card);
   });
 }
