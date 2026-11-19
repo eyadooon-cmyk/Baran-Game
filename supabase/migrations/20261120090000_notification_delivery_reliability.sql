@@ -2,7 +2,7 @@
 create table if not exists public.baran_push_delivery_logs (
   id uuid primary key default gen_random_uuid(),
   notification_id uuid not null references public.baran_notifications(id) on delete cascade,
-  subscription_id uuid not null references public.baran_push_subscriptions(id) on delete cascade,
+  subscription_id uuid not null,
   status text not null default 'pending' check (status in ('pending','processing','sent','failed','expired')),
   attempt_count integer not null default 0 check (attempt_count >= 0),
   http_status integer,
