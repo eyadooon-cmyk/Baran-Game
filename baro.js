@@ -2,7 +2,7 @@
 function baroEndpoint(){return SUPABASE_URL+"/functions/v1/baran-baro-manual";}
 const BARO_STATUS={pending:"طلب جديد بانتظار المراجعة",awaiting_payment:"بانتظار الدفع",paid:"تم تأكيد الدفع",in_progress:"قيد التنفيذ اليدوي",completed:"مكتمل",failed:"تعذر التنفيذ",needs_review:"يحتاج مراجعة",cancelled:"ملغي"};
 const BARO_PAYMENT={awaiting_quote:"بانتظار عرض السعر",awaiting_payment:"بانتظار الدفع",verified:"تم تأكيد الدفع",failed:"تعذر تأكيد الدفع"};
-let baroCustomerProducts=[],baroAdminProducts=[],baroAdminOrders=[];
+let baroCustomerProducts=[],baroAdminProducts=[],baroAdminOrders=[],baroCustomerWallet={balance_usd:0,balance_syp:0};
 let baroManualEnabled=false,baroAdminManualEnabled=false;
 const baroEl=id=>document.getElementById(id);
 function baroEscape(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -187,7 +187,8 @@ function renderBaroCustomerCatalog(products){
     cardTop.append(art,preview);
     const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=productName;
     const price=document.createElement("strong");price.className="baro-catalog-product-price";
-    price.textContent=category==="freefire"&&group==="diamonds"&&Number.isFinite(Number(p.sale_price_syp))?Number(p.sale_price_syp).toLocaleString("en-US")+" SYP":"السعر قيد المراجعة";
+    const usd=Number(p.sale_price_usd),syp=Number(p.sale_price_syp);
+    price.textContent=(Number.isFinite(usd)&&usd>0?"$"+usd.toFixed(2):"—")+" · "+(Number.isFinite(syp)&&syp>0?syp.toLocaleString("en-US")+" SYP":"—");
     price.style.cssText="display:block;margin:10px 0 4px;color:#e4c5ff;font-size:1.05rem;font-weight:900;";
     const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
     const status=document.createElement("span");status.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"استقبال الطلبات مغلق حالياً";
@@ -199,7 +200,7 @@ function renderBaroCustomerCatalog(products){
   section.append(content);box.append(section);
  });
  const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";
- footnote.textContent="الأسعار المعروضة بعملة SYP · الطلبات والشحن اليدوي مغلقان حالياً · لا يتم إنشاء طلب أو خصم أي رصيد."
+ footnote.textContent="الأسعار معروضة بالدولار والليرة · يتم حجز قيمة الطلب من المحفظة عند الإرسال، وتُرد تلقائياً إذا تعذر تنفيذ الشحن."
  box.append(footnote);
 }
 async function loadBaroCustomer(){
@@ -207,7 +208,10 @@ async function loadBaroCustomer(){
  if(!catalog||!orders||!currentUser)return;
  catalog.textContent="جاري تحميل منتجات BARO...";
  try{
-  const [c,o]=await Promise.all([baroApi("GET",null,"catalog"),baroApi("GET",null,"my_orders")]);
+  const [c,o,w]=await Promise.all([baroApi("GET",null,"catalog"),baroApi("GET",null,"my_orders"),baroApi("GET",null,"my_wallet")]);
+  baroCustomerWallet=w.wallet||{balance_usd:0,balance_syp:0};
+  const walletLabel=baroEl("baroWalletBalance");
+  if(walletLabel)walletLabel.textContent="رصيدك: $"+Number(baroCustomerWallet.balance_usd||0).toFixed(2)+" · "+Number(baroCustomerWallet.balance_syp||0).toLocaleString("en-US")+" SYP";
   baroCustomerProducts=Array.isArray(c.products)?c.products:[];
   baroManualEnabled=c.manual_enabled===true;
   const submitButton=baroEl("baroSubmitOrder");
@@ -237,6 +241,8 @@ async function loadBaroCustomer(){
   }
   if(select){const first=baroCustomerProducts.find(p=>p.purchase_enabled===true)||baroCustomerProducts[0];if(first)select.value=first.product_code;}
   const playerInput=baroEl("baroPlayerId"),confirmation=baroEl("baroPlayerIdConfirmed");
+  const currencySelect=baroEl("baroWalletCurrency");
+  if(currencySelect)currencySelect.onchange=()=>baroUpdateOrderSubmitState();
   if(select)select.onchange=()=>{baroUpdateQuantityField();baroUpdateOrderSubmitState();};
   if(playerInput)playerInput.oninput=baroUpdateOrderSubmitState;
   if(confirmation)confirmation.onchange=baroUpdateOrderSubmitState;
@@ -262,8 +268,9 @@ function renderBaroCustomerOrders(rows){
   const meta=document.createElement("div");meta.className="small";meta.textContent="المعرّف: "+o.player_id+" | الكمية: "+Number(o.quantity||1).toLocaleString("en-US");
   const status=document.createElement("div");status.textContent=BARO_STATUS[o.status]||o.status;
   const payment=document.createElement("div");payment.className="small";payment.textContent=BARO_PAYMENT[o.payment_status]||o.payment_status;
-  const price=document.createElement("div");price.className="small";price.textContent="السعر: "+(o.customer_price_usd!==null?baroMoney(o.customer_price_usd,"USD"):o.customer_price_syp!==null?baroMoney(o.customer_price_syp,"SYP"):"بانتظار تأكيد الإدارة");
+  const price=document.createElement("div");price.className="small";price.textContent="السعر: "+(o.customer_price_usd!==null?baroMoney(o.customer_price_usd,"USD"):o.customer_price_syp!==null?baroMoney(o.customer_price_syp,"SYP"):"—");
   card.append(h,id,meta,status,payment,price);
+  if(o.wallet_hold){const hold=document.createElement("div");hold.className="small";hold.textContent=o.wallet_hold.status==="reserved"?"المبلغ محجوز من المحفظة بانتظار تنفيذ الشحن":o.wallet_hold.status==="captured"?"تم تثبيت خصم المحفظة بعد نجاح الشحن":"تم رد المبلغ إلى محفظتك";card.append(hold);}
   if(o.payment_method){const m=document.createElement("div");m.className="small";m.textContent="طريقة الدفع: "+o.payment_method;card.append(m);}
   if(o.customer_message){const m=document.createElement("p");m.textContent=o.customer_message;card.append(m);}
   box.append(card);
@@ -282,8 +289,13 @@ async function submitBaroOrder(){
  if(player.length<3||player.length>80){message.textContent="أدخل معرّف اللاعب بشكل صحيح وتأكد منه قبل الإرسال.";return;}
  if(tokens&&(!Number.isInteger(quantity)||quantity<10000||quantity>1000000)){message.textContent="كمية جواكر يجب أن تكون بين 10,000 و1,000,000.";return;}
  if(note.length>500){message.textContent="الملاحظات طويلة جداً.";return;}
- if(!confirm("تأكيد إرسال طلب BARO؟ لن يتم خصم أي مبلغ الآن. ستراجع الإدارة الطلب وترسل السعر وطريقة الدفع."))return;
- const request={product_code:p.product_code,player_id:player,player_id_confirmed:true,quantity,customer_note:note};
+ const walletCurrency=baroEl("baroWalletCurrency")?.value==="USD"?"USD":"SYP";
+ const amount=Number(walletCurrency==="USD"?p.sale_price_usd:p.sale_price_syp);
+ if(!Number.isFinite(amount)||amount<=0){message.textContent="سعر هذه الباقة غير متاح بعملة المحفظة المختارة.";return;}
+ const balance=Number(walletCurrency==="USD"?baroCustomerWallet.balance_usd:baroCustomerWallet.balance_syp);
+ if(balance<amount){message.textContent="رصيدك غير كافٍ. اشحن محفظتك أولاً ثم أعد المحاولة.";return;}
+ if(!confirm("تأكيد طلب "+p.product_name+" بقيمة "+(walletCurrency==="USD"?"$"+amount.toFixed(2):amount.toLocaleString("en-US")+" SYP")+"؟ سيتم حجز المبلغ الآن، وإذا تعذر تنفيذ الشحن سيُرد تلقائياً إلى محفظتك."))return;
+ const request={product_code:p.product_code,player_id:player,player_id_confirmed:true,quantity,customer_note:note,wallet_currency:walletCurrency};
  const fingerprint=await baroRequestFingerprint(request);
  if(!fingerprint){message.textContent="متصفحك لا يدعم حماية إعادة المحاولة. حدّث المتصفح قبل إرسال الطلب.";return;}
  const pending=baroGetPendingSubmission(fingerprint);
@@ -291,7 +303,7 @@ async function submitBaroOrder(){
  try{
   const result=await baroApi("POST",{action:"create_order",...request,idempotency_key:pending.idempotency_key});
   baroClearPendingSubmission();
-  const successMessage="وصل طلبك للإدارة بنجاح. رقم الطلب: "+String(result.order_id||"").slice(0,8)+" — لا يوجد خصم من المحفظة.";
+  const successMessage="تم تسجيل طلبك وحجز المبلغ من المحفظة. رقم الطلب: "+String(result.order_id||"").slice(0,8)+". سيُثبّت الخصم بعد نجاح الشحن ويُرد المبلغ إذا فشل التنفيذ.";
   message.textContent=successMessage;
   baroEl("baroPlayerId").value="";baroEl("baroCustomerNote").value="";baroEl("baroPlayerIdConfirmed").checked=false;baroUpdateOrderSubmitState();
   try{await loadBaroCustomer();}catch{message.textContent=successMessage+" تعذر تحديث قائمة الطلبات؛ حدّث الصفحة لرؤية الطلب.";}
