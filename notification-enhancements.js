@@ -271,6 +271,7 @@
   if (document.readyState !== "loading") {
     installStyles();
     mountPreferences();
+    mountPushMonitor();
     if (typeof currentUser !== "undefined" && currentUser) { startRealtime(); loadPreferences(); }
   }
 })();
