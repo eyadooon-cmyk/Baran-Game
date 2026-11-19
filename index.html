@@ -6589,7 +6589,25 @@ async function restoreSession(){
         (verified.user.app_metadata?.providers || []).includes("google") ||
         (verified.user.identities || []).some(identity => identity.provider === "google");
       if(googleIdentity){
-        showApp(verified.user);
+        let welcomeUser=verified.user;
+        const metadata=welcomeUser.user_metadata||{};
+        const hasWelcomeState=Object.prototype.hasOwnProperty.call(metadata,"baran_welcome_pending");
+        const createdAt=Date.parse(welcomeUser.created_at||"");
+        const accountAge=Date.now()-createdAt;
+        // Google OAuth does not pass through our email sign-up form, so mark genuinely new Google accounts here.
+        if(!hasWelcomeState&&Number.isFinite(createdAt)&&accountAge>=0&&accountAge<15*60*1000){
+          try{
+            const {data:welcomeUpdate,error:welcomeUpdateError}=await sb.auth.updateUser({
+              data:{...metadata,baran_welcome_pending:true}
+            });
+            if(!welcomeUpdateError&&welcomeUpdate?.user)welcomeUser=welcomeUpdate.user;
+            else welcomeUser={...welcomeUser,user_metadata:{...metadata,baran_welcome_pending:true}};
+          }catch(welcomeError){
+            console.warn("تعذر تهيئة ترحيب حساب Google الجديد:",welcomeError);
+            welcomeUser={...welcomeUser,user_metadata:{...metadata,baran_welcome_pending:true}};
+          }
+        }
+        showApp(welcomeUser);
       }else{
         await prepareLock();
       }
