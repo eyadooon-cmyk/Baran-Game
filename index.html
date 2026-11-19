@@ -17,6 +17,7 @@
 <style>
 :root{--green:#8b6ba8;--bg:#09080d;--panel:#17131b;--line:#40334b;--muted:#b9a9c9}
 *{box-sizing:border-box}
+#sessionBoot{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at 50% 35%,#24172f 0%,#09080d 68%);color:#f3e9fa;font-family:Cairo,Arial,sans-serif}#sessionBoot .session-boot-mark{width:58px;height:58px;display:grid;place-items:center;border:1px solid #b996d1;border-radius:18px;background:linear-gradient(145deg,#5b3d70,#21172d);font:900 30px Orbitron,Arial,sans-serif;box-shadow:0 0 28px #9b70bd55}#sessionBoot strong{font:900 17px Orbitron,Cairo,sans-serif;letter-spacing:1px}#sessionBoot span{font-size:12px;color:#b9a9c9}#sessionBoot.done{display:none!important}
 body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
 header{position:relative;isolation:isolate;min-height:260px;padding:42px 16px 34px;text-align:center;overflow:hidden;background:linear-gradient(110deg,rgba(9,8,13,.94),rgba(25,18,33,.72) 52%,rgba(9,8,13,.9)),url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=85") center 42%/cover no-repeat;border-bottom:2px solid var(--green);box-shadow:0 12px 35px #0008}
 header:before{content:"";position:absolute;inset:-45%;z-index:-1;background:radial-gradient(circle at 50% 45%,rgba(155,105,190,.24),transparent 36%);animation:baranGlow 7s ease-in-out infinite alternate}
@@ -1939,7 +1940,8 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
   <div class="header-tag">GAMING • DIGITAL • REWARDS</div>
 </header>
 
-<div id="authScreen">
+<div id="sessionBoot" role="status" aria-live="polite"><div class="session-boot-mark">B</div><strong>BARAN GAME</strong><span>جاري تجهيز متجرك...</span></div>
+<div id="authScreen" class="hidden">
   <div class="auth-card">
     <div class="auth-logo">BARAN GAME</div>
     <h2 style="text-align:center">مرحباً بعودتك ✨</h2>
@@ -3516,6 +3518,7 @@ function say(text){
 }
 
 function showLogin(text){
+  document.getElementById("sessionBoot")?.classList.add("done");
   if(typeof stopBaranNotificationPolling==="function")stopBaranNotificationPolling();
   if(baranAdminNotificationPoll){clearInterval(baranAdminNotificationPoll);baranAdminNotificationPoll=null;}
   currentUser=null;
@@ -4254,6 +4257,7 @@ async function showBaranFirstWelcome(user){
 }
 
 function showApp(user){
+  document.getElementById("sessionBoot")?.classList.add("done");
   currentUser=user;
   updateBaranAccountIdentity(user);
   showBaranFirstWelcome(user);
@@ -4373,6 +4377,7 @@ async function signIn(){
 }
 
 function showLock(mode){
+  document.getElementById("sessionBoot")?.classList.add("done");
   document.getElementById("appShell").classList.add("hidden");
   document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("lockScreen").classList.remove("hidden");
@@ -6536,6 +6541,7 @@ async function restoreSession(){
 
 sb.auth.onAuthStateChange((event,session)=>{
   if(event==="PASSWORD_RECOVERY"){
+    document.getElementById("sessionBoot")?.classList.add("done");
     passwordRecoveryActive=true;
     if(typeof showPasswordRecovery==="function")showPasswordRecovery();
   }
