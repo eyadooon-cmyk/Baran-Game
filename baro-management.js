@@ -148,7 +148,7 @@
       '<label>ملاحظات داخلية<textarea id="baroExternalNotes" rows="2"></textarea></label>'+
       '<label><input type="checkbox" id="baroExternalConfirmed"> أؤكد أن المبلغ قُبض وأن شحن الباقة نُفّذ فعلياً.</label>'+
       '<button type="button" id="baroExternalSave">تسجيل البيع الخارجي والقيود المالية</button></div></div>'+
-      '<div class="baro-mgmt-panel"><h3>سجل المبيعات الخارجية</h3>'+
+      '<div class="baro-mgmt-panel"><h3>سجل المبيعات الخارجية</h3><p class="baro-mgmt-muted">إذا لم يظهر المورد بالقائمة، أضفه أولاً من قسم موردي BARO. تصدير هذا السجل يشمل بيانات البيع والتكلفة والمراجع الأصلية.</p><button type="button" id="baroExternalExport" class="secondary">تصدير سجل المبيعات الخارجية CSV</button>'+
       ((financeData.external_sales||[]).length?table(["التاريخ","المنتج","الزبون / اللاعب","المورد","المقبوض","التكلفة","الربح USD","طريقة القبض"],financeData.external_sales.map(s=>row([
         new Date(s.created_at).toLocaleString("ar"),s.product_name,[s.customer_name,s.player_id].filter(Boolean).join(" / ")||"—",
         s.supplier_name_snapshot,s.sale_currency==="SYP"?fmtSyp(s.sale_amount):fmtUsd(s.sale_amount),
@@ -168,6 +168,10 @@
       (entries.length?table(["التاريخ","نوع الحركة","البيان","المبلغ والعملة الأصلية","المكافئ USD","حالة الترحيل","مرجع الطلب / البيع الخارجي"],entries.map(e=>row([new Date(e.created_at).toLocaleString("ar"),typeLabels[e.entry_type]||e.entry_type,e.title,e.currency==="SYP"?fmtSyp(e.amount):fmtUsd(e.amount),fmtUsd(e.amount_usd_equivalent),e.status==="posted"?"مرحّلة":e.status==="pending"?"بانتظار الترحيل":e.status,e.external_sale_id||e.order_id]))):'<div class="baro-mgmt-empty">لا توجد حركات مالية فعلية مسجلة بعد. ستظهر المبيعات والتكاليف هنا بعد الطلبات المنفذة والمقبوضة.</div>')+'</div>'+
       (can("settings")?'<div class="baro-mgmt-panel"><h3>إعدادات مالية BARO</h3><p class="baro-mgmt-muted">سعر الصرف وحد التنبيه وهما خاصان بعمليات BARO فقط، ولا يغيران إعدادات الشحن الآلي أو المحافظ.</p><div class="baro-mgmt-form">'+field("سعر الدولار مقابل SYP","baroSettingRate","number","مثال: 156",currentSettings.usd_syp_rate)+field("حد التنبيه لهامش الربح %","baroSettingMargin","number","15",currentSettings.low_margin_percent==null?15:currentSettings.low_margin_percent)+selectField("العملة الافتراضية","baroSettingCurrency",[["USD","الدولار USD"],["SYP","الليرة السورية SYP"]])+'<button type="button" id="baroSettingsSave">حفظ الإعدادات المالية</button></div></div>':"");
     if($("baroSettingsSave")){$("baroSettingCurrency").value=currentSettings.default_currency||"USD";$("baroSettingsSave").onclick=async()=>{const rateInput=$("baroSettingRate").value.trim(),rate=rateInput===""?null:Number(rateInput),margin=Number($("baroSettingMargin").value),currency=$("baroSettingCurrency").value;if((rate!==null&&(!Number.isFinite(rate)||rate<=0))||!Number.isFinite(margin)||margin<0||margin>100){msg("تحقق من سعر الصرف وهامش الربح.");return;}try{await post({action:"settings_save",usd_syp_rate:rate,low_margin_percent:margin,default_currency:currency});msg("تم حفظ إعدادات BARO المالية.");await loadFinance();}catch(e){msg(e.message);}};}
+    $("baroExternalExport").onclick=()=>exportCsv("baro-external-sales.csv",[
+      ["date","product","customer","player_id","supplier","sale_amount","sale_currency","sale_usd","supplier_cost","supplier_cost_currency","supplier_cost_usd","profit_usd","payment_method","customer_reference","supplier_reference","notes"],
+      ...(financeData.external_sales||[]).map(s=>[s.created_at,s.product_name,s.customer_name,s.player_id,s.supplier_name_snapshot,s.sale_amount,s.sale_currency,s.sale_usd_equivalent,s.supplier_cost_amount,s.supplier_cost_currency,s.supplier_cost_usd_equivalent,s.profit_usd_equivalent,s.payment_method,s.customer_reference,s.supplier_reference,s.notes])
+    ]);
     $("baroExternalSave").onclick=async()=>{
       if(financeSubmitInFlight)return;
       const button=$("baroExternalSave");
