@@ -1232,6 +1232,121 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 #authScreen .auth-card>p.small:last-of-type{margin:18px 0 5px!important;color:#9587a1;font-size:11px;line-height:1.9}
 #authScreen #message{margin-top:10px;padding:10px 12px;border:1px solid rgba(163,126,190,.2);border-radius:11px;background:rgba(10,7,15,.45);color:#d6c1e6;font-size:12px;text-align:center}
 @media(max-width:520px){#authScreen:not(.hidden){min-height:0;padding:24px 13px 32px}#authScreen .auth-card{border-radius:22px;padding:23px 18px}#authScreen .auth-card h2{font-size:21px}}
+
+/* BARAN LOGIN REDESIGN V2 — immersive premium mobile-first */
+body:has(#authScreen:not(.hidden))>header{display:none!important}
+body:has(#authScreen:not(.hidden)){background:#08060d!important}
+#authScreen:not(.hidden){
+  min-height:100svh!important;box-sizing:border-box;position:relative;isolation:isolate;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(24px,6vh,64px) 16px!important;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 14% 18%,rgba(137,75,190,.24),transparent 34%),
+    radial-gradient(ellipse at 88% 78%,rgba(83,47,133,.23),transparent 35%),
+    linear-gradient(145deg,#08060d 0%,#100b18 48%,#08060d 100%)!important;
+}
+#authScreen:not(.hidden)::before{
+  content:"";position:absolute;z-index:-1;width:min(78vw,620px);aspect-ratio:1;
+  top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;
+  border:1px solid rgba(197,151,229,.12);
+  box-shadow:0 0 0 34px rgba(197,151,229,.025),0 0 0 82px rgba(197,151,229,.018),0 0 100px rgba(132,75,177,.14);
+}
+#authScreen:not(.hidden)::after{
+  content:"BARAN  •  GAMES  •  DIGITAL  •  REWARDS";position:absolute;bottom:18px;left:0;right:0;
+  text-align:center;color:rgba(215,192,232,.42);font:700 9px/1.5 Arial,sans-serif;letter-spacing:2.8px;
+}
+#authScreen .auth-card{
+  width:min(100%,440px)!important;max-width:440px!important;margin:0!important;
+  padding:clamp(26px,6vw,42px)!important;box-sizing:border-box;
+  border:1px solid rgba(192,151,222,.28)!important;border-radius:30px!important;
+  background:linear-gradient(155deg,rgba(35,24,48,.97),rgba(15,10,22,.99) 58%,rgba(19,12,28,.98))!important;
+  box-shadow:0 32px 90px rgba(0,0,0,.68),0 0 55px rgba(140,84,180,.13),inset 0 1px rgba(255,255,255,.09)!important;
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+}
+#authScreen .auth-card::before{
+  content:"";position:absolute;top:0;left:14%;right:14%;height:2px;
+  background:linear-gradient(90deg,transparent,#e4c5ff 48%,transparent);
+  box-shadow:0 0 24px rgba(211,169,244,.75);
+}
+#authScreen .auth-logo{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  margin:0 auto 28px!important;color:#fff!important;
+  font-family:Orbitron,Cairo,Arial,sans-serif!important;font-size:clamp(23px,6vw,30px)!important;
+  font-weight:900!important;letter-spacing:2px!important;text-shadow:0 4px 24px rgba(191,139,228,.35)!important;
+}
+#authScreen .auth-logo::before{
+  content:"B";width:52px;height:52px;flex:0 0 52px;display:grid;place-items:center;
+  border:1px solid rgba(224,193,249,.8);border-radius:17px;
+  background:linear-gradient(145deg,#a66bc9,#50316e 58%,#241630);
+  color:#fff;font:900 27px Orbitron,Arial,sans-serif;
+  box-shadow:0 8px 24px rgba(119,66,158,.38),inset 0 1px rgba(255,255,255,.35);
+}
+#authScreen .auth-card h2{
+  margin:0 0 9px!important;color:#fff!important;font-size:clamp(23px,5vw,27px)!important;
+  font-weight:900!important;letter-spacing:-.3px;
+}
+#authScreen .auth-card>p.small{
+  margin:0 0 24px!important;color:#b9a9c8!important;font-size:13px!important;line-height:1.9!important;
+}
+#authScreen #email,#authScreen #password{
+  display:block;width:100%;box-sizing:border-box;min-height:58px!important;
+  margin:13px 0!important;padding:16px 18px!important;
+  border:1px solid #493653!important;border-radius:16px!important;
+  background:rgba(8,6,13,.72)!important;color:#fff!important;font-size:15px!important;
+  box-shadow:inset 0 1px 4px rgba(0,0,0,.35);
+  transition:border-color .2s,box-shadow .2s,transform .2s!important;
+}
+#authScreen #email:focus,#authScreen #password:focus{
+  outline:none!important;border-color:#c99be9!important;
+  box-shadow:0 0 0 4px rgba(174,126,207,.13),0 0 25px rgba(174,126,207,.12)!important;
+  transform:translateY(-1px);
+}
+#authScreen #email::placeholder,#authScreen #password::placeholder{color:#887994!important}
+#authScreen #loginButton{
+  display:block;width:100%;min-height:57px!important;margin:19px 0 12px!important;
+  border:1px solid rgba(244,222,255,.75)!important;border-radius:16px!important;
+  background:linear-gradient(110deg,#e5c9fa 0%,#bd8ce0 48%,#9560bd 100%)!important;
+  color:#1b1024!important;font-size:16px!important;font-weight:900!important;
+  letter-spacing:.2px;box-shadow:0 12px 28px rgba(141,82,184,.3),inset 0 1px rgba(255,255,255,.55)!important;
+  transition:transform .2s,filter .2s!important;
+}
+#authScreen #loginButton:active{transform:translateY(1px) scale(.99);filter:brightness(.96)}
+#authScreen #googleLoginButton{
+  display:block;width:100%;min-height:54px!important;margin:0 0 14px!important;
+  border:1px solid #d8cde1!important;border-radius:16px!important;
+  background:#f7f4fa!important;color:#24182d!important;font-size:14px!important;font-weight:850!important;
+  box-shadow:0 5px 18px rgba(0,0,0,.18)!important;
+}
+#authScreen #signupButton{
+  display:block;width:100%;min-height:50px!important;margin:0 0 8px!important;
+  border:1px solid #77558e!important;border-radius:15px!important;
+  background:rgba(70,45,89,.48)!important;color:#eadcf5!important;font-size:14px!important;font-weight:850!important;
+}
+#authScreen #forgotPasswordButton{
+  display:block;width:100%;min-height:42px!important;margin:0!important;
+  border:0!important;background:transparent!important;color:#c9addd!important;font-size:13px!important;
+}
+#authScreen .auth-card>p.small:last-of-type{
+  margin:23px 0 3px!important;padding-top:17px;border-top:1px solid rgba(177,139,201,.15);
+  color:#8e7e9b!important;font-size:11px!important;line-height:2!important;
+}
+#authScreen .auth-card>p.small:last-of-type a{color:#d8b5f3!important;text-decoration:none}
+#authScreen #message{
+  margin-top:13px!important;padding:11px 13px!important;border:1px solid rgba(163,126,190,.22)!important;
+  border-radius:13px!important;background:rgba(8,6,13,.55)!important;color:#d9c4e8!important;
+  font-size:12px!important;text-align:center!important;
+}
+@media(min-width:760px){
+  #authScreen .auth-card{padding:42px 44px!important}
+}
+@media(max-width:520px){
+  #authScreen:not(.hidden){min-height:100svh!important;padding:24px 15px 52px!important}
+  #authScreen .auth-card{padding:28px 21px!important;border-radius:26px!important}
+  #authScreen .auth-logo{margin-bottom:25px!important}
+  #authScreen .auth-card h2{font-size:23px!important}
+  #authScreen #email,#authScreen #password{min-height:55px!important}
+}
+
 @media(prefers-reduced-motion:reduce){#authScreen *{transition:none!important}}
 
 </style>
