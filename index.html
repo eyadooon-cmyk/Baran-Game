@@ -5818,7 +5818,7 @@ function renderBaranUserDirectory(){
   const search=document.getElementById("baranUserDirectorySearch");
   const sort=document.getElementById("baranUserDirectorySort");
   const query=(search?.value||"").trim().toLocaleLowerCase("ar");
-  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
+  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.display_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
   const mode=sort?.value||"newest";
   rows.sort((a,b)=>mode==="usd"?Number(b.balance_usd||0)-Number(a.balance_usd||0):mode==="syp"?Number(b.balance_syp||0)-Number(a.balance_syp||0):new Date(b.created_at||0)-new Date(a.created_at||0));
   const stats=document.getElementById("baranUserDirectoryStats");
@@ -5851,7 +5851,7 @@ function filterBaranCustomerDirectory(){
   const sort=document.getElementById("opsCustomerSort");
   if(!box)return;
   const query=(search?.value||"").trim().toLocaleLowerCase("ar");
-  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
+  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.display_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
   const sortMode=sort?.value||"newest";
   rows.sort((a,b)=>{
     if(sortMode==="usd")return Number(b.balance_usd||0)-Number(a.balance_usd||0);
