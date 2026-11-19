@@ -64,3 +64,17 @@
  [data-admin-panel="users"] .customer-directory-toggle{gap:8px;padding:10px}
  [data-admin-panel="users"] .customer-directory-avatar{width:40px;height:40px;flex-basis:40px}
 }
+
+
+/* Separate customer intelligence panel + direct chat actions */
+[data-admin-panel="customer-experience"]{padding:clamp(10px,2.5vw,22px)!important}
+[data-admin-panel="customer-experience"]>.admin-subpanel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;margin:0 0 14px;border:1px solid #49365d;border-radius:16px;background:linear-gradient(120deg,#2b1b3a,#17121f 72%)}
+[data-admin-panel="customer-experience"]>.admin-subpanel-head h2{margin:0;color:#f0e5f8;font-size:20px}
+[data-admin-panel="customer-experience"] #baranExperienceSuite{margin:0}
+[data-admin-panel="customer-experience"] .baran-experience-hero{border:1px solid #765792;border-radius:17px;padding:16px;background:radial-gradient(circle at 90% 10%,#54356c 0,transparent 42%),linear-gradient(125deg,#2c1c3b,#17121f 76%)}
+[data-admin-panel="customer-experience"] .baran-experience-stat,[data-admin-panel="customer-experience"] .baran-experience-card{border:1px solid #49365d;border-radius:14px;background:linear-gradient(145deg,#261b31,#17121f);padding:12px}
+[data-admin-panel="customer-experience"] .baran-experience-stat strong{color:#f2e7f8}
+[data-admin-panel="customer-experience"] .baran-experience-shortcut{border:1px solid #49365d;border-radius:13px;background:#21182b;color:#eee5f5}
+[data-admin-panel="users"] .customer-directory-item .bcp-open,[data-admin-panel="user-directory"] .customer-directory-item .bcp-open{width:100%;margin:0 0 10px;padding:10px 12px;border:1px solid #8b62a2;border-radius:11px;background:linear-gradient(110deg,#694080,#382449);color:#fff;font-weight:800}
+.baran-profile-dialog .baran-profile-head{flex-wrap:wrap}
+@media(max-width:600px){[data-admin-panel="customer-experience"] .baran-experience-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
