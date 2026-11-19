@@ -5916,7 +5916,7 @@ function filterBaranCustomerDirectory(){
     const daysSinceLastOrder=item.last_order_at?(Date.now()-new Date(item.last_order_at).getTime())/86400000:Infinity;
     const segment=item.account_control?.status==="banned"?"موقوف":
       !activityCount?"جديد":daysSinceLastOrder>30?"غير نشط":activityCount>=5?"دائم":"نشط";
-    const lastActivity=item.last_sign_in_at||item.last_order_at||null;
+    const lastActivity=item.last_activity_at||item.last_sign_in_at||item.last_order_at||null;
     const detailRows=[
       ["📧","البريد الإلكتروني",item.email||"غير متوفر"],
       ["📱","رقم الهاتف",item.phone||"غير مسجل"],
