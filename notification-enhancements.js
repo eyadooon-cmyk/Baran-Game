@@ -184,7 +184,8 @@
       .baran-notification-time-row{display:flex;gap:10px;margin-top:8px}
       .baran-notification-time-row label{display:flex;flex:1;align-items:center;gap:7px;color:#cbbbd8;font-size:12px}
       .baran-notification-time-row input{min-width:0;width:100%;padding:9px;border:1px solid #594667;border-radius:9px;background:#100d15;color:#fff}
-      #baranNotificationPrefsStatus{min-height:18px;margin:8px 0 0;color:#c8addd}\n
+      #baranNotificationPrefsStatus{min-height:18px;margin:8px 0 0;color:#c8addd}
+
       .baran-push-monitor{margin-top:14px;padding:13px;border:1px solid #493957;border-radius:14px;background:#17131e}
       .baran-push-monitor h4{margin:0 0 6px}
       .baran-push-monitor button{padding:9px 12px;border:1px solid #69517b;border-radius:10px;background:#2b2035;color:#f6edff}
@@ -247,16 +248,24 @@
     anchor.insertAdjacentElement("afterend", panel);
     document.getElementById("baranPushMonitorRefresh")?.addEventListener("click", refreshPushMonitor);
   }
-\n  window.startBaranNotificationPolling = startRealtime;
+
+  window.startBaranNotificationPolling = startRealtime;
   window.stopBaranNotificationPolling = stopRealtime;
   window.refreshBaranNotificationPreferences = loadPreferences;
   window.addEventListener("online", () => { startRealtime(); refreshInbox(); });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") { startRealtime(); refreshInbox(); }
   });
-  if (typeof sb !== "undefined" && sb.auth?.onAuthStateChange) {\n    sb.auth.onAuthStateChange((_event, session) => {\n      if (session?.user?.id) { startRealtime(); loadPreferences(); }\n      else stopRealtime();\n    });\n  }\n  document.addEventListener("DOMContentLoaded", () => {
+  if (typeof sb !== "undefined" && sb.auth?.onAuthStateChange) {
+    sb.auth.onAuthStateChange((_event, session) => {
+      if (session?.user?.id) { startRealtime(); loadPreferences(); }
+      else stopRealtime();
+    });
+  }
+  document.addEventListener("DOMContentLoaded", () => {
     installStyles();
     mountPreferences();
+    mountPushMonitor();
     if (typeof currentUser !== "undefined" && currentUser) { startRealtime(); loadPreferences(); }
   });
   if (document.readyState !== "loading") {
