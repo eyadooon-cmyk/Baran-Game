@@ -129,6 +129,7 @@ footer{text-align:center;padding:25px;color:#a99ab5}
 .games-back-button:active{transform:scale(.97)}
 .store-toolbar{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#100b16;border-bottom:1px solid var(--line);box-shadow:0 5px 18px #0006}
 .menu-toggle{width:46px;height:42px;padding:7px;background:#2b1b3a;color:var(--green);border:1px solid #59456b;border-radius:11px;font-size:25px;line-height:1}
+.section-refresh-button{flex:0 0 39px;width:39px;height:38px;padding:0;border:1px solid #665078;border-radius:11px;background:linear-gradient(145deg,#392749,#21172c);color:#e8d5f6;font-size:25px;line-height:1;display:grid;place-items:center;box-shadow:0 3px 12px #0004}.section-refresh-button:disabled{opacity:.65}.section-refresh-button.is-loading{animation:baranSectionRefreshSpin .8s linear infinite}@keyframes baranSectionRefreshSpin{to{transform:rotate(360deg)}}
 .notification-bell{position:relative;width:42px;height:40px;padding:6px;background:#241a2e;color:#eee;border:1px solid #59456b;border-radius:11px;font-size:19px}
 .notification-count{position:absolute;top:-7px;left:-7px;min-width:18px;height:18px;padding:1px 4px;border-radius:20px;background:#d94b66;color:#fff;font-size:11px;font-weight:800}
 .notification-box{margin:14px 0;padding:12px;border:1px solid #51405f;border-radius:14px;background:#17121e}
@@ -2017,6 +2018,7 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
     <div class="toolbar-brand">BARAN <span>GAME</span></div>
     <button id="sectionBackButton" class="section-back-button hidden baran-back-button" type="button" onclick="goBackSection()" aria-label="رجوع إلى القسم السابق">← رجوع</button>
     <div id="currentSectionLabel" class="small">الرئيسية</div>
+    <button id="sectionRefreshButton" class="section-refresh-button" type="button" onclick="refreshCurrentSection()" aria-label="تحديث القسم الحالي" title="تحديث القسم الحالي">↻</button>
     <button class="notification-bell" type="button" onclick="showSection('settings',null)" aria-label="الإعدادات">⚙️</button>
     <button id="notificationBell" class="notification-bell" type="button" onclick="openCustomerNotifications()" aria-label="فتح الإشعارات">🔔<span id="notificationCount" class="notification-count hidden">0</span></button>
   </div>
@@ -4115,6 +4117,67 @@ function showSection(id,button,options){
   if(id==="settings"&&typeof refreshBaranPushSettingsStatus==="function")refreshBaranPushSettingsStatus();
   updateSectionBackButton();
   window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function refreshCurrentSection(){
+  const button=document.getElementById("sectionRefreshButton");
+  const section=document.querySelector("main > section[id]:not(.hidden)");
+  if(!button||!section||!currentUser||button.disabled)return;
+  const id=section.id;
+  button.disabled=true;
+  button.classList.add("is-loading");
+  button.setAttribute("aria-busy","true");
+  button.title="جاري تحديث القسم...";
+  try{
+    switch(id){
+      case "home":
+        baranStoreSearchProducts=null;baranStoreSearchLoad=null;
+        await loadBaranStoreSearchProducts();
+        break;
+      case "games":
+      case "services":
+        baranStoreSearchProducts=null;baranStoreSearchLoad=null;
+        await loadBaranStoreSearchProducts();
+        break;
+      case "pubgStore":
+        baranStoreSearchProducts=null;baranStoreSearchLoad=null;
+        await loadBaranGameCatalog("PUBG");
+        break;
+      case "freeFireStore":
+        baranStoreSearchProducts=null;baranStoreSearchLoad=null;
+        await loadBaranGameCatalog("FREEFIRE");
+        break;
+      case "chatgptStore": await loadBaranServiceCatalog("ai","chatgptProductCatalog","باقات ChatGPT","🤖"); break;
+      case "vpnStore": await loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️"); break;
+      case "giftCardsStore": await loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁"); break;
+      case "appsStore": await loadBaranServiceCatalog("app","appsProductCatalog","التطبيقات المدفوعة","📱"); break;
+      case "wallet": await loadWallet(); break;
+      case "orders": await loadMyOrders(); break;
+      case "rewards": if(typeof loadMyRewards==="function")await loadMyRewards(); break;
+      case "settings": if(typeof refreshBaranPushSettingsStatus==="function")await refreshBaranPushSettingsStatus(); break;
+      case "account":
+        if(typeof loadBaranMemberCode==="function")await loadBaranMemberCode();
+        break;
+      case "paymentMethods":
+      case "shamCashPayment": await loadDepositRequests(); break;
+      case "notifications":
+        if(typeof loadCustomerNotifications==="function")await loadCustomerNotifications();
+        break;
+      case "admin": if(typeof loadAdminPanel==="function")await loadAdminPanel(); break;
+      case "staffTasks": if(typeof loadStaffTasks==="function")await loadStaffTasks(); break;
+      default:
+        if(typeof showSection==="function")showSection(id,null,{fromHistory:true});
+    }
+    button.title="تم تحديث القسم";
+  }catch(error){
+    console.error("Baran section refresh:",error);
+    button.title="تعذر التحديث — حاول مرة أخرى";
+  }finally{
+    button.disabled=false;
+    button.classList.remove("is-loading");
+    button.removeAttribute("aria-busy");
+    window.setTimeout(()=>{if(button.isConnected)button.title="تحديث القسم الحالي";},1800);
+  }
 }
 
 function showShamCashDeposit(){
