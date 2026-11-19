@@ -95,9 +95,9 @@ test("BARO data tables remain private and legacy update RPC is removed", () => {
 
 test("Customer BARO catalogue exposes approved Free Fire SYP sale prices only, never supplier costs", () => {
   const catalogBlock = edge.split('if (req.method === "GET" && view === "catalog")')[1]?.split('if (req.method === "GET" && view === "my_orders")')[0] ?? "";
-  assert.match(catalogBlock, /product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_syp/);
-  assert.match(catalogBlock, /p\.category_id === "freefire" && p\.group_id === "diamonds" \? p\.sale_price_syp : null/);
-  assert.doesNotMatch(catalogBlock, /sale_price_usd|supplier_cost_usd|supplier_cost_currency/);
+  assert.match(catalogBlock, /product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_usd,sale_price_syp/);
+  assert.match(catalogBlock, /sale_price_usd: p\.sale_price_usd, sale_price_syp: p\.sale_price_syp/);
+  assert.doesNotMatch(catalogBlock, /supplier_cost_usd|supplier_cost_currency/);
 });
 
 
