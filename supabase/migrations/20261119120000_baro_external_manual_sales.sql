@@ -40,6 +40,7 @@ create index if not exists baro_external_sales_supplier_idx
 
 alter table public.baro_manual_external_sales enable row level security;
 revoke all on public.baro_manual_external_sales from public,anon,authenticated;
+grant select on public.baro_manual_external_sales, public.baro_manual_suppliers to service_role;
 drop policy if exists baro_manual_external_sales_deny_client_access on public.baro_manual_external_sales;
 create policy baro_manual_external_sales_deny_client_access
   on public.baro_manual_external_sales for all to anon,authenticated
