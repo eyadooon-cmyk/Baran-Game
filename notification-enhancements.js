@@ -41,11 +41,13 @@
   function mountPreferences() {
     const host = settingsHost();
     if (!host || document.getElementById("baranNotificationPreferences")) return;
-    const panel = el("section", { id: "baranNotificationPreferences", class: "baran-notification-preferences" });
-    panel.append(
-      el("h3", {}, "تفضيلات الإشعارات"),
-      el("p", { class: "small" }, "اختار أنواع التنبيهات التي تريد استقبالها. تنبيهات الأمان والمحفظة المهمة تبقى مفعّلة دائماً.")
+    const panel = el("details", { id: "baranNotificationPreferences", class: "baran-notification-preferences" });
+    const summary = el("summary", { "aria-label": "إعدادات الإشعارات وساعات الهدوء" }, "⚙️ إعدادات الإشعارات وساعات الهدوء");
+    const body = el("div", { class: "baran-preferences-body" });
+    body.appendChild(
+      el("p", { class: "small" }, "تحكم بالإشعارات الفورية التي تصلك على الهاتف. ستبقى التنبيهات محفوظة داخل صندوق الإشعارات.")
     );
+    panel.append(summary, body);
     const grid = el("div", { class: "baran-notification-pref-grid" });
     const options = [
       ["support_enabled", "رسائل الدعم والردود"],
@@ -73,7 +75,7 @@
     const end = el("input", { type: "time", id: "baran-pref-end", value: "08:00" });
     endWrap.appendChild(end);
     times.append(startWrap, endWrap);
-    panel.append(grid, quietRow, times, el("p", { id: "baranNotificationPrefsStatus", class: "small", role: "status", "aria-live": "polite" }));
+    body.append(grid, quietRow, times, el("p", { id: "baranNotificationPrefsStatus", class: "small", role: "status", "aria-live": "polite" }));
     host.appendChild(panel);
 
     panel.addEventListener("change", async event => {
