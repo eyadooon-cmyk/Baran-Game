@@ -78,6 +78,27 @@
     });
     filterSelect.addEventListener("change", () => applySegmentFilter(filterSelect.value));
     filterHead.append(filterSelect);
+    // Make the push-subscriber statistic an actionable shortcut on mobile.
+    const pushStat = stats.children[4];
+    if (pushStat) {
+      pushStat.style.cursor = "pointer";
+      pushStat.setAttribute("role", "button");
+      pushStat.setAttribute("tabindex", "0");
+      pushStat.setAttribute("aria-label", "عرض العملاء المشتركين بالإشعارات");
+      const showPushCustomers = () => {
+        filterSelect.value = "push-enabled";
+        applySegmentFilter("push-enabled");
+        const directory = $("opsCustomers") || $("baranUserDirectoryList");
+        if (directory) directory.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      pushStat.addEventListener("click", showPushCustomers);
+      pushStat.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          showPushCustomers();
+        }
+      });
+    }
     segmentFilter.append(filterHead);
     segmentFilter.append(node("p","baran-experience-muted", "حالة الاشتراك المسجّل لا تؤكد أن إذن إشعارات الهاتف ما زال مفعّلاً أو أن الجهاز سيستقبل الرسائل."));
     panel.append(segmentFilter);
@@ -223,6 +244,8 @@
     }));
   }
   function applySegmentFilter(segment) {
+    // Ensure subscription badges/data attributes exist before applying the filter.
+    attachProfileButtons();
     const lists = [ $("opsCustomers"), $("baranUserDirectoryList") ].filter(Boolean);
     lists.forEach(list => list.querySelectorAll(".customer-directory-item").forEach(card => {
       const matches = segment === "all" ||
