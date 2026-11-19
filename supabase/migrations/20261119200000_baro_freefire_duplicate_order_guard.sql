@@ -45,6 +45,11 @@ begin
       'wallet_settlement',(select h.status from public.baro_manual_wallet_holds h where h.order_id=v_existing.id));
   end if;
 
+  -- Serialize identical player/package submissions before checking active orders.
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(
+    p_user_id::text || ':' || p_product_code || ':' || pg_catalog.lower(pg_catalog.btrim(v_player)), 0
+  ));
+
   -- Prevent a second active order for the same customer, Free Fire package and player ID.
   if exists (
     select 1 from public.leo_manual_orders active_order
