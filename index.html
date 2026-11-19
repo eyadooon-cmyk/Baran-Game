@@ -7372,6 +7372,11 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
  @keyframes baranLoginEnter{from{opacity:0;transform:translateY(15px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 }
 
+
+/* Login logo lockup spacing correction */
+#authScreen .auth-logo{flex-direction:column!important;gap:7px!important}
+#authScreen .auth-logo::after{position:static!important;display:block!important;margin:0!important;font-size:9px!important;line-height:1.4!important}
+@media(max-width:520px){#authScreen .auth-logo::after{position:static!important}}
 </style>
 
 <script src="./customer-experience-suite.js?v=20261118-suite-6"></script>
