@@ -84,7 +84,7 @@
   }
 
   async function loadPreferences() {
-    if (!window.currentUser || !window.sb || prefsLoading) return;
+    if (typeof currentUser === "undefined" || !currentUser || typeof sb === "undefined" || prefsLoading) return;
     prefsLoading = true;
     try {
       const { data, error } = await sb.from("baran_notification_preferences")
@@ -111,7 +111,7 @@
   }
 
   async function savePreferences() {
-    if (!window.currentUser || !window.sb) return;
+    if (typeof currentUser === "undefined" || !currentUser || typeof sb === "undefined") return;
     const read = key => Boolean(document.querySelector('[data-pref="' + key + '"]')?.checked);
     const payload = {
       user_id: currentUser.id,
@@ -139,18 +139,18 @@
   function stopRealtime() {
     if (fallbackTimer) clearInterval(fallbackTimer);
     fallbackTimer = null;
-    if (realtimeChannel && window.sb) sb.removeChannel(realtimeChannel);
+    if (realtimeChannel && sb) sb.removeChannel(realtimeChannel);
     realtimeChannel = null;
     currentRealtimeUser = null;
   }
 
   function refreshInbox() {
-    if (!window.currentUser) return;
+    if (!currentUser) return;
     if (typeof window.loadCustomerNotifications === "function") window.loadCustomerNotifications();
   }
 
   function startRealtime() {
-    if (!window.currentUser || !window.sb) return;
+    if (typeof currentUser === "undefined" || !currentUser || typeof sb === "undefined") return;
     if (realtimeChannel && currentRealtimeUser === currentUser.id) return;
     stopRealtime();
     currentRealtimeUser = currentUser.id;
@@ -197,14 +197,14 @@
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") { startRealtime(); refreshInbox(); }
   });
-  document.addEventListener("DOMContentLoaded", () => {
+  if (typeof sb !== "undefined" && sb.auth?.onAuthStateChange) {\n    sb.auth.onAuthStateChange((_event, session) => {\n      if (session?.user?.id) { startRealtime(); loadPreferences(); }\n      else stopRealtime();\n    });\n  }\n  document.addEventListener("DOMContentLoaded", () => {
     installStyles();
     mountPreferences();
-    if (window.currentUser) startRealtime();
+    if (typeof currentUser !== "undefined" && currentUser) { startRealtime(); loadPreferences(); }
   });
   if (document.readyState !== "loading") {
     installStyles();
     mountPreferences();
-    if (window.currentUser) startRealtime();
+    if (typeof currentUser !== "undefined" && currentUser) { startRealtime(); loadPreferences(); }
   }
 })();
