@@ -1,1 +1,0 @@
-create index if not exists customer_admin_notes_updated_by_idx on public.customer_admin_notes(updated_by);
