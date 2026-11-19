@@ -234,6 +234,23 @@ Deno.serve(async (req: Request) => {
         if (!page || page.length < customerPageSize) break;
       }
 
+      // Count registered push subscriptions per customer without exposing endpoint/key material.
+      const pushSubscriptionCounts = new Map<string, number>();
+      for (let from = 0; ; from += customerPageSize) {
+        const { data: page, error: pushPageError } = await admin
+          .from("baran_push_subscriptions")
+          .select("user_id")
+          .range(from, from + customerPageSize - 1);
+        if (pushPageError) {
+          console.error("baran-admin: customer push subscription lookup failed", pushPageError.message);
+          return json({ error: "تعذر تحميل حالات اشتراكات الإشعارات." }, 500);
+        }
+        for (const row of page ?? []) {
+          if (!adminUserIds.has(row.user_id)) pushSubscriptionCounts.set(row.user_id, (pushSubscriptionCounts.get(row.user_id) ?? 0) + 1);
+        }
+        if (!page || page.length < customerPageSize) break;
+      }
+      const pushSubscribedCustomerCount = [...pushSubscriptionCounts.values()].filter(count => count > 0).length;
       // Read wallet rows in pages too, so accounts beyond the API row limit keep their balances.
       const customerWalletRows: Array<{user_id:string;balance_usd:number|string|null;balance_syp:number|string|null}> = [];
       for (let from = 0; ; from += customerPageSize) {
@@ -333,6 +350,7 @@ Deno.serve(async (req: Request) => {
           admin_note:customerNotesByUser.get(profile.id)?.note ?? "",
           admin_note_updated_at:customerNotesByUser.get(profile.id)?.updated_at ?? null,
           is_vip:customerVipByUser.get(profile.id)?.is_vip === true,
+          push_subscription_count:pushSubscriptionCounts.get(profile.id) ?? 0,
           vip_updated_at:customerVipByUser.get(profile.id)?.updated_at ?? null,
           account_control:accountControlsByUser.get(profile.id) ?? { status: "active", reason: null, banned_until: null } };
       }));
@@ -412,7 +430,8 @@ Deno.serve(async (req: Request) => {
         stats: { users: userCount ?? 0, orders: orderCount ?? 0,
           products: productCount ?? 0, suppliers: supplierCount ?? 0,
           order_statuses: statusCounts, pending_orders: statusCounts.pending ?? 0,
-          unread_support_tickets: unreadSupportCount ?? 0 },
+          unread_support_tickets: unreadSupportCount ?? 0,
+          push_subscribed_customers: pushSubscribedCustomerCount },
         recovery_audit: recoveryAudit ?? [],
         exchange_rate: Number(settings.exchange_rate),
         exchange_rate_updated_at: settings.updated_at,
