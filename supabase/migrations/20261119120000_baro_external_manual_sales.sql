@@ -85,10 +85,11 @@ begin
      or p_supplier_id is null
      or p_sale_amount is null or p_sale_amount<=0 or p_sale_amount>1000000000000
      or p_supplier_cost_amount is null or p_supplier_cost_amount<=0 or p_supplier_cost_amount>1000000000000
-     or p_sale_currency not in ('USD','SYP') or p_supplier_cost_currency not in ('USD','SYP')
+     or p_sale_currency is null or p_sale_currency not in ('USD','SYP')
+     or p_supplier_cost_currency is null or p_supplier_cost_currency not in ('USD','SYP')
      or (p_sale_currency='SYP' and (p_sale_exchange_rate is null or p_sale_exchange_rate<=0))
      or (p_supplier_cost_currency='SYP' and (p_supplier_cost_exchange_rate is null or p_supplier_cost_exchange_rate<=0))
-     or p_payment_method not in ('sham_cash','cash','other')
+     or p_payment_method is null or p_payment_method not in ('sham_cash','cash','other')
      or char_length(coalesce(p_customer_reference,''))>160
      or char_length(coalesce(p_supplier_reference,''))>160
      or char_length(coalesce(p_notes,''))>1000
@@ -131,7 +132,14 @@ begin
        or v_sale.sale_amount is distinct from p_sale_amount
        or v_sale.sale_currency is distinct from p_sale_currency
        or v_sale.supplier_cost_amount is distinct from p_supplier_cost_amount
-       or v_sale.supplier_cost_currency is distinct from p_supplier_cost_currency then
+       or v_sale.supplier_cost_currency is distinct from p_supplier_cost_currency
+       or v_sale.sale_exchange_rate is distinct from case when p_sale_currency='USD' then 1 else p_sale_exchange_rate end
+       or v_sale.supplier_cost_exchange_rate is distinct from case when p_supplier_cost_currency='USD' then 1 else p_supplier_cost_exchange_rate end
+       or v_sale.customer_name is distinct from btrim(coalesce(p_customer_name,''))
+       or v_sale.player_id is distinct from btrim(coalesce(p_player_id,''))
+       or v_sale.payment_method is distinct from p_payment_method
+       or v_sale.customer_reference is distinct from btrim(coalesce(p_customer_reference,''))
+       or v_sale.supplier_reference is distinct from btrim(coalesce(p_supplier_reference,'')) then
       raise exception using errcode='22023',message='مفتاح العملية مستخدم مع بيانات بيع مختلفة.';
     end if;
     return jsonb_build_object('sale',to_jsonb(v_sale),'replayed',true);
