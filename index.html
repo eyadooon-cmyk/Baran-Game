@@ -1978,7 +1978,11 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 }
 @media(prefers-reduced-motion:no-preference){#customerNotificationsModal:not(.hidden) .notification-panel{animation:baranNotificationPanelIn .2s ease-out}@keyframes baranNotificationPanelIn{from{opacity:.7;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}}
 </style>
-  <link rel="stylesheet" href="./customer-admin-redesign.css?v=20261119-crm-v1">\n</head>
+  <link rel="stylesheet" href="./customer-admin-redesign.css?v=20261119-crm-v1">\n<style>
+/* BARAN GAME — professional customer account */
+.account-page-pro{padding:16px;overflow:hidden}.account-page-pro .account-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.account-page-pro .account-page-heading h2{margin:4px 0;font-size:25px}.account-identity-card-pro{position:relative;align-items:center;gap:15px;padding:17px;background:radial-gradient(circle at 8% 0%,#59416c66,transparent 44%),linear-gradient(135deg,#30213d,#17121e 78%);border:1px solid #80649a;border-radius:20px;box-shadow:0 12px 28px #0004}.account-avatar-wrap-pro{width:82px;height:82px;flex-basis:82px;padding:3px}.account-identity-details-pro{flex:1;gap:6px}.account-identity-details-pro .account-welcome-label{font-size:10px;font-weight:800;letter-spacing:1px;color:#c6a9dd}.account-identity-details-pro>strong{font-size:19px}.account-identity-details-pro>span:not(.account-welcome-label){font-size:12px}.account-identity-details-pro .account-member-code{margin-top:5px;padding:7px 9px}.account-identity-details-pro .account-member-code button{min-height:30px}.account-dashboard-label{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:22px 2px 11px}.account-dashboard-label strong{font-size:15px;color:#f1e8f8}.account-dashboard-label>span{font-size:10px;color:#a998b8}.account-shortcuts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.account-shortcut-pro{display:flex;align-items:center;gap:10px;min-width:0;min-height:76px;padding:12px;text-align:right;background:linear-gradient(145deg,#241b2c,#17121e);border:1px solid #493957;border-radius:15px;color:#f3eafa;box-shadow:0 5px 14px #0002}.account-shortcut-pro:active{transform:scale(.985);border-color:#a783c1}.account-shortcut-pro>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}.account-shortcut-pro strong{font-size:12px;line-height:1.5}.account-shortcut-pro small{font-size:10px;color:#ad9dbb;line-height:1.5}.account-shortcut-pro>b{color:#c8addb;font-size:17px}.account-pro-icon,.account-profile-summary-icon{display:grid;place-items:center;flex:0 0 37px;width:37px;height:37px;border-radius:12px;background:linear-gradient(145deg,#59416c,#30213d);border:1px solid #80649a;color:#f0defb;font-size:19px}.account-shortcut-wide{grid-column:1/-1;min-height:66px}.account-profile-details{margin-top:10px;border:1px solid #493957;border-radius:15px;background:#17121e;overflow:hidden}.account-profile-details>summary{display:flex;align-items:center;gap:11px;padding:13px;list-style:none;cursor:pointer}.account-profile-details>summary::-webkit-details-marker{display:none}.account-profile-details>summary>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:4px}.account-profile-details>summary strong{font-size:12px;color:#f3eafa}.account-profile-details>summary small{font-size:10px;color:#ad9dbb}.account-profile-details>summary>b{color:#c7a9dc}.account-panel-pro{margin:0;padding:14px;border:0;border-top:1px solid #493957;border-radius:0;background:#110d17}.account-signout-pro{margin-top:22px;min-height:48px;border:1px solid #78445d;background:linear-gradient(100deg,#3a1e2b,#261522);color:#ffd6e0}.account-settings-group{margin:14px 0 20px}#settings .account-security{margin:0 0 14px;border:1px solid #604a70;border-radius:16px;background:#17121e;overflow:hidden}#settings .account-security>summary{padding:14px}#settings .account-security-content{padding:0 12px 12px}#settings .account-security-card{padding:14px;margin:10px 0;background:#110d17;border:1px solid #40334b;border-radius:13px}#settings .account-security-card h3{margin:0 0 8px;color:#e8d8f4;font-size:14px}#settings .account-security-card p{font-size:11px}@media(max-width:390px){.account-page-pro{padding:12px}.account-identity-card-pro{gap:10px;padding:12px}.account-avatar-wrap-pro{width:64px;height:64px;flex-basis:64px}.account-identity-details-pro>strong{font-size:16px}.account-shortcut-pro{gap:8px;padding:10px}.account-pro-icon{width:33px;height:33px;flex-basis:33px}}
+</style>
+</head>
 <body>
 
 <header>
@@ -2608,43 +2612,9 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 <section id="settings" class="hidden">
       <h2>الإعدادات ⚙️</h2>
       <p class="small">تحكّم بإشعارات Baran Game على هذا الجهاز.</p>
-      <div class="deposit-card">
-        <h3>إشعارات الهاتف 🔔</h3>
-        <p class="small">فعّل الإشعارات ليصلك رد الدعم وتحديثات الطلبات وإعلانات الإدارة حتى عندما يكون الموقع بالخلفية، إذا كان المتصفح والجهاز يدعمان ذلك.</p>
-        <div id="pushDeviceStatus" class="ops-item" role="status" aria-live="polite">جاري فحص حالة الإشعارات...</div>
-        <button id="enablePushButton" class="full" type="button" onclick="enableBaranPushNotifications()">تفعيل إشعارات الهاتف</button>
-        <button id="disablePushButton" class="full secondary" type="button" onclick="disableBaranPushNotifications()">إيقاف إشعارات هذا الجهاز</button>
-        <div id="pushSettingsMessage" class="small" role="status" aria-live="polite"></div>
-      </div>
-      <p class="small">ملاحظة: إذا كان إذن الإشعارات محظوراً من Chrome، افتح إعدادات الموقع في المتصفح واسمح بالإشعارات أولاً.</p>
-    </section>
-
-    <section id="account" class="hidden account-page">
-      <div class="account-page-heading">
-        <div><span class="account-eyebrow">BARAN GAME · MY ACCOUNT</span><h2>حسابي</h2><p class="small">إدارة حسابك ومعلوماتك بسهولة.</p></div>
-        <span class="account-heading-mark" aria-hidden="true">✦</span>
-      </div>
-      <div class="account-identity-card">
-        <div class="account-avatar-wrap"><img id="accountAvatar" class="account-avatar hidden" alt="الصورة الشخصية"><div id="accountAvatarFallback" class="account-avatar-fallback">B</div></div>
-        <div class="account-identity-details"><strong id="accountDisplayName">مستخدم Baran Game</strong><span id="accountDisplayEmail" dir="ltr"></span><span id="accountProviderLabel" class="account-provider-label">حساب Baran Game</span><div class="account-member-code"><span>رقم العضوية</span><strong id="accountMemberCode" dir="ltr">جاري التحميل...</strong><button type="button" class="secondary" onclick="copyBaranMemberCode()">نسخ المعرّف</button><span id="memberCodeMessage" class="small" role="status"></span></div></div>
-      </div>
-      <p id="accountInfo" class="small account-info-note"></p>
-
-      <div class="account-section-label"><span class="account-section-icon">♙</span><div><strong>الملف الشخصي</strong><small>بيانات الحساب الأساسية</small></div></div>
-      <div class="account-panel">
-        <label for="profileFullName">الاسم الكامل</label>
-        <input id="profileFullName" type="text" maxlength="80" autocomplete="name" placeholder="اكتب اسمك">
-        <label for="profilePhone">رقم التواصل (اختياري)</label>
-        <input id="profilePhone" type="tel" maxlength="30" autocomplete="tel" placeholder="رقم التواصل">
-        <button id="saveProfileButton" class="full" type="button" onclick="saveProfileDetails()">حفظ البيانات</button>
-        <div id="profileMessage" class="small account-feedback" role="status"></div>
-      </div>
-
-      <button class="account-shortcut" type="button" onclick="showSection('rewards',null)">
-        <span class="account-shortcut-icon">🎁</span><span><strong>النقاط والمكافآت</strong><small>رصيد نقاطك ومكافآتك</small></span><span class="account-shortcut-arrow">←</span>
-      </button>
-
-      <details class="account-security">
+      <div class="account-settings-group">
+        <div class="account-dashboard-label"><strong>الأمان والخصوصية</strong><span>تحكم ببيانات الدخول وحماية حسابك</span></div>
+        <details class="account-security" id="accountSecuritySettings">
         <summary>
           <span class="account-shortcut-icon">♧</span>
           <span><strong>الأمان والخصوصية</strong><small>إعدادات حماية الحساب وتحديث بيانات الدخول</small></span>
@@ -2675,11 +2645,58 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
           <p class="small account-security-note">لا تشارك كلمة المرور أو رموز التحقق مع أي شخص. استخدم كلمة مرور قوية وخاصة بهذا الحساب.</p>
         </div>
       </details>
-
-      <button class="account-signout" type="button" onclick="signOut()">تسجيل الخروج</button>
+      </div>
+      <div class="deposit-card">
+        <h3>إشعارات الهاتف 🔔</h3>
+        <p class="small">فعّل الإشعارات ليصلك رد الدعم وتحديثات الطلبات وإعلانات الإدارة حتى عندما يكون الموقع بالخلفية، إذا كان المتصفح والجهاز يدعمان ذلك.</p>
+        <div id="pushDeviceStatus" class="ops-item" role="status" aria-live="polite">جاري فحص حالة الإشعارات...</div>
+        <button id="enablePushButton" class="full" type="button" onclick="enableBaranPushNotifications()">تفعيل إشعارات الهاتف</button>
+        <button id="disablePushButton" class="full secondary" type="button" onclick="disableBaranPushNotifications()">إيقاف إشعارات هذا الجهاز</button>
+        <div id="pushSettingsMessage" class="small" role="status" aria-live="polite"></div>
+      </div>
+      <p class="small">ملاحظة: إذا كان إذن الإشعارات محظوراً من Chrome، افتح إعدادات الموقع في المتصفح واسمح بالإشعارات أولاً.</p>
     </section>
 
-    <section id="admin" class="hidden">
+    <section id="account" class="hidden account-page account-page-pro">
+      <div class="account-page-heading">
+        <div><span class="account-eyebrow">BARAN GAME · PERSONAL SPACE</span><h2>حسابي</h2><p class="small">كل تفاصيل حسابك وخدماتك بمكان واحد.</p></div>
+        <span class="account-heading-mark" aria-hidden="true">✦</span>
+      </div>
+      <div class="account-identity-card account-identity-card-pro">
+        <div class="account-avatar-wrap account-avatar-wrap-pro"><img id="accountAvatar" class="account-avatar hidden" alt="الصورة الشخصية"><div id="accountAvatarFallback" class="account-avatar-fallback">B</div></div>
+        <div class="account-identity-details account-identity-details-pro">
+          <span class="account-welcome-label">أهلاً في BARAN GAME</span>
+          <strong id="accountDisplayName">مستخدم Baran Game</strong>
+          <span id="accountDisplayEmail" dir="ltr"></span>
+          <span id="accountProviderLabel" class="account-provider-label">حساب Baran Game</span>
+          <div class="account-member-code"><span>رقم العضوية</span><strong id="accountMemberCode" dir="ltr">جاري التحميل...</strong><button type="button" class="secondary" onclick="copyBaranMemberCode()">نسخ</button><span id="memberCodeMessage" class="small" role="status"></span></div>
+        </div>
+      </div>
+      <p id="accountInfo" class="small account-info-note"></p>
+      <div class="account-dashboard-label"><strong>اختصارات حسابك</strong><span>وصول سريع لأهم الأقسام</span></div>
+      <div class="account-shortcuts-grid">
+        <button class="account-shortcut-pro" type="button" onclick="showSection('wallet',null)"><span class="account-pro-icon">◈</span><span><strong>المحفظة</strong><small>رصيدك وعملياتك</small></span><b>←</b></button>
+        <button class="account-shortcut-pro" type="button" onclick="showSection('orders',null)"><span class="account-pro-icon">▣</span><span><strong>طلباتي</strong><small>متابعة المشتريات</small></span><b>←</b></button>
+        <button class="account-shortcut-pro" type="button" onclick="showSection('rewards',null)"><span class="account-pro-icon">✧</span><span><strong>النقاط والمكافآت</strong><small>رصيد الولاء والمزايا</small></span><b>←</b></button>
+        <button class="account-shortcut-pro" type="button" onclick="showSection('support',null)"><span class="account-pro-icon">◌</span><span><strong>الدعم والمحادثات</strong><small>تواصل مع فريق Baran</small></span><b>←</b></button>
+        <button class="account-shortcut-pro account-shortcut-wide" type="button" onclick="showSection('settings',null)"><span class="account-pro-icon">⚙</span><span><strong>الإعدادات</strong><small>الأمان والخصوصية والإشعارات وتحديث بيانات الدخول</small></span><b>←</b></button>
+      </div>
+      <div class="account-dashboard-label account-profile-label"><strong>بياناتي الشخصية</strong><span>تعديل الاسم ومعلومات التواصل</span></div>
+      <details class="account-profile-details">
+        <summary><span class="account-profile-summary-icon">♙</span><span><strong>عرض وتعديل الملف الشخصي</strong><small>الاسم الكامل ورقم التواصل</small></span><b>⌄</b></summary>
+        <div class="account-panel account-panel-pro">
+          <label for="profileFullName">الاسم الكامل</label>
+          <input id="profileFullName" type="text" maxlength="80" autocomplete="name" placeholder="اكتب اسمك">
+          <label for="profilePhone">رقم التواصل (اختياري)</label>
+          <input id="profilePhone" type="tel" maxlength="30" autocomplete="tel" placeholder="رقم التواصل">
+          <button id="saveProfileButton" class="full" type="button" onclick="saveProfileDetails()">حفظ البيانات</button>
+          <div id="profileMessage" class="small account-feedback" role="status"></div>
+        </div>
+      </details>
+      <button class="account-signout account-signout-pro" type="button" onclick="signOut()">تسجيل الخروج</button>
+    </section>
+
+<section id="admin" class="hidden">
       <h2>لوحة الإدارة 🔐</h2>
       <div id="adminHub" class="admin-hub">
         <div class="admin-command-hero">
