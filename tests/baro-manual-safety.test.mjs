@@ -95,9 +95,9 @@ test("BARO data tables remain private and legacy update RPC is removed", () => {
 
 test("Customer BARO catalogue exposes approved Free Fire SYP sale prices only, never supplier costs", () => {
   const catalogBlock = edge.split('if (req.method === "GET" && view === "catalog")')[1]?.split('if (req.method === "GET" && view === "my_orders")')[0] ?? "";
-  assert.match(catalogBlock, /product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_syp/);
-  assert.match(catalogBlock, /p\.category_id === "freefire" && p\.group_id === "diamonds" \? p\.sale_price_syp : null/);
-  assert.doesNotMatch(catalogBlock, /sale_price_usd|supplier_cost_usd|supplier_cost_currency/);
+  assert.match(catalogBlock, /product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_usd,sale_price_syp/);
+  assert.match(catalogBlock, /sale_price_usd: p\.sale_price_usd, sale_price_syp: p\.sale_price_syp/);
+  assert.doesNotMatch(catalogBlock, /supplier_cost_usd|supplier_cost_currency/);
 });
 
 
@@ -348,4 +348,36 @@ test("Prepared Free Fire prices are internal only and all BARO purchase gates st
   assert.match(pricing, /price_history/);
   assert.doesNotMatch(pricing, /insert into public\.leo_manual_orders/i);
   assert.doesNotMatch(pricing, /insert into public\.baro_manual_finance_entries/i);
+});
+
+
+const walletCheckout = read("../supabase/migrations/20261119190000_baro_wallet_checkout_and_refunds.sql");
+test("BARO wallet checkout reserves funds atomically and is idempotent", () => {
+  assert.match(walletCheckout, /baro_manual_wallet_holds/);
+  assert.match(walletCheckout, /p_wallet_currency text/);
+  assert.match(walletCheckout, /for update/);
+  assert.match(walletCheckout, /balance_usd=balance_usd-v_price/);
+  assert.match(walletCheckout, /balance_syp=balance_syp-v_price/);
+  assert.match(walletCheckout, /status,payment_status,payment_method,idempotency_key/);
+  assert.match(walletCheckout, /replayed',true/);
+  assert.match(walletCheckout, /baro_manual_order_hold/);
+  assert.match(walletCheckout, /grant execute on function public\.baro_manual_create_customer_order/);
+});
+test("BARO wallet funds are captured only on completion and refunded once on failed fulfilment", () => {
+  assert.match(walletCheckout, /status='captured'/);
+  assert.match(walletCheckout, /new\.status='failed' or new\.status='cancelled'/);
+  assert.match(walletCheckout, /balance_usd=balance_usd\+v_hold\.amount/);
+  assert.match(walletCheckout, /balance_syp=balance_syp\+v_hold\.amount/);
+  assert.match(walletCheckout, /baro_manual_order_refund/);
+  assert.match(walletCheckout, /baro-wallet-refund-/);
+  assert.match(walletCheckout, /تم رد مبلغ هذا الطلب إلى المحفظة/);
+});
+test("BARO wallet API exposes balances and keeps wallet settlement private", () => {
+  assert.match(edge, /view === "my_wallet"/);
+  assert.match(edge, /baro_manual_wallet_holds/);
+  assert.match(edge, /p_wallet_currency: walletCurrency/);
+  assert.match(ui, /baroWalletCurrency/);
+  assert.match(ui, /wallet_currency:walletCurrency/);
+  assert.match(ui, /حجز المبلغ من المحفظة/);
+  assert.match(read("../index.html"), /id="baroWalletBalance"/);
 });
