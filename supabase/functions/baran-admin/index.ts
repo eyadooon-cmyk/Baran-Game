@@ -428,6 +428,7 @@ Deno.serve(async (req: Request) => {
         search_query?: string;
         target_user_id?: string;
         display_name?: string;
+        note?: string;
         verification_notes?: string;
         verified_facts?: string[];
         notification_id?: string;
