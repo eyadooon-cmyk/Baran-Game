@@ -56,10 +56,10 @@ Deno.serve(async (req: Request) => {
       : category === "orders" ? preferences?.orders_enabled
       : category === "offers" ? preferences?.offers_enabled
       : category === "security" ? preferences?.security_enabled : true;
-    if (categoryEnabled === false) {
+    if (!["wallet", "security"].includes(category) && categoryEnabled === false) {
       return json({ success: true, sent: 0, reason: "category_muted", category });
     }
-    if (preferences?.quiet_hours_enabled) {
+    if (preferences?.quiet_hours_enabled && !["wallet", "security", "support", "orders"].includes(category)) {
       let quiet = false;
       try {
         const timezone = preferences.timezone || "UTC";
@@ -95,29 +95,66 @@ Deno.serve(async (req: Request) => {
       title: String(notification.title || "Baran Game").slice(0, 100),
       body: String(notification.body || "لديك إشعار جديد").slice(0, 240),
       url: "./?baran_notification=" + encodeURIComponent(notification.id),
-      tag: "baran-" + notification.id
+      tag: "baran-" + notification.id,
+      notification_id: notification.id,
+      entity_type: notification.entity_type,
+      entity_id: notification.entity_id,
+      kind: notification.kind,
+      audience: notification.audience
     });
 
-    let sent = 0, removed = 0, failed = 0;
+    let sent = 0, removed = 0, failed = 0, skipped = 0;
     for (const sub of subscriptions) {
-      try {
-        await webpush.sendNotification({
-          endpoint: sub.endpoint,
-          keys: { p256dh: sub.p256dh, auth: sub.auth }
-        }, payload, { TTL: 86400 });
-        sent++;
-      } catch (error) {
-        const status = Number((error as { statusCode?: number })?.statusCode || 0);
-        if (status === 404 || status === 410) {
-          await admin.from("baran_push_subscriptions").delete().eq("id", sub.id);
-          removed++;
-        } else {
+      let delivered = false, expired = false, tried = false;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { data: claimed, error: claimError } = await admin.rpc("baran_claim_push_delivery", {
+          p_notification_id: notification.id,
+          p_subscription_id: sub.id,
+          p_max_attempts: 3
+        });
+        if (claimError) {
+          console.error("push delivery claim failed", claimError.message);
           failed++;
-          console.error("push send failed", status || "unknown");
+          break;
+        }
+        if (!claimed) { skipped++; break; }
+        tried = true;
+        try {
+          await webpush.sendNotification({
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh, auth: sub.auth }
+          }, payload, { TTL: 86400 });
+          await admin.from("baran_push_delivery_logs").update({
+            status: "sent", sent_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+            http_status: 201, error_code: null, last_error: null
+          }).eq("notification_id", notification.id).eq("subscription_id", sub.id);
+          sent++;
+          delivered = true;
+          break;
+        } catch (error) {
+          const status = Number((error as { statusCode?: number })?.statusCode || 0);
+          const message = status ? "Push provider returned HTTP " + status : "Network delivery error";
+          if (status === 404 || status === 410) {
+            await admin.from("baran_push_delivery_logs").update({
+              status: "expired", http_status: status, error_code: String(status),
+              last_error: "Subscription expired", updated_at: new Date().toISOString()
+            }).eq("notification_id", notification.id).eq("subscription_id", sub.id);
+            await admin.from("baran_push_subscriptions").delete().eq("id", sub.id);
+            removed++;
+            expired = true;
+            break;
+          }
+          await admin.from("baran_push_delivery_logs").update({
+            status: "failed", http_status: status || null,
+            error_code: status ? String(status) : "NETWORK_ERROR",
+            last_error: message, updated_at: new Date().toISOString()
+          }).eq("notification_id", notification.id).eq("subscription_id", sub.id);
+          if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
         }
       }
+      if (!delivered && !expired && tried) failed++;
     }
-    return json({ success: true, sent, removed, failed });
+    return json({ success: true, sent, removed, failed, skipped, retries: 3 });
   } catch (error) {
     console.error("push dispatch error", error instanceof Error ? error.message : String(error));
     return json({ error: "Unexpected push dispatch error" }, 500);
