@@ -199,13 +199,22 @@
       payload.idempotency_key=key;financeSubmitInFlight=true;
       if(button){button.disabled=true;button.textContent="جارٍ تسجيل البيع...";}
       msg("جارٍ تسجيل البيع الخارجي وقيدي المقبوض والتكلفة...");
+      let committed=false;
       try{
         await post(payload);
-        try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||"null");if(saved?.key===key)sessionStorage.removeItem(storageKey);}catch(_){}
-        msg("تم تسجيل البيع الخارجي وقيدي المبيعات والتكلفة مرة واحدة.");
+        committed=true;
+        msg("تم تسجيل البيع الخارجي وقيدي المبيعات والتكلفة مرة واحدة. جارٍ تحديث السجل...");
         await loadFinance();
-      }catch(e){msg((e&&e.message)||"تعذر تأكيد التسجيل. أعد المحاولة دون تغيير البيانات لتجنب التكرار.");}
-      finally{financeSubmitInFlight=false;const current=$("baroExternalSave");if(current){current.disabled=false;current.textContent="تسجيل البيع الخارجي والقيود المالية";}}
+        try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||"null");if(saved?.key===key)sessionStorage.removeItem(storageKey);}catch(_){}
+      }catch(e){
+        if(committed)msg("تم تسجيل البيع فعلياً، لكن تعذر تحديث السجل. حدّث صفحة BARO ولا تعاود إرسال العملية.");
+        else msg((e&&e.message)||"تعذر تأكيد التسجيل. أعد المحاولة دون تغيير البيانات لتجنب التكرار.");
+      }finally{
+        financeSubmitInFlight=false;
+        const current=$("baroExternalSave");
+        if(current&&current===button&&committed){current.disabled=true;current.textContent="تم التسجيل — حدّث الصفحة";}
+        else if(current){current.disabled=false;current.textContent="تسجيل البيع الخارجي والقيود المالية";}
+      }
     };
     $("baroFinanceSave").onclick=async()=>{
       if(financeSubmitInFlight)return;
