@@ -8,6 +8,7 @@ on:
       - 'customer-management-redesign.css'
       - 'customer-experience-suite.js'
       - 'direct-chat.js'
+      - 'admin-operations.js'
       - 'supabase/functions/baran-direct-chat/**'
       - '.github/workflows/customer-management-check.yml'
   push:
@@ -38,6 +39,7 @@ jobs:
         run: |
           node --check customer-experience-suite.js
           node --check direct-chat.js
+          node --check admin-operations.js
       - name: Check direct chat Edge Function syntax
         run: deno check supabase/functions/baran-direct-chat/index.ts
       - name: Check page wiring and separated customer experience panel
@@ -47,6 +49,7 @@ jobs:
           const html = readFileSync('index.html', 'utf8');
           const suite = readFileSync('customer-experience-suite.js', 'utf8');
           const chat = readFileSync('direct-chat.js', 'utf8');
+          const ops = readFileSync('admin-operations.js', 'utf8');
           const checks = [
             ['customer experience has a separate admin panel', html.includes('data-admin-panel="customer-experience"') && html.includes('baranExperienceSuiteMount')],
             ['customer experience script mounts into its dedicated panel', suite.includes('baranExperienceSuiteMount') && suite.includes('mount.append(panel)')],
@@ -54,6 +57,7 @@ jobs:
             ['direct chat has admin and customer entry points', chat.includes('openBaranDirectChatAdmin') && chat.includes('openBaranDirectChatCustomer')],
             ['customer profile opens a direct chat for the selected user', suite.includes('openBaranDirectChatAdmin(customer.id)')],
             ['both customer lists expose direct chat actions', chat.includes('"baranUserDirectoryList","opsCustomers"')],
+            ['admin customer cards carry stable customer IDs for chat', ops.includes('customer-directory-item') && ops.includes('card.dataset.customerId=customer.id')],
             ['direct messages are sent through the authenticated Edge Function', chat.includes('/functions/v1/baran-direct-chat') && chat.includes('action:"send"')],
             ['customer and admin views refresh messages while visible', chat.includes('setInterval') && chat.includes('document.visibilityState!=="visible"')],
           ];
