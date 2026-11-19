@@ -10,6 +10,7 @@
   };
   let access = {}, adminData = {}, financeData = {}, supplierData = {}, settingsData = {}, historyData = [], auditData = [], staffData = [];
   let activeTab = "overview", loading = false, financeWorkspaceActive = false;
+  let financeSubmitInFlight = false;
 
   const style = document.createElement("style");
   style.textContent = ".baro-customer-products{margin:16px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.baro-customer-products>h3{grid-column:1/-1;color:#d7c4e8;margin:8px 0}.baro-customer-product-card{padding:15px;border:1px solid #59466b;border-radius:15px;background:linear-gradient(145deg,#21182b,#110d16);display:flex;flex-direction:column;gap:8px;min-width:0}.baro-customer-product-card>strong{font-size:16px;color:#f2eafa}.baro-card-prices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0}.baro-price-usd,.baro-price-syp{padding:9px 7px;border-radius:10px;background:#30243a;color:#e8d8f4;text-align:center;font-size:16px}.baro-price-syp{background:#211c29;color:#d7c4e8}.baro-preview-label{font-size:12px;color:#bba9ca}.baro-customer-product-card button{width:100%;margin-top:5px}#baroManagementWorkspace{margin:16px 0;padding:16px;border:1px solid #59466b;border-radius:18px;background:linear-gradient(155deg,#1b1522,#100d14)}#baroManagementWorkspace h3{color:#d7c4e8;margin:5px 0 12px}.baro-mgmt-tabs{display:flex;gap:7px;overflow-x:auto;padding:4px 0 12px}.baro-mgmt-tabs button{flex:0 0 auto;padding:9px 12px;background:#2a2033;color:#eee;border:1px solid #59466b}.baro-mgmt-tabs button.active{background:#8b6ba8;color:#100b16}.baro-mgmt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px;margin:12px 0}.baro-mgmt-stat{padding:12px;border:1px solid #493b55;border-radius:12px;background:#201a28;min-width:0}.baro-mgmt-stat span{display:block;font-size:12px;color:#bba9ca}.baro-mgmt-stat strong{display:block;font-size:20px;color:#e6d8f0;overflow-wrap:anywhere;margin-top:5px}.baro-mgmt-panel{padding:12px;border:1px solid #493b55;border-radius:13px;background:#17121e;margin:10px 0}.baro-mgmt-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}.baro-mgmt-form label{display:block;font-size:12px;color:#c7b5d5}.baro-mgmt-form input,.baro-mgmt-form select,.baro-mgmt-form textarea{margin:5px 0 0;min-width:0}.baro-mgmt-form button{align-self:end}.baro-mgmt-table-wrap{overflow-x:auto;margin-top:12px}.baro-mgmt-table{width:100%;border-collapse:collapse;min-width:560px;font-size:12px}.baro-mgmt-table th,.baro-mgmt-table td{padding:9px;border-bottom:1px solid #40334b;text-align:right;vertical-align:top}.baro-mgmt-table th{color:#d7c4e8;background:#211a2b}.baro-mgmt-muted{font-size:12px;color:#b9a9c9;line-height:1.7}.baro-mgmt-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.baro-mgmt-actions button{width:auto}.baro-mgmt-message{min-height:22px;color:#d7c4e8;font-size:13px}.baro-mgmt-empty{padding:14px;border:1px dashed #59466b;border-radius:11px;color:#b9a9c9;text-align:center}.baro-mgmt-badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#30243a;color:#e4d5f0;font-size:11px}@media(max-width:520px){#baroManagementWorkspace{padding:11px}.baro-mgmt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.baro-mgmt-stat strong{font-size:17px}}";
@@ -144,13 +145,39 @@
       (can("settings")?'<div class="baro-mgmt-panel"><h3>إعدادات مالية BARO</h3><p class="baro-mgmt-muted">سعر الصرف وحد التنبيه وهما خاصان بعمليات BARO فقط، ولا يغيران إعدادات الشحن الآلي أو المحافظ.</p><div class="baro-mgmt-form">'+field("سعر الدولار مقابل SYP","baroSettingRate","number","مثال: 156",currentSettings.usd_syp_rate)+field("حد التنبيه لهامش الربح %","baroSettingMargin","number","15",currentSettings.low_margin_percent==null?15:currentSettings.low_margin_percent)+selectField("العملة الافتراضية","baroSettingCurrency",[["USD","الدولار USD"],["SYP","الليرة السورية SYP"]])+'<button type="button" id="baroSettingsSave">حفظ الإعدادات المالية</button></div></div>':"");
     if($("baroSettingsSave")){$("baroSettingCurrency").value=currentSettings.default_currency||"USD";$("baroSettingsSave").onclick=async()=>{const rateInput=$("baroSettingRate").value.trim(),rate=rateInput===""?null:Number(rateInput),margin=Number($("baroSettingMargin").value),currency=$("baroSettingCurrency").value;if((rate!==null&&(!Number.isFinite(rate)||rate<=0))||!Number.isFinite(margin)||margin<0||margin>100){msg("تحقق من سعر الصرف وهامش الربح.");return;}try{await post({action:"settings_save",usd_syp_rate:rate,low_margin_percent:margin,default_currency:currency});msg("تم حفظ إعدادات BARO المالية.");await loadFinance();}catch(e){msg(e.message);}};}
     $("baroFinanceSave").onclick=async()=>{
+      if(financeSubmitInFlight)return;
+      const button=$("baroFinanceSave");
       const type=$("baroFinanceType").value,title=$("baroFinanceTitle").value.trim(),value=Number($("baroFinanceAmount").value);
       const currency=$("baroFinanceCurrency").value,rateInput=$("baroFinanceRate").value.trim(),exchangeRate=rateInput===""?null:Number(rateInput);
       const order=$("baroFinanceOrder").value.trim()||null;
       if(title.length<2||!Number.isFinite(value)||value<=0||(currency==="SYP"&&(!exchangeRate||exchangeRate<=0))){msg("أدخل عنواناً ومبلغاً صحيحاً وسعر صرف SYP لكل دولار عند استخدام الليرة.");return;}
-      const key=globalThis.crypto?.randomUUID?.()||("baro-"+Date.now()+"-"+Math.random().toString(16).slice(2));
-      try{await post({action:"finance_entry",entry_type:type,title,amount:value,currency,exchange_rate:exchangeRate,order_id:order,external_reference:$("baroFinanceRef").value.trim(),description:$("baroFinanceDesc").value.trim(),idempotency_key:key});msg("تم تسجيل الحركة في دفتر BARO فقط.");await loadFinance();}
-      catch(e){msg(e.message);}
+      const payload={action:"finance_entry",entry_type:type,title,amount:value,currency,exchange_rate:exchangeRate,order_id:order,external_reference:$("baroFinanceRef").value.trim(),description:$("baroFinanceDesc").value.trim()};
+      const fingerprint=JSON.stringify(payload);
+      const storageKey="baro.finance.pending_submission.v1";
+      let key="";
+      try{
+        const saved=JSON.parse(sessionStorage.getItem(storageKey)||"null");
+        key=saved&&saved.fingerprint===fingerprint&&typeof saved.key==="string"?saved.key:"";
+      }catch(_){}
+      if(!key)key=globalThis.crypto?.randomUUID?.()||("baro-"+Date.now()+"-"+Math.random().toString(16).slice(2));
+      try{sessionStorage.setItem(storageKey,JSON.stringify({fingerprint,key}));}catch(_){}
+      payload.idempotency_key=key;
+      financeSubmitInFlight=true;
+      if(button){button.disabled=true;button.textContent="جارٍ الحفظ...";}
+      msg("جارٍ تسجيل الحركة والتحقق من نتيجة الحفظ...");
+      try{
+        await post(payload);
+        try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||"null");if(saved?.key===key)sessionStorage.removeItem(storageKey);}catch(_){}
+        msg("تم تسجيل الحركة مرة واحدة في دفتر BARO.");
+        financeSubmitInFlight=false;
+        await loadFinance();
+      }catch(e){
+        msg((e&&e.message)||"تعذر تأكيد الحفظ. أعد المحاولة دون تغيير بيانات الحركة لتجنب التكرار.");
+      }finally{
+        financeSubmitInFlight=false;
+        const currentButton=$("baroFinanceSave");
+        if(currentButton){currentButton.disabled=false;currentButton.textContent="حفظ الحركة";}
+      }
     };
     $("baroFinanceExport").onclick=()=>exportCsv("baro-finance.csv",[["date","type","title","amount","currency","usd_equivalent","status","order_id"],...entries.map(e=>[e.created_at,e.entry_type,e.title,e.amount,e.currency,e.amount_usd_equivalent,e.status,e.order_id])]);
   }
