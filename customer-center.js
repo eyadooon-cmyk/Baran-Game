@@ -248,8 +248,12 @@
   window.loadBaranCustomerCenter = loadOnline;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installPanel);
   else installPanel();
-  const customerListObserver = new MutationObserver(applyCustomerPresenceDots);\n  const customerList = document.getElementById("opsCustomers");\n  if (customerList) customerListObserver.observe(customerList, { childList: true, subtree: true });\n  const observer = new MutationObserver(() => {
-    if (!document.getElementById("baranCustomerCenterLive")) installPanel();\n    applyCustomerPresenceDots();
+  const customerListObserver = new MutationObserver(applyCustomerPresenceDots);
+  const customerList = document.getElementById("opsCustomers");
+  if (customerList) customerListObserver.observe(customerList, { childList: true, subtree: true });
+  const observer = new MutationObserver(() => {
+    if (!document.getElementById("baranCustomerCenterLive")) installPanel();
+    applyCustomerPresenceDots();
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
