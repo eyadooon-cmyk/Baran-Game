@@ -59,7 +59,7 @@ Deno.serve(async (req: Request) => {
     if (!["wallet", "security"].includes(category) && categoryEnabled === false) {
       return json({ success: true, sent: 0, reason: "category_muted", category });
     }
-    if (preferences?.quiet_hours_enabled && !["wallet", "security", "support", "orders"].includes(category)) {
+    if (preferences?.quiet_hours_enabled && category === "offers") {
       let quiet = false;
       try {
         const timezone = preferences.timezone || "UTC";
