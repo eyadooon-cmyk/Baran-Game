@@ -485,14 +485,22 @@ Deno.serve(async (req: Request) => {
           .select("id").eq("id", targetId).maybeSingle();
         if (targetProfileError) return json({ error: "تعذر التحقق من حساب العميل." }, 500);
         if (!targetProfile) return json({ error: "حساب العميل غير موجود." }, 404);
-        const saved = note
-          ? await admin.from("customer_admin_notes").upsert({
-              user_id: targetId, note, updated_by: user.id, updated_at: new Date().toISOString(),
-            }, { onConflict: "user_id" }).select("user_id,note,updated_at").single()
-          : await admin.from("customer_admin_notes").delete().eq("user_id", targetId).select("user_id").maybeSingle();
-        if (saved.error) {
-          console.error("baran-admin: customer note save failed", saved.error.message);
-          return json({ error: "تعذر حفظ الملاحظة الإدارية." }, 500);
+        let updatedAt: string | null = null;
+        if (note) {
+          const { data: savedNote, error: saveError } = await admin.from("customer_admin_notes").upsert({
+            user_id: targetId, note, updated_by: user.id, updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" }).select("user_id,note,updated_at").single();
+          if (saveError) {
+            console.error("baran-admin: customer note save failed", saveError.message);
+            return json({ error: "تعذر حفظ الملاحظة الإدارية." }, 500);
+          }
+          updatedAt = savedNote.updated_at;
+        } else {
+          const { error: deleteError } = await admin.from("customer_admin_notes").delete().eq("user_id", targetId);
+          if (deleteError) {
+            console.error("baran-admin: customer note delete failed", deleteError.message);
+            return json({ error: "تعذر حذف الملاحظة الإدارية." }, 500);
+          }
         }
         const { error: auditError } = await admin.from("admin_audit_log").insert({
           admin_id: user.id, action: "customer_admin_note_update", entity_type: "customer", entity_id: targetId,
@@ -502,7 +510,7 @@ Deno.serve(async (req: Request) => {
           console.error("baran-admin: customer note audit failed", auditError.message);
           return json({ error: "تم حفظ الملاحظة لكن تعذر تسجيل العملية في سجل الإدارة." }, 500);
         }
-        return json({ success: true, user_id: targetId, note: note || "", updated_at: saved.data?.updated_at ?? null });
+        return json({ success: true, user_id: targetId, note: note || "", updated_at: updatedAt });
       }
 
       if (body.action === "customer_profile_update") {
