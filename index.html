@@ -7471,6 +7471,136 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 
 </style>
 
+<style id="baran-admin-workspace-polish-20261119">
+/* BARAN ADMIN — unified workspace layout for every management section */
+#adminPanel .admin-subpanel:not(.hidden){
+  box-sizing:border-box;width:100%;max-width:100%;padding:clamp(12px,2.6vw,22px)!important;
+  border:1px solid #493858;border-radius:20px;
+  background:radial-gradient(ellipse at 100% 0%,#39244833,transparent 38%),linear-gradient(180deg,#17121f 0%,#100d16 100%);
+  box-shadow:0 12px 30px #0004;line-height:1.8
+}
+#adminPanel .admin-subpanel-head{
+  display:flex;align-items:center;gap:11px;flex-wrap:wrap;
+  padding:0 0 14px;margin:0 0 16px;border-bottom:1px solid #493858
+}
+#adminPanel .admin-subpanel-head h2{
+  flex:1 1 180px;min-width:0;margin:0;color:#f0e4fa;
+  font-size:clamp(16px,2.5vw,20px);font-weight:850;line-height:1.5
+}
+#adminPanel .admin-subpanel-head .admin-back{
+  min-height:42px;border-radius:12px;background:#241a2e;border:1px solid #604779;
+  color:#e6d5f2;font-weight:750
+}
+#adminPanel .admin-subpanel :is(h2,h3,h4){color:#eadcf5;line-height:1.55}
+#adminPanel .admin-subpanel h3{font-size:16px;margin:17px 0 8px}
+#adminPanel .admin-subpanel p{line-height:1.85}
+#adminPanel .admin-subpanel .small{color:#b9a9c7;line-height:1.8}
+#adminPanel .admin-subpanel .admin-workgroup-label{
+  display:flex;align-items:center;gap:11px;margin:14px 0;padding:11px 13px;
+  border:1px solid #4c3a5d;border-radius:14px;
+  background:linear-gradient(110deg,#2a1e37,#191321)
+}
+#adminPanel .admin-subpanel .admin-workgroup-label>span{
+  display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:10px;
+  border:1px solid #80609a;background:#382648;color:#f0dcff;font-weight:900
+}
+#adminPanel .admin-subpanel .admin-workgroup-label strong{display:block;color:#eadcf5;font-size:13px}
+#adminPanel .admin-subpanel .admin-workgroup-label small{display:block;color:#b6a5c4;font-size:11px;line-height:1.65}
+#adminPanel .admin-subpanel :is(.deposit-card,.finance-section,.overview-panel,.support-section){
+  box-sizing:border-box;min-width:0;margin:14px 0;padding:clamp(13px,2.5vw,19px);
+  border-radius:17px;background:linear-gradient(150deg,#201829,#15111c);
+  box-shadow:0 7px 20px #0003
+}
+#adminPanel .admin-subpanel .finance-section{border:1px solid #4b3a5c}
+#adminPanel .admin-subpanel .deposit-card{border-radius:16px}
+#adminPanel .admin-subpanel :is(.finance-section-heading,.support-section-head,.overview-section-heading){
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 13px
+}
+#adminPanel .admin-subpanel :is(.finance-section-heading h3,.support-section-head h2,.overview-section-heading h3){margin:2px 0;color:#efdefb}
+#adminPanel .admin-subpanel :is(.finance-kicker,.finance-eyebrow,.overview-kicker){
+  color:#c49be0;font-size:10px;font-weight:900;letter-spacing:.08em
+}
+#adminPanel .admin-subpanel :is(.finance-section-icon,.finance-hero-icon){
+  flex:0 0 auto;display:grid;place-items:center;border-radius:13px;
+  background:#8e5bb322;border:1px solid #805b9a66
+}
+#adminPanel .admin-subpanel :is(.ops-grid,.finance-grid,.shamcash-control-status-grid,.shamcash-control-facts){
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:10px;min-width:0
+}
+#adminPanel .admin-subpanel :is(.ops-grid .ops-card,.shamcash-control-status,.shamcash-control-facts>div){
+  min-width:0;padding:13px;border:1px solid #4a3959;border-radius:13px;
+  background:linear-gradient(145deg,#281e33,#191420);box-shadow:0 5px 14px #0002
+}
+#adminPanel .admin-subpanel .ops-list{display:grid;gap:10px;min-width:0;margin:12px 0}
+#adminPanel .admin-subpanel :is(.ops-form,.finance-form,.finance-form-grid){
+  min-width:0;padding:14px;border:1px solid #493858;border-radius:14px;
+  background:linear-gradient(145deg,#1d1726,#15111b)
+}
+#adminPanel .admin-subpanel :is(.ops-form label,.finance-field label,.finance-filter-row label){
+  display:block;margin:0 0 6px;color:#d9c8e7;font-size:12px;font-weight:750
+}
+#adminPanel .admin-subpanel :is(input:not([type=checkbox]):not([type=radio]),select,textarea){
+  box-sizing:border-box;width:100%;max-width:100%;min-width:0;min-height:43px;
+  padding:10px 12px;border:1px solid #554265;border-radius:11px;
+  background:#100d16;color:#f2eafa;font:inherit;font-size:13px
+}
+#adminPanel .admin-subpanel textarea{min-height:90px;resize:vertical}
+#adminPanel .admin-subpanel :is(input,select,textarea):focus{
+  outline:2px solid #a979cb;outline-offset:1px;border-color:#bd91df
+}
+#adminPanel .admin-subpanel :is(button,.admin-hub-card){
+  max-width:100%;white-space:normal;overflow-wrap:anywhere
+}
+#adminPanel .admin-subpanel button:not(.admin-hub-card){
+  min-height:40px;border-radius:11px
+}
+#adminPanel .admin-subpanel .ops-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#adminPanel .admin-subpanel .ops-actions button{flex:1 1 125px}
+#adminPanel .admin-subpanel :is(.finance-filter-row,.customer-order-tools,.support-filters){
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;align-items:end
+}
+#adminPanel .admin-subpanel :is(.finance-hero,.shamcash-control-hero){
+  border-radius:18px;overflow:hidden
+}
+#adminPanel .admin-subpanel :is(.security-tabs,.support-tabs){
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0
+}
+#adminPanel .admin-subpanel :is(.security-tab,.support-tab){
+  min-width:0;min-height:44px;padding:9px;border-radius:12px;
+  border:1px solid #59436d;background:#1c1525;color:#e4d5ef;font-weight:800
+}
+#adminPanel .admin-subpanel :is(.security-tab.active,.support-tab.active){
+  background:linear-gradient(135deg,#68418a,#39244f);border-color:#b88bd9;color:#fff
+}
+#adminPanel .admin-subpanel table{width:100%;border-collapse:separate;border-spacing:0;min-width:520px}
+#adminPanel .admin-subpanel :is(.table-wrap,.ops-table-wrap,.finance-table-wrap){max-width:100%;overflow-x:auto;border:1px solid #493858;border-radius:13px}
+#adminPanel .admin-subpanel th{background:#2a1e37;color:#e8d8f4;font-weight:800}
+#adminPanel .admin-subpanel :is(th,td){padding:10px;border-bottom:1px solid #3e304c;text-align:right;vertical-align:middle}
+#adminPanel .admin-subpanel hr{border:0;border-top:1px solid #40334b;opacity:.8;margin:17px 0}
+#adminPanel .admin-subpanel :is([role=status],[aria-live]){overflow-wrap:anywhere}
+#adminPanel .admin-subpanel :is(.admin-section-nav,.admin-workspace-index){
+  border-color:#58436b;border-radius:14px;background:rgba(24,18,32,.97)
+}
+@media(max-width:560px){
+  #adminPanel .admin-subpanel:not(.hidden){padding:11px!important;border-radius:16px}
+  #adminPanel .admin-subpanel-head{align-items:flex-start;gap:8px}
+  #adminPanel .admin-subpanel-head h2{flex-basis:100%;font-size:16px}
+  #adminPanel .admin-subpanel-head .admin-back{min-height:39px}
+  #adminPanel .admin-subpanel :is(.deposit-card,.finance-section,.overview-panel,.support-section){padding:12px;margin:11px 0}
+  #adminPanel .admin-subpanel :is(.finance-section-heading,.support-section-head,.overview-section-heading){align-items:flex-start}
+  #adminPanel .admin-subpanel :is(.ops-grid,.finance-grid,.shamcash-control-status-grid,.shamcash-control-facts){grid-template-columns:repeat(2,minmax(0,1fr))}
+  #adminPanel .admin-subpanel :is(.ops-actions,.finance-filter-row){display:grid;grid-template-columns:1fr}
+  #adminPanel .admin-subpanel .ops-actions button{width:100%}
+}
+@media(max-width:360px){
+  #adminPanel .admin-subpanel :is(.ops-grid,.finance-grid,.shamcash-control-status-grid,.shamcash-control-facts,.security-tabs,.support-tabs){grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:no-preference){
+  #adminPanel .admin-subpanel:not(.hidden){animation:baranAdminPanelIn .22s ease-out}
+  @keyframes baranAdminPanelIn{from{opacity:.7;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+}
+</style>
+
 <script src="./customer-experience-suite.js?v=20261118-suite-6"></script>
 <script src="./customer-center.js?v=20261117-customer-center-3"></script>
 <script src="./notification-enhancements.js?v=20261119-collapse-v2"></script>
