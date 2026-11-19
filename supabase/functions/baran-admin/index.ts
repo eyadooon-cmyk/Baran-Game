@@ -549,6 +549,31 @@ Deno.serve(async (req: Request) => {
         return json({ notification: updated ?? null, success: true });
       }
 
+      if (body.action === "push_delivery_stats") {
+        const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const { data: deliveries, error: deliveryError } = await admin
+          .from("baran_push_delivery_logs")
+          .select("status,attempt_count,http_status,error_code,last_error,created_at,updated_at,sent_at")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(1000);
+        if (deliveryError) {
+          console.error("baran-admin: push delivery report failed", deliveryError.message);
+          return json({ error: "تعذر تحميل سجل إرسال الإشعارات." }, 500);
+        }
+        const rows = deliveries || [];
+        const stats = {
+          total: rows.length,
+          sent: rows.filter((row) => row.status === "sent").length,
+          failed: rows.filter((row) => row.status === "failed").length,
+          processing: rows.filter((row) => row.status === "processing").length,
+          expired: rows.filter((row) => row.status === "expired").length,
+          attempts: rows.reduce((sum, row) => sum + Number(row.attempt_count || 0), 0),
+          last_updated: rows[0]?.updated_at || null
+        };
+        return json({ success: true, period_days: 7, stats, recent: rows.slice(0, 12) });
+      }
+
       if (body.action === "broadcast_announcement") {
         const title = typeof body.notification_title === "string" ? body.notification_title.trim() : "";
         const message = typeof body.notification_body === "string" ? body.notification_body.trim() : "";
