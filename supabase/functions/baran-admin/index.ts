@@ -547,7 +547,11 @@ Deno.serve(async (req: Request) => {
         const { data: targetProfile, error: targetProfileError } = await admin.from("profiles").select("id").eq("id", targetId).maybeSingle();
         if (targetProfileError) return json({ error: "تعذر التحقق من حساب العميل." }, 500);
         if (!targetProfile) return json({ error: "حساب العميل غير موجود." }, 404);
+        let newlyGrantedVip = false;
         if (isVip) {
+          const { data: existingVip, error: existingVipError } = await admin.from("customer_vip_tags").select("is_vip").eq("user_id", targetId).maybeSingle();
+          if (existingVipError) { console.error("baran-admin: VIP tag lookup failed", existingVipError.message); return json({ error: "تعذر التحقق من عضوية VIP الحالية." }, 500); }
+          newlyGrantedVip = existingVip?.is_vip !== true;
           const { error } = await admin.from("customer_vip_tags").upsert({ user_id: targetId, is_vip: true, updated_by: user.id, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
           if (error) { console.error("baran-admin: VIP tag save failed", error.message); return json({ error: "تعذر حفظ شارة VIP." }, 500); }
         } else {
@@ -556,7 +560,25 @@ Deno.serve(async (req: Request) => {
         }
         const { error: auditError } = await admin.from("admin_audit_log").insert({ admin_id: user.id, action: "customer_vip_update", entity_type: "customer", entity_id: targetId, details: { is_vip: isVip } });
         if (auditError) { console.error("baran-admin: VIP tag audit failed", auditError.message); return json({ error: "تم تحديث الشارة لكن تعذر تسجيل العملية في سجل الإدارة." }, 500); }
-        return json({ success: true, user_id: targetId, is_vip: isVip });
+
+        let notificationCreated = false;
+        if (isVip && newlyGrantedVip) {
+          const { error: notificationError } = await admin.from("baran_notifications").insert({
+            recipient_id: targetId,
+            audience: "customer",
+            kind: "customer_vip",
+            title: "👑 مبروك! أصبحت من عملاء VIP",
+            body: "تمت ترقيتك إلى عضوية VIP في BARAN GAME. شكراً لثقتك بنا!",
+            entity_type: "customer_vip",
+            entity_id: targetId,
+          });
+          if (notificationError) {
+            console.error("baran-admin: VIP notification creation failed", notificationError.message);
+          } else {
+            notificationCreated = true;
+          }
+        }
+        return json({ success: true, user_id: targetId, is_vip: isVip, notification_created: notificationCreated });
       }
 
       if (body.action === "customer_profile_update") {
