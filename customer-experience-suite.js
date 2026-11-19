@@ -87,7 +87,7 @@
         const row = node("div", "baran-experience-top");
         row.append(node("b", "baran-experience-rank", String(i+1).padStart(2,"0")));
         const identity = node("div");
-        identity.append(node("strong", "", c.full_name || c.email || "عميل"), node("small", "", c.member_code || "عضوية BARAN"));
+        identity.append(node("strong", "", c.full_name || c.display_name || "مستخدم جديد"), node("small", "", c.email || c.member_code || "عضوية BARAN"));
         row.append(identity, node("strong", "", money(c.lifetime_spend_usd,"USD")));
         topBox.append(row);
       });
@@ -200,7 +200,7 @@
     const head = node("div", "baran-profile-head");
     const title = node("div");
     title.append(node("span", "baran-experience-kicker", "CUSTOMER PROFILE"));
-    title.append(node("h3", "", customer.full_name || customer.email || "ملف العميل"));
+    title.append(node("h3", "", customer.full_name || customer.display_name || "ملف العميل"));
     title.append(node("p", "", (customer.member_code || "—") + " · " + customerSegment(customer)));
     const close = node("button", "baran-profile-close", "×");
     close.type = "button"; close.setAttribute("aria-label","إغلاق");
@@ -264,12 +264,46 @@
       securityBox.append(reason,duration,ban);
     }
     dialog.append(securityBox);
+    const nameBox=node("section","baran-profile-section");
+    nameBox.append(node("h4","","✏️ اسم العميل الظاهر"));
+    nameBox.append(node("p","baran-experience-muted","يمكنك تعديل الاسم الذي يظهر في دليل المستخدمين دون تغيير البريد أو بيانات الدخول."));
+    const nameInput=node("input","baran-ban-reason");
+    nameInput.type="text";nameInput.maxLength=60;nameInput.value=customer.full_name||customer.display_name||"";nameInput.placeholder="اكتب اسم العميل";
+    const saveName=node("button","baran-ban-action","حفظ الاسم");
+    saveName.type="button";
+    saveName.addEventListener("click",()=>updateCustomerName(customer,nameInput.value,saveName,title));
+    nameBox.append(nameInput,saveName);
+    dialog.append(nameBox);
     const safe=node("p","baran-profile-safety","الملف للعرض والمتابعة فقط. لا توجد أزرار لتعديل الرصيد أو تنفيذ استرداد أو شحن.");
     dialog.append(safe);modal.append(dialog);
     modal.addEventListener("click",e=>{if(e.target===modal)modal.remove();});
     document.addEventListener("keydown",function esc(e){if(e.key==="Escape"){modal.remove();document.removeEventListener("keydown",esc);}});
     document.body.append(modal);
   }
+  async function updateCustomerName(customer,value,button,title){
+    const displayName=String(value||"").trim().replace(/\\s+/g," ");
+    if(displayName.length<2||displayName.length>60){window.alert("الاسم يجب أن يكون بين حرفين و60 حرفاً.");return;}
+    button.disabled=true;button.textContent="جارٍ الحفظ...";
+    try{
+      const {data:{session},error:sessionError}=await sb.auth.getSession();
+      if(sessionError||!session)throw new Error("انتهت جلسة المدير.");
+      const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({action:"customer_profile_update",target_user_id:customer.id,display_name:displayName})
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||"تعذر حفظ الاسم.");
+      customer.full_name=result.full_name||displayName;customer.display_name=customer.full_name;
+      const sources=[...(Array.isArray(current?.customers)?current.customers:[]),...(Array.isArray(window.baranCustomerDirectory)?window.baranCustomerDirectory:[])];
+      sources.forEach(item=>{if(String(item.id||item.user_id||"")===String(customer.id)){item.full_name=customer.full_name;item.display_name=customer.full_name;}});
+      if(title?.querySelector("h3"))title.querySelector("h3").textContent=customer.full_name;
+      if(typeof window.renderBaranCustomerDirectory==="function")window.renderBaranCustomerDirectory(window.baranCustomerDirectory||current?.customers||[]);
+      window.alert("تم تحديث اسم العميل بنجاح.");
+    }catch(error){window.alert(error.message||"تعذر حفظ الاسم.");}
+    finally{button.disabled=false;button.textContent="حفظ الاسم";}
+  }
+
   async function changeCustomerBan(userId,duration,modal,reason=""){
     if(duration!=="none"&&!reason.trim()){window.alert("اكتب سبب الحظر أولاً.");return;}
     const confirmText=duration==="none"?"تأكيد إلغاء حظر هذا العميل؟":"تأكيد حظر العميل؟";
