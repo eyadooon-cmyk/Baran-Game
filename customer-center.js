@@ -58,6 +58,12 @@
       heartbeatTimer = setInterval(() => {
         if (document.visibilityState === "visible") void sendPresence("heartbeat");
       }, 45000);
+      if (document.getElementById("baranCustomerCenterLive") && !window.baranCustomerCenterPoll) {
+        void loadOnline();
+        window.baranCustomerCenterPoll = setInterval(() => {
+          if (document.visibilityState === "visible") void loadOnline();
+        }, 30000);
+      }
     } else if (window.baranCustomerCenterPoll) {
       clearInterval(window.baranCustomerCenterPoll);
       window.baranCustomerCenterPoll = null;
@@ -172,7 +178,19 @@
         cache: "no-store"
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || result.success !== true) throw new Error(result.error || "تعذر تحميل القائمة.");
+      if (!response.ok || result.success !== true) {
+        if (response.status === 403 && result.error === "Administrator access required") {
+          box.textContent = "هذه المعلومات خاصة بحساب الإدارة. سجّل الدخول بحساب المدير لعرض المتصلين والدعوات.";
+          const referralList = document.getElementById("baranCustomerReferralList");
+          if (referralList) referralList.textContent = "سجّل الدخول بحساب الإدارة لعرض سجل الدعوات.";
+          if (window.baranCustomerCenterPoll) {
+            clearInterval(window.baranCustomerCenterPoll);
+            window.baranCustomerCenterPoll = null;
+          }
+          return;
+        }
+        throw new Error(result.error || "تعذر تحميل القائمة.");
+      }
       stats.replaceChildren();
       const card = node("div", "customer-stat-card customer-stat-primary");
       card.append(node("span", "customer-stat-icon", "🟢"));
