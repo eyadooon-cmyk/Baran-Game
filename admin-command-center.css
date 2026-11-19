@@ -1,0 +1,51 @@
+/* BARAN GAME — Admin Command Center / mobile-first premium workspace */
+[data-admin-panel="overview"]{padding:clamp(12px,2.4vw,24px)!important;background:radial-gradient(ellipse at 90% 0%,#34204455,transparent 34%),linear-gradient(180deg,#130f19,#0d0a11)!important;border-color:#4d3a5d!important}
+[data-admin-panel="overview"]>.admin-subpanel-head{display:flex;align-items:center;gap:12px;padding:8px 0 15px;border-bottom:1px solid #44334f}
+[data-admin-panel="overview"]>.admin-subpanel-head h2{font-size:18px!important;letter-spacing:.1px}
+.baran-command-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:16px 0 13px;padding:8px;border:1px solid #493858;border-radius:18px;background:linear-gradient(145deg,#1b1423,#100d15);box-shadow:0 12px 30px #0004}
+.baran-command-tab{position:relative;display:flex;align-items:center;gap:9px;min-width:0;min-height:64px;padding:10px 12px;border:1px solid #403148;border-radius:13px;background:#17111e;color:#cdbbd9;text-align:right;font:inherit;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+.baran-command-tab:hover{border-color:#8968a2;background:#251a30}
+.baran-command-tab.is-active{border-color:#b18bd0;background:linear-gradient(135deg,#4a3060,#251831);color:#fff;box-shadow:0 7px 20px #8c5bb633}
+.baran-command-tab-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:11px;background:#2b2035;color:#e6d1f5;font-size:17px}
+.baran-command-tab-copy{display:flex;flex-direction:column;min-width:0;gap:3px}
+.baran-command-tab-copy strong{font-size:12px;white-space:nowrap}
+.baran-command-tab-copy small{font-size:10px;color:#a99ab5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.baran-command-tab-arrow{margin-inline-start:auto;font-size:20px;color:#b99bd2}
+.baran-command-content{min-width:0}
+.baran-command-section[hidden]{display:none!important}
+.baran-command-section{min-width:0;animation:baranCommandIn .22s ease-out}
+@keyframes baranCommandIn{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:none}}
+.baran-command-section>.overview-section-heading{margin:8px 0 12px;padding:12px 14px;border:1px solid #554064;border-radius:14px;background:linear-gradient(110deg,#2b1d38,#18121f)}
+.baran-command-section>.overview-section-heading>span{background:#3a2849;border-color:#8a67a4}
+.baran-command-section>.overview-section-heading h3{font-size:16px}
+.baran-command-section>.admin-workgroup-label{display:none!important}
+.baran-command-section .overview-panel{margin:0 0 14px!important;border-radius:17px!important}
+.baran-command-section #opsStats{margin:10px 0 18px!important}
+.baran-command-section .overview-welcome{margin:8px 0 15px!important}
+.baran-command-section .safe-panel{border-color:#806098!important}
+.baran-command-section .announcement-panel{border-color:#665078!important}
+.baran-command-section .baran-section-assistant{margin-top:16px!important}
+.baran-command-section .baran-section-assistant form{display:flex;gap:8px}
+.baran-command-section .baran-section-assistant form input{min-width:0;flex:1}
+.baran-command-section .baran-section-assistant form button{flex:0 0 auto}
+.baran-command-section input,.baran-command-section select,.baran-command-section textarea{border-radius:11px!important}
+.baran-command-section button{border-radius:11px}
+.baran-command-section .ops-actions{gap:8px!important}
+.baran-command-section .ops-actions button{min-height:42px}
+.baran-command-section .overview-panel h2{font-size:17px}
+.baran-command-section .overview-panel p{line-height:1.85}
+@media(max-width:760px){
+ .baran-command-tabs{grid-template-columns:repeat(5,minmax(112px,1fr));overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;position:sticky;top:54px;z-index:8;backdrop-filter:blur(14px)}
+ .baran-command-tab{scroll-snap-align:start;min-height:67px;flex-direction:column;justify-content:center;gap:5px;padding:8px 5px;text-align:center}
+ .baran-command-tab-icon{width:29px;height:29px;flex-basis:29px;font-size:15px}
+ .baran-command-tab-copy strong{font-size:10px}
+ .baran-command-tab-copy small{display:none}
+ .baran-command-tab-arrow{display:none}
+ .baran-command-section>.overview-section-heading{padding:10px 11px}
+ .baran-command-section>.overview-section-heading h3{font-size:14px}
+ .baran-command-section .baran-section-assistant form{flex-direction:column}
+ .baran-command-section .baran-section-assistant form button{width:100%}
+ [data-admin-panel="overview"]>.admin-subpanel-head{position:relative;top:auto}
+}
+@media(max-width:380px){.baran-command-tabs{gap:5px;padding:6px}.baran-command-tab{min-width:100px}.baran-command-section .overview-panel{padding:12px!important}}
+@media(prefers-reduced-motion:reduce){.baran-command-section{animation:none}.baran-command-tab{transition:none}}
