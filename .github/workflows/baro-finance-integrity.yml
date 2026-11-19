@@ -8,6 +8,7 @@ on:
       - "baro.js"
       - "baro-management.js"
       - "tests/baro-finance-integrity.test.mjs"
+      - "tests/baro-external-sales.test.mjs"
       - ".github/workflows/baro-finance-integrity.yml"
   workflow_dispatch:
 
@@ -25,4 +26,4 @@ jobs:
         with:
           node-version: 20
       - name: Run BARO finance regression tests
-        run: node --test tests/baro-finance-integrity.test.mjs
+        run: node --test tests/baro-finance-integrity.test.mjs tests/baro-external-sales.test.mjs
