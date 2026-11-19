@@ -1204,15 +1204,7 @@ footer{color:#9f91aa}
 .baro-ai-widget{margin:16px 0;padding:14px;border:1px solid #8b6ba8;border-radius:16px;background:linear-gradient(145deg,#21182b,#110d16);box-shadow:0 8px 24px #0005}
 .baro-ai-title{display:flex;align-items:center;gap:10px;color:#e9def2}.baro-ai-title>span:first-child{font-size:26px}.baro-ai-title>div{display:flex;flex-direction:column;flex:1}.baro-ai-title strong{font-size:17px;color:#d7c4e8}.baro-ai-title small{font-size:11px;color:#b9a9c9}.baro-ai-live{font-size:10px;color:#b9f0d6;border:1px solid #326c56;border-radius:20px;padding:4px 8px}.baro-ai-messages{height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:10px;margin:10px 0;background:#0d0a11;border:1px solid #40334b;border-radius:12px}.baro-ai-bubble{max-width:90%;padding:9px 11px;border-radius:12px;font-size:13px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}.baro-ai-bubble.bot{align-self:flex-start;background:#292033;color:#f1eaf7;border:1px solid #493b55}.baro-ai-bubble.user{align-self:flex-end;background:#57436a;color:white}.baro-ai-bubble.error{border-color:#8b4c62;color:#ffd9e1}.baro-ai-form{display:flex;gap:7px}.baro-ai-form input{flex:1;min-width:0;margin:0;font-size:14px}.baro-ai-form button{padding:10px 14px;white-space:nowrap}.baro-ai-form button:disabled{opacity:.55}.baro-ai-status{min-height:18px;padding-top:5px;font-size:11px;color:#b9a9c9}
 
-/* BARAN GAME — notification overlay containment + premium authentication */
-#customerNotificationsModal.notification-modal{position:fixed!important;inset:0!important;z-index:10020!important;display:flex;align-items:center;justify-content:center;padding:max(14px,env(safe-area-inset-top)) 12px max(14px,env(safe-area-inset-bottom));overflow:hidden;isolation:isolate;background:rgba(5,3,9,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
-#customerNotificationsModal.notification-modal.hidden{display:none!important;visibility:hidden!important;pointer-events:none!important}
-#customerNotificationsModal .notification-panel{position:relative;z-index:1;display:flex;flex-direction:column;width:min(620px,100%);height:min(82dvh,780px);max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 28px);min-height:0;overflow:hidden;overscroll-behavior:contain;background:#130e1b!important;border:1px solid #9b70b8;border-radius:23px;box-shadow:0 24px 80px rgba(0,0,0,.85),0 0 35px rgba(155,106,194,.18)}
-#customerNotificationsModal .notification-panel-head,#customerNotificationsModal .notification-summary{flex:0 0 auto}
-#customerNotificationsModal .notification-panel-head{position:relative;top:auto;background:#1b1424!important}
-#customerNotificationsModal .notification-list{flex:1 1 auto;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#130e1b!important;scrollbar-gutter:stable}
-body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none}
-@media(max-width:520px){#customerNotificationsModal.notification-modal{align-items:flex-end;padding:8px 7px max(8px,env(safe-area-inset-bottom))}#customerNotificationsModal .notification-panel{width:100%;height:min(90dvh,820px);max-height:calc(100dvh - env(safe-area-inset-top) - 8px);border-radius:22px 22px 15px 15px}#customerNotificationsModal .notification-list{padding:10px 10px max(16px,env(safe-area-inset-bottom))}}
+/* Notification layout is defined once in baran-notifications-premium-20261119. */
 /* Premium branded login — existing authentication actions and IDs remain unchanged */
 #authScreen:not(.hidden){position:relative;isolation:isolate;display:flex;justify-content:center;align-items:flex-start;min-height:480px;padding:clamp(22px,6vw,54px) 14px 36px;overflow:hidden;background:radial-gradient(ellipse at 50% 8%,rgba(139,91,177,.20),transparent 48%),linear-gradient(180deg,#0b0810 0%,#100b17 100%)}
 #authScreen:not(.hidden)::before,#authScreen:not(.hidden)::after{content:"";position:absolute;z-index:-1;pointer-events:none;border-radius:50%;border:1px solid rgba(193,151,222,.13)}
@@ -1933,52 +1925,57 @@ footer{padding:22px 12px calc(22px + env(safe-area-inset-bottom));text-align:cen
 .support-ticket-overdue{background:#49252e;border:1px solid #a95361;color:#ffd5d9}
 </style>
 <style id="baran-notifications-premium-20261119">
-#notificationBell{width:44px;height:44px;min-width:44px;padding:0;display:inline-grid;place-items:center;position:relative;border:1px solid #b88bd966;border-radius:15px;background:linear-gradient(145deg,#382447,#17101f);color:#f6eaff;font-size:0;box-shadow:0 5px 18px #8b5bb033,inset 0 1px #ffffff18;transition:.18s}
+/* Single source of truth for the notification center */
+#notificationBell{width:44px;height:44px;min-width:44px;padding:0;display:inline-grid;place-items:center;position:relative;border:1px solid #b88bd966;border-radius:15px;background:linear-gradient(145deg,#382447,#17101f);color:#f6eaff;font-size:0;box-shadow:0 5px 18px #8b5bb033,inset 0 1px #ffffff18;transition:transform .18s}
 #notificationBell::before{content:"🔔";font:21px Arial,sans-serif;line-height:1;filter:drop-shadow(0 0 7px #c69de580)}
 #notificationBell:active{transform:scale(.94)}
-#notificationBell .notification-count{top:-6px;left:-6px;min-width:20px;height:20px;padding:0 5px;display:grid;place-items:center;border:2px solid #100b16;border-radius:20px;background:linear-gradient(135deg,#ff7189,#d93663);color:#fff;font-size:10px;font-weight:900;line-height:1;box-shadow:0 3px 9px #d9366355}
-#customerNotificationsModal.notification-modal{z-index:10020;align-items:center;justify-content:center;padding:14px;background:#050309c7;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
-#customerNotificationsModal .notification-panel{width:min(680px,100%);height:min(86dvh,820px);max-height:calc(100dvh - 28px);display:flex;flex-direction:column;gap:0;overflow:hidden;padding:0;border:1px solid #ae80cd70;border-radius:24px;background:linear-gradient(160deg,#1c1425,#100c16);box-shadow:0 26px 90px #000b,0 0 35px #8b5bb022}
-#customerNotificationsModal .notification-panel-head{flex:0 0 auto;position:relative;top:auto;display:flex;align-items:flex-start;padding:22px 20px 17px;border:0;border-bottom:1px solid #b38ecf29;background:radial-gradient(ellipse at 12% 0%,#9564be33,transparent 55%),#1b1424!important}
-#customerNotificationsModal .notification-panel-title{min-width:0}
-#customerNotificationsModal .notification-panel-kicker{display:inline-block;margin-bottom:7px;color:#c5a0e4;font-size:10px;font-weight:900;letter-spacing:1.6px}
-#customerNotificationsModal .notification-panel-title h2{font-size:clamp(20px,5vw,25px);line-height:1.35;color:#fff;margin:0 0 6px}
-#customerNotificationsModal .notification-panel-title p{margin:0;color:#b9a9c9;font-size:12px;line-height:1.8}
-#customerNotificationsModal .notification-close{flex:0 0 38px;width:38px;height:38px;margin:0;padding:0;border:1px solid #574365;border-radius:12px;background:#2a2033;color:#f4eafa;font-size:19px;display:grid;place-items:center}
-#customerNotificationsModal .notification-summary{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:13px 16px;background:#0a070f52;border-bottom:1px solid #b38ecf1f}
-#customerNotificationsModal .notification-summary>div{min-width:0;padding:10px 13px;border:1px solid #a57ec033;border-radius:14px;background:linear-gradient(145deg,#30223dc7,#191221e6)}
-#customerNotificationsModal .notification-summary strong{display:block;color:#ead8fa;font-size:22px;line-height:1.2;font-weight:900;font-variant-numeric:tabular-nums}
+#notificationBell .notification-count{position:absolute;top:-6px;left:-6px;min-width:20px;height:20px;padding:0 5px;display:grid;place-items:center;border:2px solid #100b16;border-radius:20px;background:linear-gradient(135deg,#ff7189,#d93663);color:#fff;font-size:10px;font-weight:900;line-height:1;box-shadow:0 3px 9px #d9366355}
+#customerNotificationsModal.notification-modal{position:fixed!important;inset:0!important;z-index:10020!important;display:flex;align-items:center;justify-content:center;padding:14px!important;overflow:hidden!important;background:rgba(5,3,9,.94)!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);isolation:isolate}
+#customerNotificationsModal.notification-modal.hidden{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#customerNotificationsModal .notification-panel{position:relative;display:flex!important;flex:0 1 auto;flex-direction:column!important;gap:0!important;width:min(620px,100%)!important;height:min(82dvh,760px)!important;max-height:calc(100dvh - 28px)!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;overscroll-behavior:contain;background:#130e1b!important;border:1px solid #9b70b8;border-radius:22px;box-shadow:0 24px 80px #000d,0 0 30px #9b6ac229}
+#customerNotificationsModal .notification-panel-head{position:relative!important;top:auto!important;display:flex!important;flex:0 0 auto!important;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0;padding:18px 18px 15px!important;margin:0!important;background:#1b1424!important;border:0!important;border-bottom:1px solid #b38ecf29!important}
+#customerNotificationsModal .notification-panel-title{flex:1 1 auto;min-width:0}
+#customerNotificationsModal .notification-panel-kicker{display:inline-block;margin:0 0 6px;color:#c5a0e4;font-size:10px;font-weight:900;letter-spacing:1px}
+#customerNotificationsModal .notification-panel-title h2{margin:0 0 5px;color:#fff;font-size:22px;line-height:1.4}
+#customerNotificationsModal .notification-panel-title p{margin:0;color:#b9a9c9;font-size:12px;line-height:1.7}
+#customerNotificationsModal .notification-close{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;min-width:38px;margin:0;padding:0;border:1px solid #574365;border-radius:11px;background:#2a2033;color:#f4eafa;font-size:18px}
+#customerNotificationsModal .notification-summary{display:grid!important;flex:0 0 auto!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:11px 14px!important;margin:0!important;background:#100b16;border:0!important;border-bottom:1px solid #b38ecf20}
+#customerNotificationsModal .notification-summary>div{min-width:0;margin:0;padding:10px 12px;border:1px solid #a57ec033;border-radius:12px;background:#241a30}
+#customerNotificationsModal .notification-summary strong{display:block;color:#ead8fa;font-size:21px;line-height:1.2;font-weight:900}
 #customerNotificationsModal .notification-summary span{display:block;margin-top:4px;color:#b9a9c9;font-size:11px}
-#customerNotificationsModal .notification-list{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:10px;padding:14px 16px 22px;background:transparent!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-#customerNotificationsModal .notification-item{position:relative;display:flex;flex-direction:column;gap:9px;width:100%;min-width:0;margin:0;padding:13px;border:1px solid #9977b13b;border-radius:16px;background:linear-gradient(145deg,#231a2df5,#140f1bfa);box-shadow:0 5px 15px #0002;overflow:hidden}
-#customerNotificationsModal .notification-item.unread{border-color:#b885de9e;box-shadow:inset -3px 0 #b783db,0 5px 17px #784d971f}
-#customerNotificationsModal .notification-item-head{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-width:0}
-#customerNotificationsModal .notification-item-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#3a294a,#21182c);border:1px solid #be96dc3b;font-size:19px}
-#customerNotificationsModal .notification-item-title{display:flex;flex-direction:column;gap:4px;min-width:0}
+#customerNotificationsModal .notification-list{display:flex!important;flex:1 1 0!important;flex-direction:column!important;gap:10px!important;min-width:0;min-height:0!important;width:100%;max-height:none!important;margin:0!important;padding:13px 14px 18px!important;overflow-x:hidden!important;overflow-y:auto!important;background:#130e1b!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#customerNotificationsModal .notification-item{display:flex!important;flex:0 0 auto;flex-direction:column!important;gap:9px!important;position:relative;width:100%!important;min-width:0!important;margin:0!important;padding:12px!important;overflow:hidden;border:1px solid #9977b14d;border-radius:14px;background:#211829!important;box-shadow:0 4px 12px #0003}
+#customerNotificationsModal .notification-item.unread{border-color:#b885de9e;box-shadow:inset -3px 0 #b783db,0 4px 12px #0003}
+#customerNotificationsModal .notification-item-head{display:grid!important;grid-template-columns:38px minmax(0,1fr) auto!important;align-items:center;gap:9px!important;width:100%;min-width:0}
+#customerNotificationsModal .notification-item-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#382747;border:1px solid #be96dc3b;font-size:18px}
+#customerNotificationsModal .notification-item-title{display:flex;flex-direction:column;gap:3px;min-width:0}
 #customerNotificationsModal .notification-category{color:#c6a3e1;font-size:10px;font-weight:800}
 #customerNotificationsModal .notification-item-title strong{color:#f7f0fc;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
-#customerNotificationsModal .notification-state{align-self:start;white-space:nowrap;padding:4px 8px;border-radius:20px;background:#28222e;color:#c2b5cc;font-size:10px;font-weight:700}
+#customerNotificationsModal .notification-state{align-self:start;white-space:nowrap;padding:4px 7px;border-radius:20px;background:#302838;color:#d3c6dc;font-size:10px;font-weight:700}
 #customerNotificationsModal .notification-state.is-new{background:#8e5bb033;color:#e0c1f7;border:1px solid #b885de4d}
-#customerNotificationsModal .notification-item-body{margin:0!important;padding:0 2px;color:#c9bfd2;font-size:12px;line-height:1.8;white-space:normal;overflow-wrap:anywhere}
-#customerNotificationsModal .notification-item-footer{display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:100%;padding-top:9px;border-top:1px solid #b38ecf1f}
-#customerNotificationsModal .notification-item-footer time{flex:1 1 100%;margin:0 0 2px;color:#998ba5;font-size:10px;line-height:1.5}
-#customerNotificationsModal .notification-item-footer button{flex:1 1 auto;min-width:0;width:auto;min-height:36px;margin:0;padding:7px 10px;border:1px solid #af84cd59;border-radius:10px;background:#2a2034;color:#eadcf5;font-size:11px;font-weight:800;white-space:normal}
-#customerNotificationsModal .notification-item-footer .notification-open-action{background:linear-gradient(135deg,#8c5bb0,#674084);border-color:#a77ac7;color:#fff}
-#customerNotificationsModal .notification-empty-state,#customerNotificationsModal .notification-load-error{margin:auto;padding:28px 18px;text-align:center;color:#c7b8d2;line-height:1.8}
-#customerNotificationsModal .notification-empty-state>span{display:block;font-size:34px;color:#c59be5;margin-bottom:10px}
+#customerNotificationsModal .notification-item-body{display:block!important;width:100%;min-width:0;margin:0!important;padding:0 2px!important;color:#c9bfd2;font-size:12px;line-height:1.8;white-space:normal;overflow-wrap:anywhere}
+#customerNotificationsModal .notification-item-footer{display:flex!important;flex:0 0 auto;flex-wrap:wrap;align-items:center;gap:7px!important;width:100%;min-width:0;margin:0!important;padding:9px 0 0!important;border:0!important;border-top:1px solid #b38ecf25!important}
+#customerNotificationsModal .notification-item-footer time{display:block;flex:1 0 100%;margin:0!important;color:#998ba5;font-size:10px;line-height:1.5}
+#customerNotificationsModal .notification-item-footer button{display:block;flex:1 1 110px;min-width:0;width:auto!important;min-height:36px;margin:0!important;padding:7px 9px!important;border:1px solid #af84cd59;border-radius:9px;background:#30233b;color:#eadcf5;font-size:11px;font-weight:800;white-space:normal}
+#customerNotificationsModal .notification-item-footer .notification-open-action{background:#80539f;border-color:#a77ac7;color:#fff}
+#customerNotificationsModal .notification-empty-state,#customerNotificationsModal .notification-load-error{flex:0 0 auto;margin:auto;padding:24px 16px;text-align:center;color:#c7b8d2;line-height:1.8}
+#customerNotificationsModal .notification-empty-state>span{display:block;margin-bottom:9px;color:#c59be5;font-size:32px}
 #customerNotificationsModal .notification-empty-state strong{display:block;color:#f5eafa;font-size:16px}
 #customerNotificationsModal .notification-empty-state p{font-size:12px}
+body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none}
 @media(max-width:520px){
-#customerNotificationsModal.notification-modal{align-items:flex-end;padding:6px 6px max(6px,env(safe-area-inset-bottom))}
-#customerNotificationsModal .notification-panel{width:100%;height:min(91dvh,900px);max-height:calc(100dvh - env(safe-area-inset-top) - 6px);border-radius:23px 23px 14px 14px}
-#customerNotificationsModal .notification-panel-head{padding:18px 15px 14px}
-#customerNotificationsModal .notification-summary{padding:10px 12px;gap:8px}
-#customerNotificationsModal .notification-list{padding:11px 11px max(18px,env(safe-area-inset-bottom))}
-#customerNotificationsModal .notification-item{padding:11px;border-radius:14px}
-#customerNotificationsModal .notification-item-head{grid-template-columns:36px minmax(0,1fr) auto;gap:8px}
-#customerNotificationsModal .notification-item-icon{width:36px;height:36px;border-radius:11px}
+#customerNotificationsModal.notification-modal{align-items:flex-end;padding:6px 6px max(6px,env(safe-area-inset-bottom))!important}
+#customerNotificationsModal .notification-panel{width:100%!important;height:min(88dvh,760px)!important;max-height:calc(100dvh - env(safe-area-inset-top) - 6px)!important;border-radius:21px 21px 13px 13px}
+#customerNotificationsModal .notification-panel-head{padding:15px 13px 12px!important}
+#customerNotificationsModal .notification-panel-title h2{font-size:20px}
+#customerNotificationsModal .notification-summary{padding:9px 10px!important;gap:7px!important}
+#customerNotificationsModal .notification-summary>div{padding:8px 10px}
+#customerNotificationsModal .notification-list{padding:10px 10px max(15px,env(safe-area-inset-bottom))!important;gap:8px!important}
+#customerNotificationsModal .notification-item{padding:10px!important}
+#customerNotificationsModal .notification-item-head{grid-template-columns:34px minmax(0,1fr) auto!important;gap:7px!important}
+#customerNotificationsModal .notification-item-icon{width:34px;height:34px}
 }
-@media(prefers-reduced-motion:no-preference){#customerNotificationsModal:not(.hidden) .notification-panel{animation:baranNotificationPanelIn .24s ease-out}@keyframes baranNotificationPanelIn{from{opacity:.65;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}}
+@media(prefers-reduced-motion:no-preference){#customerNotificationsModal:not(.hidden) .notification-panel{animation:baranNotificationPanelIn .2s ease-out}@keyframes baranNotificationPanelIn{from{opacity:.7;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}}
 </style>
 </head>
 <body>
