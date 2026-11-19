@@ -5818,7 +5818,7 @@ function renderBaranUserDirectory(){
   const search=document.getElementById("baranUserDirectorySearch");
   const sort=document.getElementById("baranUserDirectorySort");
   const query=(search?.value||"").trim().toLocaleLowerCase("ar");
-  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
+  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.display_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
   const mode=sort?.value||"newest";
   rows.sort((a,b)=>mode==="usd"?Number(b.balance_usd||0)-Number(a.balance_usd||0):mode==="syp"?Number(b.balance_syp||0)-Number(a.balance_syp||0):new Date(b.created_at||0)-new Date(a.created_at||0));
   const stats=document.getElementById("baranUserDirectoryStats");
@@ -5828,10 +5828,14 @@ function renderBaranUserDirectory(){
   rows.forEach((item,index)=>{
     const card=document.createElement("article");card.className="customer-directory-item";card.dataset.customerId=item.id||"";card.style.cssText="padding:13px;margin:10px 0;border:1px solid #59436b;border-radius:14px;background:linear-gradient(145deg,#21192b,#15101d)";
     const head=document.createElement("div");head.style.cssText="display:flex;align-items:center;gap:10px;min-width:0";
-    const avatar=document.createElement("span");avatar.className="customer-directory-avatar";avatar.textContent="👤";
+    const avatar=document.createElement("span");avatar.className="customer-directory-avatar";
+    const displayName=item.full_name||item.display_name||"مستخدم جديد";
+    const avatarUrl=[item.avatar_url,item.picture].find(value=>typeof value==="string"&&/^https:\/\//i.test(value));
+    if(avatarUrl){const image=document.createElement("img");image.src=avatarUrl;image.alt="صورة "+displayName;image.loading="lazy";image.referrerPolicy="no-referrer";image.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:inherit";avatar.appendChild(image);}
+    else avatar.textContent=displayName.trim().slice(0,1)||"👤";
     const identity=document.createElement("div");identity.className="customer-directory-identity";identity.style.flex="1";
-    const name=document.createElement("strong");name.textContent=(index+1)+". "+(item.full_name||item.email||"مستخدم BARAN");
-    const email=document.createElement("small");email.textContent=item.email||"لا يوجد بريد مسجل";
+    const name=document.createElement("strong");name.textContent=(index+1)+". "+displayName;
+    const email=document.createElement("small");email.textContent=item.email||item.member_code||"عضو في BARAN GAME";
     identity.append(name,email);head.append(avatar,identity);card.appendChild(head);
     const meta=document.createElement("div");meta.className="customer-directory-details";meta.style.cssText="display:block;margin-top:10px";
     [["📱 الهاتف",item.phone||"غير مسجل"],["🪪 العضوية",item.member_code||"غير متوفر"],["🗓️ التسجيل",item.created_at?new Date(item.created_at).toLocaleString("ar"):"غير متوفر"],["💵 رصيد الدولار",financeMoney(item.balance_usd,"USD")],["💰 رصيد الليرة",financeMoney(item.balance_syp,"SYP")],["📦 الطلبات",Number(item.order_count||0).toLocaleString("en-US")],["⭐ نقاط الولاء",Number(item.loyalty_points||0).toLocaleString("en-US")]].forEach(([label,value])=>{const row=document.createElement("div");row.className="customer-detail-row";const key=document.createElement("span");key.textContent=label;const val=document.createElement("strong");val.textContent=String(value);row.append(key,val);meta.appendChild(row);});card.appendChild(meta);
@@ -5847,7 +5851,7 @@ function filterBaranCustomerDirectory(){
   const sort=document.getElementById("opsCustomerSort");
   if(!box)return;
   const query=(search?.value||"").trim().toLocaleLowerCase("ar");
-  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
+  const rows=baranCustomerDirectory.filter(item=>[item.member_code,item.full_name,item.display_name,item.phone,item.email].some(value=>String(value||"").toLocaleLowerCase("ar").includes(query)));
   const sortMode=sort?.value||"newest";
   rows.sort((a,b)=>{
     if(sortMode==="usd")return Number(b.balance_usd||0)-Number(a.balance_usd||0);
@@ -5864,10 +5868,14 @@ function filterBaranCustomerDirectory(){
   rows.forEach(item=>{
     const card=document.createElement("div");card.className="customer-directory-item";card.dataset.customerId=item.id||"";
     const summary=document.createElement("button");summary.type="button";summary.className="customer-directory-toggle";summary.setAttribute("aria-expanded","false");
-    const avatar=document.createElement("span");avatar.className="customer-directory-avatar";avatar.textContent="👤";
+    const avatar=document.createElement("span");avatar.className="customer-directory-avatar";
+    const displayName=item.full_name||item.display_name||"مستخدم جديد";
+    const avatarUrl=[item.avatar_url,item.picture].find(value=>typeof value==="string"&&/^https:\/\//i.test(value));
+    if(avatarUrl){const image=document.createElement("img");image.src=avatarUrl;image.alt="صورة "+displayName;image.loading="lazy";image.referrerPolicy="no-referrer";image.style.cssText="width:100%;height:100%;object-fit:cover;border-radius:inherit";avatar.appendChild(image);}
+    else avatar.textContent=displayName.trim().slice(0,1)||"👤";
     const identity=document.createElement("span");identity.className="customer-directory-identity";
-    const title=document.createElement("strong");title.textContent=item.full_name||item.email||"زبون";
-    const subtitle=document.createElement("small");subtitle.textContent=item.member_code||"عضو في BARAN GAME";
+    const title=document.createElement("strong");title.textContent=displayName;
+    const subtitle=document.createElement("small");subtitle.textContent=item.email||item.member_code||"عضو في BARAN GAME";
     identity.append(title,subtitle);
     const balance=document.createElement("span");balance.className="customer-directory-balance";
     balance.textContent=financeMoney(item.balance_usd,"USD");
@@ -5908,7 +5916,7 @@ function filterBaranCustomerDirectory(){
     profileButton.type="button";
     profileButton.className="baran-open-full-profile";
     profileButton.textContent="📂 فتح الملف الشامل للعميل ←";
-    profileButton.setAttribute("aria-label","فتح الملف الشامل للعميل "+(item.full_name||item.email||""));
+    profileButton.setAttribute("aria-label","فتح الملف الشامل للعميل "+(item.full_name||item.display_name||"مستخدم جديد"));
     profileButton.style.cssText="display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:5!important;width:100%!important;min-height:46px!important;margin:10px 0!important;padding:12px!important;border:1px solid #b58bd2!important;border-radius:12px!important;background:linear-gradient(100deg,#694080,#382449)!important;color:#fff!important;font-size:14px!important;font-weight:900!important;cursor:pointer!important;touch-action:manipulation!important";
     profileButton.addEventListener("click",event=>{
       event.preventDefault();
