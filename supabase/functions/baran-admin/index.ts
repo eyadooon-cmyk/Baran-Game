@@ -283,6 +283,18 @@ Deno.serve(async (req: Request) => {
           (!row.banned_until || new Date(row.banned_until).getTime() > Date.now());
         return [row.user_id, activeBan ? row : { ...row, status: "active" }];
       }));
+      const { data: customerPresenceRows, error: customerPresenceError } = await admin
+        .from("customer_presence").select("user_id,last_seen_at").order("last_seen_at", { ascending: false });
+      if (customerPresenceError) {
+        console.error("baran-admin: customer presence lookup failed", customerPresenceError.message);
+        return json({ error: "تعذر تحميل آخر نشاط للعملاء." }, 500);
+      }
+      const customerLastSeenByUser = new Map<string, string>();
+      for (const presence of customerPresenceRows ?? []) {
+        if (!customerLastSeenByUser.has(presence.user_id) && presence.last_seen_at) {
+          customerLastSeenByUser.set(presence.user_id, presence.last_seen_at);
+        }
+      }
       const { data: customerAdminNotes, error: customerAdminNotesError } = await admin
         .from("customer_admin_notes").select("user_id,note,updated_at,updated_by");
       if (customerAdminNotesError) {
@@ -305,6 +317,7 @@ Deno.serve(async (req: Request) => {
           display_name:displayName,
           avatar_url:avatarUrl,
           last_sign_in_at:authResult?.user?.last_sign_in_at ?? null,
+          last_activity_at:customerLastSeenByUser.get(profile.id) ?? authResult?.user?.last_sign_in_at ?? activity?.lastOrderAt ?? null,
           balance_usd:Number(wallet?.balance_usd ?? 0), balance_syp:Number(wallet?.balance_syp ?? 0),
           has_balance:Number(wallet?.balance_usd ?? 0) > 0 || Number(wallet?.balance_syp ?? 0) > 0,
           order_count:activity?.count ?? 0, lifetime_spend_usd:activity?.spendUsd ?? 0,
