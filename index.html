@@ -1982,6 +1982,11 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 /* BARAN GAME — professional customer account */
 .account-page-pro{padding:16px;overflow:hidden}.account-page-pro .account-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.account-page-pro .account-page-heading h2{margin:4px 0;font-size:25px}.account-identity-card-pro{position:relative;align-items:center;gap:15px;padding:17px;background:radial-gradient(circle at 8% 0%,#59416c66,transparent 44%),linear-gradient(135deg,#30213d,#17121e 78%);border:1px solid #80649a;border-radius:20px;box-shadow:0 12px 28px #0004}.account-avatar-wrap-pro{width:82px;height:82px;flex-basis:82px;padding:3px}.account-identity-details-pro{flex:1;gap:6px}.account-identity-details-pro .account-welcome-label{font-size:10px;font-weight:800;letter-spacing:1px;color:#c6a9dd}.account-identity-details-pro>strong{font-size:19px}.account-identity-details-pro>span:not(.account-welcome-label){font-size:12px}.account-identity-details-pro .account-member-code{margin-top:5px;padding:7px 9px}.account-identity-details-pro .account-member-code button{min-height:30px}.account-dashboard-label{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:22px 2px 11px}.account-dashboard-label strong{font-size:15px;color:#f1e8f8}.account-dashboard-label>span{font-size:10px;color:#a998b8}.account-shortcuts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.account-shortcut-pro{display:flex;align-items:center;gap:10px;min-width:0;min-height:76px;padding:12px;text-align:right;background:linear-gradient(145deg,#241b2c,#17121e);border:1px solid #493957;border-radius:15px;color:#f3eafa;box-shadow:0 5px 14px #0002}.account-shortcut-pro:active{transform:scale(.985);border-color:#a783c1}.account-shortcut-pro>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}.account-shortcut-pro strong{font-size:12px;line-height:1.5}.account-shortcut-pro small{font-size:10px;color:#ad9dbb;line-height:1.5}.account-shortcut-pro>b{color:#c8addb;font-size:17px}.account-pro-icon,.account-profile-summary-icon{display:grid;place-items:center;flex:0 0 37px;width:37px;height:37px;border-radius:12px;background:linear-gradient(145deg,#59416c,#30213d);border:1px solid #80649a;color:#f0defb;font-size:19px}.account-shortcut-wide{grid-column:1/-1;min-height:66px}.account-profile-details{margin-top:10px;border:1px solid #493957;border-radius:15px;background:#17121e;overflow:hidden}.account-profile-details>summary{display:flex;align-items:center;gap:11px;padding:13px;list-style:none;cursor:pointer}.account-profile-details>summary::-webkit-details-marker{display:none}.account-profile-details>summary>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:4px}.account-profile-details>summary strong{font-size:12px;color:#f3eafa}.account-profile-details>summary small{font-size:10px;color:#ad9dbb}.account-profile-details>summary>b{color:#c7a9dc}.account-panel-pro{margin:0;padding:14px;border:0;border-top:1px solid #493957;border-radius:0;background:#110d17}.account-signout-pro{margin-top:22px;min-height:48px;border:1px solid #78445d;background:linear-gradient(100deg,#3a1e2b,#261522);color:#ffd6e0}.account-settings-group{margin:14px 0 20px}#settings .account-security{margin:0 0 14px;border:1px solid #604a70;border-radius:16px;background:#17121e;overflow:hidden}#settings .account-security>summary{padding:14px}#settings .account-security-content{padding:0 12px 12px}#settings .account-security-card{padding:14px;margin:10px 0;background:#110d17;border:1px solid #40334b;border-radius:13px}#settings .account-security-card h3{margin:0 0 8px;color:#e8d8f4;font-size:14px}#settings .account-security-card p{font-size:11px}@media(max-width:390px){.account-page-pro{padding:12px}.account-identity-card-pro{gap:10px;padding:12px}.account-avatar-wrap-pro{width:64px;height:64px;flex-basis:64px}.account-identity-details-pro>strong{font-size:16px}.account-shortcut-pro{gap:8px;padding:10px}.account-pro-icon{width:33px;height:33px;flex-basis:33px}}
 </style>
+<style>
+/* Customer-facing VIP label: shown only from the signed-in user's protected VIP row. */
+.account-vip-badge{display:inline-flex;align-items:center;gap:5px;width:max-content;margin-top:5px;padding:5px 11px;border:1px solid #d8b36b;border-radius:999px;background:linear-gradient(110deg,#4b351b,#241a12);color:#ffe3a1;font-size:12px;font-weight:900;letter-spacing:.35px;box-shadow:0 3px 12px #d6a84a24}
+.account-identity-details-pro #accountDisplayName{display:inline-block}
+</style>
 </head>
 <body>
 
@@ -2667,6 +2672,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         <div class="account-identity-details account-identity-details-pro">
           <span class="account-welcome-label">أهلاً في BARAN GAME</span>
           <strong id="accountDisplayName">مستخدم Baran Game</strong>
+          <span id="accountVipBadge" class="account-vip-badge hidden" aria-hidden="true" title="عضوية VIP">👑 VIP</span>
           <span id="accountDisplayEmail" dir="ltr"></span>
           <span id="accountProviderLabel" class="account-provider-label">حساب Baran Game</span>
           <div class="account-member-code"><span>رقم العضوية</span><strong id="accountMemberCode" dir="ltr">جاري التحميل...</strong><button type="button" class="secondary" onclick="copyBaranMemberCode()">نسخ</button><span id="memberCodeMessage" class="small" role="status"></span></div>
@@ -4372,6 +4378,7 @@ function updateBaranAccountIdentity(user){
   const emailEl=document.getElementById("accountDisplayEmail");
   const providerEl=document.getElementById("accountProviderLabel");
   if(nameEl)nameEl.textContent=name;
+  refreshBaranAccountVipBadge(user.id);
   if(emailEl)emailEl.textContent=maskBaranEmail(email);
   if(providerEl)providerEl.textContent=identity?.provider==="google"?"تم تسجيل الدخول باستخدام Google":"حساب مسجل بالبريد الإلكتروني";
 
@@ -4390,6 +4397,32 @@ function updateBaranAccountIdentity(user){
     else{avatar.removeAttribute("src");avatar.classList.add("hidden");fallback.classList.remove("hidden");}
   });
 }
+
+async function refreshBaranAccountVipBadge(userId){
+  const badge=document.getElementById("accountVipBadge");
+  if(!badge)return;
+  badge.classList.add("hidden");
+  badge.setAttribute("aria-hidden","true");
+  if(!userId||!window.baranSupabaseClient)return;
+  try{
+    const {data,error}=await window.baranSupabaseClient
+      .from("customer_vip_tags")
+      .select("is_vip")
+      .eq("user_id",userId)
+      .maybeSingle();
+    if(error){
+      console.warn("Baran account VIP badge could not be loaded:",error.message);
+      return;
+    }
+    if(currentUser&&currentUser.id!==userId)return;
+    const isVip=data?.is_vip===true;
+    badge.classList.toggle("hidden",!isVip);
+    badge.setAttribute("aria-hidden",String(!isVip));
+  }catch(error){
+    console.warn("Baran account VIP badge lookup failed:",error);
+  }
+}
+
 
 function closeBaranFirstWelcome(){
   const overlay=document.getElementById("baranFirstWelcome");
