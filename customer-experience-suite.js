@@ -65,6 +65,21 @@
       stats.append(card);
     });
     panel.append(stats);
+    const segmentFilter = node("section", "baran-experience-card");
+    segmentFilter.style.cssText = "margin:14px 0;padding:14px;border:1px solid #59436b;border-radius:14px;background:#17121e";
+    const filterHead = node("div");
+    filterHead.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap";
+    filterHead.append(node("h4", "", "🔎 تصنيف وتصفية العملاء"));
+    const filterSelect = node("select", "baran-customer-segment-filter");
+    filterSelect.style.cssText = "min-width:150px;max-width:100%;padding:11px;border:1px solid #665078;border-radius:10px;background:#100d16;color:#f4eafa;font:inherit";
+    [["all","كل العملاء"],["جديد","عملاء جدد"],["نشط","عملاء نشطون"],["وفيّ","عملاء أوفياء"],["غير نشط","عملاء غير نشطين"]].forEach(([value,label]) => {
+      const option = node("option","",label); option.value=value; filterSelect.append(option);
+    });
+    filterSelect.addEventListener("change", () => applySegmentFilter(filterSelect.value));
+    filterHead.append(filterSelect);
+    segmentFilter.append(filterHead);
+    segmentFilter.append(node("p","baran-experience-muted","تصنيف تلقائي مبني على سجل الطلبات وآخر طلب؛ لا يغيّر صلاحيات الحساب أو بياناته."));
+    panel.append(segmentFilter);
     const lower = node("div", "baran-experience-grid");
     const segmentsBox = node("section", "baran-experience-card");
     segmentsBox.append(node("h4", "", "شرائح العملاء"));
@@ -175,6 +190,13 @@
       const customer = sources.find(c => String(c.id || c.user_id || "") === String(card.dataset.customerId || "")) ||
         sources.find(c => (c.full_name || c.email || "زبون") === label);
       if (!customer) return;
+      const segment = customerSegment(customer);
+      card.dataset.customerSegment = segment;
+      if (!card.querySelector(".baran-customer-segment-chip")) {
+        const chip = node("span", "baran-customer-segment-chip", segment === "وفيّ" ? "⭐ عميل وفيّ" : segment === "نشط" ? "نشط" : segment === "غير نشط" ? "غير نشط" : "جديد");
+        chip.style.cssText = "display:inline-flex;align-items:center;margin:5px 4px;padding:4px 9px;border:1px solid #765792;border-radius:20px;background:#2b1b3a;color:#e8d5f6;font-size:10px;font-weight:800";
+        summary.append(chip);
+      }
       const button = node("button", "baran-open-full-profile", "فتح الملف الشامل ←");
       button.type = "button";
       button.setAttribute("aria-label", "فتح الملف الشامل للعميل " + (customer.full_name || customer.email || ""));
@@ -185,6 +207,12 @@
       });
       card.append(button);
     });
+  }
+  function applySegmentFilter(segment) {
+    const lists = [ $("opsCustomers"), $("baranUserDirectoryList") ].filter(Boolean);
+    lists.forEach(list => list.querySelectorAll(".customer-directory-item").forEach(card => {
+      card.hidden = segment !== "all" && card.dataset.customerSegment !== segment;
+    }));
   }
   function openProfile(customer) {
     const orders = (current?.orders || []).filter(o => o.user_id === customer.id);
@@ -230,6 +258,15 @@
       const m=node("div","baran-profile-metric");m.append(node("small","",i+" "+l),node("strong","",v));metrics.append(m);
     });
     dialog.append(metrics);
+    const segmentBox=node("section","baran-profile-section");
+    segmentBox.append(node("h4","","🏷️ تصنيف العميل"));
+    const segmentName=customerSegment(customer);
+    segmentBox.append(node("p","baran-experience-muted",
+      segmentName==="وفيّ"?"عميل وفيّ — لديه خمسة طلبات أو أكثر وآخر طلب خلال 30 يوماً.":
+      segmentName==="نشط"?"عميل نشط — لديه طلبات حديثة.":
+      segmentName==="غير نشط"?"عميل غير نشط — مرّ أكثر من 30 يوماً على آخر طلب.":
+      "عميل جديد — لا توجد طلبات مسجلة له بعد."));
+    dialog.append(segmentBox);
     const info=node("section","baran-profile-section");info.append(node("h4","","بيانات الحساب"));
     [["البريد",customer.email],["الهاتف",customer.phone],["تاريخ التسجيل",date(customer.created_at)],["آخر نشاط",date(customer.last_activity_at||customer.last_sign_in_at||customer.last_order_at)],["آخر طلب",date(customer.last_order_at)],["الرصيد USD",money(customer.balance_usd,"USD")],["الرصيد SYP",money(customer.balance_syp,"SYP")]].forEach(([k,v])=>{
       const row=node("div","baran-profile-row");row.append(node("span","",k),node("strong","",v||"—"));info.append(row);
