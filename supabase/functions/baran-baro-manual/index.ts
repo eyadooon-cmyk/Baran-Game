@@ -129,10 +129,36 @@ Deno.serve(async (req: Request) => {
       const [productsResult, ordersResult, settingsResult] = await Promise.all(tasks);
       if (productsResult.error || ordersResult.error || settingsResult.error) return json({ error: "تعذر تحميل بيانات BARO اليدوية." }, 500);
       const orders = ordersResult.data ?? [];
-      const enriched = canOrders ? await Promise.all(orders.map(async (o: any) => {
-        const { data } = await admin.auth.admin.getUserById(o.user_id);
-        return { ...o, customer_email: data?.user?.email ?? null };
-      })) : [];
+      let enriched: any[] = [];
+      if (canOrders) {
+        const orderIds = orders.map((o: any) => o.id);
+        const { data: orderEvents, error: orderEventsError } = orderIds.length
+          ? await admin.from("leo_manual_order_events")
+              .select("order_id,actor_id,event_type,details,created_at")
+              .in("order_id", orderIds).order("created_at", { ascending: true })
+          : { data: [], error: null };
+        if (orderEventsError) return json({ error: "تعذر تحميل سجل منفذي طلبات BARO." }, 500);
+        const actorIds = [...new Set((orderEvents ?? []).map((event: any) => event.actor_id).filter(Boolean))];
+        const actorLabels = new Map<string, string>();
+        await Promise.all(actorIds.map(async (actorId: string) => {
+          const { data } = await admin.auth.admin.getUserById(actorId);
+          const metadata = data?.user?.user_metadata ?? {};
+          const label = str(metadata.full_name || metadata.name || metadata.display_name, 100);
+          actorLabels.set(actorId, label || "عضو الإدارة");
+        }));
+        const eventsByOrder = new Map<string, any[]>();
+        for (const event of orderEvents ?? []) {
+          const enrichedEvent = { ...event, actor_label: event.actor_id ? (actorLabels.get(event.actor_id) || "عضو الإدارة") : null };
+          if (!eventsByOrder.has(event.order_id)) eventsByOrder.set(event.order_id, []);
+          eventsByOrder.get(event.order_id)!.push(enrichedEvent);
+        }
+        enriched = await Promise.all(orders.map(async (o: any) => {
+          const { data } = await admin.auth.admin.getUserById(o.user_id);
+          const events = eventsByOrder.get(o.id) ?? [];
+          const lastActorEvent = [...events].reverse().find((event: any) => event.actor_id && event.actor_label);
+          return { ...o, customer_email: data?.user?.email ?? null, events, last_actor_label: lastActorEvent?.actor_label ?? null };
+        }));
+      }
       const { data: gate } = await admin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle();
       return json({ products: productsResult.data ?? [], orders: enriched, settings: settingsResult.data ?? null,
         manual_enabled: gate?.enabled === true,

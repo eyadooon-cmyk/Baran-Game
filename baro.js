@@ -385,6 +385,7 @@ function renderBaroAdmin(){
   const h=document.createElement("strong");h.textContent=o.product_name_snapshot||o.product_code;
   const info=document.createElement("div");info.className="small";info.textContent="الزبون: "+(o.customer_email||o.user_id)+" | اللاعب: "+o.player_id+" | الكمية: "+Number(o.quantity||1).toLocaleString("en-US");
   const id=document.createElement("div");id.className="small";id.textContent="رقم الطلب: "+o.id;
+  const performer=document.createElement("div");performer.className="small";performer.textContent=o.last_actor_label?"آخر إجراء بواسطة: "+o.last_actor_label:"منفذ الشحن: يظهر بعد أول تحديث إداري مسجل";
   const status=document.createElement("select");
   const nextStates={pending:["awaiting_payment","needs_review","failed","cancelled"],awaiting_payment:["paid","needs_review","failed","cancelled"],paid:["in_progress","needs_review","failed"],in_progress:["completed","needs_review","failed"],needs_review:["awaiting_payment","paid","in_progress","failed","cancelled"],failed:["needs_review"],completed:[],cancelled:[]};
   [o.status,...(nextStates[o.status]||[])].forEach(v=>{const op=document.createElement("option");op.value=v;op.textContent=BARO_STATUS[v]||v;status.append(op);});status.value=o.status;
@@ -406,7 +407,7 @@ function renderBaroAdmin(){
    const updateResult=await baroApi("POST",{action:"order_admin_update",order_id:o.id,status:status.value,quote_amount:amount,quote_currency:quoteCurrency,payment_method:method.value,payment_status:pay,customer_message:msg.value.trim(),supplier_cost_usd:cost.value.trim()===""?null:Number(cost.value),supplier_reference:reference.value.trim(),exception_reason:exception.value.trim(),internal_notes:notes.value.trim()});
    baroAdminMessage(updateResult.finance_posted?"تم حفظ الطلب وترحيل قيدي المقبوض وتكلفة المورد.":(updateResult.sale_entry_posted?"تم حفظ الطلب وترحيل المقبوض؛ تبقى تكلفة المورد حتى اكتمال التنفيذ.":"تم حفظ تحديث الطلب دون ترحيل قيد مالي جديد."));await loadBaroAdmin();
   }catch(e){baroAdminMessage(e.message);}finally{save.disabled=false;}};
-  card.append(h,id,info,grid,save);
+  card.append(h,id,info,performer,grid,save);
   const quick=document.createElement("div");quick.className="baro-order-quick-actions";
   if(o.status==="paid"){const start=document.createElement("button");start.type="button";start.textContent="▶ بدء الشحن اليدوي";start.onclick=()=>baroAdminQuickOrderStatus(o,"in_progress");quick.append(start);}
   if(o.status==="in_progress"){const complete=document.createElement("button");complete.type="button";complete.className="secondary";complete.textContent="✓ تأكيد اكتمال الشحن";complete.onclick=()=>baroAdminQuickOrderStatus(o,"completed");quick.append(complete);}
