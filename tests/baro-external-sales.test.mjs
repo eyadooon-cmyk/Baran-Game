@@ -35,7 +35,7 @@ test("External sales retain supplier and both original currencies with USD equiv
   assert.match(ui,/baroExternalSupplier/);
   assert.match(ui,/baroExternalSaleRate/);
   assert.match(ui,/baroExternalCostRate/);
-  assert.match(index,/baro-management\.js\?v=20261119-external-sales-1/);
+  assert.match(index,/baro-management\.js\?v=20261119-external-sales-2/);
 });
 
 test("External sale retains its idempotency key until the finance refresh succeeds",()=>{
