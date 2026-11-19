@@ -132,7 +132,7 @@
       (productRows.length?table(["الباقة","تكلفة المورد USD","التكلفة SYP","سعر البيع USD","سعر البيع SYP","ربح الوحدة SYP","ربح الوحدة USD","هامش الربح"],productRows):'<div class="baro-mgmt-empty">لا توجد باقات لديها تكلفة مورد وسعر بيع معتمدان حالياً.</div>')+
       '<div class="baro-mgmt-panel"><strong>شرح الحساب</strong><p class="baro-mgmt-muted">تكلفة المورد بالدولار × سعر الصرف = التكلفة بالليرة. سعر البيع − التكلفة = ربح الوحدة المتوقع. هامش الربح = ربح الوحدة ÷ سعر البيع × 100. مثال 110: تكلفة 147 SYP، بيع 160 SYP، ربح 13 SYP، وهامش يقارب 8.1%.</p><p class="baro-mgmt-muted">الجدول يعرض ربح الوحدة وليس مجموع أرباح المتجر. لا يتحول الربح المتوقع إلى ربح محقق إلا بعد تنفيذ الطلب وتسجيل المقبوض والتكلفة الفعلية.</p></div></div>'+
       '<div class="baro-mgmt-panel"><h3>مبيعات خارجية منفّذة يدوياً</h3><p class="baro-mgmt-muted">سجّل البيع بعد قبض المبلغ وتنفيذ الشحن خارج المتجر. ينشئ النظام قيد مبيعات وقيد تكلفة مورد مرتبطين بمرجع واحد، ويحسب الربح بالدولار. لا ينشئ طلب زبون ولا يغيّر أي محفظة.</p><div class="baro-mgmt-form">'+
-      selectField("المورد","baroExternalSupplier",(financeData.suppliers||[]).map(s=>[s.id,s.name]))+
+      selectField("المورد","baroExternalSupplier",[["","— اختر المورد —"],...(financeData.suppliers||[]).map(s=>[s.id,s.name])])+
       field("المنتج / الباقة","baroExternalProduct","text","مثال: Free Fire 1188 جوهرة")+
       field("اسم الزبون (اختياري)","baroExternalCustomer","text","اسم الزبون")+
       field("معرّف اللاعب (اختياري)","baroExternalPlayer","text","Player ID")+
