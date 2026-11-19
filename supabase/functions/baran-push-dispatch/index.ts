@@ -133,8 +133,7 @@ Deno.serve(async (req: Request) => {
           break;
         } catch (error) {
           const status = Number((error as { statusCode?: number })?.statusCode || 0);
-          const message = String((error as { body?: string; message?: string })?.body ||
-            (error as { message?: string })?.message || "Push delivery failed").slice(0, 300);
+          const message = status ? "Push provider returned HTTP " + status : "Network delivery error";
           if (status === 404 || status === 410) {
             await admin.from("baran_push_delivery_logs").update({
               status: "expired", http_status: status, error_code: String(status),
