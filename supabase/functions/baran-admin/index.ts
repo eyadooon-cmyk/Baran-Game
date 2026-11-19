@@ -289,9 +289,14 @@ Deno.serve(async (req: Request) => {
         const wallet = customerWalletByUser.get(profile.id);
         const activity = customerOrderStats.get(profile.id);
         const metadata = authResult?.user?.user_metadata ?? {};
+        const identityData = authResult?.user?.identities?.find((identity) => identity.provider === "google")?.identity_data ?? {};
+        const displayName = profile.full_name || metadata.full_name || metadata.name ||
+          identityData.full_name || identityData.name || identityData.given_name || null;
+        const avatarUrl = metadata.avatar_url || metadata.picture || metadata.avatar ||
+          identityData.avatar_url || identityData.picture || null;
         return { ...profile, email:authResult?.user?.email ?? null,
-          display_name:profile.full_name || metadata.full_name || metadata.name || null,
-          avatar_url:metadata.avatar_url || metadata.picture || metadata.avatar || null,
+          display_name:displayName,
+          avatar_url:avatarUrl,
           balance_usd:Number(wallet?.balance_usd ?? 0), balance_syp:Number(wallet?.balance_syp ?? 0),
           has_balance:Number(wallet?.balance_usd ?? 0) > 0 || Number(wallet?.balance_syp ?? 0) > 0,
           order_count:activity?.count ?? 0, lifetime_spend_usd:activity?.spendUsd ?? 0,
