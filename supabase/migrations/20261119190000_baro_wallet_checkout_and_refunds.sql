@@ -210,11 +210,13 @@ begin
         settled_at=pg_catalog.now() where order_id=new.id;
       v_usd:=case when v_hold.currency='USD' then v_hold.amount
         else v_hold.amount/nullif(v_hold.exchange_rate_snapshot,0) end;
+      update public.baro_manual_finance_entries set status='void'
+        where order_id=new.id and entry_type='sale_received' and status='posted';
       insert into public.baro_manual_finance_entries(
         order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,
         status,description,idempotency_key,created_by
       ) values(new.id,'refund','رد قيمة طلب BARO',v_hold.amount,v_hold.currency,
-        v_hold.exchange_rate_snapshot,v_usd,'posted',
+        v_hold.exchange_rate_snapshot,v_usd,'void',
         'رد تلقائي إلى محفظة الزبون بعد فشل تنفيذ الشحن','baro-wallet-refund-'||new.id::text,v_actor)
       on conflict(idempotency_key) do nothing;
       insert into public.leo_manual_order_events(order_id,actor_id,event_type,details)
