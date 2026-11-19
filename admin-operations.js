@@ -141,7 +141,8 @@ function renderOpsCustomers(customers){
   const box=document.getElementById("opsCustomers");if(!box)return;box.replaceChildren();
   if(!customers.length){box.textContent="لا توجد حسابات مسجلة.";return;}
   customers.forEach((customer,index)=>{
-    const card=opsNode("div","ops-item");
+    const card=opsNode("div","ops-item customer-directory-item");
+    if(customer.id)card.dataset.customerId=customer.id;
     card.append(opsNode("strong","",((index+1)+". "+opsText(customer.full_name||customer.email))));
     card.append(opsNode("div","ops-muted","البريد: "+opsText(customer.email)));
     card.append(opsNode("div","ops-muted","الهاتف: "+opsText(customer.phone)+" | التسجيل: "+opsDate(customer.created_at)));
