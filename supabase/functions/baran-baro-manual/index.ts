@@ -127,7 +127,7 @@ Deno.serve(async (req: Request) => {
       const allEntries: any[] = [];
       for (let offset = 0; ; offset += pageSize) {
         const { data: page, error } = await admin.from("baro_manual_finance_entries")
-          .select("id,order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
+          .select("id,order_id,external_sale_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
           .order("created_at", { ascending: true }).order("id", { ascending: true })
           .range(offset, offset + pageSize - 1);
         if (error) return json({ error: "تعذر تحميل السجل المالي الكامل لـ BARO." }, 500);
@@ -152,6 +152,8 @@ Deno.serve(async (req: Request) => {
       };
       const salesByOrder = new Map<string, number>();
       const costsByOrder = new Map<string, number>();
+      const salesByExternal = new Map<string, number>();
+      const costsByExternal = new Map<string, number>();
 
       for (const row of allEntries) {
         if (row.status !== "posted" || row.amount_usd_equivalent === null) continue;
@@ -160,9 +162,11 @@ Deno.serve(async (req: Request) => {
         if (row.entry_type === "sale_received") {
           totals.sales += n;
           if (row.order_id) salesByOrder.set(row.order_id, (salesByOrder.get(row.order_id) ?? 0) + n);
+          if (row.external_sale_id) salesByExternal.set(row.external_sale_id, (salesByExternal.get(row.external_sale_id) ?? 0) + n);
         } else if (row.entry_type === "supplier_cost") {
           totals.supplier_costs += n;
           if (row.order_id) costsByOrder.set(row.order_id, (costsByOrder.get(row.order_id) ?? 0) + n);
+          if (row.external_sale_id) costsByExternal.set(row.external_sale_id, (costsByExternal.get(row.external_sale_id) ?? 0) + n);
         } else if (row.entry_type === "expense") totals.expenses += n;
         else if (row.entry_type === "commission") totals.commissions += n;
         else if (row.entry_type === "refund") totals.refunds += n;
@@ -176,15 +180,27 @@ Deno.serve(async (req: Request) => {
         totals.realized_sales += salesByOrder.get(orderId)!;
         totals.realized_supplier_costs += costsByOrder.get(orderId)!;
       }
+      // External/manual sales are realized only when the atomic RPC has posted both paired ledger rows.
+      for (const [saleId, saleAmount] of salesByExternal) {
+        if (!costsByExternal.has(saleId)) continue;
+        totals.realized_sales += saleAmount;
+        totals.realized_supplier_costs += costsByExternal.get(saleId)!;
+      }
       totals.unmatched_sales = Math.max(0, totals.sales - totals.realized_sales);
       totals.net_profit = totals.realized_sales - totals.realized_supplier_costs
         - totals.expenses - totals.commissions - totals.refunds + totals.adjustments;
 
       const { data: recentEntries, error: recentError } = await admin.from("baro_manual_finance_entries")
-        .select("id,order_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
+        .select("id,order_id,external_sale_id,entry_type,title,amount,currency,exchange_rate,amount_usd_equivalent,status,description,external_reference,created_by,created_at")
         .order("created_at", { ascending: false }).order("id", { ascending: false }).limit(500);
       if (recentError) return json({ error: "تعذر تحميل أحدث حركات دفتر BARO." }, 500);
-      return json({ entries: recentEntries ?? [], totals, totals_scope: "all_posted_history" });
+      const [externalSalesResult, suppliersResult] = await Promise.all([
+        admin.from("baro_manual_external_sales").select("id,product_name,customer_name,player_id,supplier_id,supplier_name_snapshot,sale_amount,sale_currency,sale_usd_equivalent,supplier_cost_amount,supplier_cost_currency,supplier_cost_usd_equivalent,profit_usd_equivalent,payment_method,customer_reference,supplier_reference,notes,created_at").order("created_at",{ascending:false}).limit(500),
+        admin.from("baro_manual_suppliers").select("id,name").eq("is_active",true).order("name")
+      ]);
+      if (externalSalesResult.error || suppliersResult.error) return json({ error: "تعذر تحميل سجل المبيعات الخارجية أو الموردين." }, 500);
+      return json({ entries: recentEntries ?? [], external_sales: externalSalesResult.data ?? [],
+        suppliers: suppliersResult.data ?? [], totals, totals_scope: "all_posted_history" });
     }
 
     if (req.method === "GET" && view === "suppliers") {
@@ -341,6 +357,37 @@ Deno.serve(async (req: Request) => {
         p_description: description, p_external_reference: external, p_idempotency_key: key || null
       });
       if (error) return json({ error: error.message || "تعذر تسجيل الحركة المالية." }, 400);
+      return json(data);
+    }
+
+    if (body.action === "external_sale_create") {
+      if (!(await hasPermission("finance"))) return json({ error: "لا تملك صلاحية تسجيل بيع خارجي في BARO." }, 403);
+      const supplierId = String(body.supplier_id ?? "");
+      const saleAmount = amount(body.sale_amount, 1000000000000);
+      const saleRate = amount(body.sale_exchange_rate, 1000000000);
+      const costAmount = amount(body.supplier_cost_amount, 1000000000000);
+      const costRate = amount(body.supplier_cost_exchange_rate, 1000000000);
+      const saleCurrency = body.sale_currency === "SYP" ? "SYP" : body.sale_currency === "USD" ? "USD" : "";
+      const costCurrency = body.supplier_cost_currency === "SYP" ? "SYP" : body.supplier_cost_currency === "USD" ? "USD" : "";
+      const paymentMethod = ["sham_cash","cash","other"].includes(String(body.payment_method)) ? String(body.payment_method) : "";
+      const key = str(body.idempotency_key,160);
+      if (!uuidPattern.test(supplierId) || saleAmount === undefined || saleAmount === null || costAmount === undefined || costAmount === null
+          || !saleCurrency || !costCurrency || saleRate === undefined || costRate === undefined
+          || (saleCurrency === "SYP" && (!saleRate || saleRate <= 0))
+          || (costCurrency === "SYP" && (!costRate || costRate <= 0))
+          || !paymentMethod || !uuidPattern.test(key) || body.execution_confirmed !== true)
+        return json({ error: "أكمل المبالغ والعملات وسعر الصرف والمورد، وأكد القبض وتنفيذ الشحن." }, 400);
+      const { data, error } = await admin.rpc("baro_manual_external_sale_create_atomic", {
+        p_admin_id: user.id, p_product_name: str(body.product_name,160),
+        p_customer_name: str(body.customer_name,120), p_player_id: str(body.player_id,100),
+        p_supplier_id: supplierId, p_sale_amount: saleAmount, p_sale_currency: saleCurrency,
+        p_sale_exchange_rate: saleRate, p_supplier_cost_amount: costAmount,
+        p_supplier_cost_currency: costCurrency, p_supplier_cost_exchange_rate: costRate,
+        p_payment_method: paymentMethod, p_customer_reference: str(body.customer_reference,160),
+        p_supplier_reference: str(body.supplier_reference,160), p_notes: str(body.notes,1000),
+        p_idempotency_key: key, p_execution_confirmed: true
+      });
+      if (error || !data?.sale) return json({ error: error?.message || "تعذر تسجيل البيع الخارجي." }, 400);
       return json(data);
     }
 

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
-const migration = read("../supabase/migrations/20261118152000_baro_order_finance_integrity.sql");
+const migration = read("../supabase/migrations/20261118163001_baro_order_finance_integrity_20261118152000.sql");
 const edge = read("../supabase/functions/baran-baro-manual/index.ts");
 const management = read("../baro-management.js");
 const ui = read("../baro.js");

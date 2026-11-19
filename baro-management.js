@@ -131,6 +131,30 @@
       '<div class="baro-mgmt-panel"><h3>2) ربح كل باقة — تقديري قبل البيع</h3><p class="baro-mgmt-muted">سعر الصرف: 1 USD = '+fmtSyp(rate)+'. مثال 110 جوهرة: تكلفة المورد 0.94$ × 156 = 147 SYP تقريباً. سعر البيع 160 SYP؛ الربح المتوقع 13 SYP للوحدة قبل أي عمولة أو مصروف إضافي.</p>'+
       (productRows.length?table(["الباقة","تكلفة المورد USD","التكلفة SYP","سعر البيع USD","سعر البيع SYP","ربح الوحدة SYP","ربح الوحدة USD","هامش الربح"],productRows):'<div class="baro-mgmt-empty">لا توجد باقات لديها تكلفة مورد وسعر بيع معتمدان حالياً.</div>')+
       '<div class="baro-mgmt-panel"><strong>شرح الحساب</strong><p class="baro-mgmt-muted">تكلفة المورد بالدولار × سعر الصرف = التكلفة بالليرة. سعر البيع − التكلفة = ربح الوحدة المتوقع. هامش الربح = ربح الوحدة ÷ سعر البيع × 100. مثال 110: تكلفة 147 SYP، بيع 160 SYP، ربح 13 SYP، وهامش يقارب 8.1%.</p><p class="baro-mgmt-muted">الجدول يعرض ربح الوحدة وليس مجموع أرباح المتجر. لا يتحول الربح المتوقع إلى ربح محقق إلا بعد تنفيذ الطلب وتسجيل المقبوض والتكلفة الفعلية.</p></div></div>'+
+      '<div class="baro-mgmt-panel"><h3>مبيعات خارجية منفّذة يدوياً</h3><p class="baro-mgmt-muted">سجّل البيع بعد قبض المبلغ وتنفيذ الشحن خارج المتجر. ينشئ النظام قيد مبيعات وقيد تكلفة مورد مرتبطين بمرجع واحد، ويحسب الربح بالدولار. لا ينشئ طلب زبون ولا يغيّر أي محفظة.</p><div class="baro-mgmt-form">'+
+      selectField("المورد","baroExternalSupplier",[["","— اختر المورد —"],...(financeData.suppliers||[]).map(s=>[s.id,s.name])])+
+      field("المنتج / الباقة","baroExternalProduct","text","مثال: Free Fire 1188 جوهرة")+
+      field("اسم الزبون (اختياري)","baroExternalCustomer","text","اسم الزبون")+
+      field("معرّف اللاعب (اختياري)","baroExternalPlayer","text","Player ID")+
+      field("المبلغ المقبوض من الزبون","baroExternalSaleAmount","number","0.00")+
+      selectField("عملة المقبوض","baroExternalSaleCurrency",[["USD","دولار USD"],["SYP","ليرة سورية SYP"]])+
+      field("سعر الصرف للمقبوض (SYP لكل USD)","baroExternalSaleRate","number","مطلوب إذا كانت العملة SYP",currentSettings.usd_syp_rate||adminData.settings?.usd_syp_rate||"")+
+      field("تكلفة الشراء من المورد","baroExternalCostAmount","number","0.00")+
+      selectField("عملة تكلفة المورد","baroExternalCostCurrency",[["USD","دولار USD"],["SYP","ليرة سورية SYP"]])+
+      field("سعر الصرف للتكلفة (SYP لكل USD)","baroExternalCostRate","number","مطلوب إذا كانت العملة SYP",currentSettings.usd_syp_rate||adminData.settings?.usd_syp_rate||"")+
+      selectField("طريقة قبض المبلغ","baroExternalPaymentMethod",[["sham_cash","شام كاش"],["cash","نقداً"],["other","طريقة أخرى"]])+
+      field("مرجع حوالة الزبون (اختياري)","baroExternalCustomerRef","text","رقم الحوالة")+
+      field("مرجع شراء المورد (اختياري)","baroExternalSupplierRef","text","رقم الفاتورة أو المرجع")+
+      '<label>ملاحظات داخلية<textarea id="baroExternalNotes" rows="2"></textarea></label>'+
+      '<label><input type="checkbox" id="baroExternalConfirmed"> أؤكد أن المبلغ قُبض وأن شحن الباقة نُفّذ فعلياً.</label>'+
+      '<button type="button" id="baroExternalSave">تسجيل البيع الخارجي والقيود المالية</button></div></div>'+
+      '<div class="baro-mgmt-panel"><h3>سجل المبيعات الخارجية</h3><p class="baro-mgmt-muted">إذا لم يظهر المورد بالقائمة، أضفه أولاً من قسم موردي BARO. تصدير هذا السجل يشمل بيانات البيع والتكلفة والمراجع الأصلية.</p><button type="button" id="baroExternalExport" class="secondary">تصدير سجل المبيعات الخارجية CSV</button>'+
+      ((financeData.external_sales||[]).length?table(["التاريخ","المنتج","الزبون / اللاعب","المورد","المقبوض","التكلفة","الربح USD","طريقة القبض"],financeData.external_sales.map(s=>row([
+        new Date(s.created_at).toLocaleString("ar"),s.product_name,[s.customer_name,s.player_id].filter(Boolean).join(" / ")||"—",
+        s.supplier_name_snapshot,s.sale_currency==="SYP"?fmtSyp(s.sale_amount):fmtUsd(s.sale_amount),
+        s.supplier_cost_currency==="SYP"?fmtSyp(s.supplier_cost_amount):fmtUsd(s.supplier_cost_amount),
+        fmtUsd(s.profit_usd_equivalent),s.payment_method==="sham_cash"?"شام كاش":s.payment_method==="cash"?"نقداً":"أخرى"
+      ]))):'<div class="baro-mgmt-empty">لا توجد مبيعات خارجية مسجلة بعد.</div>')+'</div>'+
       '<div class="baro-mgmt-panel"><h3>إضافة حركة مالية</h3><div class="baro-mgmt-form">'+
       selectField("نوع الحركة","baroFinanceType",[["expense","مصروف"],["commission","عمولة"],["refund","مبلغ مسترد"],["adjustment","تسوية / تعديل"]])+
       field("العنوان","baroFinanceTitle","text","مثال: رسوم تحويل")+
@@ -141,9 +165,48 @@
       field("مرجع خارجي","baroFinanceRef","text","رقم إيصال أو حوالة")+
       '<label>ملاحظات<textarea id="baroFinanceDesc" rows="2"></textarea></label><button type="button" id="baroFinanceSave">حفظ الحركة</button></div></div>'+
       '<div class="baro-mgmt-actions"><button type="button" id="baroFinanceExport" class="secondary">تصدير كشف BARO المالي CSV</button></div><div class="baro-mgmt-panel"><h3>دفتر الحركات المالية الفعلية</h3><p class="baro-mgmt-muted">كل سطر يمثل حركة مستقلة. راجع العملة الأصلية والمكافئ بالدولار وحالة الترحيل قبل اعتماد أي تسوية.</p>'+
-      (entries.length?table(["التاريخ","نوع الحركة","البيان","المبلغ والعملة الأصلية","المكافئ USD","حالة الترحيل","رقم الطلب"],entries.map(e=>row([new Date(e.created_at).toLocaleString("ar"),typeLabels[e.entry_type]||e.entry_type,e.title,e.currency==="SYP"?fmtSyp(e.amount):fmtUsd(e.amount),fmtUsd(e.amount_usd_equivalent),e.status==="posted"?"مرحّلة":e.status==="pending"?"بانتظار الترحيل":e.status,e.order_id]))):'<div class="baro-mgmt-empty">لا توجد حركات مالية فعلية مسجلة بعد. ستظهر المبيعات والتكاليف هنا بعد الطلبات المنفذة والمقبوضة.</div>')+'</div>'+
+      (entries.length?table(["التاريخ","نوع الحركة","البيان","المبلغ والعملة الأصلية","المكافئ USD","حالة الترحيل","مرجع الطلب / البيع الخارجي"],entries.map(e=>row([new Date(e.created_at).toLocaleString("ar"),typeLabels[e.entry_type]||e.entry_type,e.title,e.currency==="SYP"?fmtSyp(e.amount):fmtUsd(e.amount),fmtUsd(e.amount_usd_equivalent),e.status==="posted"?"مرحّلة":e.status==="pending"?"بانتظار الترحيل":e.status,e.external_sale_id||e.order_id]))):'<div class="baro-mgmt-empty">لا توجد حركات مالية فعلية مسجلة بعد. ستظهر المبيعات والتكاليف هنا بعد الطلبات المنفذة والمقبوضة.</div>')+'</div>'+
       (can("settings")?'<div class="baro-mgmt-panel"><h3>إعدادات مالية BARO</h3><p class="baro-mgmt-muted">سعر الصرف وحد التنبيه وهما خاصان بعمليات BARO فقط، ولا يغيران إعدادات الشحن الآلي أو المحافظ.</p><div class="baro-mgmt-form">'+field("سعر الدولار مقابل SYP","baroSettingRate","number","مثال: 156",currentSettings.usd_syp_rate)+field("حد التنبيه لهامش الربح %","baroSettingMargin","number","15",currentSettings.low_margin_percent==null?15:currentSettings.low_margin_percent)+selectField("العملة الافتراضية","baroSettingCurrency",[["USD","الدولار USD"],["SYP","الليرة السورية SYP"]])+'<button type="button" id="baroSettingsSave">حفظ الإعدادات المالية</button></div></div>':"");
     if($("baroSettingsSave")){$("baroSettingCurrency").value=currentSettings.default_currency||"USD";$("baroSettingsSave").onclick=async()=>{const rateInput=$("baroSettingRate").value.trim(),rate=rateInput===""?null:Number(rateInput),margin=Number($("baroSettingMargin").value),currency=$("baroSettingCurrency").value;if((rate!==null&&(!Number.isFinite(rate)||rate<=0))||!Number.isFinite(margin)||margin<0||margin>100){msg("تحقق من سعر الصرف وهامش الربح.");return;}try{await post({action:"settings_save",usd_syp_rate:rate,low_margin_percent:margin,default_currency:currency});msg("تم حفظ إعدادات BARO المالية.");await loadFinance();}catch(e){msg(e.message);}};}
+    $("baroExternalExport").onclick=()=>exportCsv("baro-external-sales.csv",[
+      ["date","product","customer","player_id","supplier","sale_amount","sale_currency","sale_usd","supplier_cost","supplier_cost_currency","supplier_cost_usd","profit_usd","payment_method","customer_reference","supplier_reference","notes"],
+      ...(financeData.external_sales||[]).map(s=>[s.created_at,s.product_name,s.customer_name,s.player_id,s.supplier_name_snapshot,s.sale_amount,s.sale_currency,s.sale_usd_equivalent,s.supplier_cost_amount,s.supplier_cost_currency,s.supplier_cost_usd_equivalent,s.profit_usd_equivalent,s.payment_method,s.customer_reference,s.supplier_reference,s.notes])
+    ]);
+    $("baroExternalSave").onclick=async()=>{
+      if(financeSubmitInFlight)return;
+      const button=$("baroExternalSave");
+      const product=$("baroExternalProduct").value.trim(),supplier=$("baroExternalSupplier").value;
+      const saleAmount=Number($("baroExternalSaleAmount").value),costAmount=Number($("baroExternalCostAmount").value);
+      const saleCurrency=$("baroExternalSaleCurrency").value,costCurrency=$("baroExternalCostCurrency").value;
+      const saleRateInput=$("baroExternalSaleRate").value.trim(),costRateInput=$("baroExternalCostRate").value.trim();
+      const saleRate=saleRateInput===""?null:Number(saleRateInput),costRate=costRateInput===""?null:Number(costRateInput);
+      if(product.length<2||!supplier||!Number.isFinite(saleAmount)||saleAmount<=0||!Number.isFinite(costAmount)||costAmount<=0
+        ||(saleCurrency==="SYP"&&(!saleRate||saleRate<=0))||(costCurrency==="SYP"&&(!costRate||costRate<=0))){
+        msg("أكمل اسم المنتج والمورد والمبلغين، وأدخل سعر الصرف لكل مبلغ بالليرة.");return;
+      }
+      if(!$("baroExternalConfirmed").checked){msg("أكد أولاً أن القبض تم وأن الشحن نُفّذ فعلياً.");return;}
+      const payload={action:"external_sale_create",product_name:product,customer_name:$("baroExternalCustomer").value.trim(),
+        player_id:$("baroExternalPlayer").value.trim(),supplier_id:supplier,sale_amount:saleAmount,sale_currency:saleCurrency,
+        sale_exchange_rate:saleRate,supplier_cost_amount:costAmount,supplier_cost_currency:costCurrency,
+        supplier_cost_exchange_rate:costRate,payment_method:$("baroExternalPaymentMethod").value,
+        customer_reference:$("baroExternalCustomerRef").value.trim(),supplier_reference:$("baroExternalSupplierRef").value.trim(),
+        notes:$("baroExternalNotes").value.trim(),execution_confirmed:true};
+      const fingerprint=JSON.stringify(payload),storageKey="baro.external-sale.pending.v1";
+      let key="";
+      try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||"null");key=saved&&saved.fingerprint===fingerprint&&typeof saved.key==="string"?saved.key:"";}catch(_){}
+      if(!key)key=globalThis.crypto?.randomUUID?.()||("baro-ext-"+Date.now()+"-"+Math.random().toString(16).slice(2));
+      try{sessionStorage.setItem(storageKey,JSON.stringify({fingerprint,key}));}catch(_){}
+      payload.idempotency_key=key;financeSubmitInFlight=true;
+      if(button){button.disabled=true;button.textContent="جارٍ تسجيل البيع...";}
+      msg("جارٍ تسجيل البيع الخارجي وقيدي المقبوض والتكلفة...");
+      try{
+        await post(payload);
+        try{const saved=JSON.parse(sessionStorage.getItem(storageKey)||"null");if(saved?.key===key)sessionStorage.removeItem(storageKey);}catch(_){}
+        msg("تم تسجيل البيع الخارجي وقيدي المبيعات والتكلفة مرة واحدة.");
+        await loadFinance();
+      }catch(e){msg((e&&e.message)||"تعذر تأكيد التسجيل. أعد المحاولة دون تغيير البيانات لتجنب التكرار.");}
+      finally{financeSubmitInFlight=false;const current=$("baroExternalSave");if(current){current.disabled=false;current.textContent="تسجيل البيع الخارجي والقيود المالية";}}
+    };
     $("baroFinanceSave").onclick=async()=>{
       if(financeSubmitInFlight)return;
       const button=$("baroFinanceSave");
@@ -179,7 +242,7 @@
         if(currentButton){currentButton.disabled=false;currentButton.textContent="حفظ الحركة";}
       }
     };
-    $("baroFinanceExport").onclick=()=>exportCsv("baro-finance.csv",[["date","type","title","amount","currency","usd_equivalent","status","order_id"],...entries.map(e=>[e.created_at,e.entry_type,e.title,e.amount,e.currency,e.amount_usd_equivalent,e.status,e.order_id])]);
+    $("baroFinanceExport").onclick=()=>exportCsv("baro-finance.csv",[["date","type","title","amount","currency","usd_equivalent","status","order_id","external_sale_id"],...entries.map(e=>[e.created_at,e.entry_type,e.title,e.amount,e.currency,e.amount_usd_equivalent,e.status,e.order_id,e.external_sale_id])]);
   }
 
   async function loadSuppliers() {
