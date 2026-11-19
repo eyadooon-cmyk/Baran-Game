@@ -198,7 +198,21 @@
     dialog.setAttribute("role", "dialog");
     dialog.setAttribute("aria-modal", "true");
     const head = node("div", "baran-profile-head");
+    const avatarUrl = [customer.avatar_url, customer.picture].find(value => typeof value === "string" && /^https:\/\//i.test(value));
+    const avatar = node("div", "baran-profile-avatar");
+    avatar.style.cssText = "width:76px;height:76px;min-width:76px;border-radius:22px;overflow:hidden;display:grid;place-items:center;flex:0 0 76px;background:linear-gradient(145deg,#694080,#30213e);border:2px solid #b58bd2;color:#fff;font-size:30px;font-weight:900;box-shadow:0 5px 18px rgba(0,0,0,.25)";
+    if (avatarUrl) {
+      const image = document.createElement("img");
+      image.src = avatarUrl; image.alt = "صورة " + (customer.full_name || customer.display_name || "العميل");
+      image.referrerPolicy = "no-referrer"; image.loading = "eager";
+      image.style.cssText = "width:100%;height:100%;object-fit:cover;display:block";
+      image.onerror = () => { image.remove(); avatar.textContent = (customer.full_name || customer.display_name || "👤").trim().slice(0,1) || "👤"; };
+      avatar.append(image);
+    } else {
+      avatar.textContent = (customer.full_name || customer.display_name || "👤").trim().slice(0,1) || "👤";
+    }
     const title = node("div");
+    title.style.cssText = "flex:1;min-width:0";
     title.append(node("span", "baran-experience-kicker", "CUSTOMER PROFILE"));
     title.append(node("h3", "", customer.full_name || customer.display_name || "ملف العميل"));
     title.append(node("p", "", "ID: " + (customer.member_code || "غير متوفر") + " · " + customerSegment(customer)));
@@ -209,7 +223,8 @@
     const close = node("button", "baran-profile-close", "×");
     close.type = "button"; close.setAttribute("aria-label","إغلاق");
     close.addEventListener("click", () => modal.remove());
-    head.append(title, close); dialog.append(head);
+    head.style.cssText = "display:flex;align-items:center;gap:14px";
+    head.append(avatar, title, close); dialog.append(head);
     const metrics = node("div", "baran-profile-metrics");
     [["📦","كل الطلبات",customer.order_count||0],["⭐","النقاط",loyalty?.points_balance ?? customer.loyalty_points ?? 0],["💵","مشتريات USD",money(customer.lifetime_spend_usd,"USD")],["💰","مشتريات SYP",money(customer.lifetime_spend_syp,"SYP")]].forEach(([i,l,v])=>{
       const m=node("div","baran-profile-metric");m.append(node("small","",i+" "+l),node("strong","",v));metrics.append(m);
