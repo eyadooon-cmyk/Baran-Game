@@ -184,13 +184,70 @@
       .baran-notification-time-row{display:flex;gap:10px;margin-top:8px}
       .baran-notification-time-row label{display:flex;flex:1;align-items:center;gap:7px;color:#cbbbd8;font-size:12px}
       .baran-notification-time-row input{min-width:0;width:100%;padding:9px;border:1px solid #594667;border-radius:9px;background:#100d15;color:#fff}
-      #baranNotificationPrefsStatus{min-height:18px;margin:8px 0 0;color:#c8addd}
+      #baranNotificationPrefsStatus{min-height:18px;margin:8px 0 0;color:#c8addd}\n
+      .baran-push-monitor{margin-top:14px;padding:13px;border:1px solid #493957;border-radius:14px;background:#17131e}
+      .baran-push-monitor h4{margin:0 0 6px}
+      .baran-push-monitor button{padding:9px 12px;border:1px solid #69517b;border-radius:10px;background:#2b2035;color:#f6edff}
+      .baran-push-monitor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}
+      .baran-push-monitor-card{padding:9px;border:1px solid #40314a;border-radius:10px;background:#211a2a}
+      .baran-push-monitor-card small,.baran-push-monitor-card strong{display:block}
+      .baran-push-monitor-card small{color:#b9a9c8;font-size:10px}
+      .baran-push-monitor-card strong{margin-top:4px;font-size:18px}
+      .baran-push-monitor-line{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #33283d;font-size:11px}
+
       @media(max-width:480px){.baran-notification-pref-grid{grid-template-columns:1fr}}
     `;
     document.head.appendChild(style);
   }
 
-  window.startBaranNotificationPolling = startRealtime;
+
+  async function refreshPushMonitor() {
+    const box = document.getElementById("baranPushMonitorResults");
+    const button = document.getElementById("baranPushMonitorRefresh");
+    if (!box || typeof window.callAdminApi !== "function") return;
+    if (button) button.disabled = true;
+    box.textContent = "جاري قراءة سجل الإرسال لآخر 7 أيام...";
+    try {
+      const result = await window.callAdminApi("POST", { action: "push_delivery_stats" });
+      if (!result?.success || !result.stats) throw new Error(result?.error || "تعذر قراءة السجل.");
+      const s = result.stats;
+      box.replaceChildren();
+      const grid = el("div", { class: "baran-push-monitor-grid" });
+      [["إجمالي المحاولات", s.attempts], ["وصلت", s.sent], ["فشلت", s.failed], ["قيد المعالجة", s.processing], ["اشتراكات منتهية", s.expired]].forEach(([label, value]) => {
+        const card = el("div", { class: "baran-push-monitor-card" });
+        card.append(el("small", {}, label), el("strong", {}, String(value ?? 0)));
+        grid.appendChild(card);
+      });
+      box.appendChild(grid);
+      const note = el("p", { class: "small" }, "عدد سجلات الأجهزة خلال آخر 7 أيام: " + s.total + (s.last_updated ? " · آخر تحديث: " + new Date(s.last_updated).toLocaleString("ar") : ""));
+      box.appendChild(note);
+      (result.recent || []).slice(0, 6).forEach(row => {
+        const line = el("div", { class: "baran-push-monitor-line" });
+        const left = el("span", {}, row.status + " · " + row.attempt_count + " محاولة");
+        const right = el("small", {}, row.http_status ? "HTTP " + row.http_status : new Date(row.created_at).toLocaleString("ar"));
+        line.append(left, right); box.appendChild(line);
+      });
+    } catch (error) {
+      box.textContent = error.message || "تعذر تحميل سجل الإشعارات.";
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  function mountPushMonitor() {
+    const anchor = document.getElementById("adminNotifications");
+    if (!anchor || document.getElementById("baranPushMonitor")) return;
+    const panel = el("section", { id: "baranPushMonitor", class: "baran-push-monitor" });
+    panel.append(
+      el("h4", {}, "مراقبة إرسال إشعارات الهاتف"),
+      el("p", { class: "small" }, "ملخص محاولات الإرسال والنجاح والفشل وإعادة المحاولة لآخر 7 أيام."),
+      el("button", { id: "baranPushMonitorRefresh", type: "button", class: "secondary" }, "تحديث سجل الإرسال"),
+      el("div", { id: "baranPushMonitorResults", class: "small", role: "status", "aria-live": "polite" }, "اضغط تحديث لعرض حالة الإرسال.")
+    );
+    anchor.insertAdjacentElement("afterend", panel);
+    document.getElementById("baranPushMonitorRefresh")?.addEventListener("click", refreshPushMonitor);
+  }
+\n  window.startBaranNotificationPolling = startRealtime;
   window.stopBaranNotificationPolling = stopRealtime;
   window.refreshBaranNotificationPreferences = loadPreferences;
   window.addEventListener("online", () => { startRealtime(); refreshInbox(); });
