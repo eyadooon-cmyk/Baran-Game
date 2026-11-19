@@ -281,7 +281,7 @@
     document.body.append(modal);
   }
   async function updateCustomerName(customer,value,button,title){
-    const displayName=String(value||"").trim().replace(/\\s+/g," ");
+    const displayName=String(value||"").trim().replace(/\s+/g," ");
     if(displayName.length<2||displayName.length>60){window.alert("الاسم يجب أن يكون بين حرفين و60 حرفاً.");return;}
     button.disabled=true;button.textContent="جارٍ الحفظ...";
     try{
