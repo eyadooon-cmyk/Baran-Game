@@ -216,7 +216,7 @@
     });
     dialog.append(metrics);
     const info=node("section","baran-profile-section");info.append(node("h4","","بيانات الحساب"));
-    [["البريد",customer.email],["الهاتف",customer.phone],["تاريخ التسجيل",date(customer.created_at)],["آخر نشاط",date(customer.last_sign_in_at||customer.last_order_at)],["آخر طلب",date(customer.last_order_at)],["الرصيد USD",money(customer.balance_usd,"USD")],["الرصيد SYP",money(customer.balance_syp,"SYP")]].forEach(([k,v])=>{
+    [["البريد",customer.email],["الهاتف",customer.phone],["تاريخ التسجيل",date(customer.created_at)],["آخر نشاط",date(customer.last_activity_at||customer.last_sign_in_at||customer.last_order_at)],["آخر طلب",date(customer.last_order_at)],["الرصيد USD",money(customer.balance_usd,"USD")],["الرصيد SYP",money(customer.balance_syp,"SYP")]].forEach(([k,v])=>{
       const row=node("div","baran-profile-row");row.append(node("span","",k),node("strong","",v||"—"));info.append(row);
     });dialog.append(info);
     const orderBox=node("section","baran-profile-section");orderBox.append(node("h4","","سجل الطلبات المحمّل"));
