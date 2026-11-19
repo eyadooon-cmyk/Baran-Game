@@ -201,7 +201,11 @@
     const title = node("div");
     title.append(node("span", "baran-experience-kicker", "CUSTOMER PROFILE"));
     title.append(node("h3", "", customer.full_name || customer.display_name || "ملف العميل"));
-    title.append(node("p", "", (customer.member_code || "—") + " · " + customerSegment(customer)));
+    title.append(node("p", "", "ID: " + (customer.member_code || "غير متوفر") + " · " + customerSegment(customer)));
+    const copyId = node("button", "baran-ban-action", "📋 نسخ ID");
+    copyId.type = "button";
+    copyId.addEventListener("click", () => copyCustomerId(customer.member_code));
+    title.append(copyId);
     const close = node("button", "baran-profile-close", "×");
     close.type = "button"; close.setAttribute("aria-label","إغلاق");
     close.addEventListener("click", () => modal.remove());
@@ -212,7 +216,7 @@
     });
     dialog.append(metrics);
     const info=node("section","baran-profile-section");info.append(node("h4","","بيانات الحساب"));
-    [["البريد",customer.email],["الهاتف",customer.phone],["تاريخ التسجيل",date(customer.created_at)],["آخر طلب",date(customer.last_order_at)],["الرصيد USD",money(customer.balance_usd,"USD")],["الرصيد SYP",money(customer.balance_syp,"SYP")]].forEach(([k,v])=>{
+    [["البريد",customer.email],["الهاتف",customer.phone],["تاريخ التسجيل",date(customer.created_at)],["آخر نشاط",date(customer.last_activity_at||customer.last_sign_in_at||customer.last_order_at)],["آخر طلب",date(customer.last_order_at)],["الرصيد USD",money(customer.balance_usd,"USD")],["الرصيد SYP",money(customer.balance_syp,"SYP")]].forEach(([k,v])=>{
       const row=node("div","baran-profile-row");row.append(node("span","",k),node("strong","",v||"—"));info.append(row);
     });dialog.append(info);
     const orderBox=node("section","baran-profile-section");orderBox.append(node("h4","","سجل الطلبات المحمّل"));
@@ -274,12 +278,54 @@
     saveName.addEventListener("click",()=>updateCustomerName(customer,nameInput.value,saveName,title));
     nameBox.append(nameInput,saveName);
     dialog.append(nameBox);
+    const noteBox=node("section","baran-profile-section");
+    noteBox.append(node("h4","","📝 ملاحظات إدارية خاصة"));
+    noteBox.append(node("p","baran-experience-muted","هذه الملاحظة داخلية لفريق الإدارة فقط، ولا تظهر للعميل."));
+    const noteInput=node("textarea","baran-admin-customer-note");
+    noteInput.maxLength=1000;noteInput.rows=4;noteInput.placeholder="مثال: عميل دائم، يفضّل التواصل عبر الدعم، يحتاج طلباته مراجعة...";
+    noteInput.value=customer.admin_note||"";
+    noteInput.style.cssText="width:100%;min-height:100px;padding:12px;border-radius:12px;border:1px solid #59436b;background:#100d15;color:#f4eafa;font:inherit;resize:vertical";
+    const noteStatus=node("small","baran-experience-muted","");
+    const saveNote=node("button","baran-ban-action","حفظ الملاحظة");
+    saveNote.type="button";
+    saveNote.addEventListener("click",()=>saveCustomerAdminNote(customer,noteInput.value,saveNote,noteStatus));
+    noteBox.append(noteInput,saveNote,noteStatus);
+    dialog.append(noteBox);
     const safe=node("p","baran-profile-safety","الملف للعرض والمتابعة فقط. لا توجد أزرار لتعديل الرصيد أو تنفيذ استرداد أو شحن.");
     dialog.append(safe);modal.append(dialog);
     modal.addEventListener("click",e=>{if(e.target===modal)modal.remove();});
     document.addEventListener("keydown",function esc(e){if(e.key==="Escape"){modal.remove();document.removeEventListener("keydown",esc);}});
     document.body.append(modal);
   }
+  async function copyCustomerId(memberCode){
+    const code=String(memberCode||"").trim();
+    if(!/^BG-[0-9]{6,}$/.test(code)){window.alert("معرّف العميل غير متوفر حالياً.");return;}
+    try{await navigator.clipboard.writeText(code);window.alert("تم نسخ معرّف العميل.");}
+    catch(error){window.prompt("انسخ معرّف العميل:",code);}
+  }
+  async function saveCustomerAdminNote(customer,value,button,status){
+    const note=String(value||"").trim();
+    if(note.length>1000){window.alert("الملاحظة يجب ألا تتجاوز 1000 حرف.");return;}
+    button.disabled=true;button.textContent="جارٍ الحفظ...";
+    try{
+      const {data:{session},error:sessionError}=await sb.auth.getSession();
+      if(sessionError||!session)throw new Error("انتهت جلسة المدير.");
+      const response=await fetch(SUPABASE_URL+"/functions/v1/baran-admin",{
+        method:"POST",
+        headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+        body:JSON.stringify({action:"customer_admin_note_update",target_user_id:customer.id,note})
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||"تعذر حفظ الملاحظة.");
+      customer.admin_note=result.note||"";customer.admin_note_updated_at=result.updated_at||null;
+      const sources=[...(Array.isArray(current?.customers)?current.customers:[]),...(Array.isArray(window.baranCustomerDirectory)?window.baranCustomerDirectory:[])];
+      sources.forEach(item=>{if(String(item.id||item.user_id||"")===String(customer.id)){item.admin_note=customer.admin_note;item.admin_note_updated_at=customer.admin_note_updated_at;}});
+      if(status)status.textContent=note?"تم حفظ الملاحظة الإدارية.":"تم حذف الملاحظة الإدارية.";
+      window.alert(note?"تم حفظ الملاحظة الإدارية.":"تم حذف الملاحظة الإدارية.");
+    }catch(error){window.alert(error.message||"تعذر حفظ الملاحظة.");}
+    finally{button.disabled=false;button.textContent="حفظ الملاحظة";}
+  }
+
   async function updateCustomerName(customer,value,button,title){
     const displayName=String(value||"").trim().replace(/\s+/g," ");
     if(displayName.length<2||displayName.length>60){window.alert("الاسم يجب أن يكون بين حرفين و60 حرفاً.");return;}
