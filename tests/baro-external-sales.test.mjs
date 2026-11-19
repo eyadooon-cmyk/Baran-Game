@@ -37,3 +37,11 @@ test("External sales retain supplier and both original currencies with USD equiv
   assert.match(ui,/baroExternalCostRate/);
   assert.match(index,/baro-management\.js\?v=20261119-external-sales-1/);
 });
+
+test("External sale retains its idempotency key until the finance refresh succeeds",()=>{
+  const postIndex=ui.indexOf("await post(payload)");
+  const refreshIndex=ui.indexOf("await loadFinance()",postIndex);
+  const clearIndex=ui.indexOf("sessionStorage.removeItem(storageKey)",postIndex);
+  assert.ok(postIndex>=0&&refreshIndex>postIndex&&clearIndex>refreshIndex);
+  assert.match(ui,/if\(committed\)msg\("تم تسجيل البيع فعلياً/);
+});
