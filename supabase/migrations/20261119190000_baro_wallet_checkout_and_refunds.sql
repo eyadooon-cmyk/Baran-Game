@@ -43,7 +43,7 @@ declare
   v_hold_tx uuid;
 begin
   if p_user_id is null or p_idempotency_key is null or p_player_id_confirmed is not true
-     or p_wallet_currency not in ('USD','SYP')
+     or p_wallet_currency is null or p_wallet_currency not in ('USD','SYP')
      or p_product_code is null or p_product_code !~ '^LEO_[A-Z0-9_]{3,56}$'
      or pg_catalog.length(v_player)<3 or pg_catalog.length(v_player)>80
      or v_player ~ '[[:cntrl:]]' or pg_catalog.length(v_note)>500
