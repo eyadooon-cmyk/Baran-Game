@@ -75,6 +75,32 @@
     return el;
   }
 
+  function applyCustomerPresenceDots() {
+    const list = document.getElementById("opsCustomers");
+    if (!list) return;
+    if (!document.getElementById("baranCustomerPresenceDotStyles")) {
+      const style = document.createElement("style");
+      style.id = "baranCustomerPresenceDotStyles";
+      style.textContent = ".customer-directory-avatar{position:relative!important;overflow:visible!important}.customer-presence-dot{position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border:2px solid #17121d;border-radius:50%;box-shadow:0 0 0 1px rgba(255,255,255,.12);z-index:3}.customer-presence-dot.is-online{background:#22c55e}.customer-presence-dot.is-offline{background:#85858d}";
+      document.head.appendChild(style);
+    }
+    list.querySelectorAll(".customer-directory-item[data-customer-id]").forEach(card => {
+      const avatar = card.querySelector(".customer-directory-avatar");
+      if (!avatar) return;
+      let dot = avatar.querySelector(".customer-presence-dot");
+      if (!dot) {
+        dot = document.createElement("span");
+        dot.className = "customer-presence-dot";
+        avatar.appendChild(dot);
+      }
+      const online = window.baranCustomerPresenceById?.[card.dataset.customerId] === true;
+      dot.className = "customer-presence-dot " + (online ? "is-online" : "is-offline");
+      dot.title = online ? "متصل الآن" : "غير متصل";
+      dot.setAttribute("role", "img");
+      dot.setAttribute("aria-label", online ? "متصل الآن" : "غير متصل");
+    });
+  }
+
   function installPanel() {
     const host = document.querySelector('[data-admin-panel="users"]');
     const list = document.getElementById("opsCustomers");
@@ -156,6 +182,8 @@
       box.replaceChildren();
       renderReferrals(result);
       renderRecentCustomers(result.recent || []);
+      window.baranCustomerPresenceById = Object.fromEntries((result.recent || []).map(row => [row.user_id, row.is_online === true]));
+      applyCustomerPresenceDots();
       if (!result.online?.length) {
         box.append(node("div", "customer-directory-empty", "لا يوجد عملاء متصلون حالياً."));
         return;
@@ -220,8 +248,12 @@
   window.loadBaranCustomerCenter = loadOnline;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installPanel);
   else installPanel();
+  const customerListObserver = new MutationObserver(applyCustomerPresenceDots);
+  const customerList = document.getElementById("opsCustomers");
+  if (customerList) customerListObserver.observe(customerList, { childList: true, subtree: true });
   const observer = new MutationObserver(() => {
     if (!document.getElementById("baranCustomerCenterLive")) installPanel();
+    applyCustomerPresenceDots();
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
