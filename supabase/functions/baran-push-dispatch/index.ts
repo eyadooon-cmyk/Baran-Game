@@ -105,7 +105,7 @@ Deno.serve(async (req: Request) => {
 
     let sent = 0, removed = 0, failed = 0, skipped = 0;
     for (const sub of subscriptions) {
-      let delivered = false, expired = false;
+      let delivered = false, expired = false, tried = false;
       for (let attempt = 0; attempt < 3; attempt++) {
         const { data: claimed, error: claimError } = await admin.rpc("baran_claim_push_delivery", {
           p_notification_id: notification.id,
@@ -118,6 +118,7 @@ Deno.serve(async (req: Request) => {
           break;
         }
         if (!claimed) { skipped++; break; }
+        tried = true;
         try {
           await webpush.sendNotification({
             endpoint: sub.endpoint,
@@ -152,7 +153,7 @@ Deno.serve(async (req: Request) => {
           if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
         }
       }
-      if (!delivered && !expired && skipped === 0) failed++;
+      if (!delivered && !expired && tried) failed++;
     }
     return json({ success: true, sent, removed, failed, skipped, retries: 3 });
   } catch (error) {
