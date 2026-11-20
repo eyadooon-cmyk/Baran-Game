@@ -2659,8 +2659,9 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         <h3>إشعارات الهاتف 🔔</h3>
         <p class="small">فعّل الإشعارات ليصلك رد الدعم وتحديثات الطلبات وإعلانات الإدارة حتى عندما يكون الموقع بالخلفية، إذا كان المتصفح والجهاز يدعمان ذلك.</p>
         <div id="pushDeviceStatus" class="ops-item" role="status" aria-live="polite">جاري فحص حالة الإشعارات...</div>
-        <button id="enablePushButton" class="full" type="button" onclick="enableBaranPushNotifications()">تفعيل إشعارات الهاتف</button>
+        <button id="enablePushButton" class="full" type="button" onclick="enableBaranPushNotifications()">تفعيل / إعادة تفعيل إشعارات الهاتف</button>
         <button id="disablePushButton" class="full secondary" type="button" onclick="disableBaranPushNotifications()">إيقاف إشعارات هذا الجهاز</button>
+        <button id="pushHelpButton" class="full secondary" type="button" onclick="openBaranPushHelp()">شرح إعادة تفعيل الإشعارات</button>
         <div id="pushSettingsMessage" class="small" role="status" aria-live="polite"></div>
       </div>
       <p class="small">ملاحظة: إذا كان إذن الإشعارات محظوراً من Chrome، افتح إعدادات الموقع في المتصفح واسمح بالإشعارات أولاً.</p>
@@ -4467,6 +4468,24 @@ function showBaranPushInvite(){
     if(message)message.textContent="اضغط الزر، ثم وافق على طلب Chrome إذا ظهر أعلى الشاشة.";
   }
   if(invite)invite.classList.remove("hidden");
+}
+
+function openBaranPushHelp(){
+  const invite=document.getElementById("baranPushInvite");
+  const button=document.getElementById("baranPushInviteEnable");
+  const message=document.getElementById("baranPushInviteMessage");
+  if(!invite)return;
+  if("Notification" in window&&Notification.permission==="denied"){
+    if(button)button.textContent="شرح السماح من إعدادات Chrome";
+    if(message)message.textContent="الإشعارات محظورة من Chrome. اتبع الخطوات أدناه لفتح إعدادات الموقع والسماح بها، ثم ارجع واضغط تفعيل.";
+  }else if("Notification" in window&&Notification.permission==="granted"){
+    if(button)button.textContent="إعادة تفعيل وربط هذا الجهاز";
+    if(message)message.textContent="إذن Chrome مسموح. اضغط الزر لإعادة ربط اشتراك هذا الجهاز بحساب BARAN GAME.";
+  }else{
+    if(button)button.textContent="تفعيل الإشعارات";
+    if(message)message.textContent="اضغط الزر، ثم اختر «السماح» في نافذة Chrome إذا ظهرت أعلى الشاشة.";
+  }
+  invite.classList.remove("hidden");
 }
 
 function dismissBaranPushInvite(){
