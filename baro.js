@@ -408,7 +408,7 @@ function renderBaroAdmin(){
  if(!orders)return;orders.replaceChildren();
  if(!baroAdminOrders.length){orders.textContent="لا توجد طلبات BARO بعد.";return;}
  baroAdminOrders.forEach(o=>{
-  const card=document.createElement("article");card.className="ops-item baro-order-card";
+  const card=document.createElement("article");card.className="ops-item baro-order-card";card.dataset.notificationEntityId=String(o.id);
   const h=document.createElement("strong");h.textContent=o.product_name_snapshot||o.product_code;
   h.style.cssText="display:block;font-size:1.08rem;margin-bottom:8px";
   const status=document.createElement("div");status.className="small";status.textContent="الحالة: "+(BARO_STATUS[o.status]||o.status);
