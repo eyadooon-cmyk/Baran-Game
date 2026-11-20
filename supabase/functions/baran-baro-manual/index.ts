@@ -72,7 +72,7 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET" && view === "my_orders") {
       const { data, error } = await admin.from("leo_manual_orders")
-        .select("id,product_code,player_id,product_name_snapshot,quantity,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,status,payment_status,payment_method,customer_message,created_at,updated_at,completed_at")
+        .select("id,product_code,player_id,product_name_snapshot,quantity,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,status,payment_status,payment_method,customer_message,created_at,updated_at,completed_at,wallet_charge_mode,wallet_charged_at")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
       if (error) return json({ error: "تعذر تحميل طلبات BARO." }, 500);
       const ids = (data ?? []).map((o: any) => o.id);
