@@ -2829,8 +2829,8 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
       <div class="admin-subpanel hidden" data-admin-panel="notifications-center">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>🔔 مركز الإشعارات</h2></div>
         <section class="deposit-card" style="display:block!important;margin:12px 0;padding:16px;border:1px solid #76518f;border-radius:16px;background:linear-gradient(150deg,#21172d,#130f19)">
-          <h3>إرسال إشعار لزبون محدد</h3><p class="small">ابحث بالاسم أو رقم الهاتف، اختر الحساب الصحيح، ثم اكتب عنوان الإشعار ونصه. لن يُرسل شيء قبل التأكيد.</p>
-          <label for="baranNotifyCustomerSearch">البحث عن الزبون</label><div style="display:flex;gap:8px;align-items:stretch"><input id="baranNotifyCustomerSearch" type="search" maxlength="120" placeholder="الاسم أو رقم الهاتف" style="flex:1;min-width:0"><button type="button" class="secondary" id="baranNotifySearchButton" onclick="searchBaranNotificationCustomer()">بحث</button></div>
+          <h3>إرسال إشعار لزبون محدد</h3><p class="small">ابحث بالاسم أو رقم الهاتف أو الرقم التعريفي للزبون (مثل BG-000004)، اختر الحساب الصحيح، ثم اكتب عنوان الإشعار ونصه. لن يُرسل شيء قبل التأكيد.</p>
+          <label for="baranNotifyCustomerSearch">البحث عن الزبون</label><div style="display:flex;gap:8px;align-items:stretch"><input id="baranNotifyCustomerSearch" type="search" maxlength="120" placeholder="الاسم أو الهاتف أو الرقم التعريفي BG-000004" style="flex:1;min-width:0"><button type="button" class="secondary" id="baranNotifySearchButton" onclick="searchBaranNotificationCustomer()">بحث</button></div>
           <div id="baranNotifySearchResults" class="ops-list" aria-live="polite">ابحث عن حساب لاختياره.</div><div id="baranNotifySelected" class="small" role="status">لم يتم اختيار زبون بعد.</div>
           <label for="baranNotifyTitle">عنوان الإشعار</label><input id="baranNotifyTitle" maxlength="100" placeholder="مثلاً: تحديث مهم في المتجر">
           <label for="baranNotifyBody">نص الإشعار</label><textarea id="baranNotifyBody" rows="3" maxlength="500" placeholder="اكتب الرسالة التي ستظهر للزبون..."></textarea>
@@ -5156,8 +5156,8 @@ async function searchBaranNotificationCustomer(){
     result.customers.forEach(customer=>{
       const item=document.createElement("button");item.type="button";item.className="store-search-result";
       const info=document.createElement("span"),name=document.createElement("strong"),meta=document.createElement("small");
-      name.textContent=customer.full_name||"زبون بدون اسم";meta.textContent=(customer.phone||"بدون رقم هاتف")+" · "+String(customer.id).slice(0,8);info.append(name,meta);item.append(info);
-      item.addEventListener("click",()=>{baranNotificationSelectedCustomer=customer;const selected=document.getElementById("baranNotifySelected");if(selected)selected.textContent="المستلم المحدد: "+(customer.full_name||"زبون بدون اسم")+" — "+(customer.phone||"بدون رقم هاتف");box.replaceChildren(item);item.disabled=true;});
+      name.textContent=customer.full_name||"زبون بدون اسم";meta.textContent=[customer.member_code||null,customer.phone||null,String(customer.id).slice(0,8)].filter(Boolean).join(" · ");info.append(name,meta);item.append(info);
+      item.addEventListener("click",()=>{baranNotificationSelectedCustomer=customer;const selected=document.getElementById("baranNotifySelected");if(selected)selected.textContent="المستلم المحدد: "+(customer.full_name||"زبون بدون اسم")+" — "+(customer.member_code||"بدون رقم تعريفي")+" — "+(customer.phone||"بدون رقم هاتف");box.replaceChildren(item);item.disabled=true;});
       box.appendChild(item);
     });
   }catch(error){if(box)box.textContent="تعذر البحث: "+error.message;}finally{if(button)button.disabled=false;}
