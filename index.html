@@ -2295,7 +2295,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         <label class="baro-id-confirm" for="baroPlayerIdConfirmed"><input id="baroPlayerIdConfirmed" type="checkbox"> أؤكد أن رقم ID صحيح ويخص الحساب الذي أريد شحنه.</label>
         <div id="baroQuantityWrap" class="hidden"><label for="baroQuantity">كمية جواكر (10,000 إلى 1,000,000)</label><input id="baroQuantity" type="number" min="10000" max="1000000" step="1000" value="10000"></div>
         <label for="baroCustomerNote">ملاحظة إضافية (اختياري)</label><textarea id="baroCustomerNote" rows="2" maxlength="500" placeholder="أي تفاصيل تساعدنا على تنفيذ طلبك"></textarea>
-        <button id="baroSubmitOrder" class="full" type="button" hidden onclick="submitBaroOrder()">تأكيد الطلب وحجز المبلغ من المحفظة</button>
+        <button id="baroSubmitOrder" class="full" type="button" hidden onclick="submitBaroOrder()">إرسال طلب الشحن اليدوي</button>
         <div id="baroOrderMessage" class="small" role="status" aria-live="polite"></div>
       </div>
       <div class="deposit-card"><h3>طلباتي في BARO</h3><button class="secondary" type="button" onclick="loadBaroCustomer()">↻ تحديث الطلبات</button><div id="baroCustomerOrders" class="ops-list">جاري تحميل طلباتك...</div></div>
@@ -3587,7 +3587,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 <script src="./admin-operations.js?v=20261113-shamcash-2"></script>
 <script src="./admin-assistant.js?v=20261113-free-ai-metrics-2"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
-<script src="./baro.js?v=20261119-wallet-checkout-1"></script>
+<script src="./baro.js?v=20261120-wallet-on-completion-cachefix-2"></script>
 <script src="./baro-management.js?v=20261119-external-sales-2"></script>
 <script src="./baro-ai.js?v=20261117-baro-ai-1"></script>
 <script>
