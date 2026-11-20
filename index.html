@@ -5169,13 +5169,33 @@ async function searchBaranNotificationCustomer(){
 }
 async function sendBaranTargetedNotification(){
   const title=document.getElementById("baranNotifyTitle"),body=document.getElementById("baranNotifyBody"),button=document.getElementById("baranNotifySendButton"),status=document.getElementById("baranNotifyStatus");
+  const recipient=baranNotificationSelectedCustomer;
   const notificationTitle=title?.value.trim()||"",notificationBody=body?.value.trim()||"";
-  if(!baranNotificationSelectedCustomer){if(status)status.textContent="اختر الزبون أولاً.";return;}
-  if(notificationTitle.length<3||notificationBody.length<5){if(status)status.textContent="العنوان 3 أحرف على الأقل والرسالة 5 أحرف على الأقل.";return;}
-  if(!confirm("تأكيد إرسال الإشعار إلى "+(baranNotificationSelectedCustomer.full_name||"الزبون المحدد")+" فقط؟"))return;
-  if(button)button.disabled=true;if(status)status.textContent="جاري إرسال الإشعار...";
-  try{const result=await callAdminApi("POST",{action:"send_targeted_notification",recipient_id:baranNotificationSelectedCustomer.id,notification_title:notificationTitle,notification_body:notificationBody});if(status)status.textContent="تم تسجيل الإشعار داخل المتجر للحساب المحدد. عدد المستلمين: "+Number(result.sent_to||0)+". وصول الهاتف يعتمد على تفعيل Push.";title.value="";body.value="";}
-  catch(error){if(status)status.textContent="تعذر الإرسال: "+error.message;}finally{if(button)button.disabled=false;}
+  const showStatus=(message,state="info")=>{
+    if(!status)return;
+    status.textContent=message;
+    status.setAttribute("data-state",state);
+    status.style.cssText="display:block!important;min-height:42px;padding:10px 12px;margin-top:10px;border-radius:10px;font-weight:800;line-height:1.7;color:"+(state==="success"?"#86efac":state==="error"?"#fca5a5":"#e9d5ff")+";background:"+(state==="success"?"#14532d55":state==="error"?"#7f1d1d55":"#6b21a855")+";border:1px solid currentColor";
+  };
+  if(!recipient){showStatus("اختر الزبون أولاً.","error");return;}
+  if(notificationTitle.length<3||notificationBody.length<5){showStatus("العنوان 3 أحرف على الأقل والرسالة 5 أحرف على الأقل.","error");return;}
+  if(!confirm("تأكيد إرسال الإشعار إلى "+(recipient.full_name||"الزبون المحدد")+" فقط؟")){
+    showStatus("تم إلغاء الإرسال. لم يتم إرسال أي إشعار.","info");
+    return;
+  }
+  if(button){button.disabled=true;button.textContent="جاري الإرسال...";}
+  showStatus("جاري إرسال الإشعار إلى الحساب المحدد...","info");
+  try{
+    const result=await callAdminApi("POST",{action:"send_targeted_notification",recipient_id:recipient.id,notification_title:notificationTitle,notification_body:notificationBody});
+    if(result?.success!==true||Number(result.sent_to)!==1)throw new Error(result?.error||"لم يؤكد الخادم تسجيل الإشعار للمستلم.");
+    showStatus("✓ تم إرسال الإشعار بنجاح وتسجيله لحساب "+(recipient.member_code||recipient.full_name||"الزبون المحدد")+". عدد المستلمين: 1. وصول إشعار الهاتف يعتمد على تفعيل Push.","success");
+    if(title)title.value="";
+    if(body)body.value="";
+  }catch(error){
+    showStatus("✕ فشل إرسال الإشعار: "+(error?.message||"خطأ غير معروف")+". بقي النص محفوظاً؛ لم نعرض رسالة نجاح.","error");
+  }finally{
+    if(button){button.disabled=false;button.textContent="إرسال الإشعار للزبون المحدد";}
+  }
 }
 
 async function sendBaranAnnouncement(){
