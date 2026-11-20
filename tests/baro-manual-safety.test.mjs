@@ -444,6 +444,7 @@ test("BARO manual orders show a copyable player ID and a single completion actio
   assert.match(source, /complete\.textContent="✓ تم الشحن — مكتمل"/);
   assert.match(source, /\["pending","in_progress"\]\.includes\(o\.status\)/);
   assert.match(source, /if\(nextStatus!=="completed"\)return/);
+  assert.match(deferredWallet, /v_order\.status='pending' and v_target_status not in \('pending','in_progress','completed'/);
   assert.doesNotMatch(source, /start\.textContent="▶ جاري التنفيذ"/);
   assert.doesNotMatch(source, /تعديل التفاصيل الإضافية \(اختياري\)/);
 });
