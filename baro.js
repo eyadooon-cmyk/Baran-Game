@@ -297,7 +297,6 @@ async function submitBaroOrder(){
  const walletCurrency=baroEl("baroWalletCurrency")?.value==="USD"?"USD":"SYP";
  const amount=Number(walletCurrency==="USD"?p.sale_price_usd:p.sale_price_syp);
  if(!Number.isFinite(amount)||amount<=0){message.textContent="سعر هذه الباقة غير متاح بعملة المحفظة المختارة.";return;}
- const balance=Number(walletCurrency==="USD"?baroCustomerWallet.balance_usd:baroCustomerWallet.balance_syp);
  if(!confirm("مراجعة نهائية قبل الطلب:\nالباقة: "+p.product_name+"\nPlayer ID: "+player+"\nالسعر: "+(walletCurrency==="USD"?"$"+amount.toFixed(2):amount.toLocaleString("en-US")+" SYP")+"\n\nهل تؤكد أن هذه البيانات صحيحة؟ لن يُخصم أي مبلغ عند إرسال الطلب. سيتم الخصم من المحفظة فقط بعد اكتمال الشحن بنجاح."))return;
  const request={product_code:p.product_code,player_id:player,player_id_confirmed:true,quantity,customer_note:note,wallet_currency:walletCurrency};
  const fingerprint=await baroRequestFingerprint(request);
