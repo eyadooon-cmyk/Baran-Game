@@ -84,12 +84,9 @@ begin
   if not found or v_product.catalog_visible is not true or v_product.purchase_enabled is not true then
     raise exception using errcode='55000',message='هذا المنتج غير متاح للطلب اليدوي حالياً.';
   end if;
-  v_price:=case when p_wallet_currency='USD' then v_product.sale_price_usd else v_product.sale_price_syp end;
+  v_price:=case when p_wallet_currency='USD' then round(v_product.sale_price_usd,2) else v_product.sale_price_syp end;
   if coalesce(v_price,0)<=0 then
     raise exception using errcode='22023',message='سعر المنتج غير متاح بعملة المحفظة المختارة.';
-  end if;
-  if p_wallet_currency='USD' and v_price<>round(v_price,2) then
-    raise exception using errcode='22023',message='سعر الدولار يجب ألا يتجاوز منزلتين عشريتين.';
   end if;
   if p_wallet_currency='SYP' and (v_price<>trunc(v_price) or coalesce(v_rate,0)<=0) then
     raise exception using errcode='22023',message='سعر الليرة أو سعر الصرف غير صالح.';
