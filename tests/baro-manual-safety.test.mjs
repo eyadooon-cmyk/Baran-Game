@@ -434,7 +434,7 @@ test("BARO admin panel waits for its data before resolving navigation", () => {
 test("Admin BARO notifications open the BARO panel and target the matching order", () => {
   const source = read("../community.js");
   assert.match(source, /if\(isAdmin&&entityType==="leo_manual_order"\)/);
-  assert.match(source, /document\.querySelector\('\[data-notification-entity-id=/);
+  assert.match(source, /ordersList\.querySelector\(/);
   assert.match(source, /await showAdminPanel\("baro-orders"\)/);
   assert.match(source, /ordersList\.querySelector\(/);
 });
