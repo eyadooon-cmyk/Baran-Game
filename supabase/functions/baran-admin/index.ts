@@ -776,8 +776,8 @@ Deno.serve(async (req: Request) => {
         const safeQuery = query.replace(/[%,().]/g, " ").replace(/\s+/g, " ").trim();
         if (safeQuery.length < 3) return json({ error: "عبارة البحث غير صالحة." }, 400);
         const { data: profiles, error: profileError } = await admin.from("profiles")
-          .select("id,full_name,phone")
-          .or("full_name.ilike.%" + safeQuery + "%,phone.ilike.%" + safeQuery + "%")
+          .select("id,full_name,phone,member_code")
+          .or("full_name.ilike.%" + safeQuery + "%,phone.ilike.%" + safeQuery + "%,member_code.ilike.%" + safeQuery + "%")
           .order("created_at", { ascending: false }).limit(10);
         if (profileError) {
           console.error("baran-admin: notification customer search failed", profileError.message);
@@ -787,7 +787,7 @@ Deno.serve(async (req: Request) => {
         if (adminRowsError) return json({ error: "تعذر التحقق من حسابات الإدارة." }, 500);
         const adminIds = new Set((adminRows ?? []).map((row) => row.user_id));
         const customers = (profiles ?? []).filter((profile) => !adminIds.has(profile.id))
-          .map((profile) => ({ id: profile.id, full_name: profile.full_name ?? null, phone: profile.phone ?? null }));
+          .map((profile) => ({ id: profile.id, full_name: profile.full_name ?? null, phone: profile.phone ?? null, member_code: profile.member_code ?? null }));
         return json({ success: true, customers });
       }
 
