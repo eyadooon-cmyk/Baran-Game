@@ -416,3 +416,21 @@ test("BARO deferred wallet workflow is isolated from legacy admin payment flow a
   assert.match(ui, /wallet_charged_at/);
   assert.match(ui, /تم الخصم من المحفظة بعد اكتمال الشحن/);
 });
+
+
+test("BARO admin order cards expose notification entity ids for direct navigation", () => {
+  const source = read("../baro.js");
+  assert.match(source, /card\.dataset\.notificationEntityId\s*=\s*String\(o\.id\)/);
+});
+
+test("BARO admin panel waits for its data before resolving navigation", () => {
+  const source = read("../index.html");
+  assert.match(source, /return typeof loadBaroAdmin==="function"\?Promise\.resolve\(loadBaroAdmin\(\)\):Promise\.resolve\(\)/);
+});
+
+test("Admin BARO notifications open the BARO panel and target the matching order", () => {
+  const source = read("../community.js");
+  assert.match(source, /if\(isAdmin&&entityType==="leo_manual_order"\)/);
+  assert.match(source, /document\.querySelector\('\[data-notification-entity-id=/);
+  assert.match(source, /await showAdminPanel\("baro"\)/);
+});
