@@ -165,7 +165,6 @@ begin
      or p_payment_status not in ('awaiting_quote','verified')
      or (p_quote_amount is not null and p_quote_amount is distinct from coalesce(v_order.customer_price_usd,v_order.customer_price_syp))
      or (p_quote_currency is not null and p_quote_currency is distinct from case when v_order.customer_price_usd is not null then 'USD' else 'SYP' end)
-     or coalesce(p_payment_method,'')<>v_order.payment_method
      or pg_catalog.length(coalesce(p_customer_message,''))>500
      or pg_catalog.length(coalesce(p_internal_notes,''))>2000
      or pg_catalog.length(coalesce(p_supplier_reference,''))>160
