@@ -137,11 +137,12 @@ async function openBaranNotificationTarget(item,audience){
     if(typeof showSection==="function")showSection("admin",null);
     const adminRoot=document.getElementById("admin");
     if(adminRoot)adminRoot.classList.remove("hidden");
-    if(typeof showAdminPanel==="function")await showAdminPanel("baro");
-    const exact=entityId
-      ?document.querySelector('[data-notification-entity-id="'+CSS.escape(String(entityId))+'"]')
+    if(typeof showAdminPanel==="function")await showAdminPanel("baro-orders");
+    const ordersList=document.getElementById("baroAdminOrders");
+    const exact=entityId&&ordersList
+      ?ordersList.querySelector('[data-notification-entity-id="'+CSS.escape(String(entityId))+'"]')
       :null;
-    const destination=exact||document.getElementById("baroAdminOrders");
+    const destination=exact||ordersList;
     if(destination){
       destination.scrollIntoView({behavior:"smooth",block:"center"});
       destination.classList.add("notification-target-highlight");
