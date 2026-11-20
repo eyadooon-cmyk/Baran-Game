@@ -213,11 +213,11 @@ function renderAdminNotifications(items){
   const box=document.getElementById("adminNotifications");
   if(!box)return;
   box.replaceChildren();
-  const list=Array.isArray(items)?items:[],unread=list.filter(item=>!item.read_at);
+  // The admin bell is an alert inbox, not a notification archive: show only unread items.
+  const list=Array.isArray(items)?items.filter(item=>!item.read_at):[];
   const summary=document.createElement("div");summary.className="notification-admin-summary";
-  const total=document.createElement("span");total.textContent="آخر التنبيهات: "+list.length;
-  const pending=document.createElement("span");pending.textContent="غير مقروءة: "+unread.length;
-  summary.append(total,pending);box.appendChild(summary);
+  const pending=document.createElement("span");pending.textContent="تنبيهات جديدة تحتاج انتباهك: "+list.length;
+  summary.appendChild(pending);box.appendChild(summary);
   if(!list.length){
     const empty=document.createElement("div");empty.className="notification-empty-state";
     const icon=document.createElement("span");icon.textContent="✦";
