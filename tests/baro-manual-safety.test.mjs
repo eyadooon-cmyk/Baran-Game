@@ -436,10 +436,14 @@ test("Admin BARO notifications open the BARO panel and target the matching order
 });
 
 
-test("BARO wallet-deferred orders use one-click status actions with optional advanced fields", () => {
+test("BARO manual orders show a copyable player ID and a single completion action", () => {
   const source = read("../baro.js");
-  assert.match(source, /start\.textContent="▶ جاري التنفيذ"/);
-  assert.match(source, /complete\.textContent="✓ تم الاكتمال"/);
-  assert.match(source, /تعديل التفاصيل الإضافية \(اختياري\)/);
-  assert.match(source, /وسيتم خصم قيمة الطلب من محفظة الزبون الآن/);
+  assert.match(source, /PLAYER ID المطلوب الشحن إليه/);
+  assert.match(source, /copy\.textContent="نسخ ID"/);
+  assert.match(source, /baroCopyPlayerId\(o\.player_id,copy\)/);
+  assert.match(source, /complete\.textContent="✓ تم الشحن — مكتمل"/);
+  assert.match(source, /\["pending","in_progress"\]\.includes\(o\.status\)/);
+  assert.match(source, /if\(nextStatus!=="completed"\)return/);
+  assert.doesNotMatch(source, /start\.textContent="▶ جاري التنفيذ"/);
+  assert.doesNotMatch(source, /تعديل التفاصيل الإضافية \(اختياري\)/);
 });
