@@ -463,3 +463,14 @@ test("BARO catalogue and manual orders are separate admin workspaces", () => {
   assert.match(orders, /id="baroAdminOrders"/);
   assert.doesNotMatch(orders, /id="baroAdminProducts"/);
 });
+
+
+test("Targeted notification sender gives explicit success or failure feedback", () => {
+  const source = read("../index.html");
+  const sender = source.slice(source.indexOf("async function sendBaranTargetedNotification"), source.indexOf("async function sendBaranAnnouncement"));
+  assert.match(sender, /result\?\.success!==true\|\|Number\(result\.sent_to\)!==1/);
+  assert.match(sender, /تم إرسال الإشعار بنجاح/);
+  assert.match(sender, /فشل إرسال الإشعار/);
+  assert.match(sender, /بقي النص محفوظاً/);
+  assert.match(sender, /button\.textContent="جاري الإرسال\.\.\."/);
+});
