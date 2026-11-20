@@ -570,6 +570,8 @@ async function updateSupportTicketMeta(){
     const meta=document.getElementById("adminSupportConversationMeta");
     if(meta)meta.dataset.saved="1";
     await openSupportConversation(activeSupportConversation.id,"admin");
+    // Refresh the admin bell immediately so resolved-ticket alerts disappear without waiting for polling.
+    if(typeof loadAdminPanel==="function")await loadAdminPanel();
   }catch(error){alert("تعذر تحديث التذكرة: "+error.message);}
 }
 function ensureSupportComposerExtras(){
