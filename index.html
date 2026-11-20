@@ -2126,7 +2126,6 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
       <button class="drawer-link" data-section="home" onclick="navigateDrawer('home')"><span class="drawer-icon">⌂</span><span class="drawer-link-copy"><strong>الرئيسية</strong><small>الواجهة الرئيسية والعروض</small></span><i>‹</i></button>
       <button class="drawer-link" data-section="games" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span><span class="drawer-link-copy"><strong>الألعاب</strong><small>PUBG · Free Fire · Jawaker</small></span><i>‹</i></button>
       <button class="drawer-link" data-section="services" onclick="navigateDrawer('services')"><span class="drawer-icon">✦</span><span class="drawer-link-copy"><strong>الخدمات الرقمية</strong><small>اشتراكات وتطبيقات مدفوعة</small></span><i>‹</i></button>
-      <button class="drawer-link" data-section="mobileTopup" onclick="navigateDrawer('mobileTopup')"><span class="drawer-icon">▣</span><span class="drawer-link-copy"><strong>شحن رصيد الجوال</strong><small>خدمات الاتصالات</small></span><i>‹</i></button>
       <button class="drawer-link" data-section="learning" onclick="navigateDrawer('learning')"><span class="drawer-icon">🎓</span><span class="drawer-link-copy"><strong>مركز التعلم</strong><small>إرشادات ومعلومات</small></span><i>‹</i></button>
     </div>
     <div class="drawer-section">
@@ -2203,9 +2202,6 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
           </button>
           <button class="baran-home-category category-gifts" type="button" onclick="showSection('giftCardsStore',null)">
             <span class="baran-home-category-icon">🎁</span><span class="baran-home-category-text"><strong>بطاقات الهدايا</strong><small>GOOGLE PLAY وغيرها</small></span><span class="baran-home-category-arrow">←</span>
-          </button>
-          <button class="baran-home-category category-mobile" type="button" onclick="showSection('mobileTopup',null)">
-            <span class="baran-home-category-icon">📱</span><span class="baran-home-category-text"><strong>شحن رصيد الهاتف</strong><small>الخدمات المتاحة عند تفعيلها</small></span><span class="baran-home-category-arrow">←</span>
           </button>
         </div>
       </div>
@@ -2364,38 +2360,6 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
-    <section id="mobileTopup" class="hidden">
-      <div class="hero">
-        <h2>شحن رصيد الجوال 📱</h2>
-        <p>اختر الشبكة وفئة التعبئة، وأدخل رقم الخط. الخدمة قيد التجهيز حالياً.</p>
-      </div>
-      <div class="deposit-card">
-        <label for="mobileTopupNetwork">شركة الاتصالات</label>
-        <select id="mobileTopupNetwork">
-          <option value="">اختر الشبكة</option>
-          <option value="syriatel">سيريتل – Syriatel</option>
-          <option value="mtn">MTN سوريا</option>
-        </select>
-        <label for="mobileTopupPhone">رقم الموبايل المراد شحنه</label>
-        <input id="mobileTopupPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="09XXXXXXXX" autocomplete="tel">
-        <label for="mobileTopupCategory">فئة التعبئة بالليرة السورية الجديدة</label>
-        <select id="mobileTopupCategory" disabled>
-          <option value="">ستظهر الفئات بعد ربط كتالوج المورّد</option>
-        </select>
-        <div class="deposit-row">
-          <strong>السعر النهائي</strong>
-          <div id="mobileTopupPrice" class="balance">— ل.س</div>
-          <p class="small">سيُعرض السعر من كتالوج المورّد بعد اعتماد حساب التاجر، مع إمكانية ضبط سعر البيع من لوحة الإدارة.</p>
-        </div>
-        <button id="mobileTopupSubmit" class="full" type="button" disabled>الشحن غير متاح حالياً</button>
-        <div class="deposit-row">
-          <strong>حالة الخدمة</strong>
-          <p class="small">القسم مجهّز للعرض فقط. لا يتم إنشاء طلب شحن أو خصم أي رصيد قبل ربط API موثوق واختبار التنفيذ والاسترجاع.</p>
-          <span class="deposit-status">قيد التجهيز</span>
-        </div>
-      </div>
-      <p class="small">ملاحظة: سنحمّل فئات سيريتل وMTN مباشرة من كتالوج المورّد، ولن نستخدم فئات أو أسعاراً تقديرية.</p>
-    </section>
 
     <section id="wallet" class="hidden wallet-page">
       <div class="wallet-hero">
@@ -3950,7 +3914,7 @@ function closeAdminPanel(){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-const BARAN_SEARCH_SECTIONS=["home","games","services","mobileTopup","pubgStore","freeFireStore","chatgptStore","vpnStore","giftCardsStore","appsStore"];
+
 let baranStoreSearchProducts=null;
 let baranStoreSearchLoad=null;
 function normalizeStoreSearch(value){
@@ -4212,7 +4176,7 @@ function showSection(id,button,options){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",baroManual:"BARO – الشحن اليدوي",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",mobileTopup:"شحن رصيد الجوال",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
+  const labels={home:"الرئيسية",games:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",baroManual:"BARO – الشحن اليدوي",services:"الخدمات",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
