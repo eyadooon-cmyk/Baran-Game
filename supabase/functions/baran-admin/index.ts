@@ -191,6 +191,24 @@ Deno.serve(async (req: Request) => {
         console.error("baran-admin: notification query failed", notificationsError.message);
         return json({ error: "Could not load admin notifications" }, 500);
       }
+      // Keep support-ticket alerts in the admin bell only while their ticket is open.
+      // Notifications remain stored for history; this only hides alerts for resolved/closed tickets.
+      const closedSupportTicketIds = new Set(
+        (feedback ?? [])
+          .filter((ticket) =>
+            ticket.feedback_type === "support" &&
+            ["completed", "rejected"].includes(String(ticket.status || "").toLowerCase())
+          )
+          .map((ticket) => String(ticket.id))
+      );
+      const visibleNotifications = (notifications ?? []).filter((notification) => {
+        const isSupportTicketAlert =
+          String(notification.entity_type || "").toLowerCase() === "customer_feedback";
+        return !(
+          isSupportTicketAlert &&
+          closedSupportTicketIds.has(String(notification.entity_id || ""))
+        );
+      });
       const [{ data: suppliers, error: suppliersError }, { data: supplierProducts, error: supplierProductsError },
         { data: orders, error: ordersError }, { data: fulfillmentRows, error: fulfillmentError },
         { data: loyaltyRows, error: loyaltyError }, { count: userCount, error: userCountError },
@@ -414,7 +432,7 @@ Deno.serve(async (req: Request) => {
       if (productCountError || supplierCountError) return json({ error: "Could not load catalogue statistics" }, 500);
       return json({
         requests: enriched,
-        notifications: notifications ?? [],
+        notifications: visibleNotifications,
         feedback: feedbackEnriched,
         auto_support_queue: autoSupportQueue ?? [],
         finance: financeWithReport,
