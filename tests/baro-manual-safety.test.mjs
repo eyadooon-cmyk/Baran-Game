@@ -416,6 +416,7 @@ test("BARO deferred wallet workflow is isolated from legacy admin payment flow a
   assert.match(ui, /wallet_charge_mode/);
   assert.match(ui, /if\(nextStatus!=="completed"\)return/);
   assert.match(ui, /✓ تم الشحن — مكتمل/);
+  assert.match(ui, /payment_status:"verified"/);
   assert.doesNotMatch(ui, /▶ جاري التنفيذ/);
 });
 
