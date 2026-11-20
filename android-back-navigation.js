@@ -19,7 +19,7 @@
     document.querySelector("main > section[id]:not(.hidden)")?.id || "home";
 
   const currentAdminPanel = () =>
-    document.querySelector("#adminPanel .admin-subpanel:not(.hidden)")?.dataset.adminPanel || null;
+    document.querySelector("#admin .admin-subpanel:not(.hidden)")?.dataset.adminPanel || null;
 
   function ensureAppRoot(section = currentSection()) {
     if (rootReady || history.state?.baranGame === true) {
