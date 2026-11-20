@@ -132,7 +132,7 @@ function renderBaroCustomerCatalog(products){
  categories.forEach((category,index)=>{
   const meta=categoryMeta[category]||{label:String(category||"قسم").toUpperCase(),icon:"🎮",eyebrow:"BARO CATALOG",description:"منتجات رقمية"};
   const section=document.createElement("details");section.className="baro-catalog-category";
-  section.open=index===0;
+  section.open=category==="freefire";
   const summary=document.createElement("summary");summary.className="baro-catalog-category-head";
   const mark=document.createElement("span");mark.className="baro-catalog-game-mark";mark.textContent=meta.icon;
   const copy=document.createElement("span");copy.className="baro-catalog-category-copy";
