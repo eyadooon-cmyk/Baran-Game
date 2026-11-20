@@ -4238,7 +4238,17 @@ async function refreshCurrentSection(){
       case "notifications":
         if(typeof loadCustomerNotifications==="function")await loadCustomerNotifications();
         break;
-      case "admin": if(typeof loadAdminPanel==="function")await loadAdminPanel(); break;
+      case "admin": {
+        const admin=document.getElementById("admin");
+        const activeAdminPanel=admin?.querySelector(".admin-subpanel:not(.hidden)");
+        const adminPanelId=activeAdminPanel?.dataset.adminPanel;
+        if(adminPanelId&&typeof showAdminPanel==="function"){
+          await showAdminPanel(adminPanelId);
+        }else if(typeof loadAdminPanel==="function"){
+          await loadAdminPanel();
+        }
+        break;
+      }
       case "staffTasks": if(typeof loadStaffTasks==="function")await loadStaffTasks(); break;
       default:
         if(typeof showSection==="function")showSection(id,null,{fromHistory:true});
