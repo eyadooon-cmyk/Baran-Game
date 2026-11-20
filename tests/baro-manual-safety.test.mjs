@@ -400,7 +400,10 @@ test("BARO wallet debit occurs only inside completion transaction and is idempot
   assert.match(deferredWallet, /wallet_charged_at=case when v_target_status='completed'/);
   assert.match(deferredWallet, /wallet_charge_replayed',true/);
   assert.match(deferredWallet, /رصيد العميل غير كافٍ لإكمال الشحن/);
-  assert.match(deferredWallet, /baro-wallet-sale-/);\n  assert.match(deferredWallet, /round\\(v_product\\.sale_price_usd,2\\)/);\n  assert.match(deferredWallet, /baro_manual_order_id uuid[\\s\\S]*references public\\.leo_manual_orders/);\n  assert.match(deferredWallet, /wallet_transactions\\(baro_manual_order_id\\)/);
+  assert.match(deferredWallet, /baro-wallet-sale-/);
+  assert.match(deferredWallet, /round\\(v_product\\.sale_price_usd,2\\)/);
+  assert.match(deferredWallet, /baro_manual_order_id uuid[\\s\\S]*references public\\.leo_manual_orders/);
+  assert.match(deferredWallet, /wallet_transactions\\(baro_manual_order_id\\)/);
 });
 test("BARO deferred wallet workflow is isolated from legacy admin payment flow and automatic fulfilment", () => {
   assert.match(deferredWallet, /if v_order\.wallet_charge_mode is distinct from 'wallet_on_completion' then/);
@@ -410,5 +413,6 @@ test("BARO deferred wallet workflow is isolated from legacy admin payment flow a
   assert.match(ui, /لن يُخصم أي مبلغ عند إرسال الطلب/);
   assert.match(ui, /تم تسجيل طلبك دون خصم من المحفظة/);
   assert.match(ui, /خصم المحفظة مؤجل حتى اعتماد اكتمال الشحن/);
-  assert.match(ui, /wallet_charged_at/);\n  assert.match(ui, /تم الخصم من المحفظة بعد اكتمال الشحن/);
+  assert.match(ui, /wallet_charged_at/);
+  assert.match(ui, /تم الخصم من المحفظة بعد اكتمال الشحن/);
 });
