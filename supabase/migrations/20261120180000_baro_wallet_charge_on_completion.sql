@@ -42,6 +42,9 @@ begin
   select * into v_existing from public.leo_manual_orders
    where user_id=p_user_id and idempotency_key=p_idempotency_key;
   if found then
+    if v_existing.wallet_charge_mode is distinct from 'wallet_on_completion' then
+      raise exception using errcode='55000',message='رقم محاولة الطلب مرتبط بطلب قديم. لا تعِد إرساله؛ راجع سجل طلبات BARO أولاً.';
+    end if;
     if v_existing.product_code is distinct from p_product_code
        or v_existing.player_id is distinct from v_player
        or v_existing.quantity is distinct from p_quantity
