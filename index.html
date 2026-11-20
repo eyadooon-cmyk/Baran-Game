@@ -3572,7 +3572,16 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
     <div class="baran-welcome-art" aria-hidden="true"><div class="baran-welcome-orb">🔔</div></div>
     <div class="baran-welcome-content">
       <h2 id="baranPushInviteTitle">خليك قريب من كل جديد</h2>
-      <p>فعّل الإشعارات لتصلك تحديثات طلباتك ورسائل الدعم والعروض المهمة، حتى عندما يكون الموقع بالخلفية.</p>
+      <p>حتى ما يفوتك أي تحديث لطلبك أو رد من الدعم أو عرض جديد، فعّل إشعارات BARAN GAME على جهازك.</p>
+      <div class="baran-push-guide" aria-label="شرح خطوات السماح بالإشعارات">
+        <div class="baran-push-guide-title">كيف تفعّلها؟</div>
+        <ol>
+          <li><strong>اضغط «تفعيل الإشعارات»</strong> بالأسفل.</li>
+          <li>رح يطلب Chrome السماح بالإشعارات. <strong>ممكن تظهر نافذته الصغيرة فوق عند شريط العنوان</strong>، وهذا طبيعي وما منقدر نغيّر مكانها.</li>
+          <li>اضغط <strong>«السماح» أو Allow</strong> حتى يقدر BARAN GAME يوصلك التنبيهات.</li>
+        </ol>
+        <div class="baran-push-browser-hint"><span aria-hidden="true">↑</span><span>انتبه: إذا ظهرت رسالة Chrome أعلى الشاشة، اضغط «السماح» فيها، مو «حظر».</span></div>
+      </div>
       <button id="baranPushInviteEnable" type="button" onclick="enableBaranPushFromInvite()">تفعيل الإشعارات</button>
       <button type="button" class="secondary" onclick="dismissBaranPushInvite()">لاحقاً</button>
       <small id="baranPushInviteMessage" role="status" aria-live="polite">التفعيل اختياري بالكامل، ويمكنك تغييره بأي وقت من الإعدادات.</small>
@@ -4442,35 +4451,49 @@ function closeBaranFirstWelcome(){
 }
 
 function showBaranPushInvite(){
-  if(!currentUser||!("Notification" in window)||Notification.permission!=="default")return;
+  if(!currentUser||!("Notification" in window)||Notification.permission==="granted")return;
   try{
     const dismissedUntil=Number(localStorage.getItem("baran_push_invite_dismissed_until")||0);
     if(dismissedUntil>Date.now())return;
   }catch(error){}
   const invite=document.getElementById("baranPushInvite");
+  const button=document.getElementById("baranPushInviteEnable");
+  const message=document.getElementById("baranPushInviteMessage");
+  if(Notification.permission==="denied"){
+    if(button)button.textContent="شرح السماح من إعدادات Chrome";
+    if(message)message.textContent="الإذن محظور حالياً من المتصفح؛ اتبع خطوات فتح إعدادات الموقع أدناه، ثم ارجع إلى هنا.";
+  }else{
+    if(button)button.textContent="تفعيل الإشعارات";
+    if(message)message.textContent="اضغط الزر، ثم وافق على طلب Chrome إذا ظهر أعلى الشاشة.";
+  }
   if(invite)invite.classList.remove("hidden");
 }
 
 function dismissBaranPushInvite(){
   const invite=document.getElementById("baranPushInvite");
   if(invite)invite.classList.add("hidden");
-  try{localStorage.setItem("baran_push_invite_dismissed_until",String(Date.now()+30*24*60*60*1000));}catch(error){}
+  try{localStorage.setItem("baran_push_invite_dismissed_until",String(Date.now()+3*24*60*60*1000));}catch(error){}
 }
 
 async function enableBaranPushFromInvite(){
   const invite=document.getElementById("baranPushInvite");
   const message=document.getElementById("baranPushInviteMessage");
   const button=document.getElementById("baranPushInviteEnable");
+  if("Notification" in window&&Notification.permission==="denied"){
+    if(message)message.textContent="اتبع الخطوات: افتح قائمة Chrome (⋮) ← الإعدادات ← إعدادات الموقع ← الإشعارات ← اختر BARAN GAME وفعّل «السماح». بعدها ارجع للمتجر واضغط تفعيل من صفحة حسابي.";
+    return;
+  }
   if(button)button.disabled=true;
-  if(message)message.textContent="جاري تجهيز إشعارات الهاتف...";
+  if(message)message.textContent="جاري تجهيز إشعارات الهاتف... انتبه لنافذة Chrome أعلى الشاشة واضغط «السماح» إذا ظهرت.";
   try{
     const enabled=await enableBaranPushNotifications();
     if(enabled){
-      if(invite)invite.classList.add("hidden");
+      if(message)message.textContent="ممتاز! تم السماح وتسجيل هذا الجهاز لحسابك بنجاح.";
+      window.setTimeout(()=>{if(invite)invite.classList.add("hidden");},900);
     }else if(message){
       message.textContent=("Notification" in window&&Notification.permission==="denied")
-        ?"تم رفض الإذن. يمكنك تفعيله لاحقاً من إعدادات الموقع في Chrome."
-        :"لم يكتمل التفعيل. يمكنك المحاولة لاحقاً من الإعدادات.";
+        ?"لم يتم السماح. افتح إعدادات Chrome واتبع الخطوات الموضحة داخل النافذة."
+        :"ما اكتمل التفعيل. تأكد من اتصال الإنترنت ثم حاول مرة ثانية.";
     }
   }finally{if(button)button.disabled=false;}
 }
@@ -4510,7 +4533,7 @@ function showApp(user){
   // Silent recovery: if this browser already granted notifications, relink/register it on login.
   window.setTimeout(()=>{
     if("Notification" in window && Notification.permission==="granted")syncBaranPushOnLogin();
-    else if("Notification" in window && Notification.permission==="default" && user.user_metadata?.baran_welcome_pending!==true)showBaranPushInvite();
+    else if("Notification" in window && (Notification.permission==="default"||Notification.permission==="denied") && user.user_metadata?.baran_welcome_pending!==true)showBaranPushInvite();
   },900);
   if(typeof loadCatalog==="function")loadCatalog();
   if(typeof loadCommunity==="function")loadCommunity();
@@ -7945,7 +7968,16 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 #baranPushInvite{z-index:100001}
 #baranPushInvite .baran-welcome-content{display:flex;flex-direction:column;gap:12px}
 #baranPushInvite .baran-welcome-content button.secondary{background:transparent;border:1px solid var(--line,#40334b);color:var(--muted,#d0c4da)}
-#baranPushInviteMessage{display:block;line-height:1.7;min-height:20px}
+#baranPushInviteMessage{display:block;line-height:1.8;min-height:20px}
+#baranPushInvite .baran-push-guide{padding:13px 14px;text-align:right;border:1px solid #665078;border-radius:14px;background:linear-gradient(145deg,#21182b,#15101d);color:#e8d9f2;font-size:13px;line-height:1.9}
+#baranPushInvite .baran-push-guide-title{margin-bottom:5px;color:#e7c9ff;font-weight:900;font-size:14px}
+#baranPushInvite .baran-push-guide ol{margin:0;padding-right:21px}
+#baranPushInvite .baran-push-guide li{padding:3px 0}
+#baranPushInvite .baran-push-guide strong{color:#fff}
+#baranPushInvite .baran-push-browser-hint{display:flex;align-items:center;gap:9px;margin-top:9px;padding:9px 10px;border-radius:10px;background:#34213f;color:#f2e6fb;font-size:12px}
+#baranPushInvite .baran-push-browser-hint span:first-child{flex:0 0 25px;width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:#8b5bb0;color:#fff;font-size:20px;font-weight:900}
+#baranPushInvite .baran-welcome-content{max-height:min(88dvh,760px);overflow-y:auto}
+@media(max-width:420px){#baranPushInvite{padding:12px}#baranPushInvite .baran-welcome-art{height:105px}#baranPushInvite .baran-welcome-content{padding:17px 15px}#baranPushInvite .baran-welcome-content h2{font-size:21px}#baranPushInvite .baran-push-guide{font-size:12px;padding:10px}}
 </style>
 <script src="./notification-enhancements.js?v=20261119-collapse-v3"></script>
 <script src="./android-back-navigation.js?v=20261120-1"></script>
