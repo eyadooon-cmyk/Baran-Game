@@ -4225,7 +4225,7 @@ function showSection(id,button,options){
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
   if(id==="staffTasks")loadStaffTasks();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
-  if(id==="settings"&&typeof refreshBaranPushSettingsStatus==="function")refreshBaranPushSettingsStatus();
+  if(id==="settings"&&typeof showBaranPushHelpIfNeeded==="function")showBaranPushHelpIfNeeded();
   updateSectionBackButton();
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -6835,6 +6835,14 @@ async function enableBaranPushNotifications(){
     baranPushEnableInFlight=false;
     if(button)button.disabled=false;
   }
+}
+
+async function showBaranPushHelpIfNeeded(){
+  await refreshBaranPushSettingsStatus();
+  const status=document.getElementById("pushDeviceStatus");
+  const statusText=String(status?.textContent||"");
+  if(statusText.includes("يوجد اشتراك إشعارات محفوظ"))return;
+  window.setTimeout(()=>openBaranPushHelp(),350);
 }
 
 async function refreshBaranPushSettingsStatus(){
