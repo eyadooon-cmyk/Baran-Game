@@ -170,7 +170,7 @@ function renderBaroCustomerCatalog(products){
     const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;
     const productAvailable=baroManualEnabled&&p.purchase_enabled===true;
     card.disabled=!productAvailable;
-    card.setAttribute("aria-label",(productAvailable?"طلب ":"معاينة ")+productName);
+    card.setAttribute("aria-label",(productAvailable?"طلب ":"معاينة ")+String(p.product_name||"منتج رقمي"));
     if(productAvailable)card.addEventListener("click",()=>baroOpenProductCheckout(p));
     const cardTop=document.createElement("div");cardTop.className="baro-catalog-product-card-top";
     const art=document.createElement("div");art.className="baro-catalog-product-art";
