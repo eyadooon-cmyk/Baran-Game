@@ -4533,7 +4533,7 @@ function showApp(user){
   // Silent recovery: if this browser already granted notifications, relink/register it on login.
   window.setTimeout(()=>{
     if("Notification" in window && Notification.permission==="granted")syncBaranPushOnLogin();
-    else if("Notification" in window && Notification.permission==="default" && user.user_metadata?.baran_welcome_pending!==true)showBaranPushInvite();
+    else if("Notification" in window && (Notification.permission==="default"||Notification.permission==="denied") && user.user_metadata?.baran_welcome_pending!==true)showBaranPushInvite();
   },900);
   if(typeof loadCatalog==="function")loadCatalog();
   if(typeof loadCommunity==="function")loadCommunity();
