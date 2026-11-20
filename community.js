@@ -132,6 +132,23 @@ async function openBaranNotificationTarget(item,audience){
     return;
   }
 
+  // Dedicated admin BARO route: load the manual-order workspace and focus the exact order.
+  if(isAdmin&&entityType==="leo_manual_order"){
+    if(typeof showSection==="function")showSection("admin",null);
+    const adminRoot=document.getElementById("admin");
+    if(adminRoot)adminRoot.classList.remove("hidden");
+    if(typeof showAdminPanel==="function")await showAdminPanel("baro");
+    const exact=entityId
+      ?document.querySelector('[data-notification-entity-id="'+CSS.escape(String(entityId))+'"]')
+      :null;
+    const destination=exact||document.getElementById("baroAdminOrders");
+    if(destination){
+      destination.scrollIntoView({behavior:"smooth",block:"center"});
+      destination.classList.add("notification-target-highlight");
+    }
+    return;
+  }
+
   // Dedicated admin support route: never let a support alert fall through to the generic admin dashboard.
   if(isAdmin&&isSupportTarget){
     if(typeof showSection==="function")showSection("admin",null);
