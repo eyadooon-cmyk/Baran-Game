@@ -6839,9 +6839,6 @@ async function enableBaranPushNotifications(){
 
 async function showBaranPushHelpIfNeeded(){
   await refreshBaranPushSettingsStatus();
-  const status=document.getElementById("pushDeviceStatus");
-  const statusText=String(status?.textContent||"");
-  if(statusText.includes("يوجد اشتراك إشعارات محفوظ"))return;
   window.setTimeout(()=>openBaranPushHelp(),350);
 }
 
