@@ -291,6 +291,7 @@ function renderBaroCustomerOrders(rows){
  if(!rows.length){box.textContent="لا توجد لديك طلبات BARO بعد.";return;}
  rows.forEach(o=>{
   const card=document.createElement("article");card.className="ops-item";
+   card.dataset.notificationEntityId=String(o.id);
   const h=document.createElement("strong");h.textContent=o.product_name_snapshot||o.product_code;
   const id=document.createElement("div");id.className="small";id.textContent="رقم الطلب: "+o.id.slice(0,8);
   const meta=document.createElement("div");meta.className="small";meta.textContent="المعرّف: "+o.player_id+" | الكمية: "+Number(o.quantity||1).toLocaleString("en-US");
