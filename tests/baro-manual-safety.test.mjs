@@ -48,7 +48,8 @@ test("BARO product pricing and visibility are saved through one atomic RPC", () 
 test("Order status transitions prevent reopening terminal orders", () => {
   assert.match(hardening, /when 'completed' then false[\s\S]*when 'cancelled' then false/);
   assert.match(hardening, /انتقال حالة الطلب غير مسموح/);
-  assert.match(ui, /nextStates=/);
+  assert.doesNotMatch(ui, /nextStates=/);
+  assert.match(ui, /if\(nextStatus!=="completed"\)return/);
 });
 
 test("BARO remains isolated from wallet debit and automatic dispatch", () => {
