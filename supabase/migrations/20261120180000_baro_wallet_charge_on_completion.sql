@@ -270,3 +270,5 @@ $function$;
 
 revoke execute on function public.baro_manual_create_customer_order_on_completion(uuid,text,text,integer,text,uuid,boolean,text) from public,anon,authenticated;
 revoke execute on function public.baro_manual_order_admin_update_wallet_aware(uuid,uuid,text,numeric,text,text,text,text,numeric,text,text,text) from public,anon,authenticated;
+grant execute on function public.baro_manual_create_customer_order_on_completion(uuid,text,text,integer,text,uuid,boolean,text) to service_role;
+grant execute on function public.baro_manual_order_admin_update_wallet_aware(uuid,uuid,text,numeric,text,text,text,text,numeric,text,text,text) to service_role;
