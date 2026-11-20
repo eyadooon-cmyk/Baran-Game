@@ -3881,7 +3881,7 @@ function showAdminPanel(id){
   if(id==="overview"||id==="financial-support"||id==="users"||id==="user-directory"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"||id==="shamcash-control"){
     if(typeof loadAdminPanel==="function")panelLoad=loadAdminPanel();
   }
-  if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")loadBaranPromotionsManager();
+  if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")panelLoad=loadBaranPromotionsManager();
   if(id==="suppliers"&&typeof loadBaranAutomaticControl==="function")loadBaranAutomaticControl();
   if(id==="staff-management")loadBaranStaffList();
   if(id==="wallet-finance"){
