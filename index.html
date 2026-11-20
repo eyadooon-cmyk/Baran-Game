@@ -6688,49 +6688,109 @@ async function syncBaranPushOnLogin(){
   }finally{baranPushSyncInFlight=false;}
 }
 
+let baranPushEnableInFlight=false;
+function baranPushStageMessage(stage,detail){
+  const message=document.getElementById("pushSettingsMessage");
+  const labels={
+    preflight:"فحص دعم المتصفح",
+    permission:"طلب إذن الإشعارات",
+    register:"تسجيل Service Worker",
+    ready:"انتظار جاهزية Service Worker",
+    subscription:"إنشاء/قراءة اشتراك Push",
+    session:"التحقق من جلسة الحساب",
+    request:"إرسال الاشتراك إلى خادم Baran",
+    done:"اكتمل التسجيل"
+  };
+  if(message)message.textContent=(labels[stage]||stage)+(detail?" — "+detail:"...");
+}
+function baranPushWithTimeout(promise,ms,stage){
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>{timer=window.setTimeout(()=>reject(new Error("انتهت مهلة الانتظار ("+stage+"). أعد المحاولة وتأكد من اتصال الإنترنت.")),ms);})
+  ]).finally(()=>window.clearTimeout(timer));
+}
+function baranPushErrorText(error,stage){
+  const name=String(error?.name||"Error").slice(0,80);
+  const detail=String(error?.message||"خطأ غير معروف").slice(0,240);
+  const tips={
+    register:"تعذر تسجيل Service Worker. افتح الموقع من HTTPS ثم حدّث الصفحة.",
+    ready:"لم يصبح Service Worker جاهزاً. أغلق تبويب الموقع وافتحه مجدداً.",
+    subscription:"تعذر إنشاء اشتراك Push. تحقق من تحديث Chrome وخدمات Google Play.",
+    session:"تعذر التحقق من جلسة الدخول. سجّل الخروج ثم الدخول.",
+    request:"تعذر إرسال الاشتراك إلى خادم Baran. تحقق من الإنترنت وحاول مجدداً."
+  };
+  return "فشل عند مرحلة "+(stage||"غير محددة")+" ("+name+"): "+detail+". "+(tips[stage]||"حدّث الصفحة ثم أعد المحاولة.");
+}
 async function enableBaranPushNotifications(){
   const button=document.getElementById("enablePushButton");
   const message=document.getElementById("pushSettingsMessage");
+  if(baranPushEnableInFlight)return false;
   if(!currentUser){if(message)message.textContent="سجّل الدخول أولاً.";return false;}
+  if(!window.isSecureContext){if(message)message.textContent="يلزم فتح الموقع عبر اتصال HTTPS آمن.";return false;}
   if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
-    if(message)message.textContent="هذا المتصفح لا يدعم إشعارات الويب. جرّب Chrome على أندرويد.";
+    if(message)message.textContent="هذا المتصفح لا يدعم إشعارات الويب. جرّب Chrome المحدّث على أندرويد.";
     return false;
   }
   if(Notification.permission==="denied"){
     if(message)message.textContent="الإشعارات محظورة من إعدادات المتصفح. اسمح بها من إعدادات الموقع ثم أعد المحاولة.";
     return false;
   }
+  baranPushEnableInFlight=true;
   if(button)button.disabled=true;
-  if(message)message.textContent="جاري تفعيل إشعارات الهاتف...";
+  let stage="permission";
   try{
-    const permission=await Notification.requestPermission();
-    if(permission!=="granted")throw new Error("لم يتم السماح بالإشعارات.");
-    const registration=await navigator.serviceWorker.register("./service-worker.js",{scope:"./"});
-    await navigator.serviceWorker.ready;
-    let subscription=await registration.pushManager.getSubscription();
-    const {data:{session},error:sessionError}=await sb.auth.getSession();
-    if(sessionError||!session?.access_token)throw new Error("انتهت جلسة الدخول. سجّل الدخول مجدداً.");
-    // Reuse the same browser subscription and link it to the currently signed-in account.
-    // This lets one phone receive notifications for both customer and admin accounts.
+    baranPushStageMessage(stage,"يرجى الموافقة إذا ظهرت نافذة الإذن");
+    const permission=Notification.permission==="granted"?"granted":await Notification.requestPermission();
+    if(permission!=="granted")throw new Error("لم يتم منح إذن الإشعارات.");
+    stage="register";
+    baranPushStageMessage(stage);
+    const registration=await baranPushWithTimeout(
+      navigator.serviceWorker.register("./service-worker.js",{scope:"./"}),15000,"تسجيل Service Worker"
+    );
+    stage="ready";
+    baranPushStageMessage(stage);
+    const readyRegistration=await baranPushWithTimeout(navigator.serviceWorker.ready,15000,"جاهزية Service Worker");
+    const activeRegistration=readyRegistration||registration;
+    if(!activeRegistration?.pushManager)throw new Error("لم يتوفر PushManager ضمن تسجيل Service Worker.");
+    stage="subscription";
+    baranPushStageMessage(stage);
+    let subscription=await baranPushWithTimeout(activeRegistration.pushManager.getSubscription(),10000,"قراءة الاشتراك");
     if(!subscription){
-      subscription=await registration.pushManager.subscribe({
+      subscription=await baranPushWithTimeout(activeRegistration.pushManager.subscribe({
         userVisibleOnly:true,
         applicationServerKey:baranUrlBase64ToUint8Array(BARAN_VAPID_PUBLIC_KEY)
-      });
+      }),20000,"إنشاء الاشتراك");
     }
-    const response=await fetch(SUPABASE_URL+"/functions/v1/baran-push-register",{
+    if(!subscription?.endpoint||!subscription.getKey("p256dh")||!subscription.getKey("auth"))throw new Error("عاد المتصفح باشتراك غير مكتمل؛ لم يتم إرساله.");
+    stage="session";
+    baranPushStageMessage(stage);
+    const {data:{session},error:sessionError}=await sb.auth.getSession();
+    if(sessionError||!session?.access_token)throw new Error("انتهت جلسة الدخول. سجّل الدخول مجدداً.");
+    stage="request";
+    baranPushStageMessage(stage);
+    const response=await baranPushWithTimeout(fetch(SUPABASE_URL+"/functions/v1/baran-push-register",{
       method:"POST",
       headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+session.access_token},
       body:JSON.stringify({subscription:subscription.toJSON()})
-    });
+    }),20000,"الاتصال بخادم Baran");
     const result=await response.json().catch(()=>({}));
-    if(!response.ok||result.success!==true)throw new Error(result.error||"تعذر حفظ اشتراك الإشعارات.");
-    if(message)message.textContent="تم تفعيل إشعارات الهاتف لهذا الجهاز بنجاح.";
+    if(!response.ok||result.success!==true)throw new Error(result.error||("استجابة الخادم غير ناجحة (HTTP "+response.status+")."));
+    stage="done";
+    if(message)message.textContent="تم تسجيل اشتراك هذا الجهاز بنجاح لحسابك.";
+    const status=document.getElementById("pushDeviceStatus");
+    if(status)status.textContent="إشعارات هذا الجهاز مفعّلة ومسجّلة لحسابك.";
+    const disableButton=document.getElementById("disablePushButton");
+    if(disableButton)disableButton.disabled=false;
     return true;
   }catch(error){
-    if(message)message.textContent=error.message||"تعذر تفعيل الإشعارات.";
+    console.warn("Baran push registration failed at "+stage+":",error?.name||"Error",error?.message||error);
+    if(message)message.textContent=baranPushErrorText(error,stage);
     return false;
-  }finally{if(button)button.disabled=false;}
+  }finally{
+    baranPushEnableInFlight=false;
+    if(button)button.disabled=false;
+  }
 }
 
 async function refreshBaranPushSettingsStatus(){
