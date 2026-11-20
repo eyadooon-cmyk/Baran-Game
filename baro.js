@@ -212,13 +212,23 @@ async function loadBaroCustomer(){
  const catalog=baroEl("baroCustomerCatalog"),orders=baroEl("baroCustomerOrders");
  if(!catalog||!orders||!currentUser)return;
  catalog.textContent="جاري تحميل منتجات BARO...";
+ orders.textContent="جاري تحميل طلباتك...";
+ const statusLabel=baroEl("baranBaroStatus");
+ const homeCopy=baroEl("baranBaroHomeCopy");
+ const heroStatus=baroEl("baroCustomerIntro");
+ const previewCard=baroEl("baroCustomerAvailability");
+ const setAvailability=(enabled)=>{
+  const label=enabled?"استقبال الطلبات اليدوية متاح":"استقبال الطلبات اليدوية مغلق";
+  if(statusLabel)statusLabel.textContent=label;
+  if(homeCopy)homeCopy.textContent=enabled?"قسم مستقل للشحن اليدوي — باقات Free Fire المتاحة جاهزة للطلب.":"قسم مستقل عن الشحن الآلي — تصفّح المنتجات والأسعار.";
+  if(heroStatus)heroStatus.textContent=enabled?"اختر باقة Free Fire المتاحة، ثم أدخل ID اللاعب وأكّده قبل إرسال الطلب.":"كتالوج BARO وأسعار البيع المعتمدة. يمكنك التصفح وإدخال ID، لكن إرسال الطلبات متوقف حالياً.";
+  if(previewCard)previewCard.textContent=enabled?"الاستقبال اليدوي متاح للمنتجات المفعّلة فقط. لا يُخصم أي مبلغ عند إرسال الطلب؛ يتم الخصم فقط بعد تأكيد اكتمال الشحن بنجاح.":"الاستقبال اليدوي متوقف حالياً. يمكنك تصفح المنتجات والأسعار؛ لن يتم إنشاء طلب أو خصم رصيد.";
+ };
  try{
-  const [c,o,w]=await Promise.all([baroApi("GET",null,"catalog"),baroApi("GET",null,"my_orders"),baroApi("GET",null,"my_wallet")]);
-  baroCustomerWallet=w.wallet||{balance_usd:0,balance_syp:0};
-  const walletLabel=baroEl("baroWalletBalance");
-  if(walletLabel)walletLabel.textContent="رصيدك: $"+Number(baroCustomerWallet.balance_usd||0).toFixed(2)+" · "+Number(baroCustomerWallet.balance_syp||0).toLocaleString("en-US")+" SYP";
+  const c=await baroApi("GET",null,"catalog");
   baroCustomerProducts=Array.isArray(c.products)?c.products:[];
   baroManualEnabled=c.manual_enabled===true;
+  setAvailability(baroManualEnabled);
   const submitButton=baroEl("baroSubmitOrder");
   const checkout=submitButton?.closest(".game-checkout");
   const canOrder=baroManualEnabled&&baroCustomerProducts.some(p=>p.purchase_enabled===true);
@@ -239,8 +249,8 @@ async function loadBaroCustomer(){
     baroCustomerProducts.forEach(p=>{
      if(!groups.has(p.category_id)){const group=document.createElement("optgroup");group.label=categoryLabels[p.category_id]||p.category_id;groups.set(p.category_id,group);select.append(group);}
      const op=document.createElement("option");op.value=p.product_code;
-     op.textContent=(groupLabels[p.group_id]?groupLabels[p.group_id]+" — ":"")+p.product_name+(p.purchase_enabled===true?" — متاح للطلب":" — معاينة فقط");
-     op.disabled=false;groups.get(p.category_id).append(op);
+     op.textContent=(groupLabels[p.group_id]?groupLabels[p.group_id]+" — ":"")+p.product_name+(baroManualEnabled&&p.purchase_enabled===true?" — متاح للطلب":" — معاينة فقط");
+     groups.get(p.category_id).append(op);
     });
    }
   }
@@ -254,9 +264,20 @@ async function loadBaroCustomer(){
   if(confirmation)confirmation.onchange=baroUpdateOrderSubmitState;
   baroUpdateQuantityField();baroUpdateOrderSubmitState();
   const orderMessage=baroEl("baroOrderMessage");
-  if(orderMessage&&!canOrder)orderMessage.textContent="يمكنك إدخال ID وتأكيد صحته، لكن استقبال الطلبات مغلق حالياً ولن يتم إرسال أي طلب.";
-  renderBaroCustomerOrders(o.orders||[]);
- }catch(e){catalog.textContent=e.message;orders.textContent="تعذر تحميل طلبات BARO.";}
+  if(orderMessage)orderMessage.textContent=canOrder?"أدخل Player ID وتأكد من صحته قبل إرسال الطلب. لن يتم الخصم إلا بعد اكتمال الشحن.":"يمكنك معاينة الباقات؛ إرسال الطلب متاح فقط عند فتح الاستقبال وتفعيل المنتج.";
+ }catch(e){
+  catalog.textContent=e?.message||"تعذر تحميل كتالوج BARO.";
+  setAvailability(false);
+ }
+ const orderResult=await baroApi("GET",null,"my_orders").then(value=>({ok:true,value})).catch(error=>({ok:false,error}));
+ if(orderResult.ok)renderBaroCustomerOrders(orderResult.value.orders||[]);
+ else orders.textContent=orderResult.error?.message||"تعذر تحميل طلبات BARO. يمكنك تحديثها لاحقاً.";
+ const walletResult=await baroApi("GET",null,"my_wallet").then(value=>({ok:true,value})).catch(error=>({ok:false,error}));
+ if(walletResult.ok){
+  baroCustomerWallet=walletResult.value.wallet||{balance_usd:0,balance_syp:0};
+  const walletLabel=baroEl("baroWalletBalance");
+  if(walletLabel)walletLabel.textContent="رصيدك: $"+Number(baroCustomerWallet.balance_usd||0).toFixed(2)+" · "+Number(baroCustomerWallet.balance_syp||0).toLocaleString("en-US")+" SYP";
+ }
 }
 function baroUpdateOrderSubmitState(){
  const button=baroEl("baroSubmitOrder"),player=baroEl("baroPlayerId"),repeat=baroEl("baroPlayerIdRepeat"),confirmed=baroEl("baroPlayerIdConfirmed");
