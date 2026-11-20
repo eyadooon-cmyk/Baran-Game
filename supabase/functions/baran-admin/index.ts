@@ -810,7 +810,7 @@ Deno.serve(async (req: Request) => {
         if (recipientAdminError) return json({ error: "تعذر التحقق من صلاحيات المستلم." }, 500);
         if (recipientAdmin) return json({ error: "لا يمكن إرسال إشعار العملاء إلى حساب إداري." }, 400);
         const { error: insertError } = await admin.from("baran_notifications").insert({
-          recipient_id: recipientId, audience: "customer", kind: "announcement",
+          recipient_id: recipientId, audience: "customer", kind: "store_announcement",
           title, body: message, entity_type: null, entity_id: null,
         });
         if (insertError) {
@@ -874,7 +874,7 @@ Deno.serve(async (req: Request) => {
           }
         }
         const recipients = [...new Set(recipientIds)].map((recipient_id) => ({
-          recipient_id, audience: "customer", kind: "announcement",
+          recipient_id, audience: "customer", kind: "store_announcement",
           title, body: message, entity_type: null, entity_id: null,
         }));
         if (!recipients.length) return json({ success: true, sent_to: 0, segment });
