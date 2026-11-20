@@ -2241,9 +2241,9 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 
       <div class="baran-home-baro">
         <div class="baran-baro-mark">B<span>O</span></div>
-        <div class="baran-baro-copy"><span>MANUAL TOP-UP · SEPARATE SECTION</span><strong>BARO للشحن اليدوي</strong><small>قسم مستقل عن الشحن الآلي لمعاينة المنتجات فقط حالياً.</small></div>
+        <div class="baran-baro-copy"><span>MANUAL TOP-UP · SEPARATE SECTION</span><strong>BARO للشحن اليدوي</strong><small id="baranBaroHomeCopy">قسم مستقل عن الشحن الآلي — تحقق من حالة الاستقبال داخل BARO.</small></div>
         <button type="button" onclick="showSection('baroManual',this);loadBaroCustomer()">استكشف BARO ←</button>
-        <div class="baran-baro-status">استقبال الطلبات مغلق</div>
+        <div id="baranBaroStatus" class="baran-baro-status">تحقق من حالة الاستقبال</div>
       </div>
 
       <div class="baran-home-account">
@@ -2279,8 +2279,8 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 
         <section id="baroManual" class="hidden">
       <button class="secondary games-back-button baran-back-button" type="button" onclick="showSection('home',null)">← العودة إلى الأقسام الرئيسية</button>
-      <div class="hero"><h2>BARO · الشحن اليدوي المستقل</h2><p>كتالوج منتجات BARO وأسعار البيع المعتمدة بالدولار والليرة. استقبال الطلبات اليدوية مغلق حالياً.</p></div>
-      <div class="deposit-card"><strong>معاينة BARO الآمنة</strong><p class="small">يمكنك تصفّح المنتجات والأسعار المعتمدة حالياً، لكن إرسال الطلبات غير متاح حتى تفعيل الاستقبال.</p><p class="small">لا يتم إنشاء أي طلب أو خصم أي رصيد أثناء إغلاق الاستقبال. وعند فتحه، لن يُخصم المبلغ عند إرسال الطلب؛ يتم الخصم فقط بعد تأكيد اكتمال الشحن بنجاح.</p></div>
+      <div class="hero"><h2>BARO · الشحن اليدوي المستقل</h2><p id="baroCustomerIntro">كتالوج منتجات BARO وأسعار البيع المعتمدة بالدولار والليرة. يتم تحديث حالة الاستقبال تلقائياً.</p></div>
+      <div class="deposit-card"><strong>حالة استقبال BARO</strong><p id="baroCustomerAvailability" class="small">يتم التحقق من حالة الاستقبال والمنتجات المفعّلة...</p></div>
       <div id="baroAiWidget" class="baro-ai-widget" aria-label="مساعد BARO الذكي">
         <div class="baro-ai-title"><span>🤖</span><div><strong>BARO AI</strong><small>مساعد الشحن اليدوي</small></div><span class="baro-ai-live">مساعدك متاح</span></div>
         <p class="small">اسأل عن المنتجات والأسعار وحالات طلبات BARO. المساعد لا ينشئ طلبات ولا ينفذ عمليات مالية.</p>
