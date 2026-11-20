@@ -70,8 +70,8 @@ Deno.serve(async (req: Request) => {
       })).sort((a: any, b: any) => {
         if (a.category_id === "freefire" && b.category_id === "freefire"
             && a.group_id === "diamonds" && b.group_id === "diamonds") {
-          const amountA = Number(String(a.product_name).match(/\\d+/)?.[0] ?? Number.MAX_SAFE_INTEGER);
-          const amountB = Number(String(b.product_name).match(/\\d+/)?.[0] ?? Number.MAX_SAFE_INTEGER);
+          const amountA = Number(String(a.product_name).match(/\d+/)?.[0] ?? Number.MAX_SAFE_INTEGER);
+          const amountB = Number(String(b.product_name).match(/\d+/)?.[0] ?? Number.MAX_SAFE_INTEGER);
           return amountA - amountB;
         }
         return 0;
