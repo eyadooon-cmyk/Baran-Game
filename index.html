@@ -2143,6 +2143,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
       <button id="staffAssistantDrawerButton" class="drawer-link hidden" data-section="staffAssistant" onclick="navigateDrawer('staffAssistant')"><span class="drawer-icon">🤖</span><span class="drawer-link-copy"><strong>مساعدتي الذكي</strong><small>مساعد العمل والدعم</small></span><i>‹</i></button>
     </div>
     <div class="drawer-bottom">
+      <button id="baranInstallAppButton" class="drawer-link" type="button" onclick="installBaranApp()"><span class="drawer-icon">⬇</span><span class="drawer-link-copy"><strong>تثبيت التطبيق</strong><small id="baranInstallAppHint">أضف BARAN GAME إلى هاتفك</small></span><i>‹</i></button>
       <a class="drawer-legal-link" href="./terms.html"><span>▤</span>شروط الاستخدام</a>
       <a class="drawer-legal-link" href="./privacy.html"><span>◇</span>سياسة الخصوصية</a>
       <button class="drawer-link logout" onclick="closeSideMenu();signOut()"><span class="drawer-icon">↪</span><span class="drawer-link-copy"><strong>تسجيل الخروج</strong><small>الخروج الآمن من حسابك</small></span></button>
@@ -7979,5 +7980,57 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 </style>
 <script src="./notification-enhancements.js?v=20261119-collapse-v3"></script>
 <script src="./android-back-navigation.js?v=20261120-1"></script>
+<script>
+(function(){
+  let baranDeferredInstallPrompt=null;
+  const buttonId="baranInstallAppButton";
+  function baranInstallButton(){return document.getElementById(buttonId);}
+  function baranIsInstalled(){
+    return window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches ||
+      navigator.standalone===true;
+  }
+  function baranSetInstallButton(visible,hint){
+    const button=baranInstallButton();
+    if(!button)return;
+    button.classList.toggle("hidden",!visible);
+    const label=document.getElementById("baranInstallAppHint");
+    if(label&&hint)label.textContent=hint;
+  }
+  window.addEventListener("beforeinstallprompt",event=>{
+    event.preventDefault();
+    baranDeferredInstallPrompt=event;
+    if(!baranIsInstalled())baranSetInstallButton(true,"ثبّت التطبيق مباشرة على هاتفك");
+  });
+  window.addEventListener("appinstalled",()=>{
+    baranDeferredInstallPrompt=null;
+    baranSetInstallButton(false);
+  });
+  window.installBaranApp=async function(){
+    if(baranIsInstalled()){
+      baranSetInstallButton(false);
+      return;
+    }
+    if(baranDeferredInstallPrompt){
+      const promptEvent=baranDeferredInstallPrompt;
+      baranDeferredInstallPrompt=null;
+      await promptEvent.prompt();
+      const choice=await promptEvent.userChoice;
+      if(choice&&choice.outcome==="accepted")baranSetInstallButton(false,"تم إرسال طلب التثبيت");
+      else baranSetInstallButton(true,"يمكنك المحاولة مرة أخرى");
+      return;
+    }
+    const hint=document.getElementById("baranInstallAppHint");
+    if(hint)hint.textContent="افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».";
+    alert("التثبيت المباشر غير متاح حالياً من هذا المتصفح. افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». إذا لم يظهر الخيار، افتح BARAN GAME باستخدام Chrome وتأكد من اتصالك بالإنترنت.");
+  };
+  document.addEventListener("DOMContentLoaded",()=>{
+    if(baranIsInstalled())baranSetInstallButton(false);
+    else baranSetInstallButton(true,"أضف BARAN GAME إلى هاتفك");
+  });
+  if(document.readyState!=="loading"&&baranIsInstalled())baranSetInstallButton(false);
+})();
+</script>
+
 </body>
 </html>
