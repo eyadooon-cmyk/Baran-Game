@@ -517,8 +517,18 @@ function renderSupportConversation(data,audience){
       }else{attachment.textContent="📎 "+(item.attachment_name||"ملف مرفق")+" · فتح الملف";}
       bubble.appendChild(attachment);
     }
+    if(!document.getElementById("baran-admin-message-name-style")){
+      const style=document.createElement("style");style.id="baran-admin-message-name-style";
+      style.textContent=".support-message-admin-name{display:inline-flex;align-items:center;gap:5px;margin:0 0 8px;padding:4px 9px;border:1px solid rgba(225,190,119,.62);border-radius:999px;background:linear-gradient(110deg,#4b2d61,#302039);color:#f5d99a;font-size:11px;font-weight:900;letter-spacing:.1px;box-shadow:0 2px 10px #0003}.support-message.admin .support-message-admin-name{background:linear-gradient(110deg,#5a3972,#302039);border-color:#d2a85d}.support-message.admin{border-color:#9870ad}";
+      document.head.appendChild(style);
+    }
+    if(item.sender_role==="admin"){
+      const adminName=document.createElement("div");adminName.className="support-message-admin-name";
+      adminName.textContent="✦ مدير BARAN GAME";
+      bubble.appendChild(adminName);
+    }
     const stamp=document.createElement("time");stamp.className="support-message-meta";
-    const role=item.sender_role==="customer"?"الزبون":item.sender_role==="assistant"?"مساعد باران":item.sender_role==="admin"?"فريق الإدارة":"النظام";
+    const role=item.sender_role==="customer"?"الزبون":item.sender_role==="assistant"?"مساعد باران":item.sender_role==="admin"?"المدير":"النظام";
     const receipt=item.sender_role===(audience==="admin"?"admin":"customer")?(item.read_at?" · قُرئت":" · تم الإرسال"):"";
     stamp.textContent=role+" · "+(item.created_at?new Date(item.created_at).toLocaleString("ar"):"")+receipt;
     bubble.appendChild(stamp);list.appendChild(bubble);
