@@ -78,6 +78,7 @@
   }
 
   window.addEventListener("popstate", (event) => {
+    if (exitApproved) return;
     if (!(window.currentUser || typeof currentUser !== "undefined" && currentUser)) return;
 
     const state = event.state;
@@ -105,6 +106,19 @@
       } finally {
         handlingPopstate = false;
       }
+      rootReady = true;
+      return;
+    }
+
+    // Close an open admin workspace before leaving the admin area.
+    if (activeSection === "admin" && activeAdminPanel) {
+      handlingPopstate = true;
+      try { showAdminHubFromBack(); } finally { handlingPopstate = false; }
+      history.pushState(
+        { baranGame: true, root: true, section: "admin", adminPanel: null },
+        "",
+        location.href
+      );
       rootReady = true;
       return;
     }
