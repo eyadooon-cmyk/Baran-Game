@@ -31,7 +31,7 @@ declare
   v_now timestamptz:=pg_catalog.now();
 begin
   if p_user_id is null or p_idempotency_key is null or p_player_id_confirmed is not true
-     or p_wallet_currency not in ('USD','SYP')
+     or p_wallet_currency is null or p_wallet_currency not in ('USD','SYP')
      or p_product_code is null or p_product_code !~ '^LEO_[A-Z0-9_]{3,56}$'
      or pg_catalog.length(v_player)<3 or pg_catalog.length(v_player)>80
      or v_player ~ '[[:cntrl:]]' or pg_catalog.length(v_note)>500
@@ -143,12 +143,15 @@ declare
   v_sale_posted boolean;
   v_count integer;
   v_now timestamptz:=pg_catalog.now();
+  v_from_status text;
+  v_target_status text:=case when p_status='paid' then 'in_progress' else p_status end;
 begin
   if p_admin_id is null or not public.baro_manual_has_permission(p_admin_id,'orders') then
     raise exception using errcode='42501',message='BARO order permission required';
   end if;
   select * into v_order from public.leo_manual_orders where id=p_order_id for update;
   if not found then raise exception using errcode='P0002',message='order not found'; end if;
+  v_from_status:=v_order.status;
 
   -- Preserve the complete, existing legacy workflow byte-for-byte via its original RPC.
   if v_order.wallet_charge_mode is distinct from 'wallet_on_completion' then
@@ -158,9 +161,10 @@ begin
       p_exception_reason,p_internal_notes);
   end if;
 
-  if p_status not in ('pending','in_progress','completed','failed','needs_review','cancelled')
-     or p_payment_status<>'awaiting_quote'
-     or p_quote_amount is not null or p_quote_currency is not null
+  if v_target_status not in ('pending','in_progress','completed','failed','needs_review','cancelled')
+     or p_payment_status not in ('awaiting_quote','verified')
+     or (p_quote_amount is not null and p_quote_amount is distinct from coalesce(v_order.customer_price_usd,v_order.customer_price_syp))
+     or (p_quote_currency is not null and p_quote_currency is distinct from case when v_order.customer_price_usd is not null then 'USD' else 'SYP' end)
      or coalesce(p_payment_method,'')<>v_order.payment_method
      or pg_catalog.length(coalesce(p_customer_message,''))>500
      or pg_catalog.length(coalesce(p_internal_notes,''))>2000
@@ -171,19 +175,19 @@ begin
   end if;
 
   if v_order.status='completed' then
-    if p_status='completed' and v_order.wallet_charged_at is not null then
+    if v_target_status='completed' and v_order.wallet_charged_at is not null then
       return pg_catalog.jsonb_build_object('order',to_jsonb(v_order),'wallet_changed',false,
         'wallet_charge_replayed',true,'finance_posted',true);
     end if;
     raise exception using errcode='55000',message='الطلب المكتمل لا يمكن تغيير حالته.';
   end if;
-  if (v_order.status='pending' and p_status not in ('pending','in_progress','failed','needs_review','cancelled'))
-     or (v_order.status='in_progress' and p_status not in ('in_progress','completed','failed','needs_review'))
-     or (v_order.status='needs_review' and p_status not in ('needs_review','in_progress','failed','cancelled'))
-     or (v_order.status in ('failed','cancelled') and p_status<>v_order.status) then
+  if (v_order.status='pending' and v_target_status not in ('pending','in_progress','failed','needs_review','cancelled'))
+     or (v_order.status='in_progress' and v_target_status not in ('in_progress','completed','failed','needs_review'))
+     or (v_order.status='needs_review' and v_target_status not in ('needs_review','in_progress','failed','cancelled'))
+     or (v_order.status in ('failed','cancelled') and v_target_status<>v_order.status) then
     raise exception using errcode='55000',message='انتقال حالة طلب BARO غير مسموح.';
   end if;
-  if p_status='completed' and (
+  if v_target_status='completed' and (
     coalesce(p_supplier_cost_usd,0)<=0 or
     (pg_catalog.length(pg_catalog.btrim(coalesce(p_supplier_reference,'')))<2
       and pg_catalog.length(pg_catalog.btrim(coalesce(p_exception_reason,'')))<5)
@@ -191,7 +195,7 @@ begin
     raise exception using errcode='22023',message='إكمال الطلب يتطلب التكلفة ومرجع التنفيذ أو سبب استثناء موثق.';
   end if;
 
-  if p_status='completed' and v_order.wallet_charged_at is null then
+  if v_target_status='completed' and v_order.wallet_charged_at is null then
     v_currency:=case when v_order.payment_method='wallet_usd' then 'USD'
       when v_order.payment_method='wallet_syp' then 'SYP' else null end;
     v_amount:=case when v_currency='USD' then v_order.customer_price_usd
@@ -230,37 +234,37 @@ begin
 
   perform pg_catalog.set_config('app.baro_actor_id',p_admin_id::text,true);
   update public.leo_manual_orders set
-    status=p_status,payment_status='awaiting_quote',
+    status=v_target_status,payment_status='awaiting_quote',
     customer_message=coalesce(p_customer_message,''),
     supplier_cost_usd=p_supplier_cost_usd,
     supplier_reference=nullif(pg_catalog.btrim(coalesce(p_supplier_reference,'')),''),
     exception_reason=nullif(pg_catalog.btrim(coalesce(p_exception_reason,'')),''),
     internal_notes=coalesce(p_internal_notes,''),updated_at=v_now,
-    completed_at=case when p_status='completed' then coalesce(v_order.completed_at,v_now) else v_order.completed_at end,
-    wallet_charged_at=case when p_status='completed' then coalesce(v_order.wallet_charged_at,v_now) else v_order.wallet_charged_at end
+    completed_at=case when v_target_status='completed' then coalesce(v_order.completed_at,v_now) else v_order.completed_at end,
+    wallet_charged_at=case when v_target_status='completed' then coalesce(v_order.wallet_charged_at,v_now) else v_order.wallet_charged_at end
   where id=p_order_id returning * into v_order;
 
   select exists(select 1 from public.baro_manual_finance_entries
     where order_id=p_order_id and entry_type='sale_received' and status='posted') into v_sale_posted;
   select exists(select 1 from public.baro_manual_finance_entries
     where order_id=p_order_id and entry_type='supplier_cost' and status='posted') into v_cost_posted;
-  if p_status='completed' and (not v_sale_posted or not v_cost_posted or v_order.wallet_charged_at is null) then
+  if v_target_status='completed' and (not v_sale_posted or not v_cost_posted or v_order.wallet_charged_at is null) then
     raise exception using errcode='55000',message='تعذر تثبيت خصم المحفظة وقيود BARO معاً؛ تم التراجع عن العملية.';
   end if;
   select count(*)::integer into v_count from public.baro_manual_finance_entries
     where order_id=p_order_id and status='posted';
   insert into public.leo_manual_order_events(order_id,actor_id,event_type,details)
   values(p_order_id,p_admin_id,'admin_wallet_order_review',pg_catalog.jsonb_build_object(
-    'from',v_order.status,'to',p_status,'wallet_charge_mode','wallet_on_completion',
-    'wallet_charged',p_status='completed','sale_entry_posted',v_sale_posted,
+    'from',v_from_status,'to',v_target_status,'wallet_charge_mode','wallet_on_completion',
+    'wallet_charged',v_target_status='completed','sale_entry_posted',v_sale_posted,
     'supplier_cost_entry_posted',v_cost_posted,'finance_entry_count',v_count));
   insert into public.admin_audit_log(admin_id,action,entity_type,entity_id,details)
   values(p_admin_id,'baro_manual_wallet_order_review','leo_manual_order',p_order_id::text,
-    pg_catalog.jsonb_build_object('to',p_status,'wallet_charged',p_status='completed',
+    pg_catalog.jsonb_build_object('from',v_from_status,'to',v_target_status,'wallet_charged',v_target_status='completed',
       'sale_entry_posted',v_sale_posted,'supplier_cost_entry_posted',v_cost_posted));
   return pg_catalog.jsonb_build_object('order',to_jsonb(v_order),
-    'wallet_changed',p_status='completed','wallet_charge_replayed',false,
-    'finance_posted',p_status='completed','finance_entries_count',v_count,
+    'wallet_changed',v_target_status='completed','wallet_charge_replayed',false,
+    'finance_posted',v_target_status='completed','finance_entries_count',v_count,
     'sale_entry_posted',v_sale_posted,'supplier_cost_entry_posted',v_cost_posted);
 end;
 $function$;
