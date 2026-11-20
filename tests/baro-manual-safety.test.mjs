@@ -186,7 +186,7 @@ test("BARO customer catalogue keeps grouped sections and is not overwritten by t
   assert.match(customerCatalogue, /category==="freefire"&&group==="diamonds"/);
   assert.match(customerCatalogue, /" SYP"/);
   assert.match(customerCatalogue, /استقبال الطلبات مغلق حالياً/);
-  assert.match(customerCatalogue, /createElement\("article"\);card\.className="baro-catalog-product-card/);
+  assert.match(customerCatalogue, /createElement\("button"\);card\.type="button";card\.className="baro-catalog-product-card/);
   const app = read("../index.html");
   assert.match(app, /<div class="game-checkout"><h3>بيانات طلب الشحن اليدوي<\/h3>/);
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
@@ -267,7 +267,7 @@ test("BARO customer ID form stays visible while order submission remains gated",
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
   assert.match(ui, /if\(checkout\)checkout\.classList\.remove\("hidden"\);/);
   assert.match(ui, /if\(submitButton\)\{submitButton\.hidden=!canOrder;submitButton\.disabled=!canOrder;\}/);
-  assert.match(ui, /op\.disabled=false/);
+  assert.match(ui, /op\.textContent=.*معاينة فقط/);
   assert.match(ui, /استقبال الطلبات مغلق حالياً ولن يتم إرسال أي طلب/);
   assert.match(ui, /if\(!baroManualEnabled\)\{message\.textContent=/);
 });
@@ -400,7 +400,7 @@ test("BARO wallet debit occurs only inside completion transaction and is idempot
   assert.match(deferredWallet, /wallet_charge_replayed',true/);
   assert.match(deferredWallet, /رصيد العميل غير كافٍ لإكمال الشحن/);
   assert.match(deferredWallet, /baro-wallet-sale-/);
-  assert.match(deferredWallet, /round\\(v_product\\.sale_price_usd,2\\)/);
+  assert.match(deferredWallet, /v_amount:=case when v_currency='USD' then v_order\.customer_price_usd/);
   assert.match(deferredWallet, /baro_manual_order_id uuid[\\s\\S]*references public\\.leo_manual_orders/);
   assert.match(deferredWallet, /wallet_transactions\\(baro_manual_order_id\\)/);
 });
@@ -411,9 +411,11 @@ test("BARO deferred wallet workflow is isolated from legacy admin payment flow a
   assert.match(edge, /baro_manual_create_customer_order_on_completion/);
   assert.match(ui, /لن يُخصم أي مبلغ عند إرسال الطلب/);
   assert.match(ui, /تم تسجيل طلبك دون خصم من المحفظة/);
-  assert.match(ui, /خصم المحفظة مؤجل حتى اعتماد اكتمال الشحن/);
-  assert.match(ui, /wallet_charged_at/);
-  assert.match(ui, /تم الخصم من المحفظة بعد اكتمال الشحن/);
+  assert.match(ui, /لن يتم الخصم إلا بعد اكتمال الشحن/);
+  assert.match(ui, /wallet_charge_mode/);
+  assert.match(ui, /if\(nextStatus!=="completed"\)return/);
+  assert.match(ui, /✓ تم الشحن — مكتمل/);
+  assert.doesNotMatch(ui, /▶ جاري التنفيذ/);
 });
 
 
