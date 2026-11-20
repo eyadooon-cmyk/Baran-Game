@@ -72,7 +72,7 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "GET" && view === "my_orders") {
       const { data, error } = await admin.from("leo_manual_orders")
-        .select("id,product_code,player_id,product_name_snapshot,quantity,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,status,payment_status,payment_method,customer_message,created_at,updated_at,completed_at")
+        .select("id,product_code,player_id,product_name_snapshot,quantity,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,status,payment_status,payment_method,customer_message,created_at,updated_at,completed_at,wallet_charge_mode,wallet_charged_at")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
       if (error) return json({ error: "تعذر تحميل طلبات BARO." }, 500);
       const ids = (data ?? []).map((o: any) => o.id);
@@ -120,7 +120,7 @@ Deno.serve(async (req: Request) => {
           ? admin.from("leo_manual_products").select("product_code,product_name,category_id,group_id").order("category_id").order("group_id").order("product_name")
           : Promise.resolve({ data: [], error: null }));
       tasks.push(canOrders
-        ? admin.from("leo_manual_orders").select("id,user_id,product_code,player_id,product_name_snapshot,quantity,customer_note,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,displayed_exchange_rate_snapshot,payment_exchange_rate_snapshot,supplier_id_snapshot,supplier_cost_usd_snapshot,payment_status,payment_method,customer_message,supplier_cost_usd,supplier_reference,status,internal_notes,exception_reason,created_at,updated_at,completed_at")
+        ? admin.from("leo_manual_orders").select("id,user_id,product_code,player_id,product_name_snapshot,quantity,customer_note,customer_price_usd,customer_price_syp,displayed_price_usd_snapshot,displayed_price_syp_snapshot,displayed_price_captured_at,displayed_exchange_rate_snapshot,payment_exchange_rate_snapshot,supplier_id_snapshot,supplier_cost_usd_snapshot,payment_status,payment_method,customer_message,supplier_cost_usd,supplier_reference,status,internal_notes,exception_reason,created_at,updated_at,completed_at,wallet_charge_mode,wallet_charged_at")
           .order("created_at", { ascending: false }).limit(150)
         : Promise.resolve({ data: [], error: null }));
       tasks.push(canSettings
@@ -318,13 +318,13 @@ Deno.serve(async (req: Request) => {
         return json({ error: "تحقق من المنتج ومعرّف اللاعب والكمية وعملة المحفظة." }, 400);
       const idempotencyKey = typeof body.idempotency_key === "string" ? body.idempotency_key : "";
       if (!uuidPattern.test(idempotencyKey)) return json({ error: "تعذر التحقق من رقم محاولة الطلب. أعد المحاولة." }, 400);
-      const { data, error } = await admin.rpc("baro_manual_create_customer_order", {
+      const { data, error } = await admin.rpc("baro_manual_create_customer_order_on_completion", {
         p_user_id: user.id, p_product_code: code, p_player_id: player,
         p_quantity: qty, p_customer_note: note, p_idempotency_key: idempotencyKey,
         p_player_id_confirmed: true, p_wallet_currency: walletCurrency
       });
       if (error) return json({ error: error.message || "تعذر تسجيل طلب BARO." }, 400);
-      return json(data ?? { success: true });
+      return json({ ...(data ?? { success: true }), message: "تم تسجيل طلب BARO اليدوي دون خصم. سيتم الخصم من المحفظة فقط بعد اكتمال الشحن." });
     }
 
     if (body.action === "manual_toggle") {
@@ -367,7 +367,7 @@ Deno.serve(async (req: Request) => {
           || quote === undefined || (currency !== null && !["USD","SYP"].includes(String(currency)))
           || !["awaiting_quote","awaiting_payment","verified","failed"].includes(payment) || cost === undefined)
         return json({ error: "بيانات تحديث الطلب غير صحيحة." }, 400);
-      const { data, error } = await admin.rpc("baro_manual_order_admin_update_atomic", {
+      const { data, error } = await admin.rpc("baro_manual_order_admin_update_wallet_aware", {
         p_admin_id: user.id, p_order_id: id, p_status: status, p_quote_amount: quote,
         p_quote_currency: currency, p_payment_method: method, p_payment_status: payment,
         p_customer_message: customerMessage, p_supplier_cost_usd: cost,

@@ -1,6 +1,6 @@
 "use strict";
 function baroEndpoint(){return SUPABASE_URL+"/functions/v1/baran-baro-manual";}
-const BARO_STATUS={pending:"طلب جديد بانتظار المراجعة",awaiting_payment:"بانتظار الدفع",paid:"تم تأكيد الدفع",in_progress:"قيد التنفيذ اليدوي",completed:"مكتمل",failed:"تعذر التنفيذ",needs_review:"يحتاج مراجعة",cancelled:"ملغي"};
+const BARO_STATUS={pending:"طلب جديد — بانتظار مراجعة BARO",awaiting_payment:"بانتظار الدفع",paid:"تم تأكيد الدفع",in_progress:"قيد التنفيذ اليدوي",completed:"مكتمل — تم الشحن والخصم",failed:"تعذر التنفيذ",needs_review:"يحتاج مراجعة",cancelled:"ملغي"};
 const BARO_PAYMENT={awaiting_quote:"بانتظار عرض السعر",awaiting_payment:"بانتظار الدفع",verified:"تم تأكيد الدفع",failed:"تعذر تأكيد الدفع"};
 let baroCustomerProducts=[],baroAdminProducts=[],baroAdminOrders=[],baroCustomerWallet={balance_usd:0,balance_syp:0};
 let baroManualEnabled=false,baroAdminManualEnabled=false,baroAdminSettings={low_margin_percent:10};
@@ -270,11 +270,11 @@ function renderBaroCustomerOrders(rows){
   const id=document.createElement("div");id.className="small";id.textContent="رقم الطلب: "+o.id.slice(0,8);
   const meta=document.createElement("div");meta.className="small";meta.textContent="المعرّف: "+o.player_id+" | الكمية: "+Number(o.quantity||1).toLocaleString("en-US");
   const status=document.createElement("div");status.textContent=BARO_STATUS[o.status]||o.status;
-  const payment=document.createElement("div");payment.className="small";payment.textContent=BARO_PAYMENT[o.payment_status]||o.payment_status;
+  const payment=document.createElement("div");payment.className="small";payment.textContent=o.wallet_charge_mode==="wallet_on_completion"?"الدفع: من المحفظة بعد اكتمال الشحن":(BARO_PAYMENT[o.payment_status]||o.payment_status);
   const price=document.createElement("div");price.className="small";price.textContent="السعر: "+(o.customer_price_usd!==null?baroMoney(o.customer_price_usd,"USD"):o.customer_price_syp!==null?baroMoney(o.customer_price_syp,"SYP"):"—");
   card.append(h,id,meta,status,payment,price);
-  if(Array.isArray(o.events)&&o.events.length){const timeline=document.createElement("div");timeline.className="baro-order-timeline";timeline.style.cssText="margin-top:12px;padding:10px;border:1px solid #574263;border-radius:12px;background:#17121f";const heading=document.createElement("strong");heading.textContent="سجل مراحل الطلب";timeline.append(heading);o.events.forEach(ev=>{const row=document.createElement("div");row.className="baro-order-timeline-event";row.style.cssText="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid #ffffff16;font-size:11px";const label=document.createElement("span");const d=ev.details||{};if(ev.event_type==="customer_order_created")label.textContent="تم إنشاء الطلب";else if(ev.event_type==="customer_order_wallet_reserved")label.textContent="تم حجز المبلغ من المحفظة";else if(ev.event_type==="admin_order_review")label.textContent="تحديث الحالة: "+(BARO_STATUS[d.to]||d.to||"تمت مراجعة الطلب");else if(ev.event_type==="customer_wallet_debit_captured")label.textContent="تم تثبيت الخصم بعد نجاح الشحن";else label.textContent="تحديث على الطلب";const time=document.createElement("small");time.textContent=new Date(ev.created_at).toLocaleString("ar-SY");time.style.cssText="color:#bba8ca;white-space:nowrap;font-size:10px";row.append(label,time);timeline.append(row);});card.append(timeline);}
-  if(o.wallet_hold){const hold=document.createElement("div");hold.className="small";hold.textContent=o.wallet_hold.status==="reserved"?"المبلغ محجوز من المحفظة بانتظار تنفيذ الشحن":o.wallet_hold.status==="captured"?"تم تثبيت خصم المحفظة بعد نجاح الشحن":"تم رد المبلغ إلى محفظتك";card.append(hold);}
+  if(Array.isArray(o.events)&&o.events.length){const timeline=document.createElement("div");timeline.className="baro-order-timeline";timeline.style.cssText="margin-top:12px;padding:10px;border:1px solid #574263;border-radius:12px;background:#17121f";const heading=document.createElement("strong");heading.textContent="سجل مراحل الطلب";timeline.append(heading);o.events.forEach(ev=>{const row=document.createElement("div");row.className="baro-order-timeline-event";row.style.cssText="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid #ffffff16;font-size:11px";const label=document.createElement("span");const d=ev.details||{};if(ev.event_type==="customer_order_created")label.textContent="تم إنشاء الطلب";else if(ev.event_type==="customer_order_wallet_charge_deferred")label.textContent="تم تسجيل الطلب دون خصم؛ الخصم بعد اكتمال الشحن";else if(ev.event_type==="customer_order_wallet_reserved")label.textContent="تم حجز المبلغ من المحفظة";else if(ev.event_type==="admin_order_review")label.textContent="تحديث الحالة: "+(BARO_STATUS[d.to]||d.to||"تمت مراجعة الطلب");else if(ev.event_type==="customer_wallet_debit_captured")label.textContent="تم تثبيت الخصم بعد نجاح الشحن";else label.textContent="تحديث على الطلب";const time=document.createElement("small");time.textContent=new Date(ev.created_at).toLocaleString("ar-SY");time.style.cssText="color:#bba8ca;white-space:nowrap;font-size:10px";row.append(label,time);timeline.append(row);});card.append(timeline);}
+  if(o.wallet_charge_mode==="wallet_on_completion"){const charge=document.createElement("div");charge.className="small";charge.textContent=o.wallet_charged_at?"تم الخصم من المحفظة بعد اكتمال الشحن":"لم يتم الخصم بعد — سيتم الخصم فقط عند اكتمال الشحن بنجاح";card.append(charge);}else if(o.wallet_hold){const hold=document.createElement("div");hold.className="small";hold.textContent=o.wallet_hold.status==="reserved"?"المبلغ محجوز من المحفظة بانتظار تنفيذ الشحن":o.wallet_hold.status==="captured"?"تم تثبيت خصم المحفظة بعد نجاح الشحن":"تم رد المبلغ إلى محفظتك";card.append(hold);}
   if(o.payment_method){const m=document.createElement("div");m.className="small";m.textContent="طريقة الدفع: "+o.payment_method;card.append(m);}
   if(o.customer_message){const m=document.createElement("p");m.textContent=o.customer_message;card.append(m);}
   box.append(card);
@@ -297,9 +297,7 @@ async function submitBaroOrder(){
  const walletCurrency=baroEl("baroWalletCurrency")?.value==="USD"?"USD":"SYP";
  const amount=Number(walletCurrency==="USD"?p.sale_price_usd:p.sale_price_syp);
  if(!Number.isFinite(amount)||amount<=0){message.textContent="سعر هذه الباقة غير متاح بعملة المحفظة المختارة.";return;}
- const balance=Number(walletCurrency==="USD"?baroCustomerWallet.balance_usd:baroCustomerWallet.balance_syp);
- if(balance<amount){message.textContent="رصيدك غير كافٍ. اشحن محفظتك أولاً ثم أعد المحاولة.";return;}
- if(!confirm("مراجعة نهائية قبل الطلب:\nالباقة: "+p.product_name+"\nPlayer ID: "+player+"\nالسعر: "+(walletCurrency==="USD"?"$"+amount.toFixed(2):amount.toLocaleString("en-US")+" SYP")+"\n\nهل تؤكد أن هذه البيانات صحيحة؟ سيتم حجز المبلغ الآن، وإذا تعذر تنفيذ الشحن سيُرد تلقائياً إلى محفظتك."))return;
+ if(!confirm("مراجعة نهائية قبل الطلب:\nالباقة: "+p.product_name+"\nPlayer ID: "+player+"\nالسعر: "+(walletCurrency==="USD"?"$"+amount.toFixed(2):amount.toLocaleString("en-US")+" SYP")+"\n\nهل تؤكد أن هذه البيانات صحيحة؟ لن يُخصم أي مبلغ عند إرسال الطلب. سيتم الخصم من المحفظة فقط بعد اكتمال الشحن بنجاح."))return;
  const request={product_code:p.product_code,player_id:player,player_id_confirmed:true,quantity,customer_note:note,wallet_currency:walletCurrency};
  const fingerprint=await baroRequestFingerprint(request);
  if(!fingerprint){message.textContent="متصفحك لا يدعم حماية إعادة المحاولة. حدّث المتصفح قبل إرسال الطلب.";return;}
@@ -308,7 +306,7 @@ async function submitBaroOrder(){
  try{
   const result=await baroApi("POST",{action:"create_order",...request,idempotency_key:pending.idempotency_key});
   baroClearPendingSubmission();
-  const successMessage="تم تسجيل طلبك وحجز المبلغ من المحفظة. رقم الطلب: "+String(result.order_id||"").slice(0,8)+". سيُثبّت الخصم بعد نجاح الشحن ويُرد المبلغ إذا فشل التنفيذ.";
+  const successMessage="تم تسجيل طلبك دون خصم من المحفظة. رقم الطلب: "+String(result.order_id||"").slice(0,8)+". لن يتم الخصم إلا بعد تأكيد اكتمال الشحن بنجاح.";
   message.textContent=successMessage;
   baroEl("baroPlayerId").value="";if(baroEl("baroPlayerIdRepeat"))baroEl("baroPlayerIdRepeat").value="";baroEl("baroCustomerNote").value="";baroEl("baroPlayerIdConfirmed").checked=false;baroUpdateOrderSubmitState();
   try{await loadBaroCustomer();}catch{message.textContent=successMessage+" تعذر تحديث قائمة الطلبات؛ حدّث الصفحة لرؤية الطلب.";}
@@ -350,9 +348,10 @@ async function baroAdminQuickOrderStatus(order,nextStatus){
  if(nextStatus!=="in_progress"&&nextStatus!=="completed")return;
  if(nextStatus==="in_progress"&&!confirm("تأكيد بدء الشحن اليدوي لهذا الطلب؟ سيصل إشعار للزبون بأن الشحن قيد التنفيذ."))return;
  if(nextStatus==="completed"&&!confirm("هل تحققت بنفسك من وصول الشحن إلى حساب الزبون؟ بعد التأكيد سيصله إشعار الاكتمال."))return;
+ const deferredWallet=order.wallet_charge_mode==="wallet_on_completion";
  const quoteAmount=order.customer_price_usd!==null&&order.customer_price_usd!==undefined?Number(order.customer_price_usd):Number(order.customer_price_syp);
  const quoteCurrency=order.customer_price_usd!==null&&order.customer_price_usd!==undefined?"USD":"SYP";
- if(!Number.isFinite(quoteAmount)||quoteAmount<=0){baroAdminMessage("لا يمكن تحديث الحالة قبل تسجيل عرض السعر.");return;}
+ if(!Number.isFinite(quoteAmount)||quoteAmount<=0){baroAdminMessage("سعر الطلب المحفوظ غير صالح.");return;}
  let supplierCost=Number(order.supplier_cost_usd??order.supplier_cost_usd_snapshot??0);
  if(nextStatus==="completed"&&(!Number.isFinite(supplierCost)||supplierCost<=0)){
   const entered=prompt("أدخل تكلفة تنفيذ الشحن الفعلية بالدولار لتسجيلها في حسابات BARO:");
@@ -362,8 +361,8 @@ async function baroAdminQuickOrderStatus(order,nextStatus){
  }
  try{
   const updateResult=await baroApi("POST",{action:"order_admin_update",order_id:order.id,status:nextStatus,
-   quote_amount:quoteAmount,quote_currency:quoteCurrency,payment_method:order.payment_method||"شام كاش",
-   payment_status:"verified",customer_message:nextStatus==="in_progress"?inProgressMessage:completedMessage,
+   quote_amount:quoteAmount,quote_currency:quoteCurrency,payment_method:order.wallet_charge_mode==="wallet_on_completion"?order.payment_method:(order.payment_method||"شام كاش"),
+   payment_status:order.wallet_charge_mode==="wallet_on_completion"?"awaiting_quote":"verified",customer_message:nextStatus==="in_progress"?inProgressMessage:completedMessage,
    supplier_cost_usd:nextStatus==="completed"?supplierCost:(order.supplier_cost_usd??order.supplier_cost_usd_snapshot??null),
    supplier_reference:order.supplier_reference||"",
    exception_reason:nextStatus==="completed"?"تم التحقق يدوياً من وصول الشحن إلى حساب الزبون.":(order.exception_reason||""),
@@ -387,7 +386,8 @@ function renderBaroAdmin(){
   const id=document.createElement("div");id.className="small";id.textContent="رقم الطلب: "+o.id;
   const performer=document.createElement("div");performer.className="small";performer.textContent=o.last_actor_label?"آخر إجراء بواسطة: "+o.last_actor_label:"منفذ الشحن: يظهر بعد أول تحديث إداري مسجل";
   const status=document.createElement("select");
-  const nextStates={pending:["awaiting_payment","needs_review","failed","cancelled"],awaiting_payment:["paid","needs_review","failed","cancelled"],paid:["in_progress","needs_review","failed"],in_progress:["completed","needs_review","failed"],needs_review:["awaiting_payment","paid","in_progress","failed","cancelled"],failed:["needs_review"],completed:[],cancelled:[]};
+  const deferredWallet=o.wallet_charge_mode==="wallet_on_completion";
+  const nextStates=deferredWallet?{pending:["in_progress","needs_review","failed","cancelled"],in_progress:["completed","needs_review","failed"],needs_review:["in_progress","failed","cancelled"],failed:[],completed:[],cancelled:[]}:{pending:["awaiting_payment","needs_review","failed","cancelled"],awaiting_payment:["paid","needs_review","failed","cancelled"],paid:["in_progress","needs_review","failed"],in_progress:["completed","needs_review","failed"],needs_review:["awaiting_payment","paid","in_progress","failed","cancelled"],failed:["needs_review"],completed:[],cancelled:[]};
   [o.status,...(nextStates[o.status]||[])].forEach(v=>{const op=document.createElement("option");op.value=v;op.textContent=BARO_STATUS[v]||v;status.append(op);});status.value=o.status;
   const payment=document.createElement("select");Object.entries(BARO_PAYMENT).forEach(([v,label])=>{const op=document.createElement("option");op.value=v;op.textContent=label;payment.append(op);});payment.value=o.payment_status||"awaiting_quote";
   const quote=document.createElement("input");quote.type="number";quote.min="0.01";quote.step="0.01";quote.placeholder="السعر الذي سيدفعه الزبون";quote.value=o.customer_price_usd??o.customer_price_syp??"";
@@ -398,18 +398,18 @@ function renderBaroAdmin(){
   const reference=document.createElement("input");reference.placeholder="مرجع تنفيذ ليو";reference.value=o.supplier_reference||"";
   const exception=document.createElement("textarea");exception.rows=2;exception.placeholder="سبب الاستثناء عند عدم وجود مرجع";exception.value=o.exception_reason||"";
   const notes=document.createElement("textarea");notes.rows=2;notes.placeholder="ملاحظات داخلية";notes.value=o.internal_notes||"";
-  const grid=document.createElement("div");grid.className="ops-form";grid.append(status,payment,quote,currency,method,msg,cost,reference,exception,notes);
+  const grid=document.createElement("div");grid.className="ops-form";if(deferredWallet){const chargeInfo=document.createElement("div");chargeInfo.className="small";chargeInfo.textContent=o.wallet_charged_at?"تم خصم قيمة الطلب من المحفظة.":"خصم المحفظة مؤجل حتى اعتماد اكتمال الشحن. لا يوجد تحصيل مسبق.";grid.append(status,chargeInfo,msg,cost,reference,exception,notes);}else{grid.append(status,payment,quote,currency,method,msg,cost,reference,exception,notes);}
   const save=document.createElement("button");save.type="button";save.textContent="حفظ ومتابعة الطلب";
   save.onclick=async()=>{save.disabled=true;try{
    const amount=quote.value.trim()===""?null:Number(quote.value);
    const quoteCurrency=amount===null?null:currency.value;
    const pay=payment.value;
-   const updateResult=await baroApi("POST",{action:"order_admin_update",order_id:o.id,status:status.value,quote_amount:amount,quote_currency:quoteCurrency,payment_method:method.value,payment_status:pay,customer_message:msg.value.trim(),supplier_cost_usd:cost.value.trim()===""?null:Number(cost.value),supplier_reference:reference.value.trim(),exception_reason:exception.value.trim(),internal_notes:notes.value.trim()});
+   const updateResult=await baroApi("POST",{action:"order_admin_update",order_id:o.id,status:status.value,quote_amount:deferredWallet?Number(o.customer_price_usd??o.customer_price_syp):amount,quote_currency:deferredWallet?(o.customer_price_usd!==null?"USD":"SYP"):quoteCurrency,payment_method:deferredWallet?o.payment_method:method.value,payment_status:deferredWallet?"awaiting_quote":pay,customer_message:msg.value.trim(),supplier_cost_usd:cost.value.trim()===""?null:Number(cost.value),supplier_reference:reference.value.trim(),exception_reason:exception.value.trim(),internal_notes:notes.value.trim()});
    baroAdminMessage(updateResult.finance_posted?"تم حفظ الطلب وترحيل قيدي المقبوض وتكلفة المورد.":(updateResult.sale_entry_posted?"تم حفظ الطلب وترحيل المقبوض؛ تبقى تكلفة المورد حتى اكتمال التنفيذ.":"تم حفظ تحديث الطلب دون ترحيل قيد مالي جديد."));await loadBaroAdmin();
   }catch(e){baroAdminMessage(e.message);}finally{save.disabled=false;}};
   card.append(h,id,info,performer,grid,save);
   const quick=document.createElement("div");quick.className="baro-order-quick-actions";
-  if(o.status==="paid"){const start=document.createElement("button");start.type="button";start.textContent="▶ بدء الشحن اليدوي";start.onclick=()=>baroAdminQuickOrderStatus(o,"in_progress");quick.append(start);}
+  if(o.status==="paid"||(o.wallet_charge_mode==="wallet_on_completion"&&o.status==="pending")){const start=document.createElement("button");start.type="button";start.textContent="▶ بدء الشحن اليدوي";start.onclick=()=>baroAdminQuickOrderStatus(o,"in_progress");quick.append(start);}
   if(o.status==="in_progress"){const complete=document.createElement("button");complete.type="button";complete.className="secondary";complete.textContent="✓ تأكيد اكتمال الشحن";complete.onclick=()=>baroAdminQuickOrderStatus(o,"completed");quick.append(complete);}
   if(quick.childElementCount)card.append(quick);
   orders.append(card);
