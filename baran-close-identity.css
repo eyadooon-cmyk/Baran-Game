@@ -1,0 +1,68 @@
+/* BARAN GAME — compact signature close control: × above the official mark */
+:where(.drawer-close,.notification-close,.ai-assistant-close,button[aria-label*="إغلاق"]){
+  position:relative!important;
+  display:inline-flex!important;
+  flex:0 0 42px!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  width:42px!important;
+  min-width:42px!important;
+  max-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  margin:0!important;
+  padding:3px 0 2px!important;
+  overflow:hidden!important;
+  border:1px solid #8d69aa!important;
+  border-radius:12px!important;
+  background:linear-gradient(145deg,#382449 0%,#211629 58%,#15101c 100%)!important;
+  color:#f7edff!important;
+  box-shadow:inset 0 1px 0 #ffffff18,0 4px 13px #0006,0 0 12px #a875d01c!important;
+  font-size:0!important;
+  line-height:1!important;
+  text-shadow:none!important;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,filter .16s ease!important;
+}
+:where(.drawer-close,.notification-close,.ai-assistant-close,button[aria-label*="إغلاق"])::before{
+  content:"×";
+  display:block;
+  flex:0 0 22px;
+  height:22px;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  font-size:23px;
+  font-weight:500;
+  line-height:22px;
+  text-shadow:0 0 8px #d6b5f2aa;
+}
+:where(.drawer-close,.notification-close,.ai-assistant-close,button[aria-label*="إغلاق"])::after{
+  content:"";
+  display:block;
+  flex:0 0 12px;
+  width:12px;
+  height:12px;
+  margin-top:1px;
+  background-image:url("./baran-icon.svg");
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  filter:drop-shadow(0 0 4px #b783db88);
+}
+:where(.drawer-close,.notification-close,.ai-assistant-close,button[aria-label*="إغلاق"]):hover{
+  border-color:#d2b0ed!important;
+  box-shadow:inset 0 1px 0 #ffffff24,0 5px 16px #0008,0 0 16px #a875d044!important;
+  filter:brightness(1.12);
+}
+:where(.drawer-close,.notification-close,.ai-assistant-close,button[aria-label*="إغلاق"]):active{
+  transform:scale(.94);
+}
+:where(.drawer-close,.notification-close,.ai-assistant-close,button[aria-label*="إغلاق"]):focus-visible{
+  outline:2px solid #d7b4f1!important;
+  outline-offset:3px;
+}
+@media(prefers-reduced-motion:reduce){
+  :where(.drawer-close,.notification-close,.ai-assistant-close,button[aria-label*="إغلاق"]){transition:none!important}
+}
