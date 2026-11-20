@@ -8,9 +8,13 @@ alter table public.leo_manual_orders
   add constraint leo_manual_orders_wallet_charge_mode_check
   check (wallet_charge_mode in ('legacy_reserved','wallet_on_completion'));
 
+alter table public.wallet_transactions
+  add column if not exists baro_manual_order_id uuid
+  references public.leo_manual_orders(id) on delete restrict;
+
 create unique index if not exists wallet_transactions_baro_manual_order_charge_uidx
-  on public.wallet_transactions(order_id)
-  where order_id is not null and transaction_type='baro_manual_wallet_charge';
+  on public.wallet_transactions(baro_manual_order_id)
+  where baro_manual_order_id is not null and transaction_type='baro_manual_wallet_charge';
 
 create or replace function public.baro_manual_create_customer_order_on_completion(
   p_user_id uuid, p_product_code text, p_player_id text, p_quantity integer,
@@ -223,7 +227,7 @@ begin
       update public.wallets set balance_syp=balance_syp-v_amount where user_id=v_order.user_id;
       v_usd:=v_amount/v_rate;
     end if;
-    insert into public.wallet_transactions(user_id,amount,currency,transaction_type,description,order_id)
+    insert into public.wallet_transactions(user_id,amount,currency,transaction_type,description,baro_manual_order_id)
     values(v_order.user_id,-v_amount,v_currency,'baro_manual_wallet_charge',
       'خصم قيمة طلب BARO اليدوي #'||pg_catalog.left(v_order.id::text,8),v_order.id);
     insert into public.baro_manual_finance_entries(
