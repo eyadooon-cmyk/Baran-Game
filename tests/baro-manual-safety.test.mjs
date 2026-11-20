@@ -48,7 +48,8 @@ test("BARO product pricing and visibility are saved through one atomic RPC", () 
 test("Order status transitions prevent reopening terminal orders", () => {
   assert.match(hardening, /when 'completed' then false[\s\S]*when 'cancelled' then false/);
   assert.match(hardening, /انتقال حالة الطلب غير مسموح/);
-  assert.match(ui, /nextStates=/);
+  assert.doesNotMatch(ui, /nextStates=/);
+  assert.match(ui, /if\(nextStatus!=="completed"\)return/);
 });
 
 test("BARO remains isolated from wallet debit and automatic dispatch", () => {
@@ -185,7 +186,7 @@ test("BARO customer catalogue keeps grouped sections and is not overwritten by t
   assert.match(customerCatalogue, /category==="freefire"&&group==="diamonds"/);
   assert.match(customerCatalogue, /" SYP"/);
   assert.match(customerCatalogue, /استقبال الطلبات مغلق حالياً/);
-  assert.match(customerCatalogue, /createElement\("article"\);card\.className="baro-catalog-product-card/);
+  assert.match(customerCatalogue, /createElement\("button"\);card\.type="button";card\.className="baro-catalog-product-card/);
   const app = read("../index.html");
   assert.match(app, /<div class="game-checkout"><h3>بيانات طلب الشحن اليدوي<\/h3>/);
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
@@ -266,7 +267,7 @@ test("BARO customer ID form stays visible while order submission remains gated",
   assert.match(app, /id="baroSubmitOrder" class="full" type="button" hidden/);
   assert.match(ui, /if\(checkout\)checkout\.classList\.remove\("hidden"\);/);
   assert.match(ui, /if\(submitButton\)\{submitButton\.hidden=!canOrder;submitButton\.disabled=!canOrder;\}/);
-  assert.match(ui, /op\.disabled=false/);
+  assert.match(ui, /op\.textContent=.*معاينة فقط/);
   assert.match(ui, /استقبال الطلبات مغلق حالياً ولن يتم إرسال أي طلب/);
   assert.match(ui, /if\(!baroManualEnabled\)\{message\.textContent=/);
 });
@@ -312,13 +313,11 @@ test("BARO manual requests require explicit player ID confirmation in UI, Edge F
   assert.match(confirmationMigration, /player_id_confirmed/);
 });
 
-test("BARO status quick actions send customer-facing in-progress and completion notifications", () => {
+test("BARO manual top-up sends only the completion notification from the one-step admin action", () => {
   const notificationMigration = read("../supabase/migrations/20261117210000_baro_player_id_confirmation_and_status_notifications.sql");
-  assert.match(ui, /بدء الشحن اليدوي/);
-  assert.match(ui, /تأكيد اكتمال الشحن/);
-  assert.match(ui, /تم استلام طلبك، والشحن حالياً قيد التنفيذ/);
+  assert.match(ui, /if\(nextStatus!=="completed"\)return/);
   assert.match(ui, /تم شحن طلبك بنجاح/);
-  assert.match(notificationMigration, /تم استلام طلبك، والشحن حالياً قيد التنفيذ/);
+  assert.doesNotMatch(ui, /تم استلام طلبك، والشحن حالياً قيد التنفيذ/);
   assert.match(notificationMigration, /تم شحن طلبك بنجاح/);
   assert.match(notificationMigration, /baran_notifications/);
 });
@@ -401,9 +400,10 @@ test("BARO wallet debit occurs only inside completion transaction and is idempot
   assert.match(deferredWallet, /wallet_charge_replayed',true/);
   assert.match(deferredWallet, /رصيد العميل غير كافٍ لإكمال الشحن/);
   assert.match(deferredWallet, /baro-wallet-sale-/);
-  assert.match(deferredWallet, /round\\(v_product\\.sale_price_usd,2\\)/);
-  assert.match(deferredWallet, /baro_manual_order_id uuid[\\s\\S]*references public\\.leo_manual_orders/);
-  assert.match(deferredWallet, /wallet_transactions\\(baro_manual_order_id\\)/);
+  assert.match(deferredWallet, /v_amount:=case when v_currency='USD' then v_order\.customer_price_usd/);
+  assert.match(deferredWallet, /wallet_transactions_baro_manual_order_charge_uidx/);
+  assert.match(deferredWallet, /baro_manual_order_id/);
+  assert.match(deferredWallet, /transaction_type,description,baro_manual_order_id/);
 });
 test("BARO deferred wallet workflow is isolated from legacy admin payment flow and automatic fulfilment", () => {
   assert.match(deferredWallet, /if v_order\.wallet_charge_mode is distinct from 'wallet_on_completion' then/);
@@ -412,7 +412,41 @@ test("BARO deferred wallet workflow is isolated from legacy admin payment flow a
   assert.match(edge, /baro_manual_create_customer_order_on_completion/);
   assert.match(ui, /لن يُخصم أي مبلغ عند إرسال الطلب/);
   assert.match(ui, /تم تسجيل طلبك دون خصم من المحفظة/);
-  assert.match(ui, /خصم المحفظة مؤجل حتى اعتماد اكتمال الشحن/);
-  assert.match(ui, /wallet_charged_at/);
-  assert.match(ui, /تم الخصم من المحفظة بعد اكتمال الشحن/);
+  assert.match(ui, /لن يتم الخصم إلا بعد اكتمال الشحن/);
+  assert.match(ui, /wallet_charge_mode/);
+  assert.match(ui, /if\(nextStatus!=="completed"\)return/);
+  assert.match(ui, /✓ تم الشحن — مكتمل/);
+  assert.doesNotMatch(ui, /▶ جاري التنفيذ/);
+});
+
+
+test("BARO admin order cards expose notification entity ids for direct navigation", () => {
+  const source = read("../baro.js");
+  assert.match(source, /card\.dataset\.notificationEntityId\s*=\s*String\(o\.id\)/);
+});
+
+test("BARO admin panel waits for its data before resolving navigation", () => {
+  const source = read("../index.html");
+  assert.match(source, /return typeof loadBaroAdmin==="function"\?Promise\.resolve\(loadBaroAdmin\(\)\):Promise\.resolve\(\)/);
+});
+
+test("Admin BARO notifications open the BARO panel and target the matching order", () => {
+  const source = read("../community.js");
+  assert.match(source, /if\(isAdmin&&entityType==="leo_manual_order"\)/);
+  assert.match(source, /document\.querySelector\('\[data-notification-entity-id=/);
+  assert.match(source, /await showAdminPanel\("baro"\)/);
+});
+
+
+test("BARO manual orders show a copyable player ID and a single completion action", () => {
+  const source = read("../baro.js");
+  assert.match(source, /PLAYER ID المطلوب الشحن إليه/);
+  assert.match(source, /copy\.textContent="نسخ ID"/);
+  assert.match(source, /baroCopyPlayerId\(o\.player_id,copy\)/);
+  assert.match(source, /complete\.textContent="✓ تم الشحن — مكتمل"/);
+  assert.match(source, /\["pending","in_progress"\]\.includes\(o\.status\)/);
+  assert.match(source, /if\(nextStatus!=="completed"\)return/);
+  assert.match(deferredWallet, /v_order\.status='pending' and v_target_status not in \('pending','in_progress','completed'/);
+  assert.doesNotMatch(source, /start\.textContent="▶ جاري التنفيذ"/);
+  assert.doesNotMatch(source, /تعديل التفاصيل الإضافية \(اختياري\)/);
 });

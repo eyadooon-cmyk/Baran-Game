@@ -184,7 +184,7 @@ begin
     end if;
     raise exception using errcode='55000',message='الطلب المكتمل لا يمكن تغيير حالته.';
   end if;
-  if (v_order.status='pending' and v_target_status not in ('pending','in_progress','failed','needs_review','cancelled'))
+  if (v_order.status='pending' and v_target_status not in ('pending','in_progress','completed','failed','needs_review','cancelled'))
      or (v_order.status='in_progress' and v_target_status not in ('in_progress','completed','failed','needs_review'))
      or (v_order.status='needs_review' and v_target_status not in ('needs_review','in_progress','failed','cancelled'))
      or (v_order.status in ('failed','cancelled') and v_target_status<>v_order.status) then
