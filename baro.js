@@ -115,7 +115,7 @@ function renderBaroCustomerCatalog(products){
  const introMark=document.createElement("span");introMark.className="baro-catalog-intro-mark";introMark.textContent="✦";
  const introCopy=document.createElement("div");
  const introTitle=document.createElement("strong");introTitle.textContent="اكتشف منتجات BARO";
- const introText=document.createElement("p");introText.textContent="تصفّح منتجات BARO وشاهد أسعار البيع المعتمدة بالدولار والليرة. استقبال الطلبات اليدوية مغلق حالياً، لذلك لا يمكن إرسال طلب أو خصم أي رصيد."
+ const introText=document.createElement("p");introText.textContent=baroManualEnabled?"اختر باقة Free Fire متاحة، ثم أدخل ID اللاعب وأكّده قبل إرسال الطلب. لا يُخصم أي مبلغ إلا بعد اكتمال الشحن بنجاح.":"تصفّح منتجات BARO وشاهد أسعار البيع المعتمدة بالدولار والليرة. استقبال الطلبات اليدوية مغلق حالياً."
  introCopy.append(introTitle,introText);intro.append(introMark,introCopy);box.append(intro);
  if(!products.length){
   const empty=document.createElement("div");empty.className="baro-catalog-empty";
@@ -167,7 +167,11 @@ function renderBaroCustomerCatalog(products){
    groupHead.append(groupIcon,groupCopy,groupCount);groupSection.append(groupHead);
    const grid=document.createElement("div");grid.className="baro-catalog-product-grid";
    items.forEach((p,productIndex)=>{
-    const card=document.createElement("article");card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;
+    const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;
+    const productAvailable=baroManualEnabled&&p.purchase_enabled===true;
+    card.disabled=!productAvailable;
+    card.setAttribute("aria-label",(productAvailable?"طلب ":"معاينة ")+productName);
+    if(productAvailable)card.addEventListener("click",()=>baroOpenProductCheckout(p));
     const cardTop=document.createElement("div");cardTop.className="baro-catalog-product-card-top";
     const art=document.createElement("div");art.className="baro-catalog-product-art";
     const artIcon=document.createElement("span");artIcon.className="baro-catalog-product-art-icon";
