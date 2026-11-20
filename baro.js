@@ -189,7 +189,7 @@ function renderBaroCustomerCatalog(products){
     const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=productName;
     const price=document.createElement("strong");price.className="baro-catalog-product-price";
     const usd=Number(p.sale_price_usd),syp=Number(p.sale_price_syp);
-    price.textContent=(Number.isFinite(usd)&&usd>0?"$"+usd.toFixed(2):"—")+" · "+(Number.isFinite(syp)&&syp>0?syp.toLocaleString("en-US")+" SYP":"—");
+    price.textContent=(Number.isFinite(usd)&&usd>0?"$"+usd.toFixed(2):"USD: غير محدد")+" · "+(Number.isFinite(syp)&&syp>0?syp.toLocaleString("en-US")+" SYP":"SYP: غير محدد");
     price.style.cssText="display:block;margin:10px 0 4px;color:#e4c5ff;font-size:1.05rem;font-weight:900;";
     const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
     const status=document.createElement("span");status.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"استقبال الطلبات مغلق حالياً";
