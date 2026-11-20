@@ -770,6 +770,61 @@ Deno.serve(async (req: Request) => {
         return json({ success: true, period_days: 7, stats, recent: rows.slice(0, 12) });
       }
 
+      if (body.action === "notification_customer_search") {
+        const query = typeof body.search_query === "string" ? body.search_query.trim() : "";
+        if (query.length < 3 || query.length > 120) return json({ error: "اكتب 3 أحرف أو أرقام على الأقل للبحث." }, 400);
+        const safeQuery = query.replace(/[%,().]/g, " ").replace(/\s+/g, " ").trim();
+        if (safeQuery.length < 3) return json({ error: "عبارة البحث غير صالحة." }, 400);
+        const { data: profiles, error: profileError } = await admin.from("profiles")
+          .select("id,full_name,phone")
+          .or("full_name.ilike.%" + safeQuery + "%,phone.ilike.%" + safeQuery + "%")
+          .order("created_at", { ascending: false }).limit(10);
+        if (profileError) {
+          console.error("baran-admin: notification customer search failed", profileError.message);
+          return json({ error: "تعذر البحث عن حسابات الزبائن." }, 500);
+        }
+        const { data: adminRows, error: adminRowsError } = await admin.from("admin_users").select("user_id");
+        if (adminRowsError) return json({ error: "تعذر التحقق من حسابات الإدارة." }, 500);
+        const adminIds = new Set((adminRows ?? []).map((row) => row.user_id));
+        const customers = (profiles ?? []).filter((profile) => !adminIds.has(profile.id))
+          .map((profile) => ({ id: profile.id, full_name: profile.full_name ?? null, phone: profile.phone ?? null }));
+        return json({ success: true, customers });
+      }
+
+      if (body.action === "send_targeted_notification") {
+        const recipientId = typeof body.recipient_id === "string" ? body.recipient_id.trim() : "";
+        const title = typeof body.notification_title === "string" ? body.notification_title.trim() : "";
+        const message = typeof body.notification_body === "string" ? body.notification_body.trim() : "";
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(recipientId)) {
+          return json({ error: "حساب المستلم غير صالح." }, 400);
+        }
+        if (title.length < 3 || title.length > 100 || message.length < 5 || message.length > 500) {
+          return json({ error: "عنوان الإشعار من 3 إلى 100 حرف، ونصه من 5 إلى 500 حرف." }, 400);
+        }
+        const { data: recipient, error: recipientError } = await admin.from("profiles")
+          .select("id,full_name").eq("id", recipientId).maybeSingle();
+        if (recipientError) return json({ error: "تعذر التحقق من حساب المستلم." }, 500);
+        if (!recipient) return json({ error: "لم يتم العثور على حساب المستلم." }, 404);
+        const { data: recipientAdmin, error: recipientAdminError } = await admin.from("admin_users")
+          .select("user_id").eq("user_id", recipientId).maybeSingle();
+        if (recipientAdminError) return json({ error: "تعذر التحقق من صلاحيات المستلم." }, 500);
+        if (recipientAdmin) return json({ error: "لا يمكن إرسال إشعار العملاء إلى حساب إداري." }, 400);
+        const { error: insertError } = await admin.from("baran_notifications").insert({
+          recipient_id: recipientId, audience: "customer", kind: "announcement",
+          title, body: message, entity_type: null, entity_id: null,
+        });
+        if (insertError) {
+          console.error("baran-admin: targeted notification insert failed", insertError.message);
+          return json({ error: "تعذر تسجيل الإشعار للمستلم." }, 500);
+        }
+        await admin.from("admin_audit_log").insert({
+          admin_id: user.id, action: "send_targeted_notification",
+          entity_type: "baran_notifications",
+          details: { title, recipient_id: recipientId },
+        });
+        return json({ success: true, sent_to: 1, recipient_id: recipientId });
+      }
+
       if (body.action === "broadcast_announcement") {
         const title = typeof body.notification_title === "string" ? body.notification_title.trim() : "";
         const message = typeof body.notification_body === "string" ? body.notification_body.trim() : "";
