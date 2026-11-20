@@ -2698,6 +2698,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
             <button type="button" class="admin-hub-card" data-admin-search="المستخدمين العملاء الزبائن الحسابات محافظ المستخدم users" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>ملفات العملاء</strong><small>اعرض حسابات الزبائن ومعلومات محافظهم ضمن صلاحياتك.</small><span class="admin-hub-open">إدارة العملاء <b>←</b></span></button>
             <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="عرض المستخدمين دليل المستخدمين قائمة العملاء البحث عن مستخدم user directory" onclick="showAdminPanel('user-directory')"><span class="admin-hub-icon">🗂️</span><strong>عرض المستخدمين</strong><small>قائمة مستقلة لكل الحسابات مع بحث سريع وفتح الملف الشامل مباشرة.</small><span class="admin-hub-open">فتح دليل المستخدمين <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="تجربة العملاء تحليلات شرائح العملاء الولاء نشاط المستخدمين customer experience intelligence" onclick="showAdminPanel('customer-experience')"><span class="admin-hub-icon">✦</span><strong>مركز تجربة العملاء</strong><small>إحصائيات النشاط والولاء والشرائح والأمان — منفصل عن إدارة الحسابات.</small><span class="admin-hub-open">تحليل تجربة العملاء <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="الإشعارات إرسال تنبيهات رسائل للعملاء مركز الإشعارات" onclick="showAdminPanel('notifications-center')"><span class="admin-hub-icon">🔔</span><strong>مركز الإشعارات</strong><small>أرسل تنبيهاً لزبون محدد أو لفئة من العملاء أو للجميع.</small><span class="admin-hub-open">إدارة الإشعارات <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="الدعم الرسائل التذاكر الردود الآلية مساعد الزبائن support" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>مركز خدمة العملاء</strong><small>تابع الرسائل والتذاكر والردود الآلية، واعرف ما ينتظر تدخلك.</small><span class="admin-hub-open">فتح مركز الدعم <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="استعادة الحساب كلمة المرور recovery" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>راجع طلبات الاستعادة وتحقق من الملكية قبل أي إجراء.</small><span class="admin-hub-open">مراجعة الاستعادة <b>←</b></span></button>
           </div></section>
@@ -2822,29 +2823,27 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 <div class="admin-workgroup-label"><span>04</span><div><strong>الإجراءات الإدارية الآمنة</strong><small>راجع تفاصيل المهمة وتأثيرها قبل اعتمادها</small></div></div>
 <section class="deposit-card overview-panel safe-panel" aria-label="تنفيذ المهام الإدارية الآمنة"><h2>🛠️ تنفيذ المهام الإدارية الآمنة</h2><p class="small">اكتب المهمة، راجع تفاصيلها وتأثيرها، ولا يتم الحفظ إلا بعد موافقتك.</p><div id="baranSafeActionsHost"></div></section>
 <div class="overview-section-heading"><span>05</span><div><h3>التواصل مع الزبائن</h3><p>إعلانات وتحديثات الخدمة</p></div></div>
-<div class="admin-workgroup-label"><span>05</span><div><strong>التواصل مع العملاء</strong><small>إعلانات المتجر ورسائل الحالة العامة</small></div></div>
-<section class="deposit-card overview-panel announcement-panel" aria-label="إرسال إعلان عام للزبائن">
-        <h2>📢 إرسال إعلان لجميع الزبائن</h2>
-        <p class="small">سيصل الإعلان كإشعار داخل المتجر، وكإشعار هاتف لكل زبون فعّل الإشعارات. استخدمه لتحديثات مثل توقف الخدمة أو عودتها.</p>
-        <label for="baranAnnouncementAudience">الفئة المستهدفة</label>
-        <select id="baranAnnouncementAudience">
-          <option value="all">كل الزبائن</option>
-          <option value="pubg">زبائن PUBG Mobile (سبق لهم الشراء)</option>
-          <option value="freefire">زبائن Free Fire (سبق لهم الشراء)</option>
-          <option value="jawaker">زبائن جواكر (سبق لهم الشراء)</option>
-          <option value="ai">زبائن خدمات الذكاء الاصطناعي</option>
-          <option value="vpn">زبائن اشتراكات VPN</option>
-          <option value="gift_card">زبائن بطاقات الهدايا</option>
-          <option value="app">زبائن التطبيقات المدفوعة</option>
-        </select>
-        <label for="baranAnnouncementTitle">عنوان الإعلان</label>
-        <input id="baranAnnouncementTitle" maxlength="100" placeholder="مثلاً: عودة الخدمة للعمل">
-        <label for="baranAnnouncementBody">نص الإعلان</label>
-        <textarea id="baranAnnouncementBody" rows="3" maxlength="500" placeholder="اكتب تفاصيل التحديث للزبائن..."></textarea>
-        <button id="baranAnnouncementSend" class="full" type="button" onclick="sendBaranAnnouncement()">إرسال الإعلان للزبائن</button>
-        <div id="baranAnnouncementStatus" class="small" role="status" aria-live="polite"></div>
-      </section>
+
 </div>
+
+      <div class="admin-subpanel hidden" data-admin-panel="notifications-center">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>🔔 مركز الإشعارات</h2></div>
+        <section class="deposit-card" style="display:block!important;margin:12px 0;padding:16px;border:1px solid #76518f;border-radius:16px;background:linear-gradient(150deg,#21172d,#130f19)">
+          <h3>إرسال إشعار لزبون محدد</h3><p class="small">ابحث بالاسم أو رقم الهاتف، اختر الحساب الصحيح، ثم اكتب عنوان الإشعار ونصه. لن يُرسل شيء قبل التأكيد.</p>
+          <label for="baranNotifyCustomerSearch">البحث عن الزبون</label><div style="display:flex;gap:8px;align-items:stretch"><input id="baranNotifyCustomerSearch" type="search" maxlength="120" placeholder="الاسم أو رقم الهاتف" style="flex:1;min-width:0"><button type="button" class="secondary" id="baranNotifySearchButton" onclick="searchBaranNotificationCustomer()">بحث</button></div>
+          <div id="baranNotifySearchResults" class="ops-list" aria-live="polite">ابحث عن حساب لاختياره.</div><div id="baranNotifySelected" class="small" role="status">لم يتم اختيار زبون بعد.</div>
+          <label for="baranNotifyTitle">عنوان الإشعار</label><input id="baranNotifyTitle" maxlength="100" placeholder="مثلاً: تحديث مهم في المتجر">
+          <label for="baranNotifyBody">نص الإشعار</label><textarea id="baranNotifyBody" rows="3" maxlength="500" placeholder="اكتب الرسالة التي ستظهر للزبون..."></textarea>
+          <button type="button" class="full" id="baranNotifySendButton" onclick="sendBaranTargetedNotification()">إرسال الإشعار للزبون المحدد</button><div id="baranNotifyStatus" class="small" role="status" aria-live="polite"></div>
+        </section>
+        <section class="deposit-card" style="display:block!important;margin:12px 0;padding:16px;border:1px solid #59436b;border-radius:16px;background:#17121f">
+          <h3>📢 إرسال إشعار جماعي</h3><p class="small">الإرسال الجماعي حسب الفئة أو لجميع الزبائن.</p>
+          <label for="baranAnnouncementAudience">الفئة المستهدفة</label><select id="baranAnnouncementAudience"><option value="all">كل الزبائن</option><option value="pubg">زبائن PUBG Mobile</option><option value="freefire">زبائن Free Fire</option><option value="jawaker">زبائن جواكر</option><option value="ai">زبائن خدمات الذكاء الاصطناعي</option><option value="vpn">زبائن VPN</option><option value="gift_card">زبائن بطاقات الهدايا</option><option value="app">زبائن التطبيقات المدفوعة</option></select>
+          <label for="baranAnnouncementTitle">عنوان الإشعار</label><input id="baranAnnouncementTitle" maxlength="100" placeholder="مثلاً: عودة الخدمة للعمل">
+          <label for="baranAnnouncementBody">نص الإشعار</label><textarea id="baranAnnouncementBody" rows="3" maxlength="500" placeholder="اكتب تفاصيل التحديث للزبائن..."></textarea>
+          <button id="baranAnnouncementSend" class="full" type="button" onclick="sendBaranAnnouncement()">إرسال الإشعار الجماعي</button><div id="baranAnnouncementStatus" class="small" role="status" aria-live="polite"></div>
+        </section>
+      </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="financial-support">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>التذاكر المالية</h2></div>
@@ -5145,6 +5144,34 @@ async function loadWallet(){
 }
 
 
+
+let baranNotificationSelectedCustomer=null;
+async function searchBaranNotificationCustomer(){
+  const input=document.getElementById("baranNotifyCustomerSearch"),box=document.getElementById("baranNotifySearchResults"),button=document.getElementById("baranNotifySearchButton");
+  const q=(input?.value||"").trim();if(q.length<3){if(box)box.textContent="اكتب 3 أحرف أو أرقام على الأقل.";return;}
+  if(button)button.disabled=true;if(box)box.textContent="جاري البحث...";
+  try{
+    const result=await callAdminApi("POST",{action:"notification_customer_search",search_query:q});if(!box)return;box.replaceChildren();
+    if(!Array.isArray(result.customers)||!result.customers.length){box.textContent="ما لقينا حساباً مطابقاً.";return;}
+    result.customers.forEach(customer=>{
+      const item=document.createElement("button");item.type="button";item.className="store-search-result";
+      const info=document.createElement("span"),name=document.createElement("strong"),meta=document.createElement("small");
+      name.textContent=customer.full_name||"زبون بدون اسم";meta.textContent=(customer.phone||"بدون رقم هاتف")+" · "+String(customer.id).slice(0,8);info.append(name,meta);item.append(info);
+      item.addEventListener("click",()=>{baranNotificationSelectedCustomer=customer;const selected=document.getElementById("baranNotifySelected");if(selected)selected.textContent="المستلم المحدد: "+(customer.full_name||"زبون بدون اسم")+" — "+(customer.phone||"بدون رقم هاتف");box.replaceChildren(item);item.disabled=true;});
+      box.appendChild(item);
+    });
+  }catch(error){if(box)box.textContent="تعذر البحث: "+error.message;}finally{if(button)button.disabled=false;}
+}
+async function sendBaranTargetedNotification(){
+  const title=document.getElementById("baranNotifyTitle"),body=document.getElementById("baranNotifyBody"),button=document.getElementById("baranNotifySendButton"),status=document.getElementById("baranNotifyStatus");
+  const notificationTitle=title?.value.trim()||"",notificationBody=body?.value.trim()||"";
+  if(!baranNotificationSelectedCustomer){if(status)status.textContent="اختر الزبون أولاً.";return;}
+  if(notificationTitle.length<3||notificationBody.length<5){if(status)status.textContent="العنوان 3 أحرف على الأقل والرسالة 5 أحرف على الأقل.";return;}
+  if(!confirm("تأكيد إرسال الإشعار إلى "+(baranNotificationSelectedCustomer.full_name||"الزبون المحدد")+" فقط؟"))return;
+  if(button)button.disabled=true;if(status)status.textContent="جاري إرسال الإشعار...";
+  try{const result=await callAdminApi("POST",{action:"send_targeted_notification",recipient_id:baranNotificationSelectedCustomer.id,notification_title:notificationTitle,notification_body:notificationBody});if(status)status.textContent="تم تسجيل الإشعار داخل المتجر للحساب المحدد. عدد المستلمين: "+Number(result.sent_to||0)+". وصول الهاتف يعتمد على تفعيل Push.";title.value="";body.value="";}
+  catch(error){if(status)status.textContent="تعذر الإرسال: "+error.message;}finally{if(button)button.disabled=false;}
+}
 
 async function sendBaranAnnouncement(){
   const title=document.getElementById("baranAnnouncementTitle");
