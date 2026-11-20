@@ -372,9 +372,11 @@ async function baroAdminQuickOrderStatus(order,nextStatus){
  const inProgressMessage="تم استلام طلبك، والشحن حالياً قيد التنفيذ. سنرسل لك إشعاراً فور اكتمال العملية.";
  const completedMessage="تم شحن طلبك بنجاح! يرجى التحقق من وصول الرصيد إلى حسابك. شكراً لثقتك بـ BARAN GAME.";
  if(nextStatus!=="in_progress"&&nextStatus!=="completed")return;
- if(nextStatus==="in_progress"&&!confirm("تأكيد بدء الشحن اليدوي لهذا الطلب؟ سيصل إشعار للزبون بأن الشحن قيد التنفيذ."))return;
- if(nextStatus==="completed"&&!confirm("هل تحققت بنفسك من وصول الشحن إلى حساب الزبون؟ بعد التأكيد سيصله إشعار الاكتمال."))return;
  const deferredWallet=order.wallet_charge_mode==="wallet_on_completion";
+ if(nextStatus==="completed"){
+  const chargeLabel=deferredWallet?" وسيتم خصم قيمة الطلب من محفظة الزبون الآن.":"";
+  if(!confirm("هل تحققت بنفسك من وصول الشحن إلى حساب الزبون؟"+chargeLabel+" سيصله إشعار الاكتمال."))return;
+ }
  const quoteAmount=order.customer_price_usd!==null&&order.customer_price_usd!==undefined?Number(order.customer_price_usd):Number(order.customer_price_syp);
  const quoteCurrency=order.customer_price_usd!==null&&order.customer_price_usd!==undefined?"USD":"SYP";
  if(!Number.isFinite(quoteAmount)||quoteAmount<=0){baroAdminMessage("سعر الطلب المحفوظ غير صالح.");return;}
@@ -434,10 +436,14 @@ function renderBaroAdmin(){
    baroAdminMessage(updateResult.finance_posted?"تم حفظ الطلب وترحيل قيدي المقبوض وتكلفة المورد.":(updateResult.sale_entry_posted?"تم حفظ الطلب وترحيل المقبوض؛ تبقى تكلفة المورد حتى اكتمال التنفيذ.":"تم حفظ تحديث الطلب دون ترحيل قيد مالي جديد."));await loadBaroAdmin();
   }catch(e){baroAdminMessage(e.message);}finally{save.disabled=false;}};
   card.append(h,id,info,performer,grid,save);
-  const quick=document.createElement("div");quick.className="baro-order-quick-actions";
-  if(o.status==="paid"||(o.wallet_charge_mode==="wallet_on_completion"&&o.status==="pending")){const start=document.createElement("button");start.type="button";start.textContent="▶ بدء الشحن اليدوي";start.onclick=()=>baroAdminQuickOrderStatus(o,"in_progress");quick.append(start);}
-  if(o.status==="in_progress"){const complete=document.createElement("button");complete.type="button";complete.className="secondary";complete.textContent="✓ تأكيد اكتمال الشحن";complete.onclick=()=>baroAdminQuickOrderStatus(o,"completed");quick.append(complete);}
+  if(o.status==="paid"||(o.wallet_charge_mode==="wallet_on_completion"&&o.status==="pending")){const start=document.createElement("button");start.type="button";start.textContent="▶ جاري التنفيذ";start.onclick=()=>baroAdminQuickOrderStatus(o,"in_progress");quick.append(start);}
+  if(o.status==="in_progress"){const complete=document.createElement("button");complete.type="button";complete.className="secondary";complete.textContent="✓ تم الاكتمال";complete.onclick=()=>baroAdminQuickOrderStatus(o,"completed");quick.append(complete);}
   if(quick.childElementCount)card.append(quick);
+   if(deferredWallet){
+    const advanced=document.createElement("details");advanced.className="baro-order-advanced";
+    const summary=document.createElement("summary");summary.textContent="تعديل التفاصيل الإضافية (اختياري)";
+    advanced.append(summary,grid,save);card.append(h,id,info,performer,advanced);
+   }else card.append(h,id,info,performer,grid,save);
   orders.append(card);
  });
 }
