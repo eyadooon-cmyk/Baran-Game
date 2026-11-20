@@ -312,13 +312,11 @@ test("BARO manual requests require explicit player ID confirmation in UI, Edge F
   assert.match(confirmationMigration, /player_id_confirmed/);
 });
 
-test("BARO status quick actions send customer-facing in-progress and completion notifications", () => {
+test("BARO manual top-up sends only the completion notification from the one-step admin action", () => {
   const notificationMigration = read("../supabase/migrations/20261117210000_baro_player_id_confirmation_and_status_notifications.sql");
-  assert.match(ui, /بدء الشحن اليدوي/);
-  assert.match(ui, /تأكيد اكتمال الشحن/);
-  assert.match(ui, /تم استلام طلبك، والشحن حالياً قيد التنفيذ/);
+  assert.match(ui, /if\(nextStatus!=="completed"\)return/);
   assert.match(ui, /تم شحن طلبك بنجاح/);
-  assert.match(notificationMigration, /تم استلام طلبك، والشحن حالياً قيد التنفيذ/);
+  assert.doesNotMatch(ui, /تم استلام طلبك، والشحن حالياً قيد التنفيذ/);
   assert.match(notificationMigration, /تم شحن طلبك بنجاح/);
   assert.match(notificationMigration, /baran_notifications/);
 });
