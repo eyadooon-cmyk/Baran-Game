@@ -401,8 +401,9 @@ test("BARO wallet debit occurs only inside completion transaction and is idempot
   assert.match(deferredWallet, /رصيد العميل غير كافٍ لإكمال الشحن/);
   assert.match(deferredWallet, /baro-wallet-sale-/);
   assert.match(deferredWallet, /v_amount:=case when v_currency='USD' then v_order\.customer_price_usd/);
-  assert.match(deferredWallet, /baro_manual_order_id uuid[\\s\\S]*references public\\.leo_manual_orders/);
-  assert.match(deferredWallet, /wallet_transactions\\(baro_manual_order_id\\)/);
+  assert.match(deferredWallet, /wallet_transactions_baro_manual_order_charge_uidx/);
+  assert.match(deferredWallet, /baro_manual_order_id/);
+  assert.match(deferredWallet, /transaction_type,description,baro_manual_order_id/);
 });
 test("BARO deferred wallet workflow is isolated from legacy admin payment flow and automatic fulfilment", () => {
   assert.match(deferredWallet, /if v_order\.wallet_charge_mode is distinct from 'wallet_on_completion' then/);
