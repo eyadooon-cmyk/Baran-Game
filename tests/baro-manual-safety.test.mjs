@@ -435,7 +435,8 @@ test("Admin BARO notifications open the BARO panel and target the matching order
   const source = read("../community.js");
   assert.match(source, /if\(isAdmin&&entityType==="leo_manual_order"\)/);
   assert.match(source, /document\.querySelector\('\[data-notification-entity-id=/);
-  assert.match(source, /await showAdminPanel\("baro"\)/);
+  assert.match(source, /await showAdminPanel\("baro-orders"\)/);
+  assert.match(source, /ordersList\.querySelector\(/);
 });
 
 
@@ -450,4 +451,15 @@ test("BARO manual orders show a copyable player ID and a single completion actio
   assert.match(deferredWallet, /v_order\.status='pending' and v_target_status not in \('pending','in_progress','completed'/);
   assert.doesNotMatch(source, /start\.textContent="▶ جاري التنفيذ"/);
   assert.doesNotMatch(source, /تعديل التفاصيل الإضافية \(اختياري\)/);
+});
+
+
+test("BARO catalogue and manual orders are separate admin workspaces", () => {
+  const app = read("../index.html");
+  const catalogue = app.split('data-admin-panel="baro"')[1]?.split('data-admin-panel="baro-orders"')[0] ?? "";
+  const orders = app.split('data-admin-panel="baro-orders"')[1]?.split('data-admin-panel="baro-finance"')[0] ?? "";
+  assert.match(catalogue, /id="baroAdminProducts"/);
+  assert.doesNotMatch(catalogue, /id="baroAdminOrders"/);
+  assert.match(orders, /id="baroAdminOrders"/);
+  assert.doesNotMatch(orders, /id="baroAdminProducts"/);
 });
