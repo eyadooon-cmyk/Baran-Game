@@ -63,11 +63,20 @@ Deno.serve(async (req: Request) => {
         admin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle()
       ]);
       if (error || settingsError) return json({ error: "تعذر تحميل كتالوج BARO." }, 500);
-      return json({ products: (products ?? []).map((p: any) => ({
+      const catalogProducts = (products ?? []).map((p: any) => ({
         product_code: p.product_code, category_id: p.category_id, group_id: p.group_id,
         product_name: p.product_name, input_label: p.input_label, purchase_enabled: p.purchase_enabled,
         sale_price_usd: p.sale_price_usd, sale_price_syp: p.sale_price_syp
-      })), manual_enabled: settings?.enabled === true });
+      })).sort((a: any, b: any) => {
+        if (a.category_id === "freefire" && b.category_id === "freefire"
+            && a.group_id === "diamonds" && b.group_id === "diamonds") {
+          const amountA = Number(String(a.product_name).match(/\\d+/)?.[0] ?? Number.MAX_SAFE_INTEGER);
+          const amountB = Number(String(b.product_name).match(/\\d+/)?.[0] ?? Number.MAX_SAFE_INTEGER);
+          return amountA - amountB;
+        }
+        return 0;
+      });
+      return json({ products: catalogProducts, manual_enabled: settings?.enabled === true });
     }
 
     if (req.method === "GET" && view === "my_orders") {
