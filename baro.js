@@ -115,7 +115,7 @@ function renderBaroCustomerCatalog(products){
  const introMark=document.createElement("span");introMark.className="baro-catalog-intro-mark";introMark.textContent="✦";
  const introCopy=document.createElement("div");
  const introTitle=document.createElement("strong");introTitle.textContent="اكتشف منتجات BARO";
- const introText=document.createElement("p");introText.textContent="تصفّح باقات الجواهر وشاهد أسعار البيع المعتمدة. عرض الأسعار فقط؛ استقبال الطلبات والشحن غير متاحين حالياً."
+ const introText=document.createElement("p");introText.textContent="تصفّح منتجات BARO وشاهد أسعار البيع المعتمدة بالدولار والليرة. استقبال الطلبات اليدوية مغلق حالياً، لذلك لا يمكن إرسال طلب أو خصم أي رصيد."
  introCopy.append(introTitle,introText);intro.append(introMark,introCopy);box.append(intro);
  if(!products.length){
   const empty=document.createElement("div");empty.className="baro-catalog-empty";
@@ -201,7 +201,7 @@ function renderBaroCustomerCatalog(products){
   section.append(content);box.append(section);
  });
  const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";
- footnote.textContent="الأسعار معروضة بالدولار والليرة · يتم حجز قيمة الطلب من المحفظة عند الإرسال، وتُرد تلقائياً إذا تعذر تنفيذ الشحن."
+ footnote.textContent="الأسعار معروضة بالدولار والليرة · لا يُخصم أي مبلغ عند إرسال الطلب؛ يتم الخصم فقط بعد تأكيد اكتمال الشحن بنجاح."
  box.append(footnote);
 }
 async function loadBaroCustomer(){
