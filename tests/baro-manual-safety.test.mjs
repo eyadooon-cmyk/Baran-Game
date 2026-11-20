@@ -27,7 +27,7 @@ test("Leo catalogue contains exactly the reviewed 30 products and remains hidden
 test("BARO customer orders are authenticated and use the signed-in user's ID", () => {
   assert.match(edge, /auth\.getUser\(token\)/);
   assert.match(edge, /p_user_id:\s*user\.id/);
-  assert.match(edge, /baro_manual_create_customer_order/);
+  assert.match(edge, /baro_manual_create_customer_order_on_completion/);
   assert.match(edge, /admin\.from\("leo_manual_orders"\)[\s\S]*?\.eq\("user_id",\s*user\.id\)/);
 });
 
@@ -56,7 +56,7 @@ test("BARO remains isolated from wallet debit and automatic dispatch", () => {
   assert.match(hardening, /'finance_posted',false/);
   assert.match(gates, /public\.baro_manual_settings/);
   assert.doesNotMatch(gates, /baran_supplier_prepare_order/);
-  assert.doesNotMatch(edge, /wallet_(?:debit|charge)|dispatch_supplier_order/i);
+  assert.doesNotMatch(edge, /admin\.from\("wallets"\)\.(?:update|insert)|baro_manual_wallet_charge|dispatch_supplier_order/i);
 });
 
 test("BARO customer order retries are idempotent and serialized per user", () => {
@@ -380,4 +380,35 @@ test("BARO wallet API exposes balances and keeps wallet settlement private", () 
   assert.match(ui, /wallet_currency:walletCurrency/);
   assert.match(ui, /حجز المبلغ من المحفظة/);
   assert.match(read("../index.html"), /id="baroWalletBalance"/);
+});
+
+
+const deferredWallet = read("../supabase/migrations/20261120180000_baro_wallet_charge_on_completion.sql");
+test("New BARO manual orders are marked for deferred wallet charge; legacy orders are untouched", () => {
+  assert.match(deferredWallet, /wallet_charge_mode text not null default 'legacy_reserved'/);
+  assert.match(deferredWallet, /wallet_on_completion/);
+  assert.match(deferredWallet, /status,payment_status,payment_method,idempotency_key,wallet_charge_mode/);
+  assert.match(deferredWallet, /'pending','awaiting_quote','wallet_'/);
+  assert.match(deferredWallet, /'wallet_changed',false/);
+  assert.doesNotMatch(deferredWallet, /insert into public\.baro_manual_wallet_holds/);
+});
+test("BARO wallet debit occurs only inside completion transaction and is idempotent", () => {
+  assert.match(deferredWallet, /select \* into v_order from public\.leo_manual_orders where id=p_order_id for update/);
+  assert.match(deferredWallet, /select \* into v_wallet from public\.wallets where user_id=v_order\.user_id for update/);
+  assert.match(deferredWallet, /v_target_status='completed' and v_order\.wallet_charged_at is null/);
+  assert.match(deferredWallet, /transaction_type='baro_manual_wallet_charge'/);
+  assert.match(deferredWallet, /wallet_charged_at=case when v_target_status='completed'/);
+  assert.match(deferredWallet, /wallet_charge_replayed',true/);
+  assert.match(deferredWallet, /رصيد العميل غير كافٍ لإكمال الشحن/);
+  assert.match(deferredWallet, /baro-wallet-sale-/);
+});
+test("BARO deferred wallet workflow is isolated from legacy admin payment flow and automatic fulfilment", () => {
+  assert.match(deferredWallet, /if v_order\.wallet_charge_mode is distinct from 'wallet_on_completion' then/);
+  assert.match(deferredWallet, /return public\.baro_manual_order_admin_update_atomic/);
+  assert.match(edge, /baro_manual_order_admin_update_wallet_aware/);
+  assert.match(edge, /baro_manual_create_customer_order_on_completion/);
+  assert.match(ui, /لن يُخصم أي مبلغ عند إرسال الطلب/);
+  assert.match(ui, /تم تسجيل طلبك دون خصم من المحفظة/);
+  assert.match(ui, /خصم المحفظة مؤجل حتى اعتماد اكتمال الشحن/);
+  assert.match(ui, /wallet_charged_at/);
 });
