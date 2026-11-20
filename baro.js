@@ -383,7 +383,7 @@ async function baroAdminQuickOrderStatus(order,nextStatus){
  try{
   const updateResult=await baroApi("POST",{action:"order_admin_update",order_id:order.id,status:"completed",
    quote_amount:quoteAmount,quote_currency:quoteCurrency,payment_method:order.payment_method,
-   payment_status:"awaiting_quote",customer_message:completedMessage,
+   payment_status:"verified",customer_message:completedMessage,
    supplier_cost_usd:supplierCost,supplier_reference:order.supplier_reference||"",
    exception_reason:"تم تنفيذ الشحن اليدوي والتحقق من وصوله إلى حساب الزبون.",
    internal_notes:order.internal_notes||""});
