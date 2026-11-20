@@ -434,3 +434,12 @@ test("Admin BARO notifications open the BARO panel and target the matching order
   assert.match(source, /document\.querySelector\('\[data-notification-entity-id=/);
   assert.match(source, /await showAdminPanel\("baro"\)/);
 });
+
+
+test("BARO wallet-deferred orders use one-click status actions with optional advanced fields", () => {
+  const source = read("../baro.js");
+  assert.match(source, /start\.textContent="▶ جاري التنفيذ"/);
+  assert.match(source, /complete\.textContent="✓ تم الاكتمال"/);
+  assert.match(source, /تعديل التفاصيل الإضافية \(اختياري\)/);
+  assert.match(source, /وسيتم خصم قيمة الطلب من محفظة الزبون الآن/);
+});
