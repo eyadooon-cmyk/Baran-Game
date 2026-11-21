@@ -8,7 +8,7 @@
     if (value !== undefined) el.textContent = value;
     return el;
   };
-  const statusLabels = { active: "جاهزة للاستخدام", redeemed: "مستخدمة", cancelled: "ملغاة" };
+  const statusLabels = { active: "جاهزة للاستخدام", reserved: "محجوزة لطلب قيد التنفيذ", redeemed: "مستخدمة بعد اكتمال الطلب", cancelled: "ملغاة" };
 
   async function loadMyRewards() {
     const tierBox = $("customerLoyaltyTier");
