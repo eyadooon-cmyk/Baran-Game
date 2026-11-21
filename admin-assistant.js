@@ -478,3 +478,5 @@
     document.addEventListener("DOMContentLoaded", initializeAdminEnhancements, { once: true });
   } else {
     initializeAdminEnhancements();
+  }
+})();
