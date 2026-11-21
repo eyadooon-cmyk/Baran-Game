@@ -56,26 +56,63 @@ async function loadOpsMonitor(){
     const monitor=result.monitor||{};
     const job=monitor.job||{};
     const check=monitor.latest_check||{};
+    const service=monitor.service_check||{};
     const lastRun=monitor.last_run||null;
     const parts=[];
     parts.push(job.active?"المراقبة مفعّلة":"المراقبة غير مفعّلة");
-    parts.push("الجدول: "+opsText(job.schedule||"—"));
-    parts.push("آخر فحص بيانات: "+(check.checked_at?opsDate(check.checked_at):"لم يسجل بعد"));
-    parts.push("آخر تشغيل مجدول: "+(lastRun?.started_at?opsDate(lastRun.started_at)+" — "+opsText(lastRun.status):"بانتظار أول تشغيل تلقائي"));
+    parts.push("الفحص المجدول: "+opsText(job.schedule||"—"));
+    parts.push("آخر فحص: "+(service.checked_at?opsDate(service.checked_at):(check.checked_at?opsDate(check.checked_at):"لم يسجل بعد")));
+    parts.push("آخر تشغيل: "+(lastRun?.started_at?opsDate(lastRun.started_at)+" — "+opsText(lastRun.status):"بانتظار أول تشغيل تلقائي"));
     parts.push("التنبيهات المفتوحة: "+Number(monitor.active_alert_count||0));
+    parts.push("الخدمات المتدهورة: "+Number(service.degraded_services||0));
     statusBox.textContent=parts.join(" | ");
     alertsBox.replaceChildren();
+
+    const coverage=opsNode("div","ops-item");
+    coverage.append(
+      opsNode("strong","","تغطية مراقبة الموردين"),
+      opsNode("div","ops-muted",service.coverage_note||"تعتمد المراقبة على سجلات محاولات الشحن الفعلية."),
+      opsNode("div","ops-muted","واجهات فحص مباشر مهيأة: "+Number(service.direct_health_checks_configured||0)+" | فحوص مباشرة منفذة: "+Number(service.direct_health_checks_performed||0))
+    );
+    alertsBox.appendChild(coverage);
+
+    const metrics=Array.isArray(service.service_metrics)?service.service_metrics:[];
+    const metricHeading=opsNode("div","ops-muted","مؤشرات الشحن الفعلية — آخر "+Number(service.window_minutes||10)+" دقائق");
+    alertsBox.appendChild(metricHeading);
+    if(!metrics.length){
+      alertsBox.appendChild(opsNode("div","ops-item","لا توجد محاولات شحن من مورد مسجلة ضمن نافذة الرصد الحالية؛ لا يمكن استنتاج حالة المورد من دون حركة فعلية."));
+    }else{
+      metrics.slice(0,20).forEach(metric=>{
+        const card=opsNode("article","ops-item");
+        const failed=Number(metric.failures_10m||0);
+        const attempts=Number(metric.attempts_10m||0);
+        card.append(
+          opsNode("strong","",(metric.supplier_name||"مورد غير معروف")+" — "+(metric.product_code||"منتج غير محدد")),
+          opsNode("div","ops-muted","المحاولات: "+attempts+" | الفشل: "+failed+" | نسبة الفشل: "+Number(metric.failure_rate_percent||0)+"%"),
+          opsNode("div","ops-muted","429: "+Number(metric.rate_limited_10m||0)+" | أخطاء 5xx: "+Number(metric.upstream_5xx_10m||0)+" | أخطاء اتصال: "+Number(metric.connection_errors_10m||0)),
+          opsNode("div","ops-muted","متوسط الاستجابة المسجل: "+(metric.avg_latency_ms===null||metric.avg_latency_ms===undefined?"غير متاح":Number(metric.avg_latency_ms)+" ms")+" | آخر رمز خطأ: "+opsText(metric.last_error_code))
+        );
+        alertsBox.appendChild(card);
+      });
+    }
+
     const alerts=Array.isArray(monitor.active_alerts)?monitor.active_alerts:[];
+    alertsBox.appendChild(opsNode("div","ops-muted","التنبيهات التي تحتاج متابعة"));
     if(!alerts.length){
       alertsBox.appendChild(opsNode("div","ops-item","لا توجد مشاكل مفتوحة حسب آخر فحص."));
     }else{
       alerts.forEach(alert=>{
         const card=opsNode("article","ops-item");
         const severity=alert.severity==="critical"?"حرج":alert.severity==="warning"?"تحذير":"معلومة";
+        const d=alert.details||{};
+        const serviceDetail=d.supplier_name
+          ? "المورد: "+opsText(d.supplier_name)+" | المنتج: "+opsText(d.product_code)+" | الفشل: "+Number(d.failures||0)+"/"+Number(d.attempts||0)+" ("+Number(d.failure_rate_percent||0)+"%)"
+          : "العدد الحالي: "+opsText(d.count);
         card.append(
           opsNode("strong","",severity+" — "+opsText(alert.message)),
-          opsNode("div","ops-muted","العدد الحالي: "+opsText(alert.details?.count)+" | آخر رصد: "+opsDate(alert.last_seen_at)),
-          opsNode("div","ops-muted","تكرار الرصد: "+Number(alert.occurrences||1))
+          opsNode("div","ops-muted",serviceDetail),
+          opsNode("div","ops-muted","429: "+Number(d.rate_limited||0)+" | أخطاء 5xx: "+Number(d.upstream_5xx||0)+" | متوسط الاستجابة: "+(d.avg_latency_ms==null?"—":Number(d.avg_latency_ms)+" ms")),
+          opsNode("div","ops-muted","آخر رصد: "+opsDate(alert.last_seen_at)+" | تكرار الرصد: "+Number(alert.occurrences||1))
         );
         alertsBox.appendChild(card);
       });
