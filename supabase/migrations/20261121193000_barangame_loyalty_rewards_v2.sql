@@ -438,7 +438,7 @@ begin
     'coupon_discount_usd',v_discount_usd,'coupon_discount_amount',v_discount_amount,
     'coupon_id',v_coupon_id);
 end;
-$function$
+$function$;
 
 
 -- Restore only authenticated customer access to the secure redemption RPC.
