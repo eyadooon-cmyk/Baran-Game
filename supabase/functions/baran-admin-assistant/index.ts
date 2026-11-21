@@ -41,12 +41,17 @@ function internalAdminReply(question: string, ctx: any, flags: any): string {
   const q = normalizeAdminText(question);
   const out: string[] = [];
   const health = ctx.store_health || {};
-  const orders = Array.isArray(ctx.recent_orders) ? ctx.recent_orders : [];
+  const orders = Array.isArray(ctx.recent_general_orders) ? ctx.recent_general_orders : (Array.isArray(ctx.recent_orders) ? ctx.recent_orders : []);
+  const baroOrders = Array.isArray(ctx.recent_baro_manual_orders) ? ctx.recent_baro_manual_orders : [];
   const tickets = Array.isArray(ctx.recent_support_tickets) ? ctx.recent_support_tickets.filter((t: any) => t.feedback_type === "support") : [];
   const products = Array.isArray(ctx.products) ? ctx.products : [];
   const suppliers = Array.isArray(ctx.suppliers) ? ctx.suppliers : [];
   const deposits = Array.isArray(ctx.recent_deposits) ? ctx.recent_deposits : [];
   if (flags.finance) {
+    const baroCompleted = baroOrders.filter((o: any) => o.status === "completed" && o.payment_status === "verified");
+    const baroSalesSyp = baroCompleted.reduce((sum: number, o: any) => sum + Number(o.customer_price_syp || 0), 0);
+    const baroSalesUsd = baroCompleted.reduce((sum: number, o: any) => sum + Number(o.customer_price_usd || 0), 0);
+    const baroSupplierCostUsd = baroCompleted.reduce((sum: number, o: any) => sum + Number(o.supplier_cost_usd_snapshot ?? o.supplier_cost_usd ?? 0), 0);
     const totals = Array.isArray(ctx.finance?.totals) ? ctx.finance.totals : [];
     const period = q.includes("اليوم") ? "today_" : q.includes("الشهر") ? "month_" : "";
     const label = period === "today_" ? "اليوم" : period === "month_" ? "هذا الشهر" : "الإجمالي المسجل";
@@ -62,6 +67,7 @@ function internalAdminReply(question: string, ctx: any, flags: any): string {
         out.push("• " + currency + ": المبيعات " + fmtAdminAmount(sales) + "، تكلفة البضاعة " + fmtAdminAmount(cost) + "، المصاريف " + fmtAdminAmount(expenses) + "، صافي الربح المسجل " + fmtAdminAmount(profit) + ".");
       }
       out.push("ملاحظة: الأرقام من سجل الإدارة المالي الرسمي فقط. رأس المال ليس ربحاً، ولا أخلط USD مع SYP.");
+    out.push("مبيعات BARO اليدوية المكتملة والمدفوعة الموثقة: " + baroCompleted.length + " طلباً؛ مبيعات الزبائن " + fmtAdminAmount(baroSalesSyp) + " SYP و" + fmtAdminAmount(baroSalesUsd) + " USD؛ تكلفة المورد المسجلة " + fmtAdminAmount(baroSupplierCostUsd) + " USD. هذه مجاميع مستقلة ولا تمثل صافي ربح، ولا تُضاف إلى RPC المالي الرسمي لتجنب الازدواج حتى تتم مطابقة مصدره.");
     }
     const productProfit = Array.isArray(ctx.product_profit_report) ? ctx.product_profit_report : [];
     if (productProfit.length && (q.includes("منتج") || q.includes("المنتجات") || q.includes("افضل") || q.includes("أعلى"))) {
@@ -88,9 +94,11 @@ function internalAdminReply(question: string, ctx: any, flags: any): string {
   }
   if (flags.orders) {
     const status = countAdminStatuses(orders);
-    const open = orders.filter((o: any)=>["pending","processing","awaiting_supplier"].includes(o.status));
-    const failed = orders.filter((o: any)=>["failed","rejected"].includes(o.status));
-    out.push("الطلبات: أحدث " + orders.length + " طلب محمّل؛ المفتوح " + open.length + "، الفاشل/المرفوض " + failed.length + ". توزيع الحالات: " + JSON.stringify(status) + ".");
+    const manualStatus = countAdminStatuses(baroOrders);
+    const open = [...orders, ...baroOrders].filter((o: any)=>["pending","processing","awaiting_supplier"].includes(o.status));
+    const failed = [...orders, ...baroOrders].filter((o: any)=>["failed","rejected"].includes(o.status));
+    const completedBaro = baroOrders.filter((o: any)=>o.status === "completed");
+    out.push("الطلبات: " + (orders.length + baroOrders.length) + " إجمالاً ضمن العينات؛ الطلبات العامة " + orders.length + "، وطلبات BARO اليدوية " + baroOrders.length + " (مكتمل " + completedBaro.length + "). المفتوح " + open.length + "، الفاشل/المرفوض " + failed.length + ". حالات الطلبات العامة: " + JSON.stringify(status) + "؛ حالات BARO: " + JSON.stringify(manualStatus) + ".");
     if (open.length) out.push("أمثلة طلبات مفتوحة: " + open.slice(0,8).map((o: any)=>String(o.product_code||"طلب")+" ["+String(o.status)+"]").join("، ") + ".");
     out.push("لم أغيّر حالة أي طلب ولم أنفذ شحناً.");
   }
@@ -267,13 +275,14 @@ Deno.serve(async (req: Request) => {
       }, {});
       if (localIntent === "operations") {
         const [
-          productResult, supplierResult, linkResult, orderResult,
+          productResult, supplierResult, linkResult, orderResult, manualOrderResult,
           ticketResult, depositResult, auditResult
         ] = await Promise.all([
           admin.from("products").select("id,name,description,is_active").limit(300),
           admin.from("suppliers").select("id,name,is_active,notes").order("name").limit(200),
           admin.from("supplier_products").select("id,supplier_id,product_id").limit(1000),
           admin.from("orders").select("id,status,created_at").order("created_at", { ascending: false }).limit(100),
+          admin.from("leo_manual_orders").select("id,product_code,product_name_snapshot,status,payment_status,customer_price_usd,customer_price_syp,supplier_cost_usd,supplier_cost_usd_snapshot,created_at,completed_at").order("created_at", { ascending: false }).limit(100),
           admin.from("customer_feedback").select("id,ticket_code,subject,status,created_at")
             .eq("feedback_type", "support").order("created_at", { ascending: false }).limit(100),
           admin.from("deposit_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
@@ -281,8 +290,8 @@ Deno.serve(async (req: Request) => {
         ]);
         const readErrors = [
           productResult.error && "المنتجات", supplierResult.error && "الموردون",
-          linkResult.error && "روابط الموردين", orderResult.error && "الطلبات",
-          ticketResult.error && "الدعم", depositResult.error && "طلبات الإيداع",
+          linkResult.error && "روابط الموردين", orderResult.error && "الطلبات العامة",
+          manualOrderResult.error && "طلبات BARO اليدوية", ticketResult.error && "الدعم", depositResult.error && "طلبات الإيداع",
           auditResult.error && "سجل التدقيق",
         ].filter(Boolean);
         if (readErrors.length) return json({
@@ -293,16 +302,21 @@ Deno.serve(async (req: Request) => {
         const supplierRows = supplierResult.data ?? [];
         const linkRows = linkResult.data ?? [];
         const orderRows = orderResult.data ?? [];
+        const manualOrderRows = manualOrderResult.data ?? [];
+        const combinedOrderRows = [...orderRows, ...manualOrderRows];
         const ticketRows = ticketResult.data ?? [];
         const auditRows = auditResult.data ?? [];
         const activeProducts = productRows.filter((x: any) => x.is_active).length;
         const inactiveProducts = productRows.length - activeProducts;
         const missingDescriptions = productRows.filter((x: any) => !String(x.description || "").trim()).length;
         const activeSuppliers = supplierRows.filter((x: any) => x.is_active).length;
-        const openOrders = orderRows.filter((x: any) => ["pending", "processing", "awaiting_supplier"].includes(x.status)).length;
-        const failedOrders = orderRows.filter((x: any) => x.status === "failed").length;
+        const openOrders = combinedOrderRows.filter((x: any) => ["pending", "processing", "awaiting_supplier"].includes(x.status)).length;
+        const failedOrders = combinedOrderRows.filter((x: any) => ["failed", "rejected"].includes(x.status)).length;
         const openTickets = ticketRows.filter((x: any) => ["pending", "in_progress"].includes(x.status)).length;
-        const orderStatusCounts = orderRows.reduce((out: Record<string, number>, row: any) => { const key = String(row.status ?? "غير محدد"); out[key] = (out[key] || 0) + 1; return out; }, {});
+        const orderStatusCounts = combinedOrderRows.reduce((out: Record<string, number>, row: any) => { const key = String(row.status ?? "غير محدد"); out[key] = (out[key] || 0) + 1; return out; }, {});
+        const manualCompleted = manualOrderRows.filter((x: any) => x.status === "completed" && x.payment_status === "verified");
+        const manualSalesSyp = manualCompleted.reduce((sum: number, x: any) => sum + Number(x.customer_price_syp || 0), 0);
+        const manualSalesUsd = manualCompleted.reduce((sum: number, x: any) => sum + Number(x.customer_price_usd || 0), 0);
         const ticketStatusCounts = ticketRows.reduce((out: Record<string, number>, row: any) => { const key = String(row.status ?? "غير محدد"); out[key] = (out[key] || 0) + 1; return out; }, {});
         const linkedProductIds = new Set(linkRows.map((x: any) => x.product_id));
         const productsWithoutSupplierLink = productRows.filter((x: any) => !linkedProductIds.has(x.id)).length;
@@ -347,7 +361,7 @@ Deno.serve(async (req: Request) => {
             next_step: "مراجعة بيانات المنتجات واقتراح التعديلات للمعاينة فقط."
           });
         }
-        if (orderRows.length === 0) {
+        if (combinedOrderRows.length === 0) {
           // No orders during a pre-launch test is neutral; it is not evidence of a fault.
         }
         if (priorities.length === 0) {
@@ -365,7 +379,8 @@ Deno.serve(async (req: Request) => {
           readiness_note: "الموردون وAPI والشحن التلقائي والدفع مؤجلة بقرار إداري، وليست أعطالاً.",
           products: { total: productRows.length, active: activeProducts, inactive: inactiveProducts, missing_descriptions: missingDescriptions, without_supplier_link: productsWithoutSupplierLink },
           suppliers: { total: supplierRows.length, active: activeSuppliers, inactive: supplierRows.length - activeSuppliers, product_links: linkRows.length },
-          orders_latest_100: { loaded: orderRows.length, open: openOrders, failed: failedOrders, by_status: orderStatusCounts },
+          orders_latest_100: { loaded: combinedOrderRows.length, general_orders: orderRows.length, baro_manual_orders: manualOrderRows.length, open: openOrders, failed: failedOrders, by_status: orderStatusCounts },
+          baro_manual_sales: { completed_verified_orders: manualCompleted.length, sales_syp: manualSalesSyp, sales_usd: manualSalesUsd },
           support_latest_100: { loaded: ticketRows.length, open: openTickets, by_status: ticketStatusCounts },
           pending_deposit_requests: depositResult.count ?? 0,
           audit_events_latest_20: auditRows.length,
@@ -374,7 +389,8 @@ Deno.serve(async (req: Request) => {
           "التقرير التشغيلي لـ Baran Game (قراءة فقط)",
           "المنتجات: " + productRows.length + "، النشط " + activeProducts + "، المخفي " + inactiveProducts + "، الأوصاف الناقصة " + missingDescriptions + "، غير المرتبط بمورد " + productsWithoutSupplierLink + ".",
           "الموردون: " + supplierRows.length + "، النشط " + activeSuppliers + "، روابط المنتجات " + linkRows.length + ".",
-          "الطلبات ضمن أحدث 100: " + orderRows.length + "، المفتوح " + openOrders + "، الفاشل " + failedOrders + "، توزيع الحالات: " + JSON.stringify(orderStatusCounts) + ".",
+          "الطلبات ضمن العينات (حتى 100 من كل مصدر): " + combinedOrderRows.length + "؛ العامة " + orderRows.length + "، وBARO اليدوية " + manualOrderRows.length + "، المفتوح " + openOrders + "، الفاشل " + failedOrders + "، توزيع الحالات: " + JSON.stringify(orderStatusCounts) + ".",
+          "مبيعات BARO المكتملة والمدفوعة الموثقة: " + manualCompleted.length + " طلباً، " + fmtAdminAmount(manualSalesSyp) + " SYP و" + fmtAdminAmount(manualSalesUsd) + " USD. لا تمثل هذه الأرقام صافي الربح.",
           "الدعم ضمن أحدث 100: " + ticketRows.length + "، المفتوح " + openTickets + "، توزيع الحالات: " + JSON.stringify(ticketStatusCounts) + ".",
           "حالة المورد والشحن: مؤجلة بقرار إداري حالياً؛ عدم وجود مورد نشط أو روابط لا يُسجل كعطل. عند بدء هذه المرحلة يلزم التحقق من API واختبار فعلي موثق.",
           "طلبات الإيداع المعلقة: " + (depositResult.count ?? 0) + " (عدد فقط دون مبالغ).",
@@ -434,17 +450,25 @@ Deno.serve(async (req: Request) => {
           note: "وجود المورد أو رابط المنتج لا يثبت أن API يعمل أو أن الشحن التلقائي مفعّل. قراءة فقط." });
       }
       if (localIntent === "orders") {
-        const { data, error } = await admin.from("orders")
-          .select("id,product_code,quantity,status,created_at")
-          .order("created_at", { ascending: false }).limit(100);
-        if (error) return json({ error: "تعذر قراءة الطلبات؛ لم يتم إجراء أي تعديل." }, 502);
-        const rows = data ?? [];
+        const [{ data: generalRows, error: generalError }, { data: manualRows, error: manualError }] = await Promise.all([
+          admin.from("orders").select("id,product_code,quantity,status,created_at").order("created_at", { ascending: false }).limit(100),
+          admin.from("leo_manual_orders").select("id,product_code,product_name_snapshot,quantity,status,payment_status,customer_price_usd,customer_price_syp,supplier_cost_usd,supplier_cost_usd_snapshot,created_at,completed_at").order("created_at", { ascending: false }).limit(100),
+        ]);
+        if (generalError || manualError) return json({ error: "تعذر قراءة أحد مصدري الطلبات؛ لم يتم إجراء أي تعديل." }, 502);
+        const general = generalRows ?? [];
+        const manual = manualRows ?? [];
+        const combined = [...general.map((x: any) => ({ ...x, source: "orders" })), ...manual.map((x: any) => ({ ...x, source: "leo_manual_orders" }))].sort((a: any,b: any) => Date.parse(b.created_at)-Date.parse(a.created_at));
+        const completedVerified = manual.filter((x: any) => x.status === "completed" && x.payment_status === "verified");
+        const salesSyp = completedVerified.reduce((sum: number, x: any) => sum + Number(x.customer_price_syp || 0), 0);
+        const salesUsd = completedVerified.reduce((sum: number, x: any) => sum + Number(x.customer_price_usd || 0), 0);
         return json({ mode: "offline_read_only", report: "orders", checked_at: checkedAt,
-          summary: { latest_loaded: rows.length, statuses: counts(rows, "status"),
-            open_in_latest_100: rows.filter((x: any) => ["pending","processing","awaiting_supplier"].includes(x.status)).length,
-            failed_in_latest_100: rows.filter((x: any) => x.status === "failed").length },
-          reply: "ملخص الطلبات (أحدث 100 فقط): " + rows.length + " طلباً محمّلاً؛ الحالات: " + JSON.stringify(counts(rows, "status")) + ". المفتوح ضمن العينة: " + rows.filter((x: any) => ["pending","processing","awaiting_supplier"].includes(x.status)).length + "، الفاشل: " + rows.filter((x: any) => x.status === "failed").length + ". لم يتم تغيير أي حالة أو تنفيذ شحن.",
-          note: "الفحص يغطي أحدث 100 طلب فقط، ولا يعرض مبالغ أو يغيّر حالات الطلبات." });
+          summary: { total_loaded: combined.length, general_orders: general.length, baro_manual_orders: manual.length, statuses: counts(combined, "status"),
+            open: combined.filter((x: any) => ["pending","processing","awaiting_supplier"].includes(x.status)).length,
+            failed: combined.filter((x: any) => ["failed","rejected"].includes(x.status)).length,
+            baro_completed_verified: completedVerified.length, baro_sales_syp: salesSyp, baro_sales_usd: salesUsd },
+          orders: combined.slice(0,30).map((x: any) => ({ source: x.source, product: x.product_name_snapshot || x.product_code, status: x.status, payment_status: x.payment_status ?? null, created_at: x.created_at })),
+          reply: "ملخص الطلبات من مصدرين (حتى أحدث 100 من كل مصدر): " + combined.length + " إجمالاً؛ الطلبات العامة " + general.length + "، طلبات BARO اليدوية " + manual.length + ". الحالات: " + JSON.stringify(counts(combined, "status")) + ". طلبات BARO المكتملة والمدفوعة الموثقة: " + completedVerified.length + "؛ مبيعاتها " + fmtAdminAmount(salesSyp) + " SYP و" + fmtAdminAmount(salesUsd) + " USD. لم يتم تغيير أي حالة أو تنفيذ شحن.",
+          note: "طلبات orders وleo_manual_orders تعرض منفصلة المصدر؛ لا يتم جمع تكلفة USD مع مبيعات SYP ولا احتساب صافي ربح." });
       }
       if (localIntent === "tickets") {
         const { data, error } = await admin.from("customer_feedback")
@@ -471,22 +495,24 @@ Deno.serve(async (req: Request) => {
           latest_events: rows.slice(0, 15).map((x: any) => ({ action: x.action, entity_type: x.entity_type, created_at: x.created_at })),
           note: "لا يتم عرض تفاصيل حساسة من سجل التدقيق. هذا فحص لآخر 100 حدث فقط." });
       }
-      const [products, suppliers, orders, tickets, deposits] = await Promise.all([
+      const [products, suppliers, orders, manualOrders, tickets, deposits] = await Promise.all([
         admin.from("products").select("id,is_active", { count: "exact" }).limit(1),
         admin.from("suppliers").select("id,is_active", { count: "exact" }).limit(1),
-        admin.from("orders").select("id,status", { count: "exact" }).limit(100),
+        admin.from("orders").select("id,status", { count: "exact" }).order("created_at", { ascending: false }).limit(100),
+        admin.from("leo_manual_orders").select("id,status", { count: "exact" }).order("created_at", { ascending: false }).limit(100),
         admin.from("customer_feedback").select("id,status", { count: "exact" }).eq("feedback_type", "support").in("status", ["pending","in_progress"]),
         admin.from("deposit_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
       ]);
       const errors = [products.error && "products", suppliers.error && "suppliers", orders.error && "orders",
-        tickets.error && "support_tickets", deposits.error && "pending_deposits"].filter(Boolean);
+        manualOrders.error && "leo_manual_orders", tickets.error && "support_tickets", deposits.error && "pending_deposits"].filter(Boolean);
       if (errors.length) return json({ error: "تعذر إكمال الفحص العام لبعض الأقسام: " + errors.join("، ") + ". لم يتم إجراء أي تعديل." }, 502);
       return json({ mode: "offline_read_only", report: "store_health", checked_at: checkedAt,
         summary: { products_total: products.count ?? null, suppliers_total: suppliers.count ?? null,
-          orders_total: orders.count ?? null, open_support_tickets: tickets.count ?? null,
+          orders_total: (orders.count ?? 0) + (manualOrders.count ?? 0), general_orders_total: orders.count ?? null,
+          baro_manual_orders_total: manualOrders.count ?? null, open_support_tickets: tickets.count ?? null,
           pending_deposits: deposits.count ?? null,
-          latest_order_statuses: counts(orders.data ?? [], "status") },
-        reply: "تقرير Baran Game المحلي (قراءة فقط): المنتجات " + (products.count ?? "غير متاح") + "، الموردون " + (suppliers.count ?? "غير متاح") + "، الطلبات " + (orders.count ?? "غير متاح") + "، تذاكر الدعم المفتوحة " + (tickets.count ?? "غير متاح") + "، طلبات الإيداع المعلقة " + (deposits.count ?? "غير متاح") + ". حالات أحدث الطلبات المحمّلة: " + JSON.stringify(counts(orders.data ?? [], "status")) + ". لا يتضمن التقرير مبالغ أو أرصدة، ولم يتم تغيير أي بيانات.",
+          latest_order_statuses: { general: counts(orders.data ?? [], "status"), baro_manual: counts(manualOrders.data ?? [], "status") } },
+        reply: "تقرير Baran Game المحلي (قراءة فقط): المنتجات " + (products.count ?? "غير متاح") + "، الموردون " + (suppliers.count ?? "غير متاح") + "، الطلبات " + ((orders.count ?? 0) + (manualOrders.count ?? 0)) + " (العامة " + (orders.count ?? 0) + "، BARO اليدوية " + (manualOrders.count ?? 0) + ")، تذاكر الدعم المفتوحة " + (tickets.count ?? "غير متاح") + "، طلبات الإيداع المعلقة " + (deposits.count ?? "غير متاح") + ". حالات الطلبات العامة: " + JSON.stringify(counts(orders.data ?? [], "status")) + "؛ حالات BARO اليدوية: " + JSON.stringify(counts(manualOrders.data ?? [], "status")) + ". لا يتضمن التقرير مبالغ أو أرصدة، ولم يتم تغيير أي بيانات.",
         note: "تقرير تشغيلي محدود من بيانات قاعدة البيانات الحالية. لا يتضمن أرباحاً أو أرصدة أو تفاصيل إيداعات، ولا يغيّر أي بيانات." });
     }
 
@@ -518,14 +544,16 @@ Deno.serve(async (req: Request) => {
     const year = Number(parts.find((p) => p.type === "year")?.value);
 
     const [
-      financeResult, productReportResult, orderResult, depositResult, walletTransactionResult, feedbackResult,
+      financeResult, productReportResult, orderResult, manualOrderResult, depositResult, walletTransactionResult, feedbackResult,
       supplierResult, fulfillmentResult, productResult, auditResult, notificationResult,
-      userCountResult, orderCountResult, productCountResult, supplierCountResult,
+      userCountResult, orderCountResult, manualOrderCountResult, productCountResult, supplierCountResult,
       settingsResult, openFeedbackCountResult, pendingDepositCountResult, monitorResult,
     ] = await Promise.all([
       admin.rpc("admin_finance_data", { p_admin_id: user.id }),
       admin.rpc("admin_finance_product_report", { p_admin_id: user.id, p_month: month, p_year: year }),
       admin.from("orders").select("id,product_code,quantity,status,created_at,total_price_usd,total_price_syp")
+        .order("created_at", { ascending: false }).limit(100),
+      admin.from("leo_manual_orders").select("id,product_code,product_name_snapshot,quantity,status,payment_status,created_at,completed_at,customer_price_usd,customer_price_syp,supplier_cost_usd,supplier_cost_usd_snapshot,coupon_discount_usd,wallet_charge_mode")
         .order("created_at", { ascending: false }).limit(100),
       admin.from("deposit_requests").select("id,amount,currency,status,created_at,transfer_reference")
         .order("created_at", { ascending: false }).limit(50),
@@ -544,6 +572,7 @@ Deno.serve(async (req: Request) => {
         .order("created_at", { ascending: false }).limit(30),
       admin.from("profiles").select("id", { count: "exact", head: true }),
       admin.from("orders").select("id", { count: "exact", head: true }),
+      admin.from("leo_manual_orders").select("id", { count: "exact", head: true }),
       admin.from("products").select("id", { count: "exact", head: true }),
       admin.from("suppliers").select("id", { count: "exact", head: true }),
       admin.from("store_settings").select("exchange_rate,updated_at").eq("id", "main").maybeSingle(),
@@ -554,7 +583,7 @@ Deno.serve(async (req: Request) => {
 
     const failures = [
       financeResult.error && "finance", productReportResult.error && "product_report",
-      orderResult.error && "orders", depositResult.error && "deposits", walletTransactionResult.error && "wallet_transactions", feedbackResult.error && "support_tickets",
+      orderResult.error && "orders", manualOrderResult.error && "leo_manual_orders", depositResult.error && "deposits", walletTransactionResult.error && "wallet_transactions", feedbackResult.error && "support_tickets",
       supplierResult.error && "suppliers", fulfillmentResult.error && "fulfillment",
       productResult.error && "products", auditResult.error && "audit_log",
       notificationResult.error && "notifications", settingsResult.error && "store_settings",
@@ -566,13 +595,24 @@ Deno.serve(async (req: Request) => {
     }
 
     const orders = orderResult.data ?? [];
+    const manualOrders = manualOrderResult.data ?? [];
     const fulfillment = fulfillmentResult.data ?? [];
     const fulfillmentByOrder = new Map(fulfillment.map((x) => [x.order_id, x]));
     const enrichedOrders = orders.map((o) => ({
-      id: o.id, product_code: o.product_code, quantity: o.quantity, status: o.status,
+      id: o.id, source: "orders", product_code: o.product_code, quantity: o.quantity, status: o.status,
       created_at: o.created_at, total_price_usd: o.total_price_usd, total_price_syp: o.total_price_syp,
       fulfillment: fulfillmentByOrder.get(o.id) ?? null,
     }));
+    const enrichedManualOrders = manualOrders.map((o: any) => ({
+      id: o.id, source: "leo_manual_orders", product_code: o.product_code, product_name: o.product_name_snapshot,
+      quantity: o.quantity, status: o.status, payment_status: o.payment_status, created_at: o.created_at, completed_at: o.completed_at,
+      total_price_usd: o.customer_price_usd, total_price_syp: o.customer_price_syp,
+      customer_price_usd: o.customer_price_usd, customer_price_syp: o.customer_price_syp,
+      supplier_cost_usd: o.supplier_cost_usd_snapshot ?? o.supplier_cost_usd, coupon_discount_usd: o.coupon_discount_usd,
+      wallet_charge_mode: o.wallet_charge_mode,
+    }));
+    const allRecentOrders = [...enrichedOrders, ...enrichedManualOrders].sort((a: any,b: any) => Date.parse(b.created_at)-Date.parse(a.created_at));
+    const allOpenOrders = [...orders, ...manualOrders].filter((o: any) => ["pending", "processing", "awaiting_supplier"].includes(o.status));
     const openOrders = orders.filter((o) => ["pending", "processing", "awaiting_supplier"].includes(o.status));
     const ordersMissingCost = openOrders.filter((o) => {
       const f = fulfillmentByOrder.get(o.id);
@@ -611,10 +651,12 @@ Deno.serve(async (req: Request) => {
       product_profit_report: productReportResult.data ?? [],
       store_health: {
         users_total: userCountResult.count ?? null,
-        orders_total: orderCountResult.count ?? null,
+        orders_total: (orderCountResult.count ?? 0) + (manualOrderCountResult.count ?? 0),
+        general_orders_total: orderCountResult.count ?? null,
+        baro_manual_orders_total: manualOrderCountResult.count ?? null,
         products_total: productCountResult.count ?? null,
         suppliers_total: supplierCountResult.count ?? null,
-        open_orders_in_latest_100: openOrders.length,
+        open_orders_in_latest_100: allOpenOrders.length,
         orders_missing_supplier_cost_in_latest_100: ordersMissingCost.length,
         pending_deposits_total: pendingDepositCountResult.count ?? null,
         open_support_tickets_total: openFeedbackCountResult.count ?? null,
@@ -622,7 +664,9 @@ Deno.serve(async (req: Request) => {
         inactive_suppliers_in_latest_100: (supplierResult.data ?? []).filter((s) => !s.is_active).length,
         recent_data_limitations: failures,
       },
-      recent_orders: enrichedOrders,
+      recent_orders: allRecentOrders,
+      recent_general_orders: enrichedOrders,
+      recent_baro_manual_orders: enrichedManualOrders,
       recent_deposits: deposits,
       recent_wallet_transactions: walletTransactionResult.data ?? [],
       recent_support_tickets: tickets,
@@ -655,6 +699,8 @@ Deno.serve(async (req: Request) => {
     };
     if (wantsFinance) {
       promptContext.finance = context.finance;
+      promptContext.recent_baro_manual_orders = (context.recent_baro_manual_orders as any[]).slice(0, 50);
+      promptContext.baro_manual_sales_note = "أدرج فقط الطلبات المكتملة ذات payment_status=verified. اجمع مبيعات SYP وUSD كلٌ على حدة، واعرض تكلفة المورد USD منفصلة؛ لا تسمّها صافي ربح ولا تجمعها مع RPC المالي الرسمي دون إثبات عدم الازدواج.";
       promptContext.product_profit_report = context.product_profit_report;
       promptContext.exchange_rate = context.exchange_rate;
     }
@@ -663,7 +709,11 @@ Deno.serve(async (req: Request) => {
       promptContext.recent_fulfillment = (context.recent_fulfillment as any[]).slice(0, 12);
     }
     if (wantsProduct) promptContext.products = (context.products as any[]).slice(0, 25);
-    if (wantsOrder) promptContext.recent_orders = (context.recent_orders as any[]).slice(0, 15);
+    if (wantsOrder) {
+      promptContext.recent_orders = (context.recent_orders as any[]).slice(0, 30);
+      promptContext.recent_baro_manual_orders = (context.recent_baro_manual_orders as any[]).slice(0, 50);
+      promptContext.order_sources_note = "مصدر orders للطلبات العامة ومصدر leo_manual_orders لطلبات BARO اليدوية. لا تعتبر غياب أحد المصدرين دليلاً على عدم وجود طلبات."; 
+    }
     if (wantsSupport) {
       promptContext.recent_support_tickets = (context.recent_support_tickets as any[]).slice(0, 10);
       promptContext.selected_ticket_for_explicit_send = context.selected_ticket_for_explicit_send;
@@ -681,6 +731,8 @@ Deno.serve(async (req: Request) => {
       promptContext.monitoring = context.monitoring;
       promptContext.operational_counts = {
         open_orders_in_latest_100: context.store_health.open_orders_in_latest_100,
+        general_orders_total: context.store_health.general_orders_total,
+        baro_manual_orders_total: context.store_health.baro_manual_orders_total,
         orders_missing_supplier_cost_in_latest_100: context.store_health.orders_missing_supplier_cost_in_latest_100,
         pending_deposits_total: context.store_health.pending_deposits_total,
         open_support_tickets_total: context.store_health.open_support_tickets_total,
