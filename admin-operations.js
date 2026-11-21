@@ -482,7 +482,19 @@ async function opsSimulateSupplierApi(){
 function renderOpsLoyalty(customers,loyaltyRows){
   const select=document.getElementById("opsLoyaltyCustomer");
   const box=document.getElementById("opsLoyaltyCustomers");
+  const statsBox=document.getElementById("opsLoyaltyStats");
   const balances=new Map(loyaltyRows.map(row=>[row.user_id,row]));
+  if(statsBox){
+    const totalPoints=loyaltyRows.reduce((sum,row)=>sum+Number(row.points_balance||0),0);
+    const lifetimePoints=loyaltyRows.reduce((sum,row)=>sum+Number(row.lifetime_earned||0),0);
+    const activeMembers=loyaltyRows.filter(row=>Number(row.points_balance||0)>0).length;
+    statsBox.replaceChildren();
+    [["أعضاء البرنامج",customers.length],["أعضاء لديهم نقاط",activeMembers],["إجمالي النقاط الحالية",totalPoints],["النقاط المكتسبة تاريخياً",lifetimePoints]].forEach(([label,value])=>{
+      const card=opsNode("div","ops-card");
+      card.append(opsNode("div","ops-muted",label),opsNode("div","ops-value",Number(value).toLocaleString("en-US")));
+      statsBox.appendChild(card);
+    });
+  }
   if(select){
     const old=select.value;select.replaceChildren();opsOption(select,"","اختر الزبون");
     customers.forEach(c=>opsOption(select,c.id,(c.full_name||c.email||c.id)+" — "+opsText(c.email)));
