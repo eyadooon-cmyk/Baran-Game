@@ -1,4 +1,4 @@
-// Baran Game — secure AI admin assistant.
+// Baran Game — secure internal admin assistant.
 // Financial and customer data are loaded only by the administrator-only Edge Function.
 (function () {
   "use strict";
@@ -63,7 +63,7 @@
         }
         if (pending) pending.remove();
         const report = formatOfflineReport(offlineResult);
-        const message = "🟣 تقرير مباشر من Baran — دون استهلاك OpenAI\n" + report.reply;
+        const message = "🟣 تقرير مباشر من Baran — بمحرك داخلي دون API خارجي\n" + report.reply;
         addMessage(message, "bot");
         history.push({ role: "assistant", content: message });
         history = history.slice(-10);
@@ -113,11 +113,11 @@
           let offlineResult = {};
           try { offlineResult = await offline.json(); } catch (_) {}
           if (!offline.ok || !offlineResult.reply) {
-            throw new Error(offlineResult.error || "وصل OpenAI للحد المؤقت، وتعذر تجهيز التقرير الاحتياطي. لم يتم أي تعديل.");
+            throw new Error(offlineResult.error || "تعذر تجهيز التقرير الاحتياطي. لم يتم أي تعديل.");
           }
           if (pending) pending.remove();
           const report = formatOfflineReport(offlineResult);
-          const message = "⚠️ وضع Baran الاحتياطي المستقل (بدون OpenAI)\n" +
+          const message = "⚠️ وضع Baran الاحتياطي المستقل\n" +
             report.reply +
             (offlineResult.unavailable?.length ? "\nأقسام لم تتوفر: " + offlineResult.unavailable.join("، ") : "");
           addMessage(message, "bot");
@@ -188,7 +188,7 @@
     const panel = document.createElement("section");
     panel.id = "baranAiUsagePanel";
     panel.style.cssText = "margin-top:14px;padding:14px;border:1px solid #675078;border-radius:14px;background:#100b16";
-    const title = document.createElement("h3"); title.textContent = "📊 قياس استهلاك OpenAI والتوفير";
+    const title = document.createElement("h3"); title.textContent = "📊 سجل الاستخدام السابق والتحول للمحرك الداخلي";
     const note = document.createElement("p"); note.className = "small"; note.textContent = "عداد تقريبي للطلبات الناجحة/المحاولة المسجلة. لا يخزن نص السؤال أو الرد. يبدأ القياس من وقت تفعيل هذه الإضافة.";
     const stats = document.createElement("div"); stats.style.cssText = "white-space:pre-wrap;line-height:1.9;margin:8px 0";
     const refresh = document.createElement("button"); refresh.type = "button"; refresh.textContent = "تحديث الإحصائيات";
@@ -212,12 +212,12 @@
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || "تعذر تحميل الإحصائيات من الخادم.");
         const highUsageWarning = Number(result.openai_attempts_24h || 0) >= 15
-          ? "\n⚠️ تنبيه: تجاوز الاستخدام 15 محاولة OpenAI خلال آخر 24 ساعة. راجع الأسئلة المتكررة ووجّه التقارير للمسار المباشر."
+          ? "\nملاحظة: تُعرض هنا سجلات الاستخدام الخارجي السابقة فقط؛ المسارات الحالية تعمل داخلياً."
           : "";
-        stats.textContent = "آخر 30 يوم (منذ تفعيل العداد)\nمحاولات OpenAI المسجلة: " + result.openai_attempts +
-          "\nتقارير مباشرة دون OpenAI: " + result.offline_reports +
+        stats.textContent = "آخر 30 يوم (منذ تفعيل العداد)\nمحاولات الخدمة الخارجية المسجلة سابقاً: " + result.openai_attempts +
+          "\nتقارير مباشرة بالمحرك الداخلي: " + result.offline_reports +
           "\nنسبة المسار المباشر: " + result.direct_route_percent + "%" +
-          "\n\nآخر 24 ساعة\nمحاولات OpenAI: " + Number(result.openai_attempts_24h || 0) +
+          "\n\nآخر 24 ساعة\nمحاولات الخدمة الخارجية السابقة: " + Number(result.openai_attempts_24h || 0) +
           "\nتقارير مباشرة: " + Number(result.offline_reports_24h || 0) + highUsageWarning +
           "\n\nإجمالي الاستخدام المسجل: " + result.total_recorded +
           "\n\n📉 قياس الرموز من الطلبات الجديدة" +
@@ -226,7 +226,7 @@
           "\nإجمالي الرموز: " + Number(result.openai_total_tokens || 0).toLocaleString("en-US") +
           "\nالطلبات المقاسة بالرموز: " + Number(result.openai_successful_with_token_data || 0) +
           "\n\nآخر فحص: " + new Date(result.checked_at || Date.now()).toLocaleString("ar") +
-          "\n\n🟢 التقارير المباشرة تعمل دون استدعاء OpenAI. العداد مجاني ولا ينفذ أي استدعاء إضافي. قياس الرموز يبدأ من التحديث الحالي، والطلبات القديمة لا تتوفر لها بيانات رموز. لا نحسب تكلفة بالدولار ولا ندّعي أن استدعاءات OpenAI مجانية؛ هدفنا تقليلها لأدنى حد.";
+          "\n\n🟢 المسارات المطوّرة تعمل بمحركات داخلية ولا تستدعي خدمة ذكاء اصطناعي خارجية. الأرقام أعلاه تاريخية من سجلات الاستخدام السابقة فقط؛ هذا العداد لا ينفذ أي استدعاء خارجي.";
       } catch (e) { stats.textContent = "تعذر تحميل الإحصائيات: " + (e?.message || "تحقق من صلاحية قراءة سجل التدقيق."); }
       finally { refresh.disabled = false; }
     }
@@ -334,7 +334,7 @@
       cancel.addEventListener("click",()=>{actions.remove();card.appendChild(document.createTextNode("\nتم إلغاء المعاينة؛ لم يتم تغيير أي بيانات."));history.push({role:"assistant",content:"تم إلغاء المعاينة؛ لم يتم تغيير أي بيانات."});history=history.slice(-10);});
     }catch(error){
       const reason=String(error?.message||"");
-      if(/429|rate.?limit|quota|openai|الحد المؤقت|وصلنا للحد/i.test(reason)){
+      if(/429|rate.?limit|quota|الحد المؤقت|وصلنا للحد/i.test(reason)){
         try{
           const {data:sessionData}=await sb.auth.getSession();
           const session=sessionData?.session;
@@ -346,10 +346,10 @@
           });
           const result=await response.json().catch(()=>({}));
           if(!response.ok||!result.reply)throw new Error(result.error||"تعذر تجهيز قراءة احتياطية.");
-          if(card)card.textContent="⚠️ لم أستطع تحليل وتنفيذ أمر التغيير بسبب حد OpenAI. لم يتم أي تعديل.\n\n"+result.reply;
+          if(card)card.textContent="⚠️ تعذر تحليل أمر التغيير بالمحرك الداخلي. لم يتم أي تعديل.\n\n"+result.reply;
           return;
         }catch(fallbackError){
-          if(card)card.textContent="تعذر تجهيز المعاينة بسبب حد OpenAI، وتعذر التقرير الاحتياطي: "+(fallbackError?.message||"خطأ غير معروف")+"\nلم يتم تنفيذ أي تغيير.";
+          if(card)card.textContent="تعذر تجهيز المعاينة الداخلية والتقرير الاحتياطي: "+(fallbackError?.message||"خطأ غير معروف")+"\nلم يتم تنفيذ أي تغيير.";
           return;
         }
       }
@@ -364,7 +364,7 @@
     panel.style.cssText = "margin-top:16px;padding:14px;border:1px solid #8b6ab0;border-radius:14px;background:#171020";
     const heading = document.createElement("h3"); heading.textContent = "🛠️ تنفيذ المهام الإدارية الآمنة"; heading.style.margin = "0 0 6px";
     const note = document.createElement("p"); note.className = "small";
-    note.textContent = "الأوامر الواضحة مثل تفعيل منتج أو تحديث تذكرة تُفهم أولاً مباشرة دون OpenAI. إذا كان الطلب معقداً أو يحتاج توضيحاً، قد يستخدم المساعد OpenAI عند توفره. يمكنه تجهيز تعديلات المنتجات والموردين والتذاكر والتقييمات والروابط ضمن الصلاحيات المحددة. راجع المعاينة قبل التأكيد؛ المنتجات الجديدة تُنشأ غير نشطة. العمليات المالية الحساسة تبقى محمية بموافقتك الصريحة."
+    note.textContent = "يعمل مخطط المهام بقواعد داخلية محددة فقط، دون أي خدمة ذكاء اصطناعي خارجية. الأوامر التي لا يفهمها بدقة يرفضها ويطلب توضيحاً بدلاً من التخمين. يمكنه تجهيز تعديلات المنتجات والموردين والتذاكر والتقييمات والروابط ضمن الصلاحيات المحددة. راجع المعاينة قبل التأكيد؛ المنتجات الجديدة تُنشأ غير نشطة. العمليات المالية الحساسة خارج صلاحياته."
     const input = document.createElement("textarea"); input.id = "baranSafeActionInput"; input.rows = 3; input.maxLength = 700;
     input.placeholder = "اكتب طلبك بشكل طبيعي… مثال: ضيف ملاحظة على مورد RTC MARKET إنو ناطرين تفعيل الـ API";
     input.style.cssText = "width:100%;box-sizing:border-box;margin:8px 0;padding:11px;border-radius:9px;background:#0e0a13;color:#fff;border:1px solid #69527c";
@@ -397,7 +397,7 @@
             throw new Error("رفضت الواجهة التنفيذ التلقائي لأن نوع المهمة لا يطابق قائمة المهام الداخلية المسموحة.");
           }
           preview.textContent = "مهمة داخلية آمنة: " + p.target_name + " (" + p.target_key + ")\n" +
-            "طريقة الفهم: " + (String(p.reason || "").includes("المسار الاحتياطي") ? "الوضع الاحتياطي بدون OpenAI بسبب الحد المؤقت" : "المساعد الذكي AI") + "\n" +
+            "طريقة الفهم: محرك داخلي بقواعد محددة\n" +
             "التغيير: " + JSON.stringify(p.changes,null,2) + "\n" +
             "سيتم حفظ الملاحظة الداخلية فقط، مع سجل تدقيق، دون إشعار الزبون.";
           preview.style.display = "block";
