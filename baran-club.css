@@ -113,3 +113,16 @@
 @media(prefers-reduced-motion:reduce){
   #rewards .baran-club-hero,#rewards .baran-club-panel{animation:none}
 }
+
+#rewards .baran-club-redeem-button{
+  min-height:49px;margin-top:13px;border:1px solid #d8b2f2;border-radius:14px;
+  background:linear-gradient(110deg,#70448f,#42275c 58%,#2b1a3d);
+  color:#fff;font-weight:900;letter-spacing:.1px;
+  box-shadow:0 9px 22px #8c55b533,inset 0 1px #ffffff30;
+}
+#rewards .baran-club-redeem-button:not(:disabled){cursor:pointer}
+#rewards .baran-club-redeem-button:disabled{
+  border-color:#66536f;background:linear-gradient(110deg,#413448,#2b2330);
+  color:#c2b5c9;box-shadow:none;opacity:.88
+}
+#rewards .baran-club-redeem-button:not(:disabled):active{transform:translateY(1px)}
