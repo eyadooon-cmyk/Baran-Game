@@ -379,7 +379,12 @@ async function submitBaroOrder(){
   const result=await baroApi("POST",{action:"create_order",...request,idempotency_key:pending.idempotency_key});
   baroClearPendingSubmission();
   const appliedDiscount=Number(result.coupon_discount_usd||0);
-  const successMessage="تم تسجيل طلبك وحجز المبلغ النهائي من المحفظة. رقم الطلب: "+String(result.order_id||"").slice(0,8)+(appliedDiscount>0?" · تم تطبيق خصم القسيمة $"+appliedDiscount.toFixed(2):"")+". سيتم تثبيت المبلغ عند اكتمال الشحن أو إعادته إذا فشل الطلب/أُلغي.";
+  const orderNumber=String(result.order_id||"").slice(0,8);
+  const discountNote=appliedDiscount>0?" · تم تطبيق خصم القسيمة $"+appliedDiscount.toFixed(2):"";
+  const deferredCharge=result.wallet_charge_mode==="wallet_on_completion";
+  const successMessage=deferredCharge
+    ?"تم تسجيل طلبك دون خصم من المحفظة. لن يُخصم أي مبلغ عند إرسال الطلب؛ سيتم الخصم فقط بعد اكتمال الشحن بنجاح. رقم الطلب: "+orderNumber+discountNote
+    :"تم تسجيل طلبك وحجز المبلغ النهائي من المحفظة. رقم الطلب: "+orderNumber+discountNote+". سيتم تثبيت المبلغ عند اكتمال الشحن أو إعادته إذا فشل الطلب/أُلغي.";
   message.textContent=successMessage;
   baroEl("baroPlayerId").value="";if(baroEl("baroPlayerIdRepeat"))baroEl("baroPlayerIdRepeat").value="";baroEl("baroCustomerNote").value="";if(baroEl("baroCouponCode"))baroEl("baroCouponCode").value="";baroEl("baroPlayerIdConfirmed").checked=false;baroUpdateOrderSubmitState();
   try{await loadBaroCustomer();}catch{message.textContent=successMessage+" تعذر تحديث قائمة الطلبات؛ حدّث الصفحة لرؤية الطلب.";}
