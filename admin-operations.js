@@ -729,7 +729,7 @@ async function loadMyRewards(){
     balanceBox.append(opsNode("div","ops-muted","رصيد نقاطك الحالي"),
       opsNode("div","ops-value",Number(account?.points_balance||0).toLocaleString("en-US")+" نقطة"),
       opsNode("div","ops-muted","إجمالي النقاط المكتسبة: "+lifetime.toLocaleString("en-US")),
-      opsNode("div","ops-muted","كل 1,000 نقطة = مكافأة بقيمة 1$ عند تفعيل الاستبدال."));
+      opsNode("div","ops-muted","قيمة الاستبدال قيد الاعتماد؛ لا يتم خصم النقاط قبل تفعيل المكافآت الجديدة."));
     historyBox.replaceChildren();
     if(!history?.length){historyBox.textContent="لا توجد حركات نقاط مسجلة حتى الآن.";return;}
     history.forEach(item=>{
