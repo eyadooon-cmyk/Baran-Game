@@ -386,7 +386,7 @@ async function submitBaroOrder(){
     ?"تم تسجيل طلبك دون خصم من المحفظة. لن يُخصم أي مبلغ عند إرسال الطلب؛ سيتم الخصم فقط بعد اكتمال الشحن بنجاح. رقم الطلب: "+orderNumber+discountNote
     :"تم تسجيل طلبك وحجز المبلغ النهائي من المحفظة. رقم الطلب: "+orderNumber+discountNote+". سيتم تثبيت المبلغ عند اكتمال الشحن أو إعادته إذا فشل الطلب/أُلغي.";
   message.textContent=successMessage;
-  baroEl("baroPlayerId").value="";if(baroEl("baroPlayerIdRepeat"))baroEl("baroPlayerIdRepeat").value="";baroEl("baroCustomerNote").value="";if(baroEl("baroCouponCode"))baroEl("baroCouponCode").value="";baroEl("baroPlayerIdConfirmed").checked=false;baroUpdateOrderSubmitState();
+  baroEl("baroPlayerId").value="";if(baroEl("baroPlayerIdRepeat"))baroEl("baroPlayerIdRepeat").value="";baroEl("baroCustomerNote").value="";if(baroEl("baroCouponCode"))baroEl("baroCouponCode").value="";baroEl("baroPlayerIdConfirmed").checked=false;baroUpdateOrderSubmitState();baroScheduleCouponQuote();
   try{await loadBaroCustomer();}catch{message.textContent=successMessage+" تعذر تحديث قائمة الطلبات؛ حدّث الصفحة لرؤية الطلب.";}
  }catch(e){message.textContent=e.message+" إذا لم يتأكد وصول الطلب، أعد إرسال نفس البيانات لتجنب إنشاء طلب مكرر.";}
  finally{baroUpdateOrderSubmitState();}
