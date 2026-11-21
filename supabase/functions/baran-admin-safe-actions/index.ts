@@ -90,6 +90,19 @@ Deno.serve(async(req:Request)=>{
   if(body.mode==="plan"){
    const command=typeof body.command==="string"?body.command.trim().slice(0,700):"";
    if(command.length<5)return reply({error:"اكتب وصفاً واضحاً للمهمة."},400);
+   if(/loyalty_coupons|customer_loyalty|loyalty_transactions|loyalty_tiers|coupon_redemptions|store_coupons|الولاء|القسائم|النقاط|كوبون|قسيمة/i.test(command) && /تشخيص|شخّص|افحص|فحص|تحقق|تحقّق|راجع|قراءة|مشكلة|خطأ|صلاحيات|جدول|جداول/i.test(command)) {
+    const checks = await Promise.all([
+     db.from("customer_loyalty").select("user_id",{count:"exact",head:true}),
+     db.from("loyalty_transactions").select("id",{count:"exact",head:true}),
+     db.from("loyalty_coupons").select("id",{count:"exact",head:true}),
+     db.from("loyalty_tiers").select("tier_code",{count:"exact",head:true}),
+     db.from("coupon_redemptions").select("id",{count:"exact",head:true}),
+     db.from("store_coupons").select("id",{count:"exact",head:true})
+    ]);
+    const names=["customer_loyalty","loyalty_transactions","loyalty_coupons","loyalty_tiers","coupon_redemptions","store_coupons"];
+    const diagnostic=checks.map((x:any,i:number)=>({table:names[i],accessible:!x.error,row_count:x.error?null:x.count,error:x.error?String(x.error.message||"read failed").slice(0,240):null}));
+    return reply({diagnostic:{mode:"read_only",message:"فحص مباشر للقراءة فقط. لم يتم تعديل أي بيانات.",tables:diagnostic,all_accessible:diagnostic.every((x:any)=>x.accessible)}});
+   }
    const [{data:productRows,error:productErr},{data:ticketRows,error:ticketErr},{data:reviewRows,error:reviewErr},{data:supplierRows,error:supplierErr},{data:fulfillmentRows,error:fulfillmentErr},{data:supplierProductRows,error:supplierProductErr},{data:orderRows,error:orderErr},{data:announcementRows,error:announcementErr}]=await Promise.all([
     db.from("products").select("id,product_code,name,description,category,sort_order,is_active,price_usd,price_syp,updated_at").order("sort_order").limit(100),
     db.from("customer_feedback").select("id,ticket_code,subject,message,status,updated_at").eq("feedback_type","support").order("created_at",{ascending:false}).limit(100),
