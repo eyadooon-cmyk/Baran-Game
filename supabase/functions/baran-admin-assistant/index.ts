@@ -504,15 +504,15 @@ Deno.serve(async (req: Request) => {
         admin.from("deposit_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
       ]);
       const errors = [products.error && "products", suppliers.error && "suppliers", orders.error && "orders",
-        tickets.error && "support_tickets", deposits.error && "pending_deposits"].filter(Boolean);
+        manualOrders.error && "leo_manual_orders", tickets.error && "support_tickets", deposits.error && "pending_deposits"].filter(Boolean);
       if (errors.length) return json({ error: "تعذر إكمال الفحص العام لبعض الأقسام: " + errors.join("، ") + ". لم يتم إجراء أي تعديل." }, 502);
       return json({ mode: "offline_read_only", report: "store_health", checked_at: checkedAt,
         summary: { products_total: products.count ?? null, suppliers_total: suppliers.count ?? null,
           orders_total: (orders.count ?? 0) + (manualOrders.count ?? 0), general_orders_total: orders.count ?? null,
           baro_manual_orders_total: manualOrders.count ?? null, open_support_tickets: tickets.count ?? null,
           pending_deposits: deposits.count ?? null,
-          latest_order_statuses: counts(orders.data ?? [], "status") },
-        reply: "تقرير Baran Game المحلي (قراءة فقط): المنتجات " + (products.count ?? "غير متاح") + "، الموردون " + (suppliers.count ?? "غير متاح") + "، الطلبات " + ((orders.count ?? 0) + (manualOrders.count ?? 0)) + " (العامة " + (orders.count ?? 0) + "، BARO اليدوية " + (manualOrders.count ?? 0) + ")، تذاكر الدعم المفتوحة " + (tickets.count ?? "غير متاح") + "، طلبات الإيداع المعلقة " + (deposits.count ?? "غير متاح") + ". حالات أحدث الطلبات المحمّلة: " + JSON.stringify(counts(orders.data ?? [], "status")) + ". لا يتضمن التقرير مبالغ أو أرصدة، ولم يتم تغيير أي بيانات.",
+          latest_order_statuses: { general: counts(orders.data ?? [], "status"), baro_manual: counts(manualOrders.data ?? [], "status") } },
+        reply: "تقرير Baran Game المحلي (قراءة فقط): المنتجات " + (products.count ?? "غير متاح") + "، الموردون " + (suppliers.count ?? "غير متاح") + "، الطلبات " + ((orders.count ?? 0) + (manualOrders.count ?? 0)) + " (العامة " + (orders.count ?? 0) + "، BARO اليدوية " + (manualOrders.count ?? 0) + ")، تذاكر الدعم المفتوحة " + (tickets.count ?? "غير متاح") + "، طلبات الإيداع المعلقة " + (deposits.count ?? "غير متاح") + ". حالات الطلبات العامة: " + JSON.stringify(counts(orders.data ?? [], "status")) + "؛ حالات BARO اليدوية: " + JSON.stringify(counts(manualOrders.data ?? [], "status")) + ". لا يتضمن التقرير مبالغ أو أرصدة، ولم يتم تغيير أي بيانات.",
         note: "تقرير تشغيلي محدود من بيانات قاعدة البيانات الحالية. لا يتضمن أرباحاً أو أرصدة أو تفاصيل إيداعات، ولا يغيّر أي بيانات." });
     }
 
@@ -611,7 +611,8 @@ Deno.serve(async (req: Request) => {
       wallet_charge_mode: o.wallet_charge_mode,
     }));
     const allRecentOrders = [...enrichedOrders, ...enrichedManualOrders].sort((a: any,b: any) => Date.parse(b.created_at)-Date.parse(a.created_at));
-    const openOrders = [...orders, ...manualOrders].filter((o: any) => ["pending", "processing", "awaiting_supplier"].includes(o.status));
+    const allOpenOrders = [...orders, ...manualOrders].filter((o: any) => ["pending", "processing", "awaiting_supplier"].includes(o.status));
+    const openOrders = orders.filter((o) => ["pending", "processing", "awaiting_supplier"].includes(o.status));
     const ordersMissingCost = openOrders.filter((o) => {
       const f = fulfillmentByOrder.get(o.id);
       return !f || f.supplier_total_cost === null || !f.supplier_cost_currency || !f.supplier_cost_exchange_rate;
@@ -654,7 +655,7 @@ Deno.serve(async (req: Request) => {
         baro_manual_orders_total: manualOrderCountResult.count ?? null,
         products_total: productCountResult.count ?? null,
         suppliers_total: supplierCountResult.count ?? null,
-        open_orders_in_latest_100: openOrders.length,
+        open_orders_in_latest_100: allOpenOrders.length,
         orders_missing_supplier_cost_in_latest_100: ordersMissingCost.length,
         pending_deposits_total: pendingDepositCountResult.count ?? null,
         open_support_tickets_total: openFeedbackCountResult.count ?? null,
