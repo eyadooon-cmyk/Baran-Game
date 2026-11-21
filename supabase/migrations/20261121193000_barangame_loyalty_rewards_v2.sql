@@ -81,6 +81,26 @@ begin
  return new;
 end;
 $function$;
+CREATE OR REPLACE FUNCTION public.get_my_loyalty_reward_config()
+ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path TO ''
+AS $function$
+begin
+ if auth.uid() is null then
+  raise exception using errcode='28000',message='سجّل الدخول أولاً لعرض إعدادات المكافآت.';
+ end if;
+ return pg_catalog.jsonb_build_object(
+  'program_version',2,
+  'points_per_coupon',1000,
+  'coupon_value_usd',1.00,
+  'base_points_per_usd',10,
+  'gross_profit_reward_cap_percent',5,
+  'tier_multipliers',pg_catalog.jsonb_build_object(
+   'bronze',1.00,'silver',1.25,'gold',1.50,'platinum',2.00
+  )
+ );
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION public.redeem_loyalty_coupon()
  RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path TO ''
 AS $function$
@@ -361,6 +381,8 @@ begin
 end;
 $function$;
 REVOKE EXECUTE ON FUNCTION public.redeem_loyalty_coupon() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_my_loyalty_reward_config() TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_my_loyalty_reward_config() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.redeem_loyalty_coupon() TO authenticated;
 REVOKE EXECUTE ON FUNCTION public.get_my_baro_coupon_quote(text,text,text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_my_baro_coupon_quote(text,text,text) TO authenticated;
