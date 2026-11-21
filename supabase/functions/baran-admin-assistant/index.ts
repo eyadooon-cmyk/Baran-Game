@@ -607,6 +607,7 @@ Deno.serve(async (req: Request) => {
       id: o.id, source: "leo_manual_orders", product_code: o.product_code, product_name: o.product_name_snapshot,
       quantity: o.quantity, status: o.status, payment_status: o.payment_status, created_at: o.created_at, completed_at: o.completed_at,
       total_price_usd: o.customer_price_usd, total_price_syp: o.customer_price_syp,
+      customer_price_usd: o.customer_price_usd, customer_price_syp: o.customer_price_syp,
       supplier_cost_usd: o.supplier_cost_usd_snapshot ?? o.supplier_cost_usd, coupon_discount_usd: o.coupon_discount_usd,
       wallet_charge_mode: o.wallet_charge_mode,
     }));
