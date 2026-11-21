@@ -157,8 +157,7 @@
 
   window.askBaranAdminPrompt = function (question) {
     const input = document.getElementById("baranAdminAssistantInput");
-    const prompt = String(question || "");
-    if (input) input.value = "";
+    const prompt = String(question || "");    if (input) input.value = "";
     void send(prompt);
   };
 
@@ -307,6 +306,21 @@
     const card = addMessage("🛠️ عم حضّر معاينة المهمة من نفس المحادثة…", "bot");
     try {
       const planned = await callSafeAction({mode:"plan",command});
+      if (planned?.diagnostic && Array.isArray(planned.diagnostic.tables)) {
+        const d = planned.diagnostic;
+        const lines = d.tables.map((t) =>
+          (t.accessible ? "✅ " : "❌ ") + t.table +
+          " — " + (t.accessible ? ("السجلات: " + (t.row_count ?? "غير معروف")) : ("خطأ: " + (t.error || "تعذر القراءة")))
+        );
+        const message = "🟣 تشخيص نظام الولاء — قراءة فقط\\n" +
+          (d.message || "فحص مباشر للجداول دون تعديل البيانات.") + "\\n\\n" +
+          lines.join("\\n") + "\\n\\n" +
+          (d.all_accessible ? "✅ جميع الجداول الستة قابلة للقراءة." : "⚠️ بعض الجداول تحتاج مراجعة صلاحيات.") +
+          "\\nلم يتم تغيير النقاط أو القسائم أو أرصدة الزبائن.";
+        if (card) { card.textContent = message; card.style.whiteSpace = "pre-wrap"; }
+        history.push({role:"assistant",content:message}); history=history.slice(-10);
+        return;
+      }
       const p = planned?.proposal;
       if (!p) { if (card) card.textContent = planned?.error || "ما قدرت أجهّز معاينة آمنة. ما تم تغيير أي بيانات."; return; }
       const labels = {product:"تعديل منتج",product_create:"إنشاء منتج",supplier:"تعديل مورد",supplier_create:"إضافة مورد",supplier_product:"تعديل ربط مورد ومنتج",supplier_product_create:"إنشاء ربط مورد ومنتج",ticket:"تحديث تذكرة",review:"تحديث تقييم",order_status:"تحديث حالة طلب",announcement_create:"إنشاء مسودة إعلان",announcement_publish:"نشر إعلان",fulfillment_note:"تعديل ملاحظة تنفيذ",supplier_product_note:"تعديل ملاحظة ربط"};
@@ -317,8 +331,7 @@
         if (card) card.textContent = message;
         history.push({role:"assistant",content:message}); history=history.slice(-10); return;
       }
-      if (card) {
-        card.textContent = "📋 معاينة: " + (labels[p.target_type] || "مهمة إدارية") + "\n" + details + "\n\nراجع التفاصيل قبل التأكيد. لم يتم تنفيذ أي تغيير بعد.";
+      if (card) {        card.textContent = "📋 معاينة: " + (labels[p.target_type] || "مهمة إدارية") + "\n" + details + "\n\nراجع التفاصيل قبل التأكيد. لم يتم تنفيذ أي تغيير بعد.";
         card.style.whiteSpace="pre-wrap";card.style.padding="12px";card.style.border="1px solid #8b6ab0";card.style.borderRadius="12px";
       }
       const actions=document.createElement("div");actions.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px";
