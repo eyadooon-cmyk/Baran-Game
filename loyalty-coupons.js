@@ -30,17 +30,22 @@
     catalog.replaceChildren(node("p", "small", "جاري تحميل قسائم الخصم..."));
     historyBox.textContent = "جاري تحميل سجل النقاط...";
     try {
-      const [loyaltyResult, tiersResult, historyResult, couponsResult] = await Promise.all([
+      const [loyaltyResult, tiersResult, historyResult, couponsResult, rewardConfigResult] = await Promise.all([
         sb.from("customer_loyalty").select("points_balance,lifetime_earned").eq("user_id", user.id).maybeSingle(),
         sb.from("loyalty_tiers").select("tier_code,tier_name,min_lifetime_points,badge_emoji,benefits").eq("is_active", true).order("min_lifetime_points", {ascending:true}),
         sb.from("loyalty_transactions").select("points,transaction_type,description,created_at").eq("user_id", user.id).order("created_at", {ascending:false}).limit(30),
-        sb.rpc("get_my_loyalty_coupons")
+        sb.rpc("get_my_loyalty_coupons"),
+        sb.rpc("get_my_loyalty_reward_config").catch(error => ({data:null,error}))
       ]);
       if (loyaltyResult.error) throw loyaltyResult.error;
       if (tiersResult.error) throw tiersResult.error;
       if (historyResult.error) throw historyResult.error;
       if (couponsResult.error) throw couponsResult.error;
 
+      const rewardConfig = rewardConfigResult?.data || null;
+      const rewardReady = rewardConfig?.program_version === 2
+        && Number(rewardConfig?.points_per_coupon) === 1000
+        && Number(rewardConfig?.coupon_value_usd) === 1;
       const loyalty = loyaltyResult.data || {points_balance:0,lifetime_earned:0};
       const balance = Number(loyalty.points_balance || 0);
       const earned = Number(loyalty.lifetime_earned || 0);
@@ -78,21 +83,24 @@
       const rewardHeadingCopy = node("div");
       rewardHeadingCopy.append(
         node("h3", "", "مكافآتك وقسائمك"),
-        node("p", "", "رصيدك محفوظ، وقيمة الاستبدال الجديدة قيد الاعتماد.")
+        node("p", "", rewardReady ? "كل 1,000 نقطة تمنحك قسيمة حتى 1$." : "رصيد نقاطك محفوظ. تفعيل الاستبدال الجديد سيظهر هنا بعد اكتمال تحديث النظام.")
       );
       rewardHeading.append(rewardHeadingCopy);
       catalog.append(rewardHeading);
       const rewardNotice = node("div", "baran-club-reward-notice");
       rewardNotice.append(
-        node("strong", "", "كل 1,000 نقطة = قسيمة خصم حتى 1$ 🎁"),
-        node("p", "small", "النقاط منفصلة عن رصيد المحفظة، والقسيمة ليست رصيداً نقدياً. استخدامها متاح لطلبات BARO المؤهلة فقط، بعد تحقق الخادم من هامش الربح.")
+        node("strong", "", rewardReady ? "كل 1,000 نقطة = قسيمة خصم حتى 1$ 🎁" : "نجهّز لك مكافآت BARAN CLUB الجديدة ✨"),
+        node("p", "small", rewardReady
+          ? "النقاط منفصلة عن رصيد المحفظة، والقسيمة ليست رصيداً نقدياً. استخدامها متاح لطلبات BARO المؤهلة فقط، بعد تحقق الخادم من هامش الربح."
+          : "لن نخصم أي نقطة قبل تفعيل نظام المكافآت الجديد على الخادم. رصيدك الحالي محفوظ بالكامل.")
       );
       catalog.append(rewardNotice);
 
       const redeem = node("button", "full baran-club-redeem-button",
+        !rewardReady ? "الاستبدال الجديد قيد التفعيل" :
         balance < 1000 ? "اجمع " + (1000-balance).toLocaleString("en-US") + " نقطة لاستبدال قسيمة 1$" : "استبدال 1,000 نقطة بقسيمة 1$");
       redeem.type = "button";
-      redeem.disabled = balance < 1000;
+      redeem.disabled = !rewardReady || balance < 1000;
       redeem.title = "تُصدر القسيمة بعد تأكيد الخادم، وتُقبل فقط على طلبات BARO المؤهلة التي تسمح أرباحها بالخصم.";
       redeem.addEventListener("click", async () => {
         if (redeem.disabled) return;
@@ -102,7 +110,8 @@
         try {
           const {data, error} = await sb.rpc("redeem_loyalty_coupon");
           if (error) throw error;
-          if (!data?.code) throw new Error("لم نتلقَّ تأكيد إصدار القسيمة من الخادم.");
+          if (!data?.code || Number(data.discount_amount_usd) !== 1 || Number(data.points_spent) !== 1000)
+            throw new Error("لم يؤكد الخادم إصدار قسيمة BARAN CLUB الجديدة؛ لم نعرضها كقسيمة 1$.");
           window.alert("مبروك! صدرت قسيمة BARAN CLUB حتى 1$:\n" + data.code + "\nاحتفظ بالرمز لاستخدامه في طلب BARO مؤهل.");
           await loadMyRewards();
         } catch (error) {
