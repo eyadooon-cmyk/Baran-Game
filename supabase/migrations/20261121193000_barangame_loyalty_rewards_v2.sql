@@ -2,6 +2,12 @@
 -- Base earning 10 points per eligible USD; VIP multipliers 1.00x/1.25x/1.50x/2.00x.
 -- Earning reward is capped at 5% of realized gross profit.
 -- Existing points are preserved. Legacy $0.10 coupons retain their full value.
+-- Allow both legacy $0.10 coupons and new $1.00 maximum-value coupons.
+ALTER TABLE public.loyalty_coupons
+  DROP CONSTRAINT IF EXISTS loyalty_coupons_discount_amount_usd_check;
+ALTER TABLE public.loyalty_coupons
+  ADD CONSTRAINT loyalty_coupons_discount_amount_usd_check
+  CHECK (discount_amount_usd IN (0.10,1.00));
 CREATE OR REPLACE FUNCTION public.baran_award_order_loyalty_points()
  RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO ''
 AS $function$
