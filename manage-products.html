@@ -107,7 +107,7 @@ async function prepareAssistantProducts(){
   confirm.classList.add("hidden");
   if(!command){preview.textContent="اكتب طلب الإضافة أولاً.";return;}
   prepare.disabled=true;
-  preview.textContent="المساعد الذكي يحلل طلبك ويجهز معاينة المنتجات...";
+  preview.textContent="المحرك الداخلي يحلل الطلب ويجهز معاينة المنتجات...";
   try{
     const {data:{session},error}=await sb.auth.getSession();
     if(error||!session)throw new Error("انتهت جلسة الدخول. سجّل الدخول من المتجر ثم أعد المحاولة.");
@@ -124,7 +124,7 @@ async function prepareAssistantProducts(){
     if(!response.ok)throw new Error(result.error||"تعذر تحليل الطلب.");
     if(!Array.isArray(result.products)||!result.products.length)throw new Error("لم يتم العثور على منتجات واضحة في الطلب.");
     assistantProductsPending=result.products;
-    preview.textContent="معاينة "+assistantProductsPending.length+" منتجاً:\\n"+assistantProductsPending.map((p,i)=>(i+1)+") "+p.name+" | الرمز: "+p.product_code+" | القسم: "+productCategoryLabel(p.category)+" | بدون سعر").join("\\n")+"\\n\\nراجع الأسماء والتصنيفات. لن يتم الحفظ قبل ضغط زر التأكيد.";
+    preview.textContent="معاينة "+assistantProductsPending.length+" منتجاً:\\n"+assistantProductsPending.map((p,i)=>(i+1)+") "+p.name+" | الرمز: "+p.product_code+" | القسم: "+productCategoryLabel(p.category)+" | بدون سعر").join("\\n")+"\\n\\nراجع الأسماء والتصنيفات. المنتجات ستُضاف متوقفة وبلا سعر، ولن تظهر للزبائن قبل تفعيلها وتحديد السعر. لن يتم الحفظ قبل ضغط زر التأكيد.";
     confirm.classList.remove("hidden");
   }catch(error){
     preview.textContent="تعذر تحليل الطلب: "+(error.message||"خطأ غير معروف");
