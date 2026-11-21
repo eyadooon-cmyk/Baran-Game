@@ -58,16 +58,16 @@
       catalog.replaceChildren();
       catalog.append(
         node("strong", "", "🎟️ قسيمة خصم BARAN"),
-        node("p", "small", "كل 1,000 نقطة تمنحك قسيمة خصم بقيمة 1 دولار. القسيمة لمرة واحدة، ولا تتحول إلى رصيد نقدي.")
+        node("p", "small", "كل 1,000 نقطة تمنحك قسيمة خصم بقيمة 10 سنت (0.10$). القسيمة لمرة واحدة، ولا تتحول إلى رصيد نقدي.")
       );
-      const redeem = node("button", "full", "استبدال 1,000 نقطة بقسيمة 1$");
+      const redeem = node("button", "full", "استبدال 1,000 نقطة بقسيمة 0.10$");
       redeem.type = "button";
       redeem.disabled = balance < 1000;
-      redeem.textContent = balance < 1000 ? "استبدل عند الوصول إلى 1,000 نقطة" : "استبدال 1,000 نقطة بقسيمة 1$";
+      redeem.textContent = balance < 1000 ? "استبدل عند الوصول إلى 1,000 نقطة" : "استبدال 1,000 نقطة بقسيمة 0.10$";
       redeem.title = "تعمل القسائم حالياً على طلبات BARO المؤهلة فقط؛ يتحقق الخادم من تكلفة المورد وهامش الربح قبل قبولها."; 
       redeem.addEventListener("click", async () => {
         if (redeem.disabled) return;
-        if (!window.confirm("سيتم خصم 1,000 نقطة وإصدار قسيمة خصم بقيمة 1 دولار. هل تريد المتابعة؟")) return;
+        if (!window.confirm("سيتم خصم 1,000 نقطة وإصدار قسيمة خصم بقيمة 10 سنت (0.10$). هل تريد المتابعة؟")) return;
         redeem.disabled = true;
         redeem.textContent = "جاري إصدار القسيمة...";
         try {
@@ -79,7 +79,7 @@
         } catch (error) {
           window.alert(error?.message || "تعذر إصدار القسيمة. لم يتم تأكيد الاستبدال.");
           redeem.disabled = false;
-          redeem.textContent = "استبدال 1,000 نقطة بقسيمة 1$";
+          redeem.textContent = "استبدال 1,000 نقطة بقسيمة 0.10$";
         }
       });
       catalog.append(redeem);
