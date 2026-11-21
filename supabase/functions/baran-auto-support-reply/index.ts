@@ -13,6 +13,7 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 }
 function sensitiveReason(subject: string, message: string): string | null {
+  const raw = (subject + " " + message).toLowerCase();
   const s = normalizeSupportText(subject + " " + message);
   const rules: Array<[RegExp, string]> = [
     [/شام\s*كاش|sham\s*cash|تحويل|حواله|ايداع|دفعه|دفع|اثبات\s*الدفع|فاتوره|فاتورة|تسديد|سداد|خصم|انخصم|سحب|استرجاع|استرداد|تعويض|رصيد|محفظه|refund|payment|deposit|wallet|balance|transfer|chargeback|money|billing|invoice/i, "موضوع مالي أو تحويل أو رصيد يحتاج مراجعة المدير"],
@@ -21,7 +22,7 @@ function sensitiveReason(subject: string, message: string): string | null {
     [/(?:كلمه\s*المرور|كلمه\s*السر|password|passcode|رمز\s*التحقق|كود\s*التحقق|verification\s*code|otp|pin|api[_ -]?key|access[_ -]?token).{0,45}(?:[:=]|ارسل|ابعث|اعطني|اعطيني|مشاركه|send|share|give)|(?:send|share|give).{0,30}(?:password|otp|verification\s*code|pin)|(?:password|passcode|otp|pin)\s*[:=]\s*\S+/i, "طلب أو إفصاح متعلق ببيانات اعتماد أو رموز سرية"],
     [/\b(?:\d[ -]*?){13,19}\b|(?:رقم\s*البطاقه|بطاقه\s*بنكيه|credit\s*card|card\s*number)/i, "بيانات بطاقة أو وسيلة دفع حساسة تحتاج مراجعة المدير"],
   ];
-  for (const [pattern, reason] of rules) if (pattern.test(s)) return reason;
+  for (const [pattern, reason] of rules) if (pattern.test(s) || pattern.test(raw)) return reason;
   return null;
 }
 
