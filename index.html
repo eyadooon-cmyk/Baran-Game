@@ -2810,10 +2810,10 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         <div id="baranAdminAssistantMessages" class="ai-assistant-messages" style="height:210px;max-height:35vh;background:#100b16;border-radius:12px" aria-live="polite">
           <div class="ai-chat-message bot">أهلاً! فيني أعطيك ملخصاً عن وضع المتجر وأحلل الأرقام المسجلة. جرّب: «ملخص اليوم» أو «الطلبات المعلقة» أو «أفضل المنتجات».</div>
         </div>
-        <form id="baranAdminAssistantForm" class="ai-assistant-form" onsubmit="return (window.askBaranAdminAssistant ? window.askBaranAdminAssistant(event) : false)">
-          <input id="baranAdminAssistantInput" type="text" maxlength="500" autocomplete="off" placeholder="اسأل عن أرباحك أو طلباتك أو الموردين..." aria-label="سؤال مساعد الإدارة">
-          <button id="baranAdminAssistantSend" type="submit">اسأل</button>
-        </form>
+        <div id="baranAdminAssistantForm" class="ai-assistant-form" role="group" aria-label="مساعد الإدارة">
+          <input id="baranAdminAssistantInput" type="text" maxlength="500" autocomplete="off" placeholder="اسأل عن أرباحك أو طلباتك أو الموردين..." aria-label="سؤال مساعد الإدارة" onkeydown="if(event.key==='Enter'){event.preventDefault();window.askBaranAdminAssistant?.(null)}">
+          <button id="baranAdminAssistantSend" type="button" onclick="window.askBaranAdminAssistant?.(null)">اسأل</button>
+        </div>
         <div class="ops-actions" style="display:flex;flex-wrap:wrap;gap:8px">
           <button type="button" class="secondary" onclick="askBaranAdminPrompt('اعطني تقرير أرباح اليوم والشهر، وافصل الدولار عن الليرة، وبيّن المبيعات والتكاليف والمصاريف وصافي الربح.')">💰 تقرير الأرباح</button>
           <button type="button" class="secondary" onclick="askBaranAdminPrompt('راجع الطلبات المعلقة والمتأخرة والفاشلة، واذكر أرقامها وأسباب التأخير والخطوات المقترحة.')">📦 متابعة الطلبات</button>
