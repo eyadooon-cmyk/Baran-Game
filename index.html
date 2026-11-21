@@ -1347,6 +1347,36 @@ body:has(#authScreen:not(.hidden)){background:#08060d!important}
 
 @media(prefers-reduced-motion:reduce){#authScreen *{transition:none!important}}
 
+
+/* BARAN CLUB admin center — mobile-first */
+.baran-club-admin-hub-card{border-color:#a17ac0!important;background:radial-gradient(circle at 8% 8%,#9a6cc344,transparent 42%),linear-gradient(145deg,#382448,#17111f)!important}
+.baran-club-admin-panel{background:radial-gradient(ellipse at 95% 0%,#6e438c22,transparent 35%),linear-gradient(180deg,#17121f,#100d15)!important}
+.baran-club-admin-hero{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;overflow:hidden;margin:12px 0 18px;padding:20px;border:1px solid #79549a;border-radius:18px;background:radial-gradient(circle at 8% 10%,#9a6cc344,transparent 38%),linear-gradient(125deg,#352342,#17111f 78%);box-shadow:0 10px 25px #0004}
+.baran-club-admin-hero h2{margin:5px 0 7px;color:#f3e8fb;font-size:clamp(20px,4vw,26px)}
+.baran-club-admin-hero p{max-width:580px;margin:0;color:#c9b8d7;font-size:12px;line-height:1.9}
+.baran-club-admin-kicker,.baran-club-admin-section-title span{color:#c49bdd;font-size:9px;font-weight:900;letter-spacing:1.5px}
+.baran-club-admin-mark{flex:0 0 62px;display:grid;place-items:center;width:62px;height:62px;border:1px solid #b18bcf88;border-radius:19px;background:#a979cb22;color:#e8cff9;font-size:34px}
+.baran-club-admin-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:17px 0 11px}
+.baran-club-admin-section-title h3{margin:3px 0;color:#eadcf5;font-size:16px}
+.baran-club-admin-section-title p{margin:0;color:#a99ab5;font-size:10px;line-height:1.7}
+.baran-club-admin-section-title>b{font-size:22px}
+.baran-club-admin-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:17px}
+.baran-club-admin-stats .ops-card{min-width:0;min-height:86px;padding:12px;border:1px solid #5c456e;border-radius:14px;background:linear-gradient(145deg,#291e35,#17121e)}
+.baran-club-admin-stats .ops-value{margin-top:5px;color:#ead8f7;font-size:23px;font-weight:900;overflow-wrap:anywhere}
+.baran-club-admin-section,.baran-club-admin-coupon{margin:14px 0;padding:14px;border:1px solid #51405f;border-radius:16px;background:linear-gradient(150deg,#1d1726,#130f19)}
+.baran-club-admin-form{margin:0;padding:13px;border:1px solid #493858;border-radius:13px;background:#100c16}
+.baran-club-admin-form input,.baran-club-admin-form select{width:100%;min-width:0}
+.baran-club-admin-form button{margin-top:12px}
+.baran-club-admin-coupon{border-color:#8a6b48;background:linear-gradient(145deg,#292014,#17120f)}
+.baran-club-admin-coupon .baran-club-admin-section-title h3{color:#f1dfbf}
+.baran-club-admin-coupon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.baran-club-admin-coupon-grid article{display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0;padding:11px 8px;border:1px solid #735b3b;border-radius:12px;background:#211a12;text-align:center}
+.baran-club-admin-coupon-grid strong{color:#f3d9a8;font-size:14px}
+.baran-club-admin-coupon-grid span,.baran-club-admin-coupon>p{color:#cbb99b;font-size:10px;line-height:1.8}
+.baran-club-admin-coupon>p{margin:12px 0 0}
+@media(max-width:380px){.baran-club-admin-hero{padding:15px}.baran-club-admin-mark{flex-basis:48px;width:48px;height:48px;font-size:27px}.baran-club-admin-coupon-grid{grid-template-columns:1fr}.baran-club-admin-section-title{align-items:flex-start;flex-wrap:wrap}}
+@media(min-width:700px){.baran-club-admin-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
 </style>
 <link rel="stylesheet" href="./baran-premium.css?v=20261121-topup-home-v1">
 <style>
@@ -2666,7 +2696,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
             <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="baro بَارو الشحن اليدوي كتالوج ليو طلبات يدوية عروض اسعار" onclick="showAdminPanel('baro')"><span class="admin-hub-icon">🟣</span><strong>BARO · الشحن اليدوي</strong><small>مساحة مستقلة لكتالوج BARO وطلباته اليدوية وعروض الأسعار، بعيداً عن الشحن الآلي.</small><span class="admin-hub-open">الدخول إلى BARO <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="baro طلبات الشحن اليدوي متابعة التنفيذ player id" onclick="showAdminPanel('baro-orders')"><span class="admin-hub-icon">📦</span><strong>طلبات BARO اليدوية</strong><small>متابعة الطلبات والوصول المباشر إلى الطلب من الإشعار.</small><span class="admin-hub-open">فتح الطلبات <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="العروض الكوبونات الخصومات promotions" onclick="showAdminPanel('promotions')"><span class="admin-hub-icon">🏷️</span><strong>العروض والكوبونات</strong><small>جهّز العروض والكوبونات ونظّم حملات المتجر.</small><span class="admin-hub-open">إدارة العروض <b>←</b></span></button>
-            <button type="button" class="admin-hub-card" data-admin-search="نقاط الولاء المكافآت rewards loyalty" onclick="showAdminPanel('loyalty')"><span class="admin-hub-icon">🎁</span><strong>الولاء والمكافآت</strong><small>تابع نقاط العملاء وسجل المكافآت وبرنامج الاحتفاظ بالزبائن.</small><span class="admin-hub-open">متابعة الولاء <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-primary baran-club-admin-hub-card" data-admin-search="BARAN CLUB نقاط الولاء المكافآت القسائم الكوبونات VIP rewards loyalty coupons" onclick="showAdminPanel('loyalty')"><span class="admin-hub-icon">🎁</span><strong>BARAN CLUB · إدارة الولاء</strong><small>أرصدة النقاط، مستويات VIP، سجل المكافآت، ومتابعة قسائم الخصم.</small><span class="admin-hub-open">فتح مركز BARAN CLUB <b>←</b></span></button>
           </div></section>
           <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>03</span><div><strong>العملاء وخدمة المتجر</strong><small>حسابات العملاء، طلبات المساعدة، واستعادة الوصول للحسابات.</small></div><em>CUSTOMER CARE</em></div><div class="admin-hub-grid">
             <button type="button" class="admin-hub-card" data-admin-search="المستخدمين العملاء الزبائن الحسابات محافظ المستخدم users" onclick="showAdminPanel('users')"><span class="admin-hub-icon">👥</span><strong>ملفات العملاء</strong><small>اعرض حسابات الزبائن ومعلومات محافظهم ضمن صلاحياتك.</small><span class="admin-hub-open">إدارة العملاء <b>←</b></span></button>
@@ -3122,23 +3152,40 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         <h3>العروض المحفوظة</h3><div id="promoCampaignsList" class="ops-list">جاري التحميل...</div>
       </div>
 
-      <div class="admin-subpanel hidden" data-admin-panel="loyalty">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>نقاط الولاء</h2></div>
-        <hr style="border-color:#40334b;margin:24px 0">
-      <h2>نقاط الولاء 🎁</h2>
-      <p class="small">يمكن إضافة نقاط أو خصمها يدوياً مع تسجيل سبب العملية في سجل التدقيق.</p>
-      <div class="ops-form">
-        <label for="opsLoyaltyCustomer">الزبون</label>
-        <select id="opsLoyaltyCustomer"><option value="">اختر الزبون</option></select>
-        <label for="opsPointsDelta">عدد النقاط (الإضافة موجبة والخصم سالب)</label>
-        <input id="opsPointsDelta" type="number" step="1" placeholder="مثلاً 50 أو -20">
-        <label for="opsPointsReason">سبب التعديل</label>
-        <input id="opsPointsReason" maxlength="300" placeholder="مكافأة أو تصحيح رصيد">
-        <button class="full" type="button" onclick="opsAdjustLoyalty()">حفظ تعديل النقاط</button>
-        <div id="opsLoyaltyMessage" class="ops-muted" role="status"></div>
-      </div>
-      <div id="opsLoyaltyCustomers" class="ops-list">لا توجد أرصدة نقاط بعد.</div>
-      
+      <div class="admin-subpanel hidden baran-club-admin-panel" data-admin-panel="loyalty">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>BARAN CLUB · إدارة النقاط والقسائم 🎁</h2></div>
+        <section class="baran-club-admin-hero">
+          <div><span class="baran-club-admin-kicker">BARAN GAME · LOYALTY CONTROL</span><h2>مركز الولاء والمكافآت</h2><p>تابع نشاط برنامج BARAN CLUB وأرصدة الزبائن، وسجّل أي تعديل يدوي للنقاط بسبب واضح. بيانات النقاط تُقرأ من قاعدة البيانات مباشرة.</p></div>
+          <span class="baran-club-admin-mark" aria-hidden="true">♛</span>
+        </section>
+        <div class="baran-club-admin-section-title"><div><span>OVERVIEW</span><h3>ملخص برنامج الولاء</h3><p>إحصائيات الحسابات والنقاط الحالية.</p></div><button type="button" class="secondary" onclick="loadAdminPanel()">↻ تحديث البيانات</button></div>
+        <div id="opsLoyaltyStats" class="baran-club-admin-stats"><div class="ops-card">جاري تحميل إحصائيات الولاء...</div></div>
+        <section class="baran-club-admin-section">
+          <div class="baran-club-admin-section-title"><div><span>POINTS CONTROL</span><h3>تعديل نقاط زبون</h3><p>كل تعديل يُرسل إلى الخادم ويُسجّل في سجل التدقيق.</p></div><b>✦</b></div>
+          <div class="baran-club-admin-form ops-form">
+            <label for="opsLoyaltyCustomer">اختر الزبون</label>
+            <select id="opsLoyaltyCustomer"><option value="">اختر الزبون</option></select>
+            <label for="opsPointsDelta">عدد النقاط</label>
+            <input id="opsPointsDelta" type="number" step="1" inputmode="numeric" placeholder="مثلاً 50 للإضافة أو -20 للخصم">
+            <label for="opsPointsReason">سبب التعديل (إلزامي)</label>
+            <input id="opsPointsReason" maxlength="300" placeholder="اكتب سبباً واضحاً للتعديل">
+            <button class="full" type="button" onclick="opsAdjustLoyalty()">حفظ تعديل النقاط</button>
+            <div id="opsLoyaltyMessage" class="ops-muted" role="status" aria-live="polite"></div>
+          </div>
+        </section>
+        <section class="baran-club-admin-coupon">
+          <div class="baran-club-admin-section-title"><div><span>REWARD COUPONS</span><h3>قواعد قسائم BARAN CLUB</h3><p>إعدادات المكافآت المعتمدة حالياً.</p></div><b>🎟️</b></div>
+          <div class="baran-club-admin-coupon-grid">
+            <article><strong>1,000 نقطة</strong><span>تكلفة استبدال القسيمة</span></article>
+            <article><strong>حتى $1</strong><span>الحد الأعلى لقيمة الخصم</span></article>
+            <article><strong>BARO فقط</strong><span>للطلبات المؤهلة وبعد تحقق الخادم</span></article>
+          </div>
+          <p>القسيمة ليست رصيداً نقدياً ولا يمكن سحبها. يصدرها الزبون من حسابه عند استيفاء النقاط، ويحدد الخادم الخصم الفعلي وفق هامش ربح المنتج. لا توجد هنا أداة لتغيير قيمة القسيمة يدوياً.</p>
+        </section>
+        <section class="baran-club-admin-section">
+          <div class="baran-club-admin-section-title"><div><span>MEMBER ACCOUNTS</span><h3>أرصدة أعضاء BARAN CLUB</h3><p>عرض نقاط كل زبون وإجمالي ما جمعه خلال عضويته.</p></div><b>👥</b></div>
+          <div id="opsLoyaltyCustomers" class="ops-list">جاري تحميل أرصدة النقاط...</div>
+        </section>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="security">
