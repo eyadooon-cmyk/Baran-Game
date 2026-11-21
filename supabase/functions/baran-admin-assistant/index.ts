@@ -247,7 +247,7 @@ Deno.serve(async (req: Request) => {
       return json({ reply: memoryReply, memory_count: remembered?.length ?? 0, memory_recall: true });
     }
 
-    // Deterministic local reports: read-only, administrator-authenticated, no OpenAI required.
+    // Deterministic local reports: read-only, administrator-authenticated, internal rules only.
     const localQuery = latestUserMessage.trim().toLowerCase();
     const localIntent =
       /(?:(?:التقرير التشغيلي|تقرير تشغيلي|قائد التشغيل|اجمع التقارير|خطة التشغيل|خطة اليوم|شو أولوياتنا|ما أولوياتنا|شو لازم نعمل|تقييم تشغيلي|تقرير الإدارة اليومي|شو وضع باران|وين وصلنا|شو ناقصنا|اعطيني نظرة شاملة|ملخص شامل|شو المشاكل الفعلية|حلل الأولويات|حلل الاولويات|شو المؤجل))/i.test(localQuery) ? "operations" :
