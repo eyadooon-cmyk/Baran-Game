@@ -2810,7 +2810,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         <div id="baranAdminAssistantMessages" class="ai-assistant-messages" style="height:210px;max-height:35vh;background:#100b16;border-radius:12px" aria-live="polite">
           <div class="ai-chat-message bot">أهلاً! فيني أعطيك ملخصاً عن وضع المتجر وأحلل الأرقام المسجلة. جرّب: «ملخص اليوم» أو «الطلبات المعلقة» أو «أفضل المنتجات».</div>
         </div>
-        <form id="baranAdminAssistantForm" class="ai-assistant-form" onsubmit="askBaranAdminAssistant(event)">
+        <form id="baranAdminAssistantForm" class="ai-assistant-form" onsubmit="return (window.askBaranAdminAssistant ? window.askBaranAdminAssistant(event) : false)">
           <input id="baranAdminAssistantInput" type="text" maxlength="500" autocomplete="off" placeholder="اسأل عن أرباحك أو طلباتك أو الموردين..." aria-label="سؤال مساعد الإدارة">
           <button id="baranAdminAssistantSend" type="submit">اسأل</button>
         </form>
@@ -3614,7 +3614,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 <script src="./communication-center.js?v=20261117-unified-2"></script>
 <script src="./baran-assistant.js"></script>
 <script src="./admin-operations.js?v=20261121-service-monitor-v2"></script>
-<script src="./admin-assistant.js?v=20261121-loyalty-diagnostic-fix-2"></script>
+<script src="./admin-assistant.js?v=20261121-submit-navigation-fix-1"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
 <script src="./baro.js?v=20261121-club-v4"></script>
 <script src="./baro-management.js?v=20261119-external-sales-2"></script>
