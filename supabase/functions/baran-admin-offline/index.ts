@@ -39,11 +39,12 @@ Deno.serve(async(req:Request)=>{
    db.from("deposit_requests").select("id,status,currency,created_at").order("created_at",{ascending:false}).limit(200),
    db.from("wallet_transactions").select("id,amount,currency,transaction_type,description,created_at,order_id,deposit_request_id").order("created_at",{ascending:false}).limit(200),
    db.from("admin_audit_log").select("action,entity_type,created_at").order("created_at",{ascending:false}).limit(30),
-   db.from("store_announcements").select("kind,title,status,created_at,published_at,notification_count").order("created_at",{ascending:false}).limit(30)
+   db.from("store_announcements").select("kind,title,status,created_at,published_at,notification_count").order("created_at",{ascending:false}).limit(30),
+   db.from("baran_admin_memory").select("category,content,created_at").eq("is_active",true).order("created_at",{ascending:false}).limit(30)
   ]);
-  const labels=["products","orders","fulfillment","suppliers","supplier_products","feedback","deposits","wallet_transactions","audit","announcements"],data:Record<string,any[]>={},unavailable:string[]=[];
+  const labels=["products","orders","fulfillment","suppliers","supplier_products","feedback","deposits","wallet_transactions","audit","announcements","memory"],data:Record<string,any[]>={},unavailable:string[]=[];
   specs.forEach((r:any,i:number)=>{if(r.error){data[labels[i]]=[];unavailable.push(labels[i]);}else data[labels[i]]=r.data||[];});
-  const products=data.products,orders=data.orders,fulfillment=data.fulfillment,suppliers=data.suppliers,links=data.supplier_products,feedback=data.feedback,deposits=data.deposits,walletTransactions=data.wallet_transactions,audit=data.audit,announcements=data.announcements;
+  const products=data.products,orders=data.orders,fulfillment=data.fulfillment,suppliers=data.suppliers,links=data.supplier_products,feedback=data.feedback,deposits=data.deposits,walletTransactions=data.wallet_transactions,audit=data.audit,announcements=data.announcements,memories=data.memory;
   const openTickets=feedback.filter(x=>x.feedback_type==="support"&&["pending","in_progress"].includes(x.status));
   const reviews=feedback.filter(x=>x.feedback_type==="review"),failed=orders.filter(x=>["failed","error"].includes(String(x.status).toLowerCase()));
   const waiting=orders.filter(x=>["pending","processing"].includes(String(x.status).toLowerCase()));
@@ -53,9 +54,10 @@ Deno.serve(async(req:Request)=>{
   const categories=countBy(products,x=>String(x.category||"غير محدد"));
   const supplierName=new Map(suppliers.map(s=>[s.id,s.name])),productName=new Map(products.map(p=>[p.id,p.name]));
   const now=new Date().toISOString(),q=question.toLowerCase(),lines:string[]=[];
-  lines.push("🟣 تقرير Baran Game — وضع العمل دون OpenAI","وقت قراءة البيانات: "+new Date(now).toLocaleString("ar"),"قراءة مباشرة للبيانات الحالية، وليست مراقبة مستمرة.","");
+  lines.push("🟣 تقرير Baran Game — وضع العمل بالمحرك الداخلي","وقت قراءة البيانات: "+new Date(now).toLocaleString("ar"),"قراءة مباشرة للبيانات الحالية، وليست مراقبة مستمرة.","");
   const wp=has(q,["منتج","المنتجات","كتالوج","أسعار","سعر"]),wo=has(q,["طلب","الطلبات","شحن","تنفيذ"]),ws=has(q,["تذكرة","تذاكر","دعم","زبون","شكاوى","شكوى"]),wsp=has(q,["مورد","الموردين","موردين","api","ربط"]),wf=has(q,["مالي","مالية","مبيعات","أرباح","ربح","تكلفة","تكاليف","إيراد"]),wsec=has(q,["أمان","أمني","تدقيق","سجل العمليات","مخاطر"]),wr=has(q,["تقييم","تقييمات","آراء"]);
-  const general=has(q,["حالة","تقرير","ملخص","المتجر","كل","شامل","الوضع","داشبورد","dashboard"]),special=wp||wo||ws||wsp||wf||wsec||wr;
+  const wm=has(q,["شو بتتذكر","شو تتذكر","الذاكرة","المعلومات المحفوظة","قرارات المشروع"]);
+  const general=has(q,["حالة","تقرير","ملخص","المتجر","كل","شامل","الوضع","داشبورد","dashboard"]),special=wp||wo||ws||wsp||wf||wsec||wr||wm;
   if(general||!special){
    lines.push("📊 الملخص التنفيذي","المنتجات: "+products.length+" (نشطة "+products.filter(x=>x.is_active===true).length+"، غير نشطة "+inactive.length+")",
     "الطلبات ضمن آخر 200 سجل: "+orders.length+" — "+fmt(statusCounts),
@@ -68,18 +70,21 @@ Deno.serve(async(req:Request)=>{
    if(failed.length)risks.push("طلبات فاشلة ضمن أحدث السجلات: "+failed.length);
    if(waiting.length)risks.push("طلبات pending/processing: "+waiting.length+" — يلزم التأكد من تنفيذ المورد");
    if(openTickets.length)risks.push("تذاكر دعم مفتوحة: "+openTickets.length);
-   if(unlinked.length)risks.push("منتجات بلا ربط مورد: "+unlinked.length);
-   if(missingCosts.length)risks.push("سجلات تنفيذ بلا تكلفة مورد: "+missingCosts.length);
-   if(missingPrices.length)risks.push("منتجات بلا سعر في العملتين: "+missingPrices.length);
    if(pendingDeposits.length)risks.push("إيداعات تنتظر مراجعة بشرية: "+pendingDeposits.length);
    if(!risks.length)risks.push("لم تظهر مؤشرات ضمن القوائم المختصرة؛ هذا لا يثبت خلو المتجر من المشاكل.");
    risks.slice(0,8).forEach((x,i)=>lines.push((i+1)+". "+x));
+   lines.push("","🧭 بنود مؤجلة أو جاهزية قبل الإطلاق");
+   lines.push("ربط المنتجات بالمورد وAPI والشحن التلقائي: مؤجل بقرار إداري، وليس عطلاً حالياً.");
+   if(suppliers.length===0||!suppliers.some(x=>x.is_active===true)) lines.push("لا يوجد مورد نشط حالياً؛ هذا متوافق مع قرار تأجيل المورد ولا يُرفع كإنذار.");
+   if(unlinked.length) lines.push("المنتجات المسجلة بلا ربط مورد: "+unlinked.length+" — بند مؤجل حتى اعتماد المورد.");
+   if(missingPrices.length) lines.push("حقول السعر فارغة في العملة/العملتين ضمن "+missingPrices.length+" منتج — بند مراجعة تسعير قبل فتح البيع، وليس عطل تشغيل حالياً.");
+   if(missingCosts.length) lines.push("سجلات تنفيذ بلا تكلفة مورد: "+missingCosts.length+" — لا يمكن حساب تكلفة/ربح دقيق قبل استكمال بيانات المورد.");
    lines.push("","تصنيفات المنتجات: "+fmt(categories));
   }
   if(wp){
    lines.push("\n🛍️ تدقيق المنتجات","عدد المنتجات: "+products.length+"، النشطة: "+(products.length-inactive.length)+"، غير النشطة: "+inactive.length);
-   if(missingPrices.length)lines.push("بلا سعر USD وSYP: "+missingPrices.map(p=>p.product_code+" — "+p.name).slice(0,15).join("؛ "));
-   if(unlinked.length)lines.push("بلا ربط مورد: "+unlinked.map(p=>p.product_code+" — "+p.name).slice(0,15).join("؛ "));
+   if(missingPrices.length)lines.push("بيانات التسعير التي تحتاج استكمالاً قبل البيع ("+missingPrices.length+"): "+missingPrices.map(p=>p.product_code+" — "+p.name).slice(0,15).join("؛ "));
+   if(unlinked.length)lines.push("الربط بالمورد مؤجل حالياً ("+unlinked.length+" منتج): "+unlinked.map(p=>p.product_code+" — "+p.name).slice(0,15).join("؛ "));
    lines.push(products.slice(0,30).map(p=>p.product_code+" — "+p.name+" | "+p.category+" | "+(p.is_active?"نشط":"غير نشط")+" | USD "+(p.price_usd??"—")+" | SYP "+(p.price_syp??"—")).join("\n")||"لا توجد منتجات.");
   }
   if(wo){
@@ -98,6 +103,7 @@ Deno.serve(async(req:Request)=>{
    for(const s of suppliers)lines.push("مورد: "+s.name+" | "+(s.is_active?"نشط":"غير نشط"));
    for(const l of links.slice(0,50))lines.push((productName.get(l.product_id)||"منتج غير معروف")+" ← "+(supplierName.get(l.supplier_id)||"مورد غير معروف")+" | SKU: "+(l.supplier_sku||"غير محدد")+" | التكلفة: "+(l.unit_cost??"غير محددة")+" "+(l.currency||"")+" | "+(l.is_preferred?"مفضل":"عادي"));
    if(!links.length)lines.push("لا توجد روابط مورد/منتج مسجلة حالياً.");
+   lines.push("قرار الإدارة الحالي: المورد وAPI والشحن التلقائي مؤجلة؛ لا تعتبر قلة الروابط مشكلة تشغيلية الآن.");
    lines.push("وجود ربط في قاعدة البيانات لا يعني وجود API فعلي أو شحن تلقائي.");
   }
   if(wf){
@@ -112,6 +118,13 @@ Deno.serve(async(req:Request)=>{
   }
   const ww=has(q,["محفظة","حركة مالية","حركات المحفظة","سجل المحفظة","خصم","استرداد","إيداع","ايداع","wallet","transaction"]);
   if(ww){lines.push("\\n💳 سجل حركة المحفظة — قراءة فقط","عدد العمليات ضمن آخر 200 سجل: "+walletTransactions.length,"توزيع الأنواع: "+fmt(countBy(walletTransactions,x=>String(x.transaction_type||"غير محدد"))));for(const t of walletTransactions.slice(0,40))lines.push(String(t.created_at)+" | "+t.transaction_type+" | "+money(n(t.amount),String(t.currency||""))+" | "+String(t.description||"").slice(0,120));lines.push("السجل يعرض العمليات المسجلة فقط، وقد لا يشمل المسارات غير المربوطة بعد.");}
+  if(wm){
+   lines.push("\n🧠 ذاكرة Baran التشغيلية","المعلومات النشطة المحفوظة: "+memories.length);
+   const safeMemories=memories.filter(x=>!/(?:api[_ -]?key|service[_ -]?role|access[_ -]?token|refresh[_ -]?token|password|كلمة\s*المرور|رمز\s*التحقق|مفتاح\s*سري)/i.test(String(x.content||"")));
+   for(const m of safeMemories.slice(0,25)) lines.push("• ["+(m.category||"عام")+"] "+String(m.content||"").slice(0,500)+" | "+String(m.created_at||""));
+   if(!safeMemories.length) lines.push("لا توجد معلومات تشغيلية آمنة ظاهرة.");
+   lines.push("هذه ذاكرة تشغيلية وليست بديلاً عن البيانات الحالية؛ عند التعارض نعتمد سجلات المتجر.");
+  }
   if(wsec){
    lines.push("\n🛡️ سجل التدقيق","أحدث السجلات المتاحة: "+audit.length);
    for(const a of audit.slice(0,20))lines.push(a.created_at+" | "+a.action+" | "+(a.entity_type||"غير محدد"));
@@ -123,6 +136,11 @@ Deno.serve(async(req:Request)=>{
   }
   if(unavailable.length)lines.push("\n⚠️ أقسام تعذر تحميلها: "+unavailable.join("، "),"الأرقام تخص الأقسام التي نجح تحميلها فقط؛ لم أعتبر القسم المتعذر فارغاً.");
   lines.push("\n🔒 قراءة فقط: لا تعديل منتجات أو طلبات أو موردين، لا ردود دعم، لا اعتماد إيداعات، لا أرصدة أو استردادات، ولا اتصال بمورد.");
+  const {error:usageLogError}=await db.from("admin_audit_log").insert({
+   admin_id:authData.user.id,action:"baran_ai_usage",entity_type:"assistant_usage",
+   details:{route:"offline",units:1}
+  });
+  if(usageLogError)console.error("baran-admin-offline usage counter insert failed",usageLogError.message);
   return reply({success:true,mode:"offline_readonly",reply:lines.join("\n"),data_updated_at:now,counts:{products:products.length,orders:orders.length,suppliers:suppliers.length,supplier_links:links.length,open_tickets:openTickets.length,pending_deposits:pendingDeposits.length,reviews:reviews.length},unavailable});
  }catch(e){console.error("baran-admin-offline error",e instanceof Error?e.message:"unknown");return reply({error:"تعذر تجهيز التقرير الاحتياطي. تحقق من سجل الدالة ثم أعد المحاولة."},500);}
 });
