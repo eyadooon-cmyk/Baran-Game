@@ -80,7 +80,7 @@ async function loadOpsMonitor(){
     const metricHeading=opsNode("div","ops-muted","مؤشرات الشحن الفعلية — آخر "+Number(service.window_minutes||10)+" دقائق");
     alertsBox.appendChild(metricHeading);
     if(!metrics.length){
-      alertsBox.appendChild(opsNode("div","ops-item","لا توجد محاولات شحن من مورد مسجلة ضمن نافذة الرصد الحالية؛ لا يمكن استنتاج حالة المورد من دون حركة فعلية."));
+      alertsBox.appendChild(opsNode("div","ops-item","لا توجد طلبات أو محاولات أو أحداث فشل مسجلة ضمن نافذة الرصد الحالية؛ لا يمكن الحكم على توفر الخدمة من دون نشاط فعلي."));
     }else{
       metrics.slice(0,20).forEach(metric=>{
         const card=opsNode("article","ops-item");
@@ -88,6 +88,7 @@ async function loadOpsMonitor(){
         const attempts=Number(metric.attempts_10m||0);
         card.append(
           opsNode("strong","",(metric.supplier_name||"مورد غير معروف")+" — "+(metric.product_code||"منتج غير محدد")),
+          opsNode("div","ops-muted","مصدر الرصد: "+({supplier_api:"محاولات API",order_status:"حالة الطلب",manual_order:"طلب BARO يدوي",supplier_event:"حدث المورد"}[metric.source_system]||metric.source_system||"غير محدد")),
           opsNode("div","ops-muted","المحاولات: "+attempts+" | الفشل: "+failed+" | نسبة الفشل: "+Number(metric.failure_rate_percent||0)+"%"),
           opsNode("div","ops-muted","429: "+Number(metric.rate_limited_10m||0)+" | أخطاء 5xx: "+Number(metric.upstream_5xx_10m||0)+" | أخطاء اتصال: "+Number(metric.connection_errors_10m||0)),
           opsNode("div","ops-muted","متوسط الاستجابة المسجل: "+(metric.avg_latency_ms===null||metric.avg_latency_ms===undefined?"غير متاح":Number(metric.avg_latency_ms)+" ms")+" | آخر رمز خطأ: "+opsText(metric.last_error_code))
@@ -124,6 +125,12 @@ async function loadOpsMonitor(){
     baranMonitorBusy=false;
   }
 }
+if(typeof window!=="undefined"&&!window.__baranServiceMonitorUiTimer){
+  window.__baranServiceMonitorUiTimer=window.setInterval(()=>{
+    if(document.visibilityState==="visible"&&currentUser)void loadOpsMonitor();
+  },60000);
+}
+
 
 function updateAdminDrawerBadges(stats){
   const ordersBadge=document.getElementById("adminDrawerOrdersCount");
