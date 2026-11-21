@@ -3,7 +3,7 @@ let latestBaranOperations=null;
 function opsText(value){return value===null||value===undefined||value===""?"—":String(value);}
 function opsCustomerDisplayName(customer){
   const name=String(customer?.full_name||customer?.display_name||customer?.name||"").trim();
-  if(name)return name;
+  if(name&&!name.includes("@"))return name;
   const id=String(customer?.id||"").replace(/-/g,"");
   return id?"عضو BARAN #"+id.slice(0,6).toUpperCase():"عضو BARAN";
 }
