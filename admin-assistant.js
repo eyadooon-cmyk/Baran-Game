@@ -157,8 +157,7 @@
 
   window.askBaranAdminPrompt = function (question) {
     const input = document.getElementById("baranAdminAssistantInput");
-    const prompt = String(question || "");    if (input) input.value = "";
-    void send(prompt);
+    const prompt = String(question || "");    if (input) input.value = "";    void send(prompt);
   };
 
   window.askBaranAdminAssistant = function (event) {
@@ -317,8 +316,7 @@
           lines.join("\\n") + "\\n\\n" +
           (d.all_accessible ? "✅ جميع الجداول الستة قابلة للقراءة." : "⚠️ بعض الجداول تحتاج مراجعة صلاحيات.") +
           "\\nلم يتم تغيير النقاط أو القسائم أو أرصدة الزبائن.";
-        if (card) { card.textContent = message; card.style.whiteSpace = "pre-wrap"; }
-        history.push({role:"assistant",content:message}); history=history.slice(-10);
+        if (card) { card.textContent = message; card.style.whiteSpace = "pre-wrap"; }        history.push({role:"assistant",content:message}); history=history.slice(-10);
         return;
       }
       const p = planned?.proposal;
@@ -473,16 +471,3 @@
     document.addEventListener("DOMContentLoaded", initializeAdminEnhancements, { once: true });
   } else {
     initializeAdminEnhancements();
-  }
-  // Retry when the admin panel is rendered or revealed after login/navigation.
-  const adminUiObserver = new MutationObserver(() => {
-    const assistantHost = document.getElementById("baranAdminAssistant");
-    const safeHost = document.getElementById("baranSafeActionsHost");
-    if ((assistantHost && (!document.getElementById("baranAiTeam") || !document.getElementById("baranAiUsagePanel"))) || (safeHost && !document.getElementById("baranSafeActions"))) initializeAdminEnhancements();
-  });
-  adminUiObserver.observe(document.documentElement, { childList: true, subtree: true });
-
-  window.runBaranAdminHealthCheck = function () {
-    void send("اعمل فحصاً تشغيلياً شاملاً للمتجر الآن. راجع الأرباح المسجلة اليوم وهذا الشهر، الطلبات المفتوحة وتكاليف الموردين الناقصة، الإيداعات المعلقة، تذاكر الدعم المفتوحة، المنتجات والموردين والتنبيهات وسجل التدقيق. افصل الحقائق عن الاحتمالات، رتّب المشاكل حسب الخطورة، واكتب لكل مشكلة الدليل والخطوة المقترحة لحلها. لا تنفذ أي تعديل.");
-  };
-})();
