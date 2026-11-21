@@ -1,13 +1,13 @@
 -- BARAN CLUB v2: 1,000 points = coupon worth up to $1.
 -- Base earning 10 points per eligible USD; VIP multipliers 1.00x/1.25x/1.50x/2.00x.
 -- Earning reward is capped at 5% of realized gross profit.
--- Existing points are preserved. Legacy $0.10 coupons retain their full value.
--- Allow both legacy $0.10 coupons and new $1.00 maximum-value coupons.
+-- Existing points are preserved. BARAN CLUB v2 issues and accepts $1.00 coupons only.
+-- The legacy $0.10 denomination is retired; no such coupons existed at rollout.
 ALTER TABLE public.loyalty_coupons
   DROP CONSTRAINT IF EXISTS loyalty_coupons_discount_amount_usd_check;
 ALTER TABLE public.loyalty_coupons
   ADD CONSTRAINT loyalty_coupons_discount_amount_usd_check
-  CHECK (discount_amount_usd IN (0.10,1.00));
+  CHECK (discount_amount_usd = 1.00);
 CREATE OR REPLACE FUNCTION public.baran_award_order_loyalty_points()
  RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO ''
 AS $function$
@@ -238,7 +238,7 @@ begin
     end if;
     select * into v_coupon from public.loyalty_coupons
       where user_id=p_user_id and upper(code)=v_coupon_code for update;
-    if not found or v_coupon.status<>'active' or v_coupon.discount_amount_usd not in (0.10,1.00)
+    if not found or v_coupon.status<>'active' or v_coupon.discount_amount_usd <> 1.00
        or v_coupon.points_spent<>1000 then
       raise exception using errcode='22023',message='القسيمة غير صالحة أو مستخدمة أو لا تخص حسابك.';
     end if;
@@ -248,14 +248,7 @@ begin
     end if;
     v_profit_usd:=round(v_product.sale_price_usd-v_product.supplier_cost_usd,4);
     v_discount_limit:=floor(v_profit_usd*0.90*100)/100;
-    if v_coupon.discount_amount_usd=0.10 then
-      if v_discount_limit<0.10 then
-        raise exception using errcode='55000',message='هذه القسيمة القديمة بقيمة 10 سنت تحتاج باقة تسمح بالخصم الكامل.';
-      end if;
-      v_discount_usd:=0.10;
-    else
-      v_discount_usd:=least(v_coupon.discount_amount_usd,v_discount_limit);
-    end if;
+    v_discount_usd:=least(v_coupon.discount_amount_usd,v_discount_limit);
     if v_discount_usd<0.01 then
       raise exception using errcode='55000',message='هامش ربح هذه الباقة لا يسمح بتطبيق خصم آمن للقسيمة.';
     end if;
@@ -351,7 +344,7 @@ begin
  end if;
  select * into v_coupon from public.loyalty_coupons
  where user_id=v_user_id and upper(code)=upper(pg_catalog.btrim(p_coupon_code)) and status='active';
- if not found or v_coupon.points_spent<>1000 or v_coupon.discount_amount_usd not in (0.10,1.00) then
+ if not found or v_coupon.points_spent<>1000 or v_coupon.discount_amount_usd <> 1.00 then
   raise exception using errcode='22023',message='القسيمة غير صالحة أو مستخدمة أو لا تخص حسابك.';
  end if;
  select * into v_product from public.leo_manual_products
@@ -363,10 +356,7 @@ begin
  end if;
  v_profit_usd:=round(v_product.sale_price_usd-v_product.supplier_cost_usd,4);
  v_discount_limit:=floor(v_profit_usd*0.90*100)/100;
- if v_coupon.discount_amount_usd=0.10 then
-  if v_discount_limit<0.10 then raise exception using errcode='55000',message='هذه القسيمة القديمة بقيمة 10 سنت تحتاج باقة تسمح بالخصم الكامل.'; end if;
-  v_discount_usd:=0.10;
- else v_discount_usd:=least(v_coupon.discount_amount_usd,v_discount_limit); end if;
+ v_discount_usd:=least(v_coupon.discount_amount_usd,v_discount_limit);
  if v_discount_usd<0.01 then raise exception using errcode='55000',message='هامش ربح هذه الباقة لا يسمح بتطبيق خصم آمن للقسيمة.'; end if;
  select usd_syp_rate into v_rate from public.baro_manual_settings where id='main' for share;
  v_price:=case when p_wallet_currency='USD' then v_product.sale_price_usd else v_product.sale_price_syp end;
