@@ -14,6 +14,12 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
 }
 
+function readKeyObject(name: string): string | undefined {
+  const raw = Deno.env.get(name);
+  if (!raw) return undefined;
+  try { return JSON.parse(raw).default; } catch { return undefined; }
+}
+
 function normalizeArabic(value: string): string {
   return String(value || "").toLowerCase()
     .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
