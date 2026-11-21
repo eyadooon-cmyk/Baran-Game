@@ -32,6 +32,7 @@ Deno.serve(async(req:Request)=>{
   const specs=await Promise.all([
    db.from("products").select("id,product_code,name,category,price_usd,price_syp,is_active,sort_order,updated_at").order("sort_order").limit(200),
    db.from("orders").select("id,product_code,quantity,status,created_at,total_price_usd,total_price_syp,payment_currency").order("created_at",{ascending:false}).limit(200),
+   db.from("leo_manual_orders").select("id,product_code,product_name_snapshot,quantity,status,payment_status,payment_method,created_at,completed_at,customer_price_usd,customer_price_syp,supplier_cost_usd,supplier_cost_usd_snapshot").order("created_at",{ascending:false}).limit(200),
    db.from("order_fulfillment").select("order_id,supplier_id,supplier_status,dispatch_state,refund_status,supplier_total_cost,supplier_cost_currency,supplier_cost_exchange_rate,failure_reason,updated_at").order("updated_at",{ascending:false}).limit(200),
    db.from("suppliers").select("id,name,is_active,updated_at").order("created_at",{ascending:false}).limit(100),
    db.from("supplier_products").select("id,supplier_id,product_id,supplier_sku,unit_cost,currency,is_preferred,lead_time_hours,updated_at").order("updated_at",{ascending:false}).limit(200),
@@ -40,14 +41,28 @@ Deno.serve(async(req:Request)=>{
    db.from("wallet_transactions").select("id,amount,currency,transaction_type,description,created_at,order_id,deposit_request_id").order("created_at",{ascending:false}).limit(200),
    db.from("admin_audit_log").select("action,entity_type,created_at").order("created_at",{ascending:false}).limit(30),
    db.from("store_announcements").select("kind,title,status,created_at,published_at,notification_count").order("created_at",{ascending:false}).limit(30),
-   db.from("baran_admin_memory").select("category,content,created_at").eq("is_active",true).order("created_at",{ascending:false}).limit(30)
+   db.from("baran_admin_memory").select("category,content,created_at").eq("is_active",true).order("created_at",{ascending:false}).limit(30),
+   db.from("baran_auto_support_queue").select("ticket_code,state,reason,attempts,created_at,updated_at,processed_at").order("created_at",{ascending:false}).limit(100),
+   db.from("customer_loyalty").select("user_id,points_balance,lifetime_earned,updated_at").limit(500),
+   db.from("loyalty_coupons").select("status,discount_amount_usd,points_spent,created_at,redeemed_at").order("created_at",{ascending:false}).limit(200),
+   db.from("loyalty_transactions").select("points,transaction_type,created_at").order("created_at",{ascending:false}).limit(200),
+   db.from("customer_security_events").select("event_type,severity,created_at").order("created_at",{ascending:false}).limit(200),
+   db.from("baran_push_delivery_logs").select("status,http_status,error_code,created_at,sent_at").order("created_at",{ascending:false}).limit(200),
+   db.from("baran_admin_work_plan").select("task_code,title,area,priority,evidence,impact,next_step,success_criteria,status,requires_approval,updated_at").order("updated_at",{ascending:false}).limit(100),
+   db.from("baro_manual_finance_entries").select("entry_type,title,amount,currency,amount_usd_equivalent,status,created_at").order("created_at",{ascending:false}).limit(200),
+   db.from("admin_finance_entries").select("entry_type,title,amount,cost_amount,currency,created_at").order("created_at",{ascending:false}).limit(200)
   ]);
-  const labels=["products","orders","fulfillment","suppliers","supplier_products","feedback","deposits","wallet_transactions","audit","announcements","memory"],data:Record<string,any[]>={},unavailable:string[]=[];
+  const labels=["products","orders","manual_orders","fulfillment","suppliers","supplier_products","feedback","deposits","wallet_transactions","audit","announcements","memory","support_queue","loyalty","loyalty_coupons","loyalty_transactions","security_events","push_logs","work_plan","baro_finance","admin_finance"],data:Record<string,any[]>={},unavailable:string[]=[];
   specs.forEach((r:any,i:number)=>{if(r.error){data[labels[i]]=[];unavailable.push(labels[i]);}else data[labels[i]]=r.data||[];});
-  const products=data.products,orders=data.orders,fulfillment=data.fulfillment,suppliers=data.suppliers,links=data.supplier_products,feedback=data.feedback,deposits=data.deposits,walletTransactions=data.wallet_transactions,audit=data.audit,announcements=data.announcements,memories=data.memory;
+  const products=data.products,baseOrders=data.orders,manualOrders=data.manual_orders,fulfillment=data.fulfillment,suppliers=data.suppliers,links=data.supplier_products,feedback=data.feedback,deposits=data.deposits,walletTransactions=data.wallet_transactions,audit=data.audit,announcements=data.announcements,memories=data.memory;
+  const supportQueue=data.support_queue,loyalty=data.loyalty,loyaltyCoupons=data.loyalty_coupons,loyaltyTransactions=data.loyalty_transactions,securityEvents=data.security_events,pushLogs=data.push_logs,workPlan=data.work_plan,baroFinance=data.baro_finance,adminFinance=data.admin_finance;
+  const mergedOrderMap=new Map<string,any>();
+  for(const o of baseOrders)mergedOrderMap.set(String(o.id),{...o,source:"orders"});
+  for(const o of manualOrders)if(!mergedOrderMap.has(String(o.id)))mergedOrderMap.set(String(o.id),{...o,total_price_usd:o.customer_price_usd,total_price_syp:o.customer_price_syp,supplier_total_cost:o.supplier_cost_usd_snapshot??o.supplier_cost_usd,source:"leo_manual_orders"});
+  const orders=[...mergedOrderMap.values()].sort((a,b)=>new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime());
   const openTickets=feedback.filter(x=>x.feedback_type==="support"&&["pending","in_progress"].includes(x.status));
   const reviews=feedback.filter(x=>x.feedback_type==="review"),failed=orders.filter(x=>["failed","error"].includes(String(x.status).toLowerCase()));
-  const waiting=orders.filter(x=>["pending","processing"].includes(String(x.status).toLowerCase()));
+  const waiting=orders.filter(x=>["pending","processing","in_progress"].includes(String(x.status).toLowerCase()));
   const inactive=products.filter(x=>x.is_active!==true),missingPrices=products.filter(x=>x.price_usd==null&&x.price_syp==null);
   const missingCosts=fulfillment.filter(x=>x.supplier_total_cost==null),unlinked=products.filter(p=>!links.some(l=>l.product_id===p.id));
   const pendingDeposits=deposits.filter(x=>x.status==="pending"),statusCounts=countBy(orders,x=>String(x.status||"غير محدد"));
@@ -55,12 +70,13 @@ Deno.serve(async(req:Request)=>{
   const supplierName=new Map(suppliers.map(s=>[s.id,s.name])),productName=new Map(products.map(p=>[p.id,p.name]));
   const now=new Date().toISOString(),q=question.toLowerCase(),lines:string[]=[];
   lines.push("🟣 تقرير Baran Game — وضع العمل بالمحرك الداخلي","وقت قراءة البيانات: "+new Date(now).toLocaleString("ar"),"قراءة مباشرة للبيانات الحالية، وليست مراقبة مستمرة.","");
-  const wp=has(q,["منتج","المنتجات","كتالوج","أسعار","سعر"]),wo=has(q,["طلب","الطلبات","شحن","تنفيذ"]),ws=has(q,["تذكرة","تذاكر","دعم","زبون","شكاوى","شكوى"]),wsp=has(q,["مورد","الموردين","موردين","api","ربط"]),wf=has(q,["مالي","مالية","مبيعات","أرباح","ربح","تكلفة","تكاليف","إيراد"]),wsec=has(q,["أمان","أمني","تدقيق","سجل العمليات","مخاطر"]),wr=has(q,["تقييم","تقييمات","آراء"]);
-  const wm=has(q,["شو بتتذكر","شو تتذكر","الذاكرة","المعلومات المحفوظة","قرارات المشروع"]);
-  const general=has(q,["حالة","تقرير","ملخص","المتجر","كل","شامل","الوضع","داشبورد","dashboard"]),special=wp||wo||ws||wsp||wf||wsec||wr||wm;
-  if(general||!special){
+  const wp=has(q,["منتج","المنتجات","كتالوج","أسعار","سعر"]),wo=has(q,["طلب","الطلبات","شحن","تنفيذ"]),ws=has(q,["تذكرة","تذاكر","دعم","زبون","شكاوى","شكوى"]),wsp=has(q,["مورد","الموردين","موردين","api","ربط"]),wf=has(q,["مالي","مالية","مبيعات","أرباح","ربح","تكلفة","تكاليف","إيراد"]),wsec=has(q,["أمان","أمني","تدقيق","سجل العمليات","مخاطر","اختراق","محاولات دخول"]),wr=has(q,["تقييم","تقييمات","آراء"]);
+  const wm=has(q,["شو بتتذكر","شو تتذكر","الذاكرة","المعلومات المحفوظة","قرارات المشروع"]),wl=has(q,["نقاط","ولاء","قسائم الولاء","كوبونات الولاء","baran club"]),wn=has(q,["إشعارات","اشعارات","إشعار","اشعار","push"]),wplan=has(q,["خطة العمل","مهام الإدارة","مهام التطوير","خطة التطوير"]);
+  const special=wp||wo||ws||wsp||wf||wsec||wr||wm||wl||wn||wplan;
+  const general=has(q,["تقرير شامل","ملخص تنفيذي","حالة المتجر","وضع المتجر","كل الأقسام","كل شي عن المتجر","داشبورد","dashboard"]);
+  if(!special||general){
    lines.push("📊 الملخص التنفيذي","المنتجات: "+products.length+" (نشطة "+products.filter(x=>x.is_active===true).length+"، غير نشطة "+inactive.length+")",
-    "الطلبات ضمن آخر 200 سجل: "+orders.length+" — "+fmt(statusCounts),
+    "الطلبات الموحّدة دون تكرار: "+orders.length+" (orders: "+baseOrders.length+"، BARO اليدوي: "+manualOrders.length+") — "+fmt(statusCounts),
     "الموردون: "+suppliers.length+" (نشط "+suppliers.filter(x=>x.is_active===true).length+")",
     "روابط المورد/المنتج: "+links.length,"تذاكر الدعم المفتوحة: "+openTickets.length,
     "الإيداعات المعلقة: "+pendingDeposits.length+" (عدد فقط؛ لا مراجعة أو اعتماد)",
@@ -88,10 +104,13 @@ Deno.serve(async(req:Request)=>{
    lines.push(products.slice(0,30).map(p=>p.product_code+" — "+p.name+" | "+p.category+" | "+(p.is_active?"نشط":"غير نشط")+" | USD "+(p.price_usd??"—")+" | SYP "+(p.price_syp??"—")).join("\n")||"لا توجد منتجات.");
   }
   if(wo){
-   lines.push("\n📦 متابعة الطلبات","الحالات: "+fmt(statusCounts));
-   const attention=orders.filter(x=>["pending","processing","failed","error"].includes(String(x.status).toLowerCase())).slice(0,25);
-   for(const o of attention){const f=fulfillment.find(x=>x.order_id===o.id);lines.push(String(o.id).slice(0,8)+" | "+o.product_code+" × "+o.quantity+" | "+o.status+" | تنفيذ المورد: "+(f?.dispatch_state||f?.supplier_status||"لا يوجد سجل تنفيذ"));}
-   if(!attention.length)lines.push("لا توجد طلبات معلقة أو فاشلة ضمن آخر 200 سجل.");
+   lines.push("\n📦 متابعة الطلبات — دمج المصدرين دون تكرار","orders: "+baseOrders.length+" | leo_manual_orders (BARO): "+manualOrders.length+" | الإجمالي: "+orders.length,"توزيع الحالات: "+fmt(statusCounts));
+   for(const o of orders.slice(0,25)){
+    const f=fulfillment.find(x=>x.order_id===o.id),manual=o.source==="leo_manual_orders";
+    const amount=o.total_price_usd!=null?money(n(o.total_price_usd),"USD"):o.total_price_syp!=null?money(n(o.total_price_syp),"SYP"):"السعر غير مسجل";
+    lines.push((manual?"BARO":"عام")+" | "+String(o.id).slice(0,8)+" | "+(o.product_name_snapshot||o.product_code||"طلب")+" × "+(o.quantity??1)+" | "+o.status+" | الدفع: "+(o.payment_status||"غير محدد")+" | "+amount+(manual?" | تكلفة المورد: "+money(n(o.supplier_total_cost),"USD"):" | تنفيذ المورد: "+(f?.dispatch_state||f?.supplier_status||"لا يوجد سجل تنفيذ")));
+   }
+   if(!orders.length)lines.push("لا توجد سجلات في المصدرين اللذين تمكنا من قراءتهما.");
   }
   if(ws){
    lines.push("\n🎧 تذاكر الدعم المفتوحة","عدد التذاكر المفتوحة: "+openTickets.length);
@@ -108,11 +127,15 @@ Deno.serve(async(req:Request)=>{
   }
   if(wf){
    lines.push("\n💰 قراءة مالية أولية — لا حركة مالية");
-   const usd=orders.reduce((s,o)=>s+n(o.total_price_usd),0),syp=orders.reduce((s,o)=>s+n(o.total_price_syp),0);
-   const cu=fulfillment.filter(f=>f.supplier_cost_currency==="USD").reduce((s,f)=>s+n(f.supplier_total_cost),0);
-   const cs=fulfillment.filter(f=>f.supplier_cost_currency==="SYP").reduce((s,f)=>s+n(f.supplier_total_cost),0);
-   lines.push("إجمالي قيم الطلبات في العينة: "+money(usd,"USD")+"، "+money(syp,"SYP"));
-   lines.push("تكاليف المورد المسجلة: "+money(cu,"USD")+"، "+money(cs,"SYP"));
+   const usd=orders.reduce((sum,o)=>sum+n(o.total_price_usd),0),syp=orders.reduce((sum,o)=>sum+n(o.total_price_syp),0);
+   const generalSupplierUsd=fulfillment.filter(f=>f.supplier_cost_currency==="USD").reduce((sum,f)=>sum+n(f.supplier_total_cost),0);
+   const manualSupplierUsd=manualOrders.reduce((sum,o)=>sum+n(o.supplier_cost_usd_snapshot??o.supplier_cost_usd),0);
+   const supplierSyp=fulfillment.filter(f=>f.supplier_cost_currency==="SYP").reduce((sum,f)=>sum+n(f.supplier_total_cost),0);
+   lines.push("مبيعات الطلبات من المصدرين: "+money(usd,"USD")+"، "+money(syp,"SYP"));
+   lines.push("تكاليف المورد لطلبات orders: "+money(generalSupplierUsd,"USD")+"، "+money(supplierSyp,"SYP"));
+   lines.push("تكاليف مورد BARO اليدوي: "+money(manualSupplierUsd,"USD")+" (مسجلة بالدولار فقط)");
+   lines.push("قيود مالية BARO المسجلة: "+baroFinance.length+" | قيود الإدارة المالية: "+adminFinance.length);
+   lines.push("لا أدمج العملات ولا أصف الفرق بأنه صافي ربح؛ راجع نوع وحالة القيود والمصاريف والمرتجعات قبل اعتماد أي نتيجة.");
    lines.push("لا أصف الفرق بأنه صافي ربح: العينة آخر 200 سجل وقد لا تشمل المصاريف أو المرتجعات أو كل التكاليف.");
    lines.push("الطلبات حسب الحالة: "+fmt(statusCounts));
   }
@@ -124,6 +147,28 @@ Deno.serve(async(req:Request)=>{
    for(const m of safeMemories.slice(0,25)) lines.push("• ["+(m.category||"عام")+"] "+String(m.content||"").slice(0,500)+" | "+String(m.created_at||""));
    if(!safeMemories.length) lines.push("لا توجد معلومات تشغيلية آمنة ظاهرة.");
    lines.push("هذه ذاكرة تشغيلية وليست بديلاً عن البيانات الحالية؛ عند التعارض نعتمد سجلات المتجر.");
+  }
+  if(ws){
+   const queued=supportQueue.filter(x=>!["done","completed","sent","cancelled"].includes(String(x.state||"").toLowerCase()));
+   lines.push("طابور المساندة الآلية: "+supportQueue.length+" سجل، غير محسوم: "+queued.length);
+   for(const item of queued.slice(0,12))lines.push((item.ticket_code||"بدون رقم")+" | "+item.state+" | "+(item.reason||"سبب غير مسجل")+" | محاولات: "+(item.attempts??0));
+  }
+  if(wl){
+   const balances=loyalty.reduce((sum,x)=>sum+n(x.points_balance),0),lifetime=loyalty.reduce((sum,x)=>sum+n(x.lifetime_earned),0);
+   lines.push("\n🏅 BARAN CLUB — قراءة فقط","حسابات الولاء: "+loyalty.length,"مجموع النقاط الحالية: "+balances,"إجمالي النقاط المكتسبة مدى الحياة: "+lifetime,"قسائم الولاء: "+loyaltyCoupons.length+" | حسب الحالة: "+fmt(countBy(loyaltyCoupons,x=>String(x.status||"غير محدد"))),"حركات النقاط ضمن العينة: "+loyaltyTransactions.length+" | "+fmt(countBy(loyaltyTransactions,x=>String(x.transaction_type||"غير محدد"))));
+  }
+  if(wn){
+   lines.push("\n🔔 الإشعارات والتسليم — قراءة فقط","سجلات تسليم Push: "+pushLogs.length+" | الحالات: "+fmt(countBy(pushLogs,x=>String(x.status||"غير محدد"))));
+   const failedPush=pushLogs.filter(x=>["failed","error","expired"].includes(String(x.status||"").toLowerCase()));
+   for(const p of failedPush.slice(0,15))lines.push("فشل تسليم: "+p.created_at+" | "+(p.error_code||"بدون رمز خطأ")+" | HTTP "+(p.http_status??"—"));
+  }
+  if(wplan){
+   lines.push("\n🗂️ خطة العمل الإدارية — قراءة فقط","المهام المسجلة: "+workPlan.length+" | الحالات: "+fmt(countBy(workPlan,x=>String(x.status||"غير محدد"))));
+   for(const p of workPlan.slice(0,20))lines.push((p.task_code||"مهمة")+" | "+p.title+" | "+p.area+" | "+p.priority+" | "+p.status+" | التالي: "+(p.next_step||"غير محدد")+" | يحتاج موافقة: "+(p.requires_approval?"نعم":"لا"));
+  }
+  if(wsec){
+   lines.push("\n🛡️ الأحداث الأمنية","أحداث أمان العملاء ضمن العينة: "+securityEvents.length+" | الشدة: "+fmt(countBy(securityEvents,x=>String(x.severity||"غير محدد"))));
+   for(const e of securityEvents.slice(0,20))lines.push(e.created_at+" | "+e.event_type+" | "+e.severity);
   }
   if(wsec){
    lines.push("\n🛡️ سجل التدقيق","أحدث السجلات المتاحة: "+audit.length);
@@ -141,6 +186,6 @@ Deno.serve(async(req:Request)=>{
    details:{route:"offline",units:1}
   });
   if(usageLogError)console.error("baran-admin-offline usage counter insert failed",usageLogError.message);
-  return reply({success:true,mode:"offline_readonly",reply:lines.join("\n"),data_updated_at:now,counts:{products:products.length,orders:orders.length,suppliers:suppliers.length,supplier_links:links.length,open_tickets:openTickets.length,pending_deposits:pendingDeposits.length,reviews:reviews.length},unavailable});
+  return reply({success:true,mode:"offline_readonly",engine:"baran-internal-rules-v2",reply:lines.join("\n"),data_updated_at:now,counts:{products:products.length,orders:orders.length,general_orders:baseOrders.length,baro_manual_orders:manualOrders.length,suppliers:suppliers.length,supplier_links:links.length,open_tickets:openTickets.length,pending_deposits:pendingDeposits.length,reviews:reviews.length,loyalty_accounts:loyalty.length},unavailable});
  }catch(e){console.error("baran-admin-offline error",e instanceof Error?e.message:"unknown");return reply({error:"تعذر تجهيز التقرير الاحتياطي. تحقق من سجل الدالة ثم أعد المحاولة."},500);}
 });

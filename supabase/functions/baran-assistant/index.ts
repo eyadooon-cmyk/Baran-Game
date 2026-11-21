@@ -108,8 +108,8 @@ function internalCustomerAnswer(question: string, context: any, conversation: Ar
     const state = String(order.status || "").toLowerCase();
     const labels: Record<string,string> = { pending:"قيد الانتظار",processing:"قيد التنفيذ",in_progress:"قيد التنفيذ",completed:"مكتمل",success:"مكتمل",failed:"فشل",rejected:"مرفوض",cancelled:"ملغي" };
     const product = products.find((p: any) => p.product_code === order.product_code);
-    const productName = product?.name || order.product_code || "طلب شحن";
-    const reply = "آخر طلب مسجل عندك:\n• المنتج: " + productName + "\n• الحالة: " + (labels[state] || order.status || "غير محددة") + "\n• الكمية: " + (order.quantity ?? "غير مسجلة") + (order.player_id ? "\n• معرّف اللاعب المسجل: " + order.player_id : "") + "\nهاي الحالة كما تظهر بالسجل، وما رح أقول إن الشحن اكتمل إلا إذا الحالة مؤكدة.";
+    const productName = order.product_name_snapshot || product?.name || order.product_code || "طلب شحن";
+    const reply = "آخر طلب مسجل عندك (" + (order.order_source === "leo_manual_orders" ? "BARO اليدوي" : "المتجر") + "):\n• المنتج: " + productName + "\n• الحالة: " + (labels[state] || order.status || "غير محددة") + "\n• الكمية: " + (order.quantity ?? "غير مسجلة") + (order.payment_status ? "\n• حالة الدفع: " + order.payment_status : "") + (order.player_id ? "\n• معرّف اللاعب المسجل: " + order.player_id : "") + "\nهاي الحالة كما تظهر بالسجل، وما رح أقول إن الشحن اكتمل إلا إذا الحالة مؤكدة.";
     const customerReportsDeliveryIssue = hasAny(q, ["ما وصل","ما وصلني","ما انشحن","شحنتولي","وصل الشحن","فشل الشحن","مشكلة بالشحن","مشكله بالشحن"]);
     return { reply: customerReportsDeliveryIssue ? reply + "\\nبما أنك عم تبلغ عن مشكلة بوصول الشحن، رح أحوّلها للدعم ليتحققوا من التنفيذ حتى لو الحالة المسجلة مكتمل." : reply, escalate: ["failed","rejected"].includes(state) || customerReportsDeliveryIssue, escalation_subject: "مشكلة في طلب شحن", escalation_summary: "الزبون يستفسر عن آخر طلب شحن أو يبلغ عن عدم وصوله؛ المنتج: " + productName + "؛ الحالة المسجلة: " + state + "." };
   }
@@ -309,6 +309,7 @@ Deno.serve(async (req: Request) => {
       profileResult,
       walletResult,
       ordersResult,
+      manualOrdersResult,
       depositsResult,
       productsResult,
       manualProductsResult,
@@ -317,6 +318,8 @@ Deno.serve(async (req: Request) => {
       admin.from("wallets").select("balance_usd,balance_syp").eq("user_id", user.id).maybeSingle(),
       admin.from("orders").select("product_code,player_id,quantity,status,created_at,total_price_usd,total_price_syp")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
+      admin.from("leo_manual_orders").select("product_code,product_name_snapshot,player_id,quantity,status,payment_status,created_at,customer_price_usd,customer_price_syp")
+        .eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
       admin.from("deposit_requests").select("amount,currency,transfer_reference,status,created_at")
         .eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
       admin.from("products").select("product_code,category,name,description,price_usd,price_syp")
@@ -324,14 +327,28 @@ Deno.serve(async (req: Request) => {
       admin.from("leo_manual_products").select("product_code,product_name,sale_price_usd,sale_price_syp,catalog_visible")
         .eq("catalog_visible", true).order("product_name", { ascending: true }).limit(100),
     ]);
-    const queryErrors = [profileResult.error, walletResult.error, ordersResult.error, depositsResult.error, productsResult.error, manualProductsResult.error].filter(Boolean);
+    const queryErrors = [profileResult.error, walletResult.error, ordersResult.error, manualOrdersResult.error, depositsResult.error, productsResult.error, manualProductsResult.error].filter(Boolean);
     if (queryErrors.length) {
       console.error("baran-assistant: customer context query failed", queryErrors.map((e: any) => e.message));
       return json({ error: "تعذر تحميل بعض بيانات حسابك حالياً. جرّب بعد قليل، ولم يتم إجراء أي تغيير على رصيدك أو طلباتك." }, 503);
     }
     const profile = profileResult.data;
     const wallet = walletResult.data;
-    const orders = ordersResult.data;
+    const orders = [
+      ...(ordersResult.data ?? []).map((order: any) => ({ ...order, order_source: "orders" })),
+      ...(manualOrdersResult.data ?? []).map((order: any) => ({
+        product_code: order.product_code,
+        product_name_snapshot: order.product_name_snapshot,
+        player_id: order.player_id,
+        quantity: order.quantity,
+        status: order.status,
+        payment_status: order.payment_status,
+        created_at: order.created_at,
+        total_price_usd: order.customer_price_usd,
+        total_price_syp: order.customer_price_syp,
+        order_source: "leo_manual_orders"
+      }))
+    ].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 10);
     const deposits = depositsResult.data;
     const products = productsResult.data;
     const manualProducts = manualProductsResult.data;

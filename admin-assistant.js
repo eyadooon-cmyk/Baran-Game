@@ -46,7 +46,9 @@
       const { data: sessionData, error: sessionError } = await sb.auth.getSession();
       const session = sessionData?.session;
       if (sessionError || !session) throw new Error("انتهت جلسة الدخول. سجّل دخولك من جديد.");
-      if (isOfflineReadOnlyQuery(clean)) {
+      // All non-mutating admin assistant conversations use the deterministic internal engine.
+      // Only explicit, allow-listed admin actions continue to the preview/approval workflow.
+      if (!isLikelyAdminAction(clean)) {
         const offline = await fetch(SUPABASE_URL + "/functions/v1/baran-admin-offline", {
           method: "POST",
           headers: {
