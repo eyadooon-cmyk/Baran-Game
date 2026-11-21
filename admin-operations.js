@@ -1,6 +1,12 @@
 let latestBaranOperations=null;
 
 function opsText(value){return value===null||value===undefined||value===""?"—":String(value);}
+function opsCustomerDisplayName(customer){
+  const name=String(customer?.full_name||customer?.display_name||customer?.name||"").trim();
+  if(name)return name;
+  const id=String(customer?.id||"").replace(/-/g,"");
+  return id?"عضو BARAN #"+id.slice(0,6).toUpperCase():"عضو BARAN";
+}
 function opsDate(value){return value?new Date(value).toLocaleString("ar"): "—";}
 function opsMoney(value,currency){return Number(value||0).toLocaleString("en-US",{maximumFractionDigits:2})+(currency==="USD"?" $":" ل.س");}
 function opsNode(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;}
@@ -187,8 +193,7 @@ function renderOpsCustomers(customers){
   customers.forEach((customer,index)=>{
     const card=opsNode("div","ops-item customer-directory-item");
     if(customer.id)card.dataset.customerId=customer.id;
-    card.append(opsNode("strong","",((index+1)+". "+opsText(customer.full_name||customer.email))));
-    card.append(opsNode("div","ops-muted","البريد: "+opsText(customer.email)));
+    card.append(opsNode("strong","",((index+1)+". "+opsCustomerDisplayName(customer))));
     card.append(opsNode("div","ops-muted","الهاتف: "+opsText(customer.phone)+" | التسجيل: "+opsDate(customer.created_at)));
     box.appendChild(card);
   });
@@ -201,8 +206,8 @@ function renderOpsOrders(orders){
     const card=opsNode("div","ops-item");
     card.dataset.notificationEntityId=order.id;
     card.append(opsNode("strong","","طلب رقم "+order.id.slice(0,8)));
-    card.append(opsNode("div","","الزبون: "+opsText(order.customer_name||order.customer_email)));
-    card.append(opsNode("div","","البريد: "+opsText(order.customer_email)+" | الهاتف: "+opsText(order.customer_phone)));
+    card.append(opsNode("div","","الزبون: "+opsText(order.customer_name||"زبون الطلب")));
+    if(order.customer_phone)card.append(opsNode("div","ops-muted","الهاتف: "+opsText(order.customer_phone)));
     card.append(opsNode("div","","المنتج: "+opsText(order.product_code)+" | اللاعب/المعرّف: "+opsText(order.player_id)));
     card.append(opsNode("div","","الكمية: "+order.quantity+" | التاريخ: "+opsDate(order.created_at)));
     card.append(opsNode("div","","السعر: "+(order.total_price_usd!==null?opsMoney(order.total_price_usd,"USD"):"—")+" | "+(order.total_price_syp!==null?opsMoney(order.total_price_syp,"SYP"):"—")));
@@ -497,7 +502,7 @@ function renderOpsLoyalty(customers,loyaltyRows){
   }
   if(select){
     const old=select.value;select.replaceChildren();opsOption(select,"","اختر الزبون");
-    customers.forEach(c=>opsOption(select,c.id,(c.full_name||c.email||c.id)+" — "+opsText(c.email)));
+    customers.forEach(c=>opsOption(select,c.id,opsCustomerDisplayName(c)));
     if(old)select.value=old;
   }
   if(box){
@@ -506,7 +511,7 @@ function renderOpsLoyalty(customers,loyaltyRows){
     customers.forEach(c=>{
       const points=balances.get(c.id);
       const card=opsNode("div","ops-item");
-      card.append(opsNode("strong","",c.full_name||c.email||c.id));
+      card.append(opsNode("strong","",opsCustomerDisplayName(c)));
       card.append(opsNode("div","","النقاط الحالية: "+Number(points?.points_balance||0).toLocaleString("en-US")));
       card.append(opsNode("div","ops-muted","إجمالي النقاط المكتسبة: "+Number(points?.lifetime_earned||0).toLocaleString("en-US")));
       box.appendChild(card);
