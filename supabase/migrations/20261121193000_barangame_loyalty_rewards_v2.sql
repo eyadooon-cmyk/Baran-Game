@@ -343,6 +343,7 @@ begin
  if v_discount_usd<0.01 then raise exception using errcode='55000',message='هامش ربح هذه الباقة لا يسمح بتطبيق خصم آمن للقسيمة.'; end if;
  select usd_syp_rate into v_rate from public.baro_manual_settings where id='main' for share;
  v_price:=case when p_wallet_currency='USD' then v_product.sale_price_usd else v_product.sale_price_syp end;
+ if p_wallet_currency='USD' then v_price:=round(v_price,2); end if;
  if p_wallet_currency='SYP' and (coalesce(v_rate,0)<=0 or coalesce(v_price,0)<=0 or v_price<>trunc(v_price)) then
   raise exception using errcode='22023',message='سعر الليرة أو سعر الصرف غير صالح.';
  end if;
