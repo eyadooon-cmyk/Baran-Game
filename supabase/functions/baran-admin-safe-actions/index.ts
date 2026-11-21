@@ -1,4 +1,3 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
 const headers = {"Access-Control-Allow-Origin":"https://eyadooon-cmyk.github.io","Access-Control-Allow-Headers":"authorization, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin","Content-Type":"application/json","Cache-Control":"no-store"};
 const productFields = new Set(["name","description","category","sort_order","is_active","price_usd","price_syp"]);
 const categories = new Set(["game","ai","vpn","gift_card","app"]);
@@ -74,7 +73,7 @@ Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return reply({error:"Method not allowed"},405);
  const origin=req.headers.get("Origin");if(origin&&origin!=="https://eyadooon-cmyk.github.io")return reply({error:"Origin not allowed"},403);
  try{
-  const url=Deno.env.get("SUPABASE_URL"), anon=Deno.env.get("SUPABASE_ANON_KEY"), service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), aiKey=Deno.env.get("OPENAI_API_KEY");
+  const url=Deno.env.get("SUPABASE_URL"), anon=Deno.env.get("SUPABASE_ANON_KEY"), service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if(!url||!anon||!service)return reply({error:"Server configuration incomplete"},500);
   const auth=req.headers.get("Authorization")||"",token=auth.startsWith("Bearer ")?auth.slice(7):"";
   if(!token)return reply({error:"Authentication required"},401);
@@ -109,8 +108,6 @@ Deno.serve(async(req:Request)=>{
    const supplierProducts=(supplierProductRows||[]).map((v:any)=>({id:v.id,supplier_id:v.supplier_id,product_id:v.product_id,supplier_sku:v.supplier_sku,unit_cost:v.unit_cost,currency:v.currency,is_preferred:v.is_preferred,lead_time_hours:v.lead_time_hours,notes:v.notes,updated_at:v.updated_at}));
    const orders=(orderRows||[]).map((v:any)=>({id:v.id,product_code:v.product_code,quantity:v.quantity,status:v.status,created_at:v.created_at}));
    const announcements=(announcementRows||[]).map((v:any)=>({id:v.id,kind:v.kind,title:v.title,body:v.body,status:v.status,created_at:v.created_at,updated_at:v.updated_at,published_at:v.published_at,notification_count:v.notification_count}));
-   let instructions = 'أنت مخطط مهام إدارية آمنة لمتجر Baran Game. افهم العربية واللهجة. أخرج JSON صالحاً فقط بأحد الأشكال: {"target_type":"product","target_key":"رمز منتج موجود حرفياً","changes":{"field":"value"},"reason":"سبب مختصر"} أو {"target_type":"ticket","target_key":"رمز تذكرة أو UUID موجود حرفياً","changes":{"status":"pending|in_progress|completed"},"reason":"سبب مختصر"} أو {"target_type":"review","target_key":"رمز تقييم أو UUID موجود حرفياً","changes":{"status":"approved|rejected"},"reason":"سبب مختصر"} أو {"target_type":"supplier","target_key":"اسم مورد موجود حرفياً كما يظهر بالقائمة","changes":{"notes":"ملاحظات جديدة"},"reason":"سبب مختصر"} أو {"target_type":"supplier","target_key":"اسم مورد موجود حرفياً كما يظهر بالقائمة","changes":{"name":"اسم جديد"},"reason":"سبب مختصر"} أو {"target_type":"supplier","target_key":"اسم مورد موجود حرفياً كما يظهر بالقائمة","changes":{"is_active":false},"reason":"سبب مختصر"} أو {"target_type":"order_status","target_key":"UUID طلب موجود حرفياً","changes":{"status":"processing|failed"},"reason":"سبب مختصر"} أو {"target_type":"announcement_create","target_key":"عنوان الإعلان","changes":{"kind":"maintenance|service_notice|service_restored","title":"عنوان 2-120 حرفاً","body":"نص 1-500 حرف"},"reason":"سبب مختصر"} أو {"target_type":"announcement_publish","target_key":"UUID مسودة موجودة","changes":{"status":"published"},"reason":"سبب مختصر"} أو {"target_type":"product_create","target_key":"رمز منتج جديد فريد","changes":{"product_code":"CODE_123","name":"اسم المنتج","description":"وصف","category":"game|ai|vpn|gift_card|app","sort_order":100,"is_active":false,"price_usd":null,"price_syp":null},"reason":"سبب مختصر"} أو {"target_type":"supplier_create","target_key":"اسم المورد الجديد","changes":{"name":"اسم المورد","notes":"ملاحظات عامة غير سرية","is_active":true},"reason":"سبب مختصر"}. اختر سجلاً واحداً فقط من القوائم، ولا تخترع سجلاً موجوداً. إنشاء مورد مسموح فقط إذا طلب المدير صراحة إضافة/تسجيل مورد جديد. الموردون: يسمح فقط name وnotes وis_active. لا تطلب أو تكتب contact_name أو contact_phone أو contact_email أو بيانات اتصال شخصية. لا تسمح بمفاتيح API أو عناوين API أو أسرار أو تكاليف أو عملات أو ربط منتجات بالمورد أو رصيد المورد أو إعدادات التكامل. لا تعدل مورداً موجوداً إلا إذا كان موجوداً بالقائمة. للمنتجات الحقول المسموحة: name, description, category, sort_order, is_active, price_usd, price_syp. لا تخترع سعراً؛ لا تغيّر السعر إلا إذا حدده المدير صراحةً، وأي تغيير سعر يحتاج معاينة وموافقة. عند إنشاء منتج جديد، لا تنشئه إلا إذا طلب المدير الإضافة صراحة. أنشئه غير نشط دائماً، واجعل السعرين null ما لم يذكر المدير سعراً صريحاً. أنشئ product_code فريداً من 3 إلى 40 حرفاً باستخدام أحرف إنجليزية كبيرة وأرقام وشرطة أو underscore، ولا تكرر رمزاً موجوداً. لا تنشر المنتج مباشرة. للتذاكر الحقل المسموح الوحيد status، والقيم المسموحة pending أو in_progress أو completed. لا تغيّر حالة التذكرة إلى completed إلا إذا طلب المدير إغلاقها صراحة. تغيير حالة التذكرة قد يرسل إشعاراً للزبون. لا تكتب ردوداً للزبائن ولا تغيّر admin_reply. للطلبيات: يسمح فقط بنقل طلب pending إلى processing أو processing إلى failed. لا تسمح completed أو fulfilled أو delivered أو cancelled أو أي حالة أخرى، ولا تغيّر بيانات الشحن أو الاسترداد أو أي بيانات مالية. تغيير حالة الطلب قد يرسل إشعاراً للزبون. الإعلان الجديد يُنشأ كمسودة فقط ولا يُرسل. لا تختَر announcement_publish إلا إذا طلب المدير صراحة نشر/إرسال مسودة موجودة، والنشر يرسل إشعاراً لكل حساب زبون غير إداري. استخدم مسودة موجودة حرفياً فقط ولا تنشئ إعلاناً منشوراً مباشرة. لا تنفذ شيئاً. ممنوع الأسعار والأرصدة والإيداعات والاستردادات والدفع وسعر الصرف والصلاحيات والمفاتيح. إذا كان الطلب غامضاً أو غير مسموح فأخرج {"error":"سبب الرفض"}. JSON فقط.';
-   instructions += " يسمح أيضاً بتعديل ملاحظة داخلية فقط لسجل تنفيذ طلب موجود باستخدام target_type=fulfillment_note وtarget_key يساوي order_id حرفياً وchanges={internal_notes: نص}. ويسمح بتعديل notes فقط لسجل ربط مورد-منتج موجود باستخدام target_type=supplier_product_note وtarget_key يساوي UUID سجل الربط حرفياً وchanges={notes: نص}. لا تغيّر حالة الطلب أو المورد أو حالة التنفيذ أو الاسترداد أو التكاليف أو العملة أو SKU أو أولوية المورد أو مهلة التنفيذ أو أي إعداد API. استخدم سجلاً موجوداً فقط. يسمح بإنشاء ربط مورد-منتج عند طلب المدير ذلك صراحةً باستخدام target_type=supplier_product_create وحقول supplier_id وproduct_id وsupplier_sku (أو null) وunit_cost وcurrency (USD أو SYP) وis_preferred وlead_time_hours (أو null) وnotes. يجب اختيار المورد والمنتج من القوائم الحالية حرفياً، وعدم اختراع UUID أو تكلفة. يسمح بتعديل حقل واحد فقط في ربط موجود عبر target_type=supplier_product: supplier_sku أو unit_cost أو currency أو is_preferred أو lead_time_hours أو notes. تعديل تكلفة الشراء أو المورد المفضل يحتاج معاينة وموافقة صريحة. لا تتصل بالمورد ولا ترسل طلب شحن ولا تغيّر رصيد المورد."; 
    const lowerCommand=command.toLowerCase();
    const wants=(re:RegExp)=>re.test(lowerCommand);
    const pick=(rows:any[],keys:string[],limit=12)=>{
@@ -131,15 +128,14 @@ Deno.serve(async(req:Request)=>{
     context.tickets=tickets.slice(0,4);context.reviews=reviews.slice(0,4);
     context.orders=orders.slice(0,4);context.announcements=announcements.slice(0,4);
    }
-   const input="طلب المدير: "+command+"\\nالبيانات ذات الصلة فقط: "+JSON.stringify(context);
-   let proposal:any=null;
-   // Offline fallback is intentionally used ONLY when OpenAI is unavailable or returns 429.
+      let proposal:any=null;
+   // Internal deterministic planner only. No external AI provider or network request is used.
    const buildOfflineProposal=()=>{
     const normalizeArabic=(v:string)=>String(v||"").toLowerCase().normalize("NFKC").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[ـ]/g," ").replace(/\s+/g," ").trim();
     const normalized=normalizeArabic(command);
     const wantsChange=/(?:فعّل|فعل|نشط|عطّل|عطل|وقف|اوقف|اخف|اظهر|اغلق|افتح|عالج|وافق|اعتمد|ارفض|انشئ|اضف|اربط|ربط|غير|عدل|تعديل|حدث)/u.test(normalized);
     const uuidMatch=command.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
-    const reason="اقتراح آلي دون OpenAI؛ راجع المعاينة وأكد قبل الحفظ";
+    const reason="اقتراح داخلي بقواعد محددة؛ راجع المعاينة وأكد قبل الحفظ";
     const newProduct=command.match(/(?:منتج جديد|اضافة منتج|إضافة منتج|انشاء منتج|إنشاء منتج)\s*[:：]\s*([A-Z0-9_-]{3,40})\s*[|،]\s*([^|،]{2,120})\s*[|،]\s*(game|ai|vpn|gift_card|app)\s*[|،]\s*([^|]{0,500})/i);
     if(newProduct){const code=newProduct[1].toUpperCase(),name=newProduct[2].trim(),category=newProduct[3].toLowerCase(),description=newProduct[4].trim();const sort_order=Math.max(0,...products.map((x:any)=>Number(x.sort_order)||0))+1;return {proposal:{target_type:"product_create",target_key:code,changes:{product_code:code,name,description,category,sort_order,is_active:false,price_usd:null,price_syp:null},reason}};}
     const newSupplier=command.match(/(?:مورد جديد|اضافة مورد|إضافة مورد|انشاء مورد|إنشاء مورد)\s*[:：]\s*([^|،؛\n]{2,120})/u);
@@ -218,7 +214,7 @@ Deno.serve(async(req:Request)=>{
      const rec=candidates[0],supplier=suppliers.find((x:any)=>x.id===rec.supplier_id);
      const note=extractNote(command,supplier?.name||"");
      if(note.length<3)return {error:"اكتب نص الملاحظة التي تريد تسجيلها على ربط المورد والمنتج.",status:400};
-     p={target_type:"supplier_product_note",target_key:rec.id,changes:{notes:appendNote(rec.notes,note)},reason:"ملاحظة داخلية عبر المسار الاحتياطي عند حد OpenAI"};
+     p={target_type:"supplier_product_note",target_key:rec.id,changes:{notes:appendNote(rec.notes,note)},reason:"ملاحظة داخلية عبر المحرك الداخلي"};
     }else if(hasFulfillmentIntent){
      let candidates=fulfillment;
      if(uuidMatch)candidates=candidates.filter((x:any)=>x.order_id===uuidMatch[0]);
@@ -226,14 +222,14 @@ Deno.serve(async(req:Request)=>{
      if(candidates.length!==1)return {error:"ما قدرت أحدد طلباً واحداً. اذكر رقم الطلب أو UUID. لم يتم أي تعديل.",status:409};
      const rec=candidates[0],note=extractNote(command);
      if(note.length<3)return {error:"اكتب نص الملاحظة التي تريد تسجيلها على تنفيذ الطلب.",status:400};
-     p={target_type:"fulfillment_note",target_key:rec.order_id,changes:{internal_notes:appendNote(rec.internal_notes,note)},reason:"ملاحظة داخلية عبر المسار الاحتياطي عند حد OpenAI"};
+     p={target_type:"fulfillment_note",target_key:rec.order_id,changes:{internal_notes:appendNote(rec.internal_notes,note)},reason:"ملاحظة داخلية عبر المحرك الداخلي"};
     }else{
      let candidates=suppliers.filter((x:any)=>normalizeArabic(command).includes(normalizeArabic(x.name)));
      if(candidates.length===0&&suppliers.length===1)candidates=suppliers;
      if(candidates.length!==1)return {error:candidates.length===0?"ما قدرت أحدد المورد. اذكر اسمه كما يظهر في القائمة. لم يتم أي تعديل.":"في أكثر من مورد ممكن. حدّد اسم المورد. لم يتم أي تعديل.",status:409};
      const rec=candidates[0],note=extractNote(command,rec.name);
      if(note.length<3)return {error:"اكتب نص الملاحظة التي تريد إضافتها على المورد.",status:400};
-     p={target_type:"supplier",target_key:rec.name,changes:{notes:appendNote(rec.notes,note)},reason:"ملاحظة داخلية عبر المسار الاحتياطي عند حد OpenAI"};
+     p={target_type:"supplier",target_key:rec.name,changes:{notes:appendNote(rec.notes,note)},reason:"ملاحظة داخلية عبر المحرك الداخلي"};
     }
     return {proposal:p};
    };
@@ -245,25 +241,12 @@ Deno.serve(async(req:Request)=>{
     return null;
    };
    const offlinePlanResponse=useOfflineFallback();
-   if(offlinePlanResponse)return offlinePlanResponse;
-   if(!proposal&&aiKey){
-    const ai=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+aiKey,"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-6-luna",instructions,input,max_output_tokens:320,store:false})});
-    if(ai.ok){
-     const d=await ai.json(),raw=(d.output||[]).filter((x:any)=>x.type==="message").flatMap((x:any)=>x.content||[]).find((x:any)=>x.type==="output_text")?.text;
-     try{proposal=JSON.parse(String(raw||""));}catch{return reply({error:"لم أستطع تكوين اقتراح آمن. وضّح العنصر والتغيير."},422);}
-    }else{
-     const errorText=(await ai.text()).slice(0,1200);
-     console.error("safe planner OpenAI error",ai.status,errorText.slice(0,500));
-     if(ai.status===429){
-      const fallbackResponse=useOfflineFallback();
-      if(fallbackResponse)return fallbackResponse;
-      if(!proposal)return reply({error:"وصل OpenAI إلى الحد المؤقت، وهذا الطلب ليس من مهام الملاحظات الداخلية التي يدعمها المسار الاحتياطي. لم يتم أي تعديل.",code:"AI_RATE_LIMIT_NO_FALLBACK",retry_after_seconds:ai.headers.get("retry-after")?Number(ai.headers.get("retry-after")):null},429);
-     }else{return reply({error:"تعذر الاتصال بالمساعد الذكي حالياً. لم يتم تعديل أي بيانات."},502);}
-    }
-   }else{
-    if(!proposal)return reply({error:"لم أتعرف على أمر واضح دون OpenAI. اذكر العنصر والتغيير بصيغة محددة؛ لم يتم أي تعديل.",code:"OFFLINE_COMMAND_UNSUPPORTED"},422);
-   }
-   if(proposal.error)return reply({error:String(proposal.error).slice(0,300)},422);
+    if(offlinePlanResponse)return offlinePlanResponse;
+    if(!proposal)return reply({
+     error:"هذا الأمر خارج المهام الداخلية المحددة حالياً. اذكر رمز المنتج أو رقم التذكرة أو UUID المطلوب، وحدد التغيير بدقة. لم يتم أي تعديل.",
+     code:"INTERNAL_COMMAND_UNSUPPORTED"
+    },422);
+    if(proposal.error)return reply({error:String(proposal.error).slice(0,300)},422);
    if(proposal.target_type==="announcement_create"){const c=proposal.changes||{};const es=Object.entries(c);if(typeof proposal.target_key!=="string"||es.length!==3||es.some(([k,v])=>!validAnnouncement(k,v))||String(c.title).trim()!==proposal.target_key.trim())return reply({error:"بيانات مسودة الإعلان غير صالحة."},422);return reply({proposal:{target_type:"announcement_create",target_id:null,target_key:proposal.target_key,target_name:String(c.title).trim(),before:{},changes:{kind:c.kind,title:String(c.title).trim(),body:String(c.body).trim()},reason:String(proposal.reason||"إنشاء مسودة إعلان").slice(0,300)},requires_confirmation:true,notice:"سيتم إنشاء مسودة فقط. لن يصل أي إشعار للزبائن قبل طلب النشر وموافقتك عليه بشكل منفصل."});}
    if(proposal.target_type==="announcement_publish"){const rec=announcements.find((x:any)=>x.id===proposal.target_key);if(!rec||rec.status!=="draft"||Object.keys(proposal.changes||{}).length!==1||proposal.changes.status!=="published")return reply({error:"لا توجد مسودة مطابقة قابلة للنشر."},422);return reply({proposal:{target_type:"announcement_publish",target_id:rec.id,target_key:rec.id,target_name:rec.title,before:{status:rec.status},changes:{status:"published"},reason:String(proposal.reason||"نشر إعلان").slice(0,300),expected_updated_at:rec.updated_at},requires_confirmation:true,notice:"سيتم إرسال إشعار للزبائن غير الإداريين، وقد تصلهم إشعارات الهاتف حسب اشتراكهم. هذا الإجراء لا يمكن التراجع عن إرسال الإشعارات."});}
    if(proposal.target_type==="product_create"){const c=proposal.changes||{};if(!validProductCreate(c)||typeof proposal.target_key!=="string"||proposal.target_key!==c.product_code)return reply({error:"بيانات المنتج الجديد غير صالحة."},422);if(products.some((x:any)=>x.product_code===c.product_code))return reply({error:"رمز المنتج مستخدم مسبقاً. اختر رمزاً آخر."},409);return reply({proposal:{target_type:"product_create",target_id:null,target_key:c.product_code,target_name:String(c.name).trim(),before:{},changes:{...c,name:String(c.name).trim()},reason:String(proposal.reason||"إنشاء منتج جديد").slice(0,300)},requires_confirmation:true,notice:"سيُنشأ المنتج غير نشط وبلا سعر ما لم تحدد السعر صراحة. لن يظهر للزبائن قبل تفعيله وتحديد أسعاره."});}
