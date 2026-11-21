@@ -160,9 +160,9 @@ Deno.serve(async (req: Request) => {
       else reply="ملخص الطلبات التشغيلية الحديثة:\n"+orders.map(o=>"• "+(o.product_code||"منتج غير محدد")+" — الكمية: "+(o.quantity??"غير محددة")+" — الحالة: "+(o.status||"غير محددة")).join("\n")+
         "\n\nإذا كان الطلب متأخراً، سجلي رقم الطلب ووقت آخر تحديث والمشكلة الظاهرة، ثم ارفعيه للمالك. لا تنفذي شحناً أو استرداداً من هذا المساعد.";
     } else {
-      reply = "فيني ساعدك بتحليل المهام المسندة، متابعة تذاكر الدعم، أو فهم حالات الطلبات.\n\nملخص البيانات الحالية: "+tasks.length+" مهمة مسندة، "+tickets.length+" تذكرة دعم ضمن آخر السجلات المقروءة، و"+orders.length+" طلب حديث.\n\nاكتبي مثلاً: «حللي مهامي الحالية»، أو «ساعديني بصياغة رد على تذكرة دعم»، أو «شو وضع الطلبات الحديثة؟».\n\nأنا مساعد محلي بقواعد تحليل ثابتة، ما بستدعي OpenAI وما بينفذ أي تعديل.";
+      reply = "فيني ساعدك بتحليل المهام المسندة، متابعة تذاكر الدعم، أو فهم حالات الطلبات.\n\nملخص البيانات الحالية: "+tasks.length+" مهمة مسندة، "+tickets.length+" تذكرة دعم ضمن آخر السجلات المقروءة، و"+orders.length+" طلب حديث.\n\nاكتبي مثلاً: «حللي مهامي الحالية»، أو «ساعديني بصياغة رد على تذكرة دعم»، أو «شو وضع الطلبات الحديثة؟».\n\nأنا مساعد محلي بقواعد تحليل ثابتة، ما بستدعي أي خدمة خارجية وما بينفذ أي تعديل.";
     }
-    return json({ reply, data_updated_at: safeContext.generated_at, read_only: true, engine: "local-rules-no-openai" });
+    return json({ reply, data_updated_at: safeContext.generated_at, read_only: true, engine: "local-rules-internal" });
   } catch (error) {
     console.error("baran-moderator-assistant unexpected error", error instanceof Error ? error.message : "unknown");
     return json({ error: "حدث خطأ داخلي أثناء تشغيل مساعد المشرفة." }, 500);
