@@ -130,7 +130,7 @@
         });
         row.append(code, copy);
         card.append(row,
-          node("p", "small", "خصم: $" + Number(coupon.discount_amount_usd).toFixed(2)),
+          node("p", "small", "خصم: " + (Number(coupon.discount_amount_usd)>=1 ? "حتى $1.00 حسب هامش ربح الباقة" : "$" + Number(coupon.discount_amount_usd).toFixed(2))),
           node("p", "small", "الحالة: " + (statusLabels[coupon.status] || coupon.status)),
           node("p", "small", "تاريخ الإصدار: " + new Date(coupon.created_at).toLocaleString("ar"))
         );
