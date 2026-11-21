@@ -82,12 +82,36 @@
       );
       rewardHeading.append(rewardHeadingCopy);
       catalog.append(rewardHeading);
-      const pauseNotice = node("div", "baran-club-reward-notice");
-      pauseNotice.append(
-        node("strong", "", "نحضر لك مكافآت أقوى ✨"),
-        node("p", "small", "أوقفنا إصدار القسائم بالقيمة القديمة مؤقتاً. لن يتم خصم أي نقطة حتى اعتماد قيمة المكافأة الجديدة.")
+      const rewardNotice = node("div", "baran-club-reward-notice");
+      rewardNotice.append(
+        node("strong", "", "كل 1,000 نقطة = قسيمة خصم بقيمة 1$ 🎁"),
+        node("p", "small", "النقاط منفصلة عن رصيد المحفظة، والقسيمة ليست رصيداً نقدياً. استخدامها متاح لطلبات BARO المؤهلة فقط، بعد تحقق الخادم من هامش الربح.")
       );
-      catalog.append(pauseNotice);
+      catalog.append(rewardNotice);
+
+      const redeem = node("button", "full baran-club-redeem-button",
+        balance < 1000 ? "اجمع " + (1000-balance).toLocaleString("en-US") + " نقطة لاستبدال قسيمة 1$" : "استبدال 1,000 نقطة بقسيمة 1$");
+      redeem.type = "button";
+      redeem.disabled = balance < 1000;
+      redeem.title = "تُصدر القسيمة بعد تأكيد الخادم، وتُقبل فقط على طلبات BARO المؤهلة التي تسمح أرباحها بالخصم.";
+      redeem.addEventListener("click", async () => {
+        if (redeem.disabled) return;
+        if (!window.confirm("سيتم خصم 1,000 نقطة وإصدار قسيمة خصم بقيمة 1$. هل تريد المتابعة؟")) return;
+        redeem.disabled = true;
+        redeem.textContent = "جاري إصدار قسيمتك...";
+        try {
+          const {data, error} = await sb.rpc("redeem_loyalty_coupon");
+          if (error) throw error;
+          if (!data?.code) throw new Error("لم نتلقَّ تأكيد إصدار القسيمة من الخادم.");
+          window.alert("مبروك! صدرت قسيمة BARAN CLUB بقيمة 1$:\n" + data.code + "\nاحتفظ بالرمز لاستخدامه في طلب BARO مؤهل.");
+          await loadMyRewards();
+        } catch (error) {
+          window.alert(error?.message || "تعذر إصدار القسيمة. لم يتم تأكيد خصم النقاط.");
+          redeem.disabled = false;
+          redeem.textContent = "إعادة المحاولة لاستبدال 1,000 نقطة";
+        }
+      });
+      catalog.append(redeem);
 
       const couponsHeading = node("h3", "", "قسائمي");
       catalog.append(couponsHeading);
