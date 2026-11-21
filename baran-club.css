@@ -1,0 +1,128 @@
+/* BARAN CLUB — premium loyalty experience, mobile-first and RTL */
+#rewards.baran-club-page{
+  width:min(100%,900px);margin-inline:auto;padding:clamp(11px,3vw,22px);
+  color:#f3eafa;direction:rtl;
+}
+#rewards .baran-club-hero{
+  position:relative;isolation:isolate;overflow:hidden;min-height:255px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:22px;
+  padding:clamp(20px,4.5vw,32px);border:1px solid rgba(218,184,244,.48);
+  border-radius:27px;background:
+    radial-gradient(circle at 88% 18%,rgba(231,202,255,.18),transparent 24%),
+    radial-gradient(ellipse at 0% 100%,rgba(139,83,185,.48),transparent 48%),
+    linear-gradient(125deg,#38234b 0%,#21142d 50%,#100b17 100%);
+  box-shadow:0 22px 42px #0008,inset 0 1px #ffffff24;
+}
+#rewards .baran-club-hero:before{
+  content:"";position:absolute;z-index:-1;inset:0;opacity:.23;pointer-events:none;
+  background-image:linear-gradient(135deg,transparent 48%,#e6c9fa12 49%,transparent 50%);
+  background-size:23px 23px;
+}
+#rewards .baran-club-hero-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#rewards .baran-club-wordmark{font:900 13px/1.3 Arial,sans-serif;letter-spacing:2.8px;color:#f4e5ff}
+#rewards .baran-club-chip{
+  padding:7px 11px;border:1px solid #d8b8f166;border-radius:999px;
+  background:#09061066;color:#e9d3fa;font:800 9px/1.2 Arial,sans-serif;letter-spacing:1.1px
+}
+#rewards .baran-club-hero-copy{max-width:620px}
+#rewards .baran-club-kicker{margin:0 0 7px;color:#d9b6f4;font:800 9px/1.5 Arial,sans-serif;letter-spacing:2px}
+#rewards .baran-club-hero h2{margin:0 0 9px;color:#fff;font-size:clamp(23px,5vw,34px);font-weight:950;line-height:1.45}
+#rewards .baran-club-hero-copy>p:last-child{max-width:500px;margin:0;color:#d8c7e5;font-size:12px;line-height:1.95}
+#rewards .baran-club-hero-mark{
+  position:absolute;left:25px;top:68px;color:#e9d5fa25;font-size:118px;line-height:1;
+  text-shadow:0 0 38px #c38be633;pointer-events:none
+}
+#rewards .baran-club-hero-tags{display:flex;flex-wrap:wrap;gap:7px}
+#rewards .baran-club-hero-tags span{
+  padding:7px 10px;border:1px solid #d5b4ed35;border-radius:999px;
+  background:#09061052;color:#e8d8f3;font-size:10px;font-weight:800
+}
+#rewards .baran-club-summary-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;margin:14px 0}
+#rewards .baran-club-panel{
+  min-width:0;margin:13px 0;padding:clamp(15px,3vw,21px);
+  border:1px solid rgba(194,153,224,.29);border-radius:21px;
+  background:radial-gradient(ellipse at 100% 0%,#8855a51c,transparent 46%),linear-gradient(155deg,#21182b,#120e18);
+  box-shadow:0 13px 28px #0005,inset 0 1px #ffffff0c
+}
+#rewards .baran-club-summary-grid>.baran-club-panel{margin:0;min-height:150px}
+#rewards .baran-club-balance{background:radial-gradient(ellipse at 100% 0%,#b17bd533,transparent 55%),linear-gradient(145deg,#352344,#1b1325 80%)}
+#rewards .baran-club-points-value{
+  display:block;margin:7px 0;color:#fff;font-size:clamp(27px,6vw,38px);
+  font-weight:950;line-height:1.35;letter-spacing:-.5px;text-shadow:0 0 24px #d0a0f044
+}
+#rewards .baran-club-balance:before{content:"✦ رصيد نقاطك";display:block;color:#d8b9ef;font-size:11px;font-weight:850}
+#rewards .baran-club-tier:before{content:"♛ عضوية BARAN VIP";display:block;color:#d8b9ef;font-size:11px;font-weight:850}
+#rewards .baran-club-tier-name{display:block;margin:8px 0;color:#fff;font-size:21px;font-weight:950}
+#rewards .baran-club-panel .small{color:#bcaacb;font-size:11px;line-height:1.85}
+#rewards .baran-club-tier-progress{margin-top:13px}
+#rewards .baran-club-progress-copy{margin-bottom:7px;color:#e1cceF;font-size:10px;font-weight:750}
+#rewards .baran-club-progress-track{height:8px;overflow:hidden;border:1px solid #9870b344;border-radius:99px;background:#0c0911}
+#rewards .baran-club-progress-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8c5bb1,#d8b5f3,#f1ddff);box-shadow:0 0 15px #c99be866}
+#rewards .baran-club-max-tier{margin:10px 0 0;color:#f0d7a0;font-size:11px;font-weight:850}
+#rewards .baran-club-panel-heading{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+#rewards .baran-club-panel-heading>span{
+  display:grid;place-items:center;flex:0 0 43px;height:43px;border:1px solid #b98bdc66;
+  border-radius:14px;background:linear-gradient(145deg,#65427d,#30203f);color:#f4e6ff;font-size:21px
+}
+#rewards .baran-club-panel-heading h3{margin:0 0 3px;color:#f3e7fb;font-size:16px;font-weight:900}
+#rewards .baran-club-panel-heading p{margin:0;color:#b9a7c7;font-size:10px;line-height:1.7}
+#rewards .baran-club-reward-notice{
+  padding:15px;border:1px solid #8b6a3d66;border-radius:15px;
+  background:radial-gradient(ellipse at 100% 0%,#c18a3b20,transparent 55%),linear-gradient(135deg,#302419,#1b151b);
+}
+#rewards .baran-club-reward-notice strong{display:block;margin-bottom:5px;color:#f1d5a4;font-size:13px}
+#rewards .baran-club-reward-notice p{margin:0}
+#rewards .baran-club-reward-panel h3{margin:17px 0 10px;color:#f0e4f8;font-size:14px}
+#rewards .baran-club-coupon{
+  margin:10px 0;padding:13px;border:1px solid #72548a;border-radius:15px;
+  background:linear-gradient(125deg,#2b2038,#17111f)
+}
+#rewards .baran-club-coupon-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#rewards .baran-club-coupon-row strong{color:#f2e2ff;letter-spacing:1px}
+#rewards .baran-club-coupon-row button{min-height:36px;border-radius:10px}
+#rewards .baran-club-history-list{display:grid;gap:9px}
+#rewards .baran-club-history-item{
+  display:grid;gap:5px;margin:0;padding:12px 14px;border:1px solid #4e3a60;border-radius:14px;
+  background:linear-gradient(120deg,#21182b,#17111f)
+}
+#rewards .baran-club-history-item strong{color:#e8d5f6;font-size:14px}
+#rewards .baran-club-history-item p,#rewards .baran-club-history-item time{margin:0;color:#b8a8c5;font-size:10px;line-height:1.7}
+#rewards .baran-club-footnote{margin:12px 3px;color:#a998b6;font-size:10px;line-height:1.8}
+#rewards .baran-club-back{min-height:47px;border-radius:14px}
+@media(max-width:560px){
+  #rewards.baran-club-page{padding:10px}
+  #rewards .baran-club-hero{min-height:245px;padding:20px 17px;border-radius:22px;gap:19px}
+  #rewards .baran-club-hero h2{font-size:24px;max-width:88%}
+  #rewards .baran-club-hero-copy>p:last-child{font-size:11px}
+  #rewards .baran-club-hero-mark{left:10px;top:78px;font-size:91px}
+  #rewards .baran-club-summary-grid{grid-template-columns:1fr 1fr;gap:8px}
+  #rewards .baran-club-summary-grid>.baran-club-panel{min-height:155px;padding:13px 11px;border-radius:17px}
+  #rewards .baran-club-points-value{font-size:clamp(22px,6vw,30px)}
+  #rewards .baran-club-tier-name{font-size:18px}
+  #rewards .baran-club-panel{padding:14px;border-radius:18px}
+}
+@media(max-width:360px){
+  #rewards .baran-club-summary-grid{grid-template-columns:1fr}
+  #rewards .baran-club-summary-grid>.baran-club-panel{min-height:130px}
+}
+@media(prefers-reduced-motion:no-preference){
+  #rewards .baran-club-hero{animation:baranClubEnter .45s ease-out both}
+  #rewards .baran-club-panel{animation:baranClubEnter .5s ease-out both}
+  @keyframes baranClubEnter{from{opacity:.7;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+}
+@media(prefers-reduced-motion:reduce){
+  #rewards .baran-club-hero,#rewards .baran-club-panel{animation:none}
+}
+
+#rewards .baran-club-redeem-button{
+  min-height:49px;margin-top:13px;border:1px solid #d8b2f2;border-radius:14px;
+  background:linear-gradient(110deg,#70448f,#42275c 58%,#2b1a3d);
+  color:#fff;font-weight:900;letter-spacing:.1px;
+  box-shadow:0 9px 22px #8c55b533,inset 0 1px #ffffff30;
+}
+#rewards .baran-club-redeem-button:not(:disabled){cursor:pointer}
+#rewards .baran-club-redeem-button:disabled{
+  border-color:#66536f;background:linear-gradient(110deg,#413448,#2b2330);
+  color:#c2b5c9;box-shadow:none;opacity:.88
+}
+#rewards .baran-club-redeem-button:not(:disabled):active{transform:translateY(1px)}
