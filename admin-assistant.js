@@ -162,11 +162,15 @@
   };
 
   window.askBaranAdminAssistant = function (event) {
-    if (event) event.preventDefault();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     const input = document.getElementById("baranAdminAssistantInput");
     const question = input?.value || "";
     if (input) input.value = "";
     void send(question);
+    return false;
   };
 
   // Department-focused AI team: uses the existing admin-only, read-only data context.
