@@ -84,7 +84,7 @@
       catalog.append(rewardHeading);
       const rewardNotice = node("div", "baran-club-reward-notice");
       rewardNotice.append(
-        node("strong", "", "كل 1,000 نقطة = قسيمة خصم بقيمة 1$ 🎁"),
+        node("strong", "", "كل 1,000 نقطة = قسيمة خصم حتى 1$ 🎁"),
         node("p", "small", "النقاط منفصلة عن رصيد المحفظة، والقسيمة ليست رصيداً نقدياً. استخدامها متاح لطلبات BARO المؤهلة فقط، بعد تحقق الخادم من هامش الربح.")
       );
       catalog.append(rewardNotice);
@@ -96,14 +96,14 @@
       redeem.title = "تُصدر القسيمة بعد تأكيد الخادم، وتُقبل فقط على طلبات BARO المؤهلة التي تسمح أرباحها بالخصم.";
       redeem.addEventListener("click", async () => {
         if (redeem.disabled) return;
-        if (!window.confirm("سيتم خصم 1,000 نقطة وإصدار قسيمة خصم بقيمة 1$. هل تريد المتابعة؟")) return;
+        if (!window.confirm("سيتم خصم 1,000 نقطة وإصدار قسيمة خصم حتى 1$. هل تريد المتابعة؟")) return;
         redeem.disabled = true;
         redeem.textContent = "جاري إصدار قسيمتك...";
         try {
           const {data, error} = await sb.rpc("redeem_loyalty_coupon");
           if (error) throw error;
           if (!data?.code) throw new Error("لم نتلقَّ تأكيد إصدار القسيمة من الخادم.");
-          window.alert("مبروك! صدرت قسيمة BARAN CLUB بقيمة 1$:\n" + data.code + "\nاحتفظ بالرمز لاستخدامه في طلب BARO مؤهل.");
+          window.alert("مبروك! صدرت قسيمة BARAN CLUB حتى 1$:\n" + data.code + "\nاحتفظ بالرمز لاستخدامه في طلب BARO مؤهل.");
           await loadMyRewards();
         } catch (error) {
           window.alert(error?.message || "تعذر إصدار القسيمة. لم يتم تأكيد خصم النقاط.");
