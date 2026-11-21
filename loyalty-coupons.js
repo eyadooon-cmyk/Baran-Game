@@ -46,53 +46,56 @@
       const earned = Number(loyalty.lifetime_earned || 0);
       const tiers = tiersResult.data || [];
       const tier = tiers.filter(t => earned >= Number(t.min_lifetime_points)).at(-1);
+      const nextTier = tiers.find(t => Number(t.min_lifetime_points) > earned);
       tierBox.replaceChildren(
-        node("strong", "", (tier?.badge_emoji || "✦") + " " + (tier?.tier_name || "عضو BARAN")),
-        node("p", "small", tier?.benefits?.join(" · ") || "استمر بالشراء المؤهل لجمع النقاط والارتقاء بمستواك.")
+        node("strong", "baran-club-tier-name", (tier?.badge_emoji || "✦") + " " + (tier?.tier_name || "عضو BARAN")),
+        node("p", "small baran-club-tier-benefits", tier?.benefits?.join(" · ") || "استمر بالشراء المؤهل لجمع النقاط والارتقاء بمستواك.")
       );
+      if (nextTier) {
+        const target = Number(nextTier.min_lifetime_points) || 0;
+        const progress = Math.max(0, Math.min(100, Math.floor((earned / Math.max(1, target)) * 100)));
+        const progressWrap = node("div", "baran-club-tier-progress");
+        const progressCopy = node("div", "baran-club-progress-copy",
+          "باقي " + Math.max(0, target - earned).toLocaleString("en-US") + " نقطة للوصول إلى " + nextTier.tier_name);
+        const track = node("div", "baran-club-progress-track");
+        const fill = node("span", "baran-club-progress-fill");
+        fill.style.width = progress + "%";
+        track.append(fill);
+        progressWrap.append(progressCopy, track);
+        tierBox.append(progressWrap);
+      } else {
+        tierBox.append(node("p", "baran-club-max-tier", "وصلت إلى أعلى مستوى عضوية! 👑"));
+      }
+
       balanceBox.replaceChildren(
-        node("strong", "", "رصيدك: " + balance.toLocaleString("en-US") + " نقطة"),
-        node("p", "small", "إجمالي النقاط المكتسبة: " + earned.toLocaleString("en-US"))
+        node("strong", "baran-club-points-value", balance.toLocaleString("en-US") + " نقطة"),
+        node("p", "small", "إجمالي ما جمعته حتى الآن: " + earned.toLocaleString("en-US") + " نقطة")
       );
 
       catalog.replaceChildren();
-      catalog.append(
-        node("strong", "", "🎟️ قسيمة خصم BARAN"),
-        node("p", "small", "كل 1,000 نقطة تمنحك قسيمة خصم بقيمة 10 سنت (0.10$). القسيمة لمرة واحدة، ولا تتحول إلى رصيد نقدي.")
+      const rewardHeading = node("div", "baran-club-panel-heading");
+      rewardHeading.append(node("span", "", "🎁"));
+      const rewardHeadingCopy = node("div");
+      rewardHeadingCopy.append(
+        node("h3", "", "مكافآتك وقسائمك"),
+        node("p", "", "رصيدك محفوظ، وقيمة الاستبدال الجديدة قيد الاعتماد.")
       );
-      const redeem = node("button", "full", "استبدال 1,000 نقطة بقسيمة 0.10$");
-      redeem.type = "button";
-      redeem.disabled = balance < 1000;
-      redeem.textContent = balance < 1000 ? "استبدل عند الوصول إلى 1,000 نقطة" : "استبدال 1,000 نقطة بقسيمة 0.10$";
-      redeem.title = "تعمل القسائم حالياً على طلبات BARO المؤهلة فقط؛ يتحقق الخادم من تكلفة المورد وهامش الربح قبل قبولها."; 
-      redeem.addEventListener("click", async () => {
-        if (redeem.disabled) return;
-        if (!window.confirm("سيتم خصم 1,000 نقطة وإصدار قسيمة خصم بقيمة 10 سنت (0.10$). هل تريد المتابعة؟")) return;
-        redeem.disabled = true;
-        redeem.textContent = "جاري إصدار القسيمة...";
-        try {
-          const {data, error} = await sb.rpc("redeem_loyalty_coupon");
-          if (error) throw error;
-          const issued = data || {};
-          window.alert("تم إصدار قسيمتك بنجاح: " + issued.code + "\nاحتفظ بالرمز. ستظهر القسيمة في قائمة قسائمك.");
-          await loadMyRewards();
-        } catch (error) {
-          window.alert(error?.message || "تعذر إصدار القسيمة. لم يتم تأكيد الاستبدال.");
-          redeem.disabled = false;
-          redeem.textContent = "استبدال 1,000 نقطة بقسيمة 0.10$";
-        }
-      });
-      catalog.append(redeem);
-      catalog.append(node("p", "small", "القسائم الصادرة قابلة للاستخدام في طلبات BARO المؤهلة فقط. قد يرفض الخادم القسيمة لبعض الباقات إذا كانت تكلفة المورد أو هامش الربح لا يسمحان بخصم آمن."));
-      if (balance < 1000) catalog.append(node("p", "small", "تحتاج إلى " + (1000-balance).toLocaleString("en-US") + " نقطة إضافية لبلوغ الحد الأدنى."));
+      rewardHeading.append(rewardHeadingCopy);
+      catalog.append(rewardHeading);
+      const pauseNotice = node("div", "baran-club-reward-notice");
+      pauseNotice.append(
+        node("strong", "", "نحضر لك مكافآت أقوى ✨"),
+        node("p", "small", "أوقفنا إصدار القسائم بالقيمة القديمة مؤقتاً. لن يتم خصم أي نقطة حتى اعتماد قيمة المكافأة الجديدة.")
+      );
+      catalog.append(pauseNotice);
 
       const couponsHeading = node("h3", "", "قسائمي");
       catalog.append(couponsHeading);
       const coupons = couponsResult.data || [];
       if (!coupons.length) catalog.append(node("p", "small", "ما عندك قسائم صادرة حالياً."));
       coupons.forEach(coupon => {
-        const card = node("article", "ops-item");
-        const row = node("div", "ops-actions");
+        const card = node("article", "baran-club-coupon ops-item");
+        const row = node("div", "baran-club-coupon-row ops-actions");
         const code = node("strong", "", coupon.code);
         code.dir = "ltr";
         const copy = node("button", "secondary", "نسخ الرمز");
@@ -114,7 +117,7 @@
       const rows = historyResult.data || [];
       if (!rows.length) historyBox.append(node("p", "small", "لا يوجد سجل نقاط بعد."));
       rows.forEach(item => {
-        const card = node("article", "ops-item");
+        const card = node("article", "baran-club-history-item ops-item");
         const positive = item.transaction_type === "earn";
         card.append(
           node("strong", "", (positive ? "+" : "−") + Number(item.points).toLocaleString("en-US") + " نقطة"),
