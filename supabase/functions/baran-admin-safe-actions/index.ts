@@ -1,3 +1,4 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
 const headers = {"Access-Control-Allow-Origin":"https://eyadooon-cmyk.github.io","Access-Control-Allow-Headers":"authorization, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin","Content-Type":"application/json","Cache-Control":"no-store"};
 const productFields = new Set(["name","description","category","sort_order","is_active","price_usd","price_syp"]);
 const categories = new Set(["game","ai","vpn","gift_card","app"]);
