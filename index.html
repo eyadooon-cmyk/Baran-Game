@@ -2125,7 +2125,6 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
       <div class="drawer-section-label"><span>01</span> اكتشف المتجر</div>
       <button class="drawer-link" data-section="home" onclick="navigateDrawer('home')"><span class="drawer-icon">⌂</span><span class="drawer-link-copy"><strong>الرئيسية</strong><small>الواجهة الرئيسية والعروض</small></span><i>‹</i></button>
       <button class="drawer-link" data-section="games" onclick="navigateDrawer('games')"><span class="drawer-icon">🎮</span><span class="drawer-link-copy"><strong>الألعاب</strong><small>PUBG · Free Fire · Jawaker</small></span><i>‹</i></button>
-      <button class="drawer-link" data-section="services" onclick="navigateDrawer('services')"><span class="drawer-icon">✦</span><span class="drawer-link-copy"><strong>الخدمات الرقمية</strong><small>اشتراكات وتطبيقات مدفوعة</small></span><i>‹</i></button>
       <button class="drawer-link" data-section="learning" onclick="navigateDrawer('learning')"><span class="drawer-icon">🎓</span><span class="drawer-link-copy"><strong>مركز التعلم</strong><small>إرشادات ومعلومات</small></span><i>‹</i></button>
     </div>
     <div class="drawer-section">
@@ -2203,19 +2202,6 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         </button>
       </div>
 
-      <div class="baran-home-services">
-        <div class="baran-home-section-intro">
-          <span class="baran-section-index">DIGITAL</span>
-          <div><h2>الخدمات الرقمية</h2><p>اشتراكات وأدوات وبطاقات رقمية</p></div>
-        </div>
-        <div class="baran-home-service-list">
-          <button type="button" onclick="showSection('chatgptStore',null)"><span class="service-symbol">✧</span><span><strong>ChatGPT والخدمات الذكية</strong><small>اشتراكات وأدوات ذكاء اصطناعي</small></span><b>←</b></button>
-          <button type="button" onclick="showSection('vpnStore',null)"><span class="service-symbol">◈</span><span><strong>اشتراكات VPN</strong><small>خدمات اتصال واشتراكات رقمية</small></span><b>←</b></button>
-          <button type="button" onclick="showSection('appsStore',null)"><span class="service-symbol">▦</span><span><strong>التطبيقات المدفوعة</strong><small>تطبيقات وخدمات متنوعة</small></span><b>←</b></button>
-          <button type="button" onclick="showSection('giftCardsStore',null)"><span class="service-symbol">🎁</span><span><strong>بطاقات Google Play</strong><small>بطاقات رقمية حسب التوفر</small></span><b>←</b></button>
-        </div>
-      </div>
-
       <div class="baran-home-account">
         <div class="baran-home-section-intro">
           <span class="baran-section-index">ACCOUNT</span>
@@ -2244,6 +2230,18 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
           <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE">
           <span class="item-content"><strong>FREE FIRE</strong><span>ادخل إلى متجر جواهر Free Fire والطلبات الخاصة باللعبة</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
+      </div>
+      <div class="baran-home-services automatic-digital-services">
+        <div class="baran-home-section-intro">
+          <span class="baran-section-index">DIGITAL SERVICES</span>
+          <div><h3>الخدمات الرقمية</h3><p>خدمات واشتراكات ضمن الشحن الآلي</p></div>
+        </div>
+        <div class="baran-home-service-list">
+          <button type="button" onclick="showSection('chatgptStore',null)"><span class="service-symbol">✧</span><span><strong>ChatGPT والخدمات الذكية</strong><small>اشتراكات وأدوات ذكاء اصطناعي</small></span><b>←</b></button>
+          <button type="button" onclick="showSection('vpnStore',null)"><span class="service-symbol">◈</span><span><strong>اشتراكات VPN</strong><small>خدمات اتصال واشتراكات رقمية</small></span><b>←</b></button>
+          <button type="button" onclick="showSection('appsStore',null)"><span class="service-symbol">▦</span><span><strong>التطبيقات المدفوعة</strong><small>تطبيقات وخدمات متنوعة</small></span><b>←</b></button>
+          <button type="button" onclick="showSection('giftCardsStore',null)"><span class="service-symbol">🎁</span><span><strong>بطاقات Google Play</strong><small>بطاقات رقمية حسب التوفر</small></span><b>←</b></button>
+        </div>
       </div>
     </section>
 
@@ -2311,25 +2309,25 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
     </section>
 
     <section id="chatgptStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الشحن الآلي</button>
       <div class="hero"><h2>اشتراكات ChatGPT</h2><p>باقات الذكاء الاصطناعي وطلباتها ضمن هذا القسم فقط.</p></div>
       <div id="chatgptProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>باقات ChatGPT</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="vpnStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الشحن الآلي</button>
       <div class="hero"><h2>اشتراكات VPN</h2><p>كل مزودي وباقات ومدد VPN ضمن هذا القسم فقط.</p></div>
       <div id="vpnProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>باقات VPN</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="giftCardsStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الشحن الآلي</button>
       <div class="hero"><h2>بطاقات الهدايا</h2><p>بطاقات Google Play وباقي البطاقات الرقمية ضمن هذا القسم فقط.</p></div>
       <div id="giftCardProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>بطاقات Google Play</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="appsStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الشحن الآلي</button>
       <div class="hero"><h2>التطبيقات المدفوعة</h2><p>التطبيقات والاشتراكات الخاصة بها ضمن هذا القسم فقط.</p></div>
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
