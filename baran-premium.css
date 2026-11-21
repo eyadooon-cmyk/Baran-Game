@@ -1010,7 +1010,6 @@ footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b36
 .baran-shipping-manual .baran-shipping-content>small{color:#dfb8fa}
 .baran-shipping-manual .baran-shipping-content>b{background:linear-gradient(120deg,#d8b5ee,#a779c5)}
 .baran-shipping-manual .baran-baro-status{top:14px;left:49px;right:auto;z-index:2;padding:5px 9px;border:1px solid #a984c1;border-radius:30px;background:#21152ddd;color:#f0dcff;font-size:9px;font-weight:900}
-.baran-home-search-wrap{order:-1}
 @media(min-width:760px){
  .baran-shipping-card{min-height:250px}
  .baran-shipping-content{padding:28px 30px}
