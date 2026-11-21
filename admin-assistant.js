@@ -157,7 +157,8 @@
 
   window.askBaranAdminPrompt = function (question) {
     const input = document.getElementById("baranAdminAssistantInput");
-    const prompt = String(question || "");    if (input) input.value = "";    void send(prompt);
+    const prompt = String(question || "");
+    if (input) input.value = "";    void send(prompt);
   };
 
   window.askBaranAdminAssistant = function (event) {
@@ -311,12 +312,13 @@
           (t.accessible ? "✅ " : "❌ ") + t.table +
           " — " + (t.accessible ? ("السجلات: " + (t.row_count ?? "غير معروف")) : ("خطأ: " + (t.error || "تعذر القراءة")))
         );
-        const message = "🟣 تشخيص نظام الولاء — قراءة فقط\\n" +
-          (d.message || "فحص مباشر للجداول دون تعديل البيانات.") + "\\n\\n" +
-          lines.join("\\n") + "\\n\\n" +
+        const message = "🟣 تشخيص نظام الولاء — قراءة فقط\n" +
+          (d.message || "فحص مباشر للجداول دون تعديل البيانات.") + "\n\n" +
+          lines.join("\n") + "\n\n" +
           (d.all_accessible ? "✅ جميع الجداول الستة قابلة للقراءة." : "⚠️ بعض الجداول تحتاج مراجعة صلاحيات.") +
-          "\\nلم يتم تغيير النقاط أو القسائم أو أرصدة الزبائن.";
-        if (card) { card.textContent = message; card.style.whiteSpace = "pre-wrap"; }        history.push({role:"assistant",content:message}); history=history.slice(-10);
+          "\nلم يتم تغيير النقاط أو القسائم أو أرصدة الزبائن.";
+        if (card) { card.textContent = message; card.style.whiteSpace = "pre-wrap"; }
+        history.push({role:"assistant",content:message}); history=history.slice(-10);
         return;
       }
       const p = planned?.proposal;
