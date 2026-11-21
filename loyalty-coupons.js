@@ -62,9 +62,9 @@
       );
       const redeem = node("button", "full", "استبدال 1,000 نقطة بقسيمة 1$");
       redeem.type = "button";
-      redeem.disabled = true;
-      redeem.textContent = balance < 1000 ? "استبدل عند الوصول إلى 1,000 نقطة" : "تفعيل القسائم بعد ربطها بالطلب";
-      redeem.title = "لن نخصم نقاطك قبل اكتمال ربط القسيمة بعملية الشراء والتحقق من الخصم."; 
+      redeem.disabled = balance < 1000;
+      redeem.textContent = balance < 1000 ? "استبدل عند الوصول إلى 1,000 نقطة" : "استبدال 1,000 نقطة بقسيمة 1$";
+      redeem.title = "تعمل القسائم حالياً على طلبات BARO المؤهلة فقط؛ يتحقق الخادم من تكلفة المورد وهامش الربح قبل قبولها."; 
       redeem.addEventListener("click", async () => {
         if (redeem.disabled) return;
         if (!window.confirm("سيتم خصم 1,000 نقطة وإصدار قسيمة خصم بقيمة 1 دولار. هل تريد المتابعة؟")) return;
@@ -83,7 +83,7 @@
         }
       });
       catalog.append(redeem);
-      catalog.append(node("p", "small", "حافظنا على نقاطك: لن نفعّل الخصم أو نخصم النقاط قبل ربط القسيمة بإنشاء الطلب والتحقق من السعر والربح على الخادم."));
+      catalog.append(node("p", "small", "القسائم الصادرة قابلة للاستخدام في طلبات BARO المؤهلة فقط. قد يرفض الخادم القسيمة لبعض الباقات إذا كانت تكلفة المورد أو هامش الربح لا يسمحان بخصم آمن."));
       if (balance < 1000) catalog.append(node("p", "small", "تحتاج إلى " + (1000-balance).toLocaleString("en-US") + " نقطة إضافية لبلوغ الحد الأدنى."));
 
       const couponsHeading = node("h3", "", "قسائمي");
