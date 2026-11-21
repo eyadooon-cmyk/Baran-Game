@@ -323,9 +323,9 @@ async function submitBaroOrder(){
  const walletCurrency=baroEl("baroWalletCurrency")?.value==="USD"?"USD":"SYP";
  const amount=Number(walletCurrency==="USD"?p.sale_price_usd:p.sale_price_syp);
  if(!Number.isFinite(amount)||amount<=0){message.textContent="سعر هذه الباقة غير متاح بعملة المحفظة المختارة.";return;}
- if(!confirm("مراجعة نهائية قبل الطلب:\nالباقة: "+p.product_name+"\nPlayer ID: "+player+"\nالسعر قبل القسيمة: "+(walletCurrency==="USD"?"$"+amount.toFixed(2):amount.toLocaleString("en-US")+" SYP")+(couponCode?"\nالقسيمة: "+couponCode+" (سيتم التحقق من صلاحيتها وهامش الربح على الخادم)":"")+"\n\nهل تؤكد أن هذه البيانات صحيحة؟ سيتم حجز المبلغ النهائي بعد التحقق من الخادم، وتُعاد القسيمة تلقائياً إذا فشل الطلب أو أُلغي."))return;
  const couponCode=(baroEl("baroCouponCode")?.value||"").trim().toUpperCase();
  if(couponCode&&!/^BARAN-[A-F0-9]{12}$/.test(couponCode)){message.textContent="رمز القسيمة غير صحيح. تحقق من الرمز أو اترك الحقل فارغاً.";return;}
+ if(!confirm("مراجعة نهائية قبل الطلب:\nالباقة: "+p.product_name+"\nPlayer ID: "+player+"\nالسعر قبل القسيمة: "+(walletCurrency==="USD"?"$"+amount.toFixed(2):amount.toLocaleString("en-US")+" SYP")+(couponCode?"\nالقسيمة: "+couponCode+" (سيتم التحقق من صلاحيتها وهامش الربح على الخادم)":"")+"\n\nهل تؤكد أن هذه البيانات صحيحة؟ سيتم حجز المبلغ النهائي بعد التحقق من الخادم، وتُعاد القسيمة تلقائياً إذا فشل الطلب أو أُلغي."))return;
  const request={product_code:p.product_code,player_id:player,player_id_confirmed:true,quantity,customer_note:note,wallet_currency:walletCurrency,coupon_code:couponCode};
  const fingerprint=await baroRequestFingerprint(request);
  if(!fingerprint){message.textContent="متصفحك لا يدعم حماية إعادة المحاولة. حدّث المتصفح قبل إرسال الطلب.";return;}
