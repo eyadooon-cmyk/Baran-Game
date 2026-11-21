@@ -41,7 +41,7 @@ function internalAdminReply(question: string, ctx: any, flags: any): string {
   const q = normalizeAdminText(question);
   const out: string[] = [];
   const health = ctx.store_health || {};
-  const orders = Array.isArray(ctx.recent_orders) ? ctx.recent_orders : [];
+  const orders = Array.isArray(ctx.recent_general_orders) ? ctx.recent_general_orders : (Array.isArray(ctx.recent_orders) ? ctx.recent_orders : []);
   const baroOrders = Array.isArray(ctx.recent_baro_manual_orders) ? ctx.recent_baro_manual_orders : [];
   const tickets = Array.isArray(ctx.recent_support_tickets) ? ctx.recent_support_tickets.filter((t: any) => t.feedback_type === "support") : [];
   const products = Array.isArray(ctx.products) ? ctx.products : [];
