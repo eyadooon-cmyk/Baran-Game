@@ -492,6 +492,7 @@ Deno.serve(async (req: Request) => {
         verification_notes?: string;
         verified_facts?: string[];
         notification_id?: string;
+        recipient_id?: string;
         supplier_id?: string;
         supplier_name?: string;
         contact_name?: string;
