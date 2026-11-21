@@ -498,8 +498,8 @@ Deno.serve(async (req: Request) => {
       const [products, suppliers, orders, manualOrders, tickets, deposits] = await Promise.all([
         admin.from("products").select("id,is_active", { count: "exact" }).limit(1),
         admin.from("suppliers").select("id,is_active", { count: "exact" }).limit(1),
-        admin.from("orders").select("id,status", { count: "exact", head: true }),
-        admin.from("leo_manual_orders").select("id,status", { count: "exact", head: true }),
+        admin.from("orders").select("id,status", { count: "exact" }).order("created_at", { ascending: false }).limit(100),
+        admin.from("leo_manual_orders").select("id,status", { count: "exact" }).order("created_at", { ascending: false }).limit(100),
         admin.from("customer_feedback").select("id,status", { count: "exact" }).eq("feedback_type", "support").in("status", ["pending","in_progress"]),
         admin.from("deposit_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
       ]);
