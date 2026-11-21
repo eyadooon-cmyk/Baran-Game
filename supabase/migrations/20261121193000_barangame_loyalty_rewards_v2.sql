@@ -33,8 +33,8 @@ begin
  select coalesce(cl.lifetime_earned,0) into v_lifetime from public.customer_loyalty cl where cl.user_id=new.user_id;
  v_multiplier:=case when coalesce(v_lifetime,0)>=15000 then 2.000
    when coalesce(v_lifetime,0)>=5000 then 1.500 when coalesce(v_lifetime,0)>=1000 then 1.250 else 1.000 end;
- -- 1,000 points = $1; base 10 points per eligible USD; rewards capped at 5% of realized gross profit.
- v_points:=least(floor(v_sale_usd*10*v_multiplier),floor(v_profit_usd*50))::bigint;
+ -- 1,000 points = $1; base 10 points per eligible USD; Bronze cap 5% of realized gross profit; VIP multipliers raise the cap up to 10% for Platinum.
+ v_points:=floor(least(floor(v_sale_usd*10),floor(v_profit_usd*50))*v_multiplier)::bigint;
  if v_points<1 then return new; end if;
  insert into public.loyalty_transactions(user_id,points,transaction_type,description,order_id)
  values(new.user_id,v_points,'earn','مكافأة BARAN CLUB عن الطلب المكتمل #'||left(new.id::text,8),new.id)
@@ -66,8 +66,8 @@ begin
  select coalesce(cl.lifetime_earned,0) into v_lifetime from public.customer_loyalty cl where cl.user_id=new.user_id;
  v_multiplier:=case when coalesce(v_lifetime,0)>=15000 then 2.000
    when coalesce(v_lifetime,0)>=5000 then 1.500 when coalesce(v_lifetime,0)>=1000 then 1.250 else 1.000 end;
- -- 1,000 points = $1; base 10 points per eligible USD; rewards capped at 5% of realized gross profit.
- v_points:=least(floor(v_sale_usd*10*v_multiplier),floor(v_profit_usd*50))::bigint;
+ -- 1,000 points = $1; base 10 points per eligible USD; Bronze cap 5% of realized gross profit; VIP multipliers raise the cap up to 10% for Platinum.
+ v_points:=floor(least(floor(v_sale_usd*10),floor(v_profit_usd*50))*v_multiplier)::bigint;
  if v_points<1 then return new; end if;
  insert into public.loyalty_transactions(user_id,points,transaction_type,description,manual_order_id)
  values(new.user_id,v_points,'earn','مكافأة BARAN CLUB عن طلب BARO المكتمل #'||left(new.id::text,8),new.id)
@@ -93,7 +93,8 @@ begin
   'points_per_coupon',1000,
   'coupon_value_usd',1.00,
   'base_points_per_usd',10,
-  'gross_profit_reward_cap_percent',5,
+  'bronze_gross_profit_reward_cap_percent',5,
+  'platinum_gross_profit_reward_cap_percent',10,
   'tier_multipliers',pg_catalog.jsonb_build_object(
    'bronze',1.00,'silver',1.25,'gold',1.50,'platinum',2.00
   )
