@@ -983,3 +983,42 @@ footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b36
 .notification-feedback-target.notification-target-highlight{border:2px solid #c18bed!important;background:linear-gradient(145deg,rgba(102,67,133,.28),rgba(25,18,34,.98))!important;box-shadow:0 0 0 4px rgba(193,139,237,.12),0 12px 30px rgba(0,0,0,.22)!important;scroll-margin-top:24px;animation:baranNotificationFocus 1.8s ease-out 1}
 @keyframes baranNotificationFocus{0%{box-shadow:0 0 0 0 rgba(193,139,237,.55)}100%{box-shadow:0 0 0 12px rgba(193,139,237,0)}}
 @media(prefers-reduced-motion:reduce){.notification-feedback-target.notification-target-highlight{animation:none}}
+
+
+/* BARAN GAME — clear two-path top-up home */
+.baran-shipping-choices{display:flex;flex-direction:column;gap:15px}
+.baran-shipping-card{
+  position:relative;isolation:isolate;display:flex;align-items:flex-end;
+  width:100%;min-height:218px;padding:0;overflow:hidden;text-align:right;
+  border:1px solid #8a6aa3;border-radius:21px;background:#17111f;
+  color:#fff;box-shadow:0 15px 32px #0007;cursor:pointer;
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.baran-shipping-card:active{transform:scale(.99)}
+.baran-shipping-card:hover{border-color:#d8b4f0;box-shadow:0 18px 38px #0009}
+.baran-shipping-card>img{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;transition:transform .45s ease}
+.baran-shipping-card:hover>img{transform:scale(1.035)}
+.baran-shipping-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(7,5,11,.97) 0%,rgba(12,8,18,.78) 42%,rgba(12,8,18,.12) 100%),linear-gradient(90deg,rgba(31,18,43,.1),rgba(22,13,31,.35))}
+.baran-shipping-content{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:min(100%,620px);padding:23px 21px 20px}
+.baran-shipping-content>small{color:#e1c1f4;font-size:9px;font-weight:900;letter-spacing:2px}
+.baran-shipping-content>strong{color:#fff;font-size:clamp(22px,4vw,29px);font-weight:950;line-height:1.35;text-shadow:0 3px 15px #000}
+.baran-shipping-content>em{max-width:520px;color:#e2d7eb;font-size:11px;font-style:normal;line-height:1.8}
+.baran-shipping-content>b{display:inline-flex;align-items:center;gap:14px;margin-top:7px;padding:10px 14px;border:1px solid #d8b7ef;border-radius:11px;background:linear-gradient(120deg,#e5caf7,#b78bd2);color:#21152a;font-size:11px;font-weight:900;box-shadow:0 7px 18px #0005}
+.baran-shipping-content>b i{font-size:17px;font-style:normal}
+.baran-shipping-number{position:absolute;top:15px;left:16px;color:#f1e4fa99;font:900 13px Orbitron,sans-serif;letter-spacing:1px}
+.baran-shipping-manual{border-color:#8d69a9}
+.baran-shipping-manual .baran-shipping-content>small{color:#dfb8fa}
+.baran-shipping-manual .baran-shipping-content>b{background:linear-gradient(120deg,#d8b5ee,#a779c5)}
+.baran-shipping-manual .baran-baro-status{top:14px;left:49px;right:auto;z-index:2;padding:5px 9px;border:1px solid #a984c1;border-radius:30px;background:#21152ddd;color:#f0dcff;font-size:9px;font-weight:900}
+.baran-home-search-wrap{order:-1}
+@media(min-width:760px){
+ .baran-shipping-card{min-height:250px}
+ .baran-shipping-content{padding:28px 30px}
+}
+@media(max-width:600px){
+ .baran-shipping-card{min-height:205px;border-radius:17px}
+ .baran-shipping-content{padding:19px 16px 17px}
+ .baran-shipping-content>strong{font-size:23px}
+ .baran-shipping-content>em{font-size:10px}
+ .baran-shipping-manual .baran-baro-status{top:11px;left:42px;font-size:8px}
+}
