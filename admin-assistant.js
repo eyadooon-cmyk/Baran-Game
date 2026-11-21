@@ -331,7 +331,8 @@
         if (card) card.textContent = message;
         history.push({role:"assistant",content:message}); history=history.slice(-10); return;
       }
-      if (card) {        card.textContent = "📋 معاينة: " + (labels[p.target_type] || "مهمة إدارية") + "\n" + details + "\n\nراجع التفاصيل قبل التأكيد. لم يتم تنفيذ أي تغيير بعد.";
+      if (card) {
+        card.textContent = "📋 معاينة: " + (labels[p.target_type] || "مهمة إدارية") + "\n" + details + "\n\nراجع التفاصيل قبل التأكيد. لم يتم تنفيذ أي تغيير بعد.";
         card.style.whiteSpace="pre-wrap";card.style.padding="12px";card.style.border="1px solid #8b6ab0";card.style.borderRadius="12px";
       }
       const actions=document.createElement("div");actions.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px";
