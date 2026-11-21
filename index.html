@@ -2160,28 +2160,10 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         <span>BARAN GAME</span>
       </div>
 
-      <div class="baran-home-hero">
-        <div class="baran-home-hero-copy">
-          <span class="baran-home-kicker">GAMES · DIGITAL · MORE</span>
-          <h1>كل اللي بتحبه<br><em>بعالم رقمي واحد</em></h1>
-          <p>اشحن ألعابك، اكتشف اشتراكاتك وخدماتك الرقمية، وتابع مشترياتك من مكان واحد.</p>
-          <div class="baran-home-hero-actions">
-            <button type="button" class="baran-home-primary" onclick="showSection('games',null)">تصفّح الألعاب <span>←</span></button>
-            <button type="button" class="baran-home-secondary" onclick="showSection('services',null)">الخدمات الرقمية</button>
-          </div>
-        </div>
-        <div class="baran-home-hero-art" aria-hidden="true">
-          <div class="baran-orbit orbit-one"></div><div class="baran-orbit orbit-two"></div>
-          <div class="baran-home-emblem">B<span>✦</span></div>
-          <i class="baran-spark spark-one">✦</i><i class="baran-spark spark-two">✧</i>
-        </div>
-        <div class="baran-home-hero-foot"><span>BARAN GAME</span><span>YOUR DIGITAL WORLD</span></div>
-      </div>
-
       <div class="baran-home-search-wrap">
         <div class="baran-home-section-intro">
-          <span class="baran-section-index">01 / FIND</span>
-          <div><h2>شو عم تدوّر عليه؟</h2><p>اكتب اسم اللعبة أو الخدمة للوصول إلها بسرعة</p></div>
+          <span class="baran-section-index">SEARCH</span>
+          <div><h2>ابحث عن لعبتك أو خدمتك</h2><p>اكتب اسم المنتج للوصول إليه بسرعة</p></div>
         </div>
         <div class="store-search baran-home-search" role="search">
           <div class="store-search-row"><span aria-hidden="true">⌕</span><input id="storeSearchInput" type="search" placeholder="ابحث عن PUBG أو Free Fire أو ChatGPT..." autocomplete="off" oninput="searchStore(this.value)"><button type="button" class="secondary" onclick="clearStoreSearch()">مسح</button></div>
@@ -2189,46 +2171,42 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         </div>
       </div>
 
-      <div class="baran-home-catalog">
+      <div class="baran-shipping-choices" aria-label="طرق الشحن">
         <div class="baran-home-section-intro">
-          <span class="baran-section-index">02 / EXPLORE</span>
-          <div><h2>تصفّح حسب القسم</h2><p>كل خدمة بمكانها، بخطوات واضحة ومنظمة</p></div>
+          <span class="baran-section-index">TOP-UP</span>
+          <div><h2>اختر طريقة الشحن</h2><p>طريقتان واضحتان، وكل طلب ضمن قسمه المستقل</p></div>
         </div>
-        <div class="baran-home-category-grid">
-          <button class="baran-home-category category-games" type="button" onclick="showSection('games',null)">
-            <span class="baran-home-category-icon">🎮</span><span class="baran-home-category-text"><strong>الألعاب والشحن</strong><small>PUBG MOBILE · FREE FIRE</small></span><span class="baran-home-category-arrow">←</span>
-          </button>
-          <button class="baran-home-category category-digital" type="button" onclick="showSection('services',null)">
-            <span class="baran-home-category-icon">✦</span><span class="baran-home-category-text"><strong>الخدمات الرقمية</strong><small>AI · اشتراكات · VPN</small></span><span class="baran-home-category-arrow">←</span>
-          </button>
-          <button class="baran-home-category category-gifts" type="button" onclick="showSection('giftCardsStore',null)">
-            <span class="baran-home-category-icon">🎁</span><span class="baran-home-category-text"><strong>بطاقات الهدايا</strong><small>GOOGLE PLAY وغيرها</small></span><span class="baran-home-category-arrow">←</span>
-          </button>
-        </div>
-      </div>
 
-      <div class="baran-home-featured">
-        <div class="baran-home-section-intro">
-          <span class="baran-section-index">03 / GAMES</span>
-          <div><h2>ابدأ مع لعبتك</h2><p>انتقل مباشرة إلى متجر اللعبة وباقاتها</p></div>
-          <button type="button" class="baran-home-text-link" onclick="showSection('games',null)">كل الألعاب ←</button>
-        </div>
-        <div class="baran-home-game-grid">
-          <button class="baran-home-game-card" type="button" onclick="showSection('pubgStore',null)">
-            <img src="https://pbs.twimg.com/media/EZrVgJ_XkAQX9jX.jpg" alt="PUBG MOBILE" loading="lazy">
-            <span class="baran-game-card-shade"></span><span class="baran-game-card-copy"><small>GAME TOP-UP</small><strong>PUBG MOBILE</strong><em>متجر شدات UC <b>←</b></em></span>
-          </button>
-          <button class="baran-home-game-card" type="button" onclick="showSection('freeFireStore',null)">
-            <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE" loading="lazy">
-            <span class="baran-game-card-shade"></span><span class="baran-game-card-copy"><small>GAME TOP-UP</small><strong>FREE FIRE</strong><em>متجر الجواهر <b>←</b></em></span>
-          </button>
-        </div>
+        <button class="baran-shipping-card baran-shipping-auto" type="button" onclick="showSection('games',null)">
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1400&q=85" alt="أجواء ألعاب وشحن إلكتروني" loading="lazy">
+          <span class="baran-shipping-shade"></span>
+          <span class="baran-shipping-content">
+            <small>AUTOMATIC TOP-UP</small>
+            <strong>الشحن الآلي</strong>
+            <em>اختر اللعبة والباقة وتصفّح خدمات الشحن الآلي المتاحة.</em>
+            <b>الدخول إلى الشحن الآلي <i>←</i></b>
+          </span>
+          <span class="baran-shipping-number">01</span>
+        </button>
+
+        <button class="baran-shipping-card baran-shipping-manual" type="button" onclick="showSection('baroManual',this);loadBaroCustomer()">
+          <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1400&q=85" alt="معدات ألعاب وشحن يدوي" loading="lazy">
+          <span class="baran-shipping-shade"></span>
+          <span class="baran-shipping-content">
+            <small>BARO · MANUAL TOP-UP</small>
+            <strong>الشحن اليدوي</strong>
+            <em id="baranBaroHomeCopy">قسم BARO المستقل — تصفّح المنتجات والأسعار وتحقق من حالة استقبال الطلبات.</em>
+            <b>الدخول إلى الشحن اليدوي <i>←</i></b>
+          </span>
+          <span id="baranBaroStatus" class="baran-baro-status">تحقق من حالة الاستقبال</span>
+          <span class="baran-shipping-number">02</span>
+        </button>
       </div>
 
       <div class="baran-home-services">
         <div class="baran-home-section-intro">
-          <span class="baran-section-index">04 / DIGITAL</span>
-          <div><h2>عالم الخدمات الرقمية</h2><p>اختَر الخدمة المناسبة إلك</p></div>
+          <span class="baran-section-index">DIGITAL</span>
+          <div><h2>الخدمات الرقمية</h2><p>اشتراكات وأدوات وبطاقات رقمية</p></div>
         </div>
         <div class="baran-home-service-list">
           <button type="button" onclick="showSection('chatgptStore',null)"><span class="service-symbol">✧</span><span><strong>ChatGPT والخدمات الذكية</strong><small>اشتراكات وأدوات ذكاء اصطناعي</small></span><b>←</b></button>
@@ -2238,16 +2216,9 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         </div>
       </div>
 
-      <div class="baran-home-baro">
-        <div class="baran-baro-mark">B<span>O</span></div>
-        <div class="baran-baro-copy"><span>MANUAL TOP-UP · SEPARATE SECTION</span><strong>BARO للشحن اليدوي</strong><small id="baranBaroHomeCopy">قسم مستقل عن الشحن الآلي — تحقق من حالة الاستقبال داخل BARO.</small></div>
-        <button type="button" onclick="showSection('baroManual',this);loadBaroCustomer()">استكشف BARO ←</button>
-        <div id="baranBaroStatus" class="baran-baro-status">تحقق من حالة الاستقبال</div>
-      </div>
-
       <div class="baran-home-account">
         <div class="baran-home-section-intro">
-          <span class="baran-section-index">05 / YOUR ACCOUNT</span>
+          <span class="baran-section-index">ACCOUNT</span>
           <div><h2>كل حسابك بإيدك</h2><p>تابع مشترياتك ومحفظتك وتواصل معنا بسهولة</p></div>
         </div>
         <div class="baran-home-account-grid">
