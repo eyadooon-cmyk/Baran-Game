@@ -441,6 +441,119 @@ end;
 $function$;
 
 
+CREATE OR REPLACE FUNCTION public.get_my_baro_coupon_quote(
+  p_product_code text,
+  p_wallet_currency text,
+  p_coupon_code text
+)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+declare
+  v_user_id uuid:=auth.uid();
+  v_product public.leo_manual_products%rowtype;
+  v_coupon public.loyalty_coupons%rowtype;
+  v_rate numeric;
+  v_profit_usd numeric;
+  v_discount_limit numeric;
+  v_discount_usd numeric;
+  v_discount_amount numeric;
+  v_price numeric;
+begin
+  if v_user_id is null then
+    raise exception using errcode='28000',message='سجّل الدخول أولاً للتحقق من القسيمة.';
+  end if;
+  if p_wallet_currency not in ('USD','SYP') then
+    raise exception using errcode='22023',message='عملة المحفظة غير صحيحة.';
+  end if;
+  if p_product_code is null or p_product_code !~ '^LEO_[A-Z0-9_]{3,56}
+REVOKE EXECUTE ON FUNCTION public.redeem_loyalty_coupon() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.redeem_loyalty_coupon() TO authenticated;
+REVOKE EXECUTE ON FUNCTION public.get_my_baro_coupon_quote(text,text,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_my_baro_coupon_quote(text,text,text) TO authenticated;
+
+-- Keep the existing VIP thresholds and update only the displayed benefits.
+UPDATE public.loyalty_tiers
+SET benefits = CASE tier_code
+  WHEN 'bronze' THEN ARRAY['10 نقاط لكل دولار مؤهل','قسيمة 1$ مقابل كل 1,000 نقطة']
+  WHEN 'silver' THEN ARRAY['مضاعف نقاط 1.25x','أولوية الاطلاع على العروض الجديدة']
+  WHEN 'gold' THEN ARRAY['مضاعف نقاط 1.5x','أولوية في متابعة طلبات الدعم']
+  WHEN 'platinum' THEN ARRAY['مضاعف نقاط 2x','دعم VIP وأولوية الوصول للعروض']
+  ELSE benefits
+END,
+updated_at = now()
+WHERE tier_code IN ('bronze','silver','gold','platinum');
+
+     or p_coupon_code is null or pg_catalog.length(pg_catalog.btrim(p_coupon_code))>40 then
+    raise exception using errcode='22023',message='بيانات القسيمة أو المنتج غير صحيحة.';
+  end if;
+
+  select * into v_coupon
+  from public.loyalty_coupons
+  where user_id=v_user_id
+    and upper(code)=upper(pg_catalog.btrim(p_coupon_code))
+    and status='active';
+  if not found or v_coupon.points_spent<>1000
+     or v_coupon.discount_amount_usd not in (0.10,1.00) then
+    raise exception using errcode='22023',message='القسيمة غير صالحة أو مستخدمة أو لا تخص حسابك.';
+  end if;
+
+  select * into v_product
+  from public.leo_manual_products
+  where product_code=p_product_code
+    and catalog_visible is true
+    and purchase_enabled is true
+  for share;
+  if not found then
+    raise exception using errcode='55000',message='هذه الباقة غير متاحة للطلب حالياً.';
+  end if;
+  if coalesce(v_product.sale_price_usd,0)<=0
+     or coalesce(v_product.supplier_cost_usd,0)<=0
+     or v_product.supplier_cost_usd>=v_product.sale_price_usd then
+    raise exception using errcode='55000',message='لا يمكن التحقق من هامش ربح هذه الباقة للقسيمة.';
+  end if;
+
+  v_profit_usd:=round(v_product.sale_price_usd-v_product.supplier_cost_usd,4);
+  v_discount_limit:=floor(v_profit_usd*0.90*100)/100;
+  if v_coupon.discount_amount_usd=0.10 then
+    if v_discount_limit<0.10 then
+      raise exception using errcode='55000',message='هذه القسيمة القديمة بقيمة 10 سنت تحتاج باقة تسمح بالخصم الكامل.';
+    end if;
+    v_discount_usd:=0.10;
+  else
+    v_discount_usd:=least(v_coupon.discount_amount_usd,v_discount_limit);
+  end if;
+  if v_discount_usd<0.01 then
+    raise exception using errcode='55000',message='هامش ربح هذه الباقة لا يسمح بتطبيق خصم آمن للقسيمة.';
+  end if;
+
+  select usd_syp_rate into v_rate
+  from public.baro_manual_settings
+  where id='main'
+  for share;
+  v_price:=case when p_wallet_currency='USD' then v_product.sale_price_usd else v_product.sale_price_syp end;
+  if p_wallet_currency='SYP' and (coalesce(v_rate,0)<=0 or coalesce(v_price,0)<=0 or v_price<>trunc(v_price)) then
+    raise exception using errcode='22023',message='سعر الليرة أو سعر الصرف غير صالح.';
+  end if;
+  v_discount_amount:=case when p_wallet_currency='USD' then v_discount_usd else round(v_rate*v_discount_usd,0) end;
+  if v_discount_amount<=0 or v_discount_amount>=v_price then
+    raise exception using errcode='55000',message='قيمة الخصم لا تناسب سعر هذه الباقة.';
+  end if;
+
+  return pg_catalog.jsonb_build_object(
+    'coupon_code',v_coupon.code,
+    'max_discount_usd',v_coupon.discount_amount_usd,
+    'discount_usd',v_discount_usd,
+    'discount_amount',v_discount_amount,
+    'currency',p_wallet_currency,
+    'original_price',v_price,
+    'final_price',v_price-v_discount_amount
+  );
+end;
+$function$;
+
 -- Restore only authenticated customer access to the secure redemption RPC.
 REVOKE EXECUTE ON FUNCTION public.redeem_loyalty_coupon() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.redeem_loyalty_coupon() TO authenticated;
