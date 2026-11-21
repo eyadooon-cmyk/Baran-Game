@@ -131,8 +131,19 @@ Deno.serve(async (req: Request) => {
       const category = inferCategory(part) || globalCategory;
       if (!category) continue;
       let name = part;
-      const partLabel = contextLabel(part);
-      if (label && !partLabel && category !== "app") name = label + " " + part;
+      if (label && category !== "app") {
+        const aliases: Record<string, RegExp> = {
+          "Free Fire": /free\s*fire|freefire|فري\s*فاير|فريفاير/giu,
+          "PUBG Mobile": /pubg\s*mobile|pubg|ببجي/giu,
+          "Jawaker": /jawaker|جواكر/giu,
+          "ChatGPT": /chatgpt/giu,
+          "Google Play": /google\s*play/giu,
+          "VPN": /vpn|في\s*بي\s*ان/giu
+        };
+        const alias = aliases[label];
+        const detail = (alias ? part.replace(alias, " ") : part).replace(/[:：]/g, " ").replace(/\s+/g, " ").trim();
+        name = (label + " " + detail).trim();
+      }
       name = name.replace(/^(?:في|و|ثم)\s*/u, "").trim();
       if (name.length < 2) continue;
       candidates.push({ name: name.slice(0,120), category, description: "" });
