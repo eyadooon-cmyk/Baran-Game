@@ -1992,6 +1992,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 .account-identity-details-pro #accountDisplayName{display:inline-block}.account-name-row .account-vip-badge{margin-top:0;flex:0 0 auto}
 </style>
 <link rel="stylesheet" href="./baran-wallet-premium.css?v=20261121-wallet-premium-v3">
+<link rel="stylesheet" href="./baran-club.css?v=20261121-club-v1">
 </head>
 <body>
 
@@ -3324,18 +3325,44 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
       <div id="customerOrdersList" class="ops-list">جاري تحميل طلباتك...</div>
     </section>
 
-    <section id="rewards" class="hidden">
-      <h2>🎁 نقاط الولاء ومكافآت BARAN VIP</h2>
-      <div id="customerLoyaltyTier" class="ops-card">جاري تحميل مستوى عضويتك...</div>
-      <div id="customerLoyaltyBalance" class="ops-card">جاري تحميل رصيد النقاط...</div>
-      <div id="customerRewardCatalog" class="ops-card">
-        <strong>🎟️ استبدال النقاط</strong>
-        <p class="small">قريباً: استبدل نقاطك بقسائم خصم تظهر عند إتمام الطلب. لن يتم خصم أي نقاط قبل تفعيل الاستبدال الآمن.</p>
+    <section id="rewards" class="hidden baran-club-page" aria-labelledby="baranClubTitle">
+      <header class="baran-club-hero">
+        <div class="baran-club-hero-top">
+          <span class="baran-club-wordmark">BARAN CLUB</span>
+          <span class="baran-club-chip">REWARDS · VIP</span>
+        </div>
+        <div class="baran-club-hero-copy">
+          <p class="baran-club-kicker">YOUR LOYALTY, YOUR REWARDS</p>
+          <h2 id="baranClubTitle">كل طلب مؤهل بيقرّبك من مكافأتك</h2>
+          <p>اجمع نقاطك مع مشترياتك المؤهلة، تابع مستواك، واكتشف مزايا BARAN CLUB من مكان واحد.</p>
+        </div>
+        <div class="baran-club-hero-mark" aria-hidden="true">✦</div>
+        <div class="baran-club-hero-tags">
+          <span>✧ نقاط الولاء</span><span>♛ مستويات VIP</span><span>🎟️ قسائم حصرية</span>
+        </div>
+      </header>
+
+      <div class="baran-club-summary-grid">
+        <article id="customerLoyaltyBalance" class="baran-club-panel baran-club-balance" aria-live="polite">
+          جاري تحميل رصيد النقاط...
+        </article>
+        <article id="customerLoyaltyTier" class="baran-club-panel baran-club-tier" aria-live="polite">
+          جاري تحميل مستوى عضويتك...
+        </article>
       </div>
-      <h3>سجل النقاط</h3>
-      <div id="customerLoyaltyHistory" class="ops-list">جاري تحميل سجل النقاط...</div>
-      <p class="small">تُضاف النقاط أو تُخصم وفق العمليات المعتمدة من إدارة المتجر. ستظهر تفاصيل كل حركة هنا.</p>
-      <button class="full secondary baran-back-button" onclick="showSection('account',document.querySelectorAll('nav button')[4])">العودة إلى حسابي</button>
+
+      <section id="customerRewardCatalog" class="baran-club-panel baran-club-reward-panel" aria-live="polite">
+        <div class="baran-club-panel-heading"><span>🎁</span><div><h3>مكافآتك وقسائمك</h3><p>مكافآت واضحة، واستبدال آمن يحافظ على قيمة نقاطك.</p></div></div>
+        <p class="small">يجري تحديث قيمة الاستبدال قبل تفعيل إصدار قسائم جديدة.</p>
+      </section>
+
+      <section class="baran-club-panel baran-club-history-panel">
+        <div class="baran-club-panel-heading"><span>✧</span><div><h3>سجل نقاطك</h3><p>كل نقطة مكتسبة أو مستخدمة تظهر هنا.</p></div></div>
+        <div id="customerLoyaltyHistory" class="baran-club-history-list" aria-live="polite">جاري تحميل سجل النقاط...</div>
+      </section>
+
+      <p class="baran-club-footnote">رصيد نقاطك منفصل تماماً عن رصيد الدولار والليرة في المحفظة، ولا يمكن سحب النقاط نقداً.</p>
+      <button class="full secondary baran-back-button baran-club-back" onclick="showSection('account',document.querySelectorAll('nav button')[4])">العودة إلى حسابي</button>
     </section>
 
     <section id="learning" class="hidden">
