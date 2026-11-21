@@ -35,7 +35,7 @@
         sb.from("loyalty_tiers").select("tier_code,tier_name,min_lifetime_points,badge_emoji,benefits").eq("is_active", true).order("min_lifetime_points", {ascending:true}),
         sb.from("loyalty_transactions").select("points,transaction_type,description,created_at").eq("user_id", user.id).order("created_at", {ascending:false}).limit(30),
         sb.rpc("get_my_loyalty_coupons"),
-        sb.rpc("get_my_loyalty_reward_config").catch(error => ({data:null,error}))
+        Promise.resolve(sb.rpc("get_my_loyalty_reward_config")).catch(error => ({data:null,error}))
       ]);
       if (loyaltyResult.error) throw loyaltyResult.error;
       if (tiersResult.error) throw tiersResult.error;
