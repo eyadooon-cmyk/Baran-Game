@@ -201,8 +201,9 @@ Deno.serve(async (req: Request) => {
         if (!page || page.length < pageSize) break;
       }
 
-      const damascusDateKey = (value: string | Date) => {
-        const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Damascus", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
+      const damascusDateKey = (value: string | number | Date) => {
+        const dateValue = value instanceof Date ? value : new Date(value);
+        const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Damascus", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(dateValue);
         const part = (key: string) => parts.find(x => x.type === key)?.value ?? "";
         return part("year") + "-" + part("month") + "-" + part("day");
       };
