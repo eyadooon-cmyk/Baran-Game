@@ -4661,7 +4661,7 @@ async function signUp(){
     if(exposureCount>0){note.textContent="كلمة المرور التي اخترتها ظهرت ضمن تسريبات سابقة ("+exposureCount.toLocaleString("en-US")+" مرة). اختر كلمة مرور جديدة لم تستخدمها في أي موقع آخر.";return;}
     note.textContent="جاري إنشاء الحساب...";
     const redirect=window.location.origin+window.location.pathname;
-    const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect,data:{baran_welcome_pending:true,...(referralCode?{referral_code:referralCode}:{})}}});
+    const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:redirect,captchaToken:await baranTurnstileToken("signup"),data:{baran_welcome_pending:true,...(referralCode?{referral_code:referralCode}:{})}}});
     if(error)throw error;
     if(data.session&&data.user)showApp(data.user);
     else note.textContent="تم إنشاء الحساب بنجاح. افتح بريدك واضغط رابط تأكيد الحساب، ثم ارجع وسجّل الدخول.";
@@ -4711,7 +4711,7 @@ async function signIn(){
   document.getElementById("loginButton").disabled=true;
 
   try{
-    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    const {data,error}=await sb.auth.signInWithPassword({email,password},{captchaToken:await baranTurnstileToken("login")});
     if(error) throw error;
     showApp(data.user);
   }catch(error){
@@ -8180,5 +8180,6 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 })();
 </script>
 
+<script src="./baran-turnstile-auth.js?v=20261122-turnstile-1"></script>
 </body>
 </html>
