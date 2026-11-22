@@ -15,7 +15,7 @@
     script.onerror=()=>readyResolve(false);
     document.head.appendChild(script);
   }
-  function mount(id,buttonId,label){
+  function mount(id,buttonId){
     const button=document.getElementById(buttonId);
     if(!button||document.getElementById(id))return;
     const box=document.createElement("div");
@@ -23,14 +23,23 @@
     box.style.cssText="display:flex;justify-content:center;margin:12px auto;min-height:65px;max-width:100%;";
     button.parentNode.insertBefore(box,button);
   }
-  async function render(){
-    mount("baranTurnstileLogin","loginButton");
-    mount("baranTurnstileSignup","signupSubmitButton");
-    mount("baranTurnstileReset","forgotPasswordButton");
+  function isShown(id){
+    const el=document.getElementById(id);
+    return !!el&&!el.closest(".hidden")&&getComputedStyle(el).display!=="none";
+  }
+  async function renderVisible(){
     const ok=await ready;
     if(!ok||!window.turnstile){console.error("BARAN Turnstile failed to load");return;}
-    [["login","baranTurnstileLogin"],["signup","baranTurnstileSignup"],["reset","baranTurnstileReset"]].forEach(([name,id])=>{
-      if(widgets[name]!==undefined)return;
+    const visible=[
+      ["login","baranTurnstileLogin","authScreen"],
+      ["signup","baranTurnstileSignup","signupScreen"],
+      ["reset","baranTurnstileReset","authScreen"]
+    ];
+    visible.forEach(([name,id,screen])=>{
+      if(!isShown(screen)||widgets[name]!==undefined)return;
+      const buttonId=name==="login"?"loginButton":name==="signup"?"signupSubmitButton":"forgotPasswordButton";
+      mount(id,buttonId);
+      if(!document.getElementById(id))return;
       widgets[name]=window.turnstile.render("#"+id,{
         sitekey:SITE_KEY,theme:"dark",size:"flexible",
         callback(token){tokens[name]=token;},
@@ -38,6 +47,14 @@
         "error-callback"(){tokens[name]="";}
       });
     });
+  }
+  function observeScreens(){
+    const observer=new MutationObserver(()=>renderVisible());
+    ["authScreen","signupScreen"].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)observer.observe(el,{attributes:true,attributeFilter:["class","style"]});
+    });
+    renderVisible();
   }
   window.baranTurnstileToken=async function(name){
     await ready;
@@ -50,6 +67,6 @@
     return token;
   };
   load();
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render,{once:true});
-  else render();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",observeScreens,{once:true});
+  else observeScreens();
 })();
