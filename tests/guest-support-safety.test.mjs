@@ -6,6 +6,7 @@ const migration = readFileSync(new URL("../supabase/migrations/20261122170000_ba
 const api = readFileSync(new URL("../supabase/functions/baran-guest-support/index.ts", import.meta.url), "utf8");
 const guestUi = readFileSync(new URL("../baran-guest-support.js", import.meta.url), "utf8");
 const adminUi = readFileSync(new URL("../baran-guest-support-admin.js", import.meta.url), "utf8");
+const assistant = readFileSync(new URL("../supabase/functions/baran-admin-offline/index.ts", import.meta.url), "utf8");
 
 test("guest support tables are isolated behind RLS and service role", () => {
   assert.match(migration, /alter table public\.baran_guest_support_tickets enable row level security/i);
@@ -43,4 +44,11 @@ test("guest UI calls only the Edge Function and admin replies use the protected 
   assert.match(guestUi, /tracking_secret/);
   assert.match(adminUi, /action:"admin_list"/);
   assert.match(adminUi, /action:"admin_reply"/);
+});
+
+test("Baran Assistant reads visitor tickets and proposes drafts without sending them", () => {
+  assert.match(assistant, /baran_guest_support_tickets/);
+  assert.match(assistant, /guestSupportDraft/);
+  assert.match(assistant, /تحتاج مراجعة بشرية قبل الإرسال/);
+  assert.match(adminUi, /تحليل واقتراح رد عبر Baran Assistant/);
 });
