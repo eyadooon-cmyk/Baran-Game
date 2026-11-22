@@ -1,6 +1,6 @@
 -- Guest support tickets are intentionally isolated from customer_feedback.
 -- Public clients never receive table privileges; all access is mediated by the Edge Function.
-create schema if not exists private;
+create schema if not exists baran_private;
 
 create table if not exists public.baran_guest_support_tickets (
   id uuid primary key default gen_random_uuid(),
@@ -39,7 +39,7 @@ create table if not exists public.baran_guest_support_messages (
 create index if not exists baran_guest_support_messages_ticket_created_idx
   on public.baran_guest_support_messages (ticket_id, created_at asc);
 
-create table if not exists private.baran_guest_support_rate_limits (
+create table if not exists baran_private.baran_guest_support_rate_limits (
   key_hash text not null,
   window_start timestamptz not null,
   request_count integer not null default 0,
@@ -58,19 +58,19 @@ as $$
 declare
   v_count integer;
 begin
-  insert into private.baran_guest_support_rate_limits(key_hash, window_start, request_count)
+  insert into baran_private.baran_guest_support_rate_limits(key_hash, window_start, request_count)
   values (p_key_hash, p_window_start, 1)
   on conflict (key_hash, window_start)
-  do update set request_count = private.baran_guest_support_rate_limits.request_count + 1
+  do update set request_count = baran_private.baran_guest_support_rate_limits.request_count + 1
   returning request_count into v_count;
 
   return v_count <= greatest(1, least(p_limit, 100));
 end;
 $$;
 
-revoke all on schema private from public, anon, authenticated;
+revoke all on schema baran_private from public, anon, authenticated;
 revoke all on function public.consume_guest_support_rate_limit(text, timestamptz, integer) from public, anon, authenticated;
-grant usage on schema private to service_role;
+grant usage on schema baran_private to service_role;
 grant execute on function public.consume_guest_support_rate_limit(text, timestamptz, integer) to service_role;
 
 alter table public.baran_guest_support_tickets enable row level security;
