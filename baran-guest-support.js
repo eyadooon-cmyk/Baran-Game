@@ -20,6 +20,7 @@ function addStyle(){
  #baranGuestSupportPanel .guest-row button{flex:1}
  #baranGuestSecretRow{display:flex;gap:7px;align-items:center}
  #baranGuestSecretRow input{flex:1;min-width:0}
+ #baranGuestSecretHelp{margin:6px 2px 12px;color:#c7b5d5;font-size:12px;line-height:1.9}
  #baranGuestSecretEye{width:auto!important;min-width:48px;margin:0!important;padding:10px 14px;background:#30223b;color:#eee;border:1px solid #665078}
  #baranGuestSupportCaptcha{display:flex;justify-content:center;min-height:65px;margin:12px auto}
  #baranGuestSupportResult{padding:10px;margin-top:10px;border-radius:10px;background:#21182b;color:#eee;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}
@@ -75,6 +76,7 @@ function panelMarkup(){
   <div id="baranGuestSupportLookup" class="hidden">
    <input id="baranGuestTicketCode" placeholder="رقم التذكرة BG-G-..." autocomplete="off">
    <div id="baranGuestSecretRow"><input id="baranGuestTicketSecret" type="password" placeholder="الرمز السري للتذكرة" autocomplete="off"><button id="baranGuestSecretEye" type="button" aria-label="إظهار الرمز السري" aria-pressed="false" title="إظهار الرمز السري">👁️</button></div>
+   <p id="baranGuestSecretHelp">رمز المتابعة مو رقم التذكرة؛ هو كلمة مرور خاصة بتذكرتك. أدخله لتفتح المحادثة وتشوف الردود، واضغط 👁️ لإظهاره أو إخفائه.</p>
    <button id="baranGuestLookupBtn" type="button">عرض المحادثة</button>
    <button id="baranGuestBackCreate" class="guest-secondary" type="button">فتح تذكرة جديدة</button>
   </div>
@@ -138,7 +140,12 @@ async function init(){
    if(!captchaToken)throw new Error("أكمل التحقق الأمني أولاً.");
    const data=await callApi({action:"create",email:$("baranGuestEmail").value,subject:$("baranGuestSubject").value,message:$("baranGuestMessage").value,turnstile_token:captchaToken});
    $("baranGuestSupportStart").classList.add("hidden");
-   say("تم فتح تذكرتك بنجاح.\nرقم التذكرة: "+data.ticket_code+"\nالرمز السري: "+data.tracking_secret+"\n\nاحتفظ بهما معاً؛ لن نعرض الرمز السري مرة ثانية.");
+   const result=$("baranGuestSupportResult");result.textContent="";result.style.color="#eee";
+   const heading=document.createElement("strong");heading.textContent="تم فتح تذكرتك بنجاح";result.appendChild(heading);
+   const ticketLine=document.createElement("div");ticketLine.textContent="رقم التذكرة: "+data.ticket_code;result.appendChild(ticketLine);
+   const warning=document.createElement("p");warning.textContent="احفظ رمز المتابعة الآن؛ ستحتاجه مع رقم التذكرة لفتح المحادثة لاحقاً. لن نتمكن من إظهاره لك مرة ثانية.";warning.style.cssText="margin:10px 0;color:#f2d7ff;font-weight:700";result.appendChild(warning);
+   const secret=document.createElement("code");secret.textContent=data.tracking_secret;secret.dir="ltr";secret.style.cssText="display:block;padding:12px;margin:8px 0;background:#09070d;border:1px solid #8b6ba8;border-radius:9px;font-size:16px;letter-spacing:1px;user-select:all";result.appendChild(secret);
+   const copy=document.createElement("button");copy.type="button";copy.textContent="نسخ رمز المتابعة";copy.style.width="100%";copy.onclick=async()=>{try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(data.tracking_secret);}else{const t=document.createElement("textarea");t.value=data.tracking_secret;t.setAttribute("readonly","");t.style.cssText="position:fixed;opacity:0;left:-9999px";document.body.appendChild(t);t.select();if(!document.execCommand("copy"))throw new Error("copy failed");t.remove();}copy.textContent="تم نسخ الرمز";}catch(e){copy.textContent="تعذر النسخ؛ اضغط مطولاً على الرمز لنسخه";}};result.appendChild(copy);
    $("baranGuestTicketCode").value=data.ticket_code;$("baranGuestTicketSecret").value=data.tracking_secret;
    $("baranGuestSupportLookup").classList.remove("hidden");
    try{window.turnstile.reset(widget);}catch(e){}captchaToken="";
