@@ -12,6 +12,17 @@ const money=(v:number,c:string)=>new Intl.NumberFormat("en-US",{maximumFractionD
 const countBy=(rows:any[],key:(r:any)=>string)=>{const out:Record<string,number>={};for(const r of rows){const k=key(r)||"غير محدد";out[k]=(out[k]||0)+1;}return out;};
 const fmt=(o:Record<string,number>)=>Object.entries(o).length?Object.entries(o).map(([k,v])=>k+": "+v).join("، "):"لا توجد سجلات";
 const has=(q:string,words:string[])=>words.some(w=>q.includes(w));
+function guestSupportDraft(ticket:any):string {
+ const raw=String(ticket.initial_message||ticket.message||"").toLowerCase();
+ const text=raw.replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي");
+ if((/نسيت|ناسي|ضاعت/.test(text)&&/كلمه المرور|كلمة السر|باسورد|password/.test(text)) || /تسجيل الدخول|ما عم اقدر فوت|ما بقدر سجل|login|password reset/.test(text))
+  return "أهلاً فيك ❤️ إذا نسيت كلمة المرور، اضغط «استعادة كلمة المرور» من شاشة الدخول، واكتب البريد المرتبط بحسابك، ثم افحص صندوق الوارد والرسائل غير المرغوب فيها. لا ترسل كلمة مرورك أو رمز التحقق لأي شخص. إذا لم يصلك الرابط، أخبرنا بالرسالة التي تظهر لك.";
+ if(/ما بيفتح|ما عم يفتح|الموقع|الصفحه|التطبيق|loading|not loading/.test(text))
+  return "أهلاً فيك 🌟 تأكد من اتصال الإنترنت، ثم حدّث الصفحة وأعد فتح Chrome. إذا استمرت المشكلة، جرّب نافذة خاصة وأرسل لنا نوع جهازك ورسالة الخطأ الظاهرة، من دون مشاركة أي كلمة مرور.";
+ if(/اشعار|اشعارات|تنبيه|notifications/.test(text))
+  return "أهلاً فيك 🌟 تأكد من السماح بإشعارات BARAN GAME من إعدادات Chrome والهاتف، ثم افتح المتجر مجدداً. إذا استمرت المشكلة، أرسل نوع جهازك وإصدار Android.";
+ return "أهلاً فيك، وصلتنا رسالتك ورح يراجع فريق BARAN GAME المشكلة ويتابع معك عبر رقم التذكرة. إذا في تفاصيل إضافية غير حساسة، أرسلها هون. لا ترسل كلمة المرور أو رموز التحقق.";
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS"){const o=req.headers.get("Origin");if(o&&o!==ORIGIN)return new Response("Forbidden",{status:403});return new Response("ok",{headers});}
  if(req.method!=="POST")return reply({error:"Method not allowed"},405);
@@ -115,7 +126,13 @@ Deno.serve(async(req:Request)=>{
   }
   if(ws){
    lines.push("\n🎧 تذاكر الدعم المفتوحة","عدد التذاكر المفتوحة: "+openTickets.length);
-   for(const t of openTickets.slice(0,25)){lines.push((t.ticket_code||String(t.id).slice(0,8))+" | "+(t.subject||"بدون عنوان")+" | "+t.status+(t.source==="guest"?" | زائر: "+String(t.email||""):"")+" | "+String(t.message||"").replace(/\\s+/g," ").slice(0,260));if(t.admin_reply)lines.push("آخر رد إداري مسجل: "+String(t.admin_reply).slice(0,120));if(t.assistant_reason)lines.push("تحليل مساعد سابق: "+String(t.assistant_reason).slice(0,160));if(t.assistant_draft)lines.push("مسودة مساعد: "+String(t.assistant_draft).slice(0,240));}
+   for(const t of openTickets.slice(0,25)){
+    lines.push((t.ticket_code||String(t.id).slice(0,8))+" | "+(t.subject||"بدون عنوان")+" | "+t.status+(t.source==="guest"?" | زائر: "+String(t.email||""):"")+" | "+String(t.message||"").replace(/\\s+/g," ").slice(0,260));
+    if(t.admin_reply)lines.push("آخر رد إداري مسجل: "+String(t.admin_reply).slice(0,120));
+    if(t.source==="guest")lines.push("مسودة رد مقترحة من Baran Assistant (تحتاج مراجعة بشرية قبل الإرسال): "+guestSupportDraft(t));
+    if(t.assistant_reason)lines.push("تحليل مساعد سابق: "+String(t.assistant_reason).slice(0,160));
+    if(t.assistant_draft)lines.push("مسودة مساعد محفوظة: "+String(t.assistant_draft).slice(0,240));
+   }
    if(!openTickets.length)lines.push("لا توجد تذاكر دعم مفتوحة ضمن آخر 200 سجل.");
   }
   if(wsp){
