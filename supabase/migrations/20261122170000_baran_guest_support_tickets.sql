@@ -46,7 +46,7 @@ create table if not exists private.baran_guest_support_rate_limits (
   primary key (key_hash, window_start)
 );
 
-create or replace function private.consume_guest_support_rate_limit(
+create or replace function public.consume_guest_support_rate_limit(
   p_key_hash text,
   p_window_start timestamptz,
   p_limit integer
@@ -69,9 +69,9 @@ end;
 $$;
 
 revoke all on schema private from public, anon, authenticated;
-revoke all on function private.consume_guest_support_rate_limit(text, timestamptz, integer) from public, anon, authenticated;
+revoke all on function public.consume_guest_support_rate_limit(text, timestamptz, integer) from public, anon, authenticated;
 grant usage on schema private to service_role;
-grant execute on function private.consume_guest_support_rate_limit(text, timestamptz, integer) to service_role;
+grant execute on function public.consume_guest_support_rate_limit(text, timestamptz, integer) to service_role;
 
 alter table public.baran_guest_support_tickets enable row level security;
 alter table public.baran_guest_support_messages enable row level security;
