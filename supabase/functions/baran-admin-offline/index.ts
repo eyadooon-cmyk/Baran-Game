@@ -37,6 +37,7 @@ Deno.serve(async(req:Request)=>{
    db.from("suppliers").select("id,name,is_active,updated_at").order("created_at",{ascending:false}).limit(100),
    db.from("supplier_products").select("id,supplier_id,product_id,supplier_sku,unit_cost,currency,is_preferred,lead_time_hours,updated_at").order("updated_at",{ascending:false}).limit(200),
    db.from("customer_feedback").select("id,ticket_code,feedback_type,subject,message,rating,status,admin_reply,created_at,updated_at").order("created_at",{ascending:false}).limit(200),
+   db.from("baran_guest_support_tickets").select("id,ticket_code,email,subject,initial_message,status,priority,assistant_reason,assistant_draft,created_at,updated_at").order("created_at",{ascending:false}).limit(100),
    db.from("deposit_requests").select("id,status,currency,created_at").order("created_at",{ascending:false}).limit(200),
    db.from("wallet_transactions").select("id,amount,currency,transaction_type,description,created_at,order_id,deposit_request_id").order("created_at",{ascending:false}).limit(200),
    db.from("admin_audit_log").select("action,entity_type,created_at").order("created_at",{ascending:false}).limit(30),
@@ -52,15 +53,15 @@ Deno.serve(async(req:Request)=>{
    db.from("baro_manual_finance_entries").select("entry_type,title,amount,currency,amount_usd_equivalent,status,created_at").order("created_at",{ascending:false}).limit(200),
    db.from("admin_finance_entries").select("entry_type,title,amount,cost_amount,currency,created_at").order("created_at",{ascending:false}).limit(200)
   ]);
-  const labels=["products","orders","manual_orders","fulfillment","suppliers","supplier_products","feedback","deposits","wallet_transactions","audit","announcements","memory","support_queue","loyalty","loyalty_coupons","loyalty_transactions","security_events","push_logs","work_plan","baro_finance","admin_finance"],data:Record<string,any[]>={},unavailable:string[]=[];
+  const labels=["products","orders","manual_orders","fulfillment","suppliers","supplier_products","feedback","guest_support","deposits","wallet_transactions","audit","announcements","memory","support_queue","loyalty","loyalty_coupons","loyalty_transactions","security_events","push_logs","work_plan","baro_finance","admin_finance"],data:Record<string,any[]>={},unavailable:string[]=[];
   specs.forEach((r:any,i:number)=>{if(r.error){data[labels[i]]=[];unavailable.push(labels[i]);}else data[labels[i]]=r.data||[];});
-  const products=data.products,baseOrders=data.orders,manualOrders=data.manual_orders,fulfillment=data.fulfillment,suppliers=data.suppliers,links=data.supplier_products,feedback=data.feedback,deposits=data.deposits,walletTransactions=data.wallet_transactions,audit=data.audit,announcements=data.announcements,memories=data.memory;
+  const products=data.products,baseOrders=data.orders,manualOrders=data.manual_orders,fulfillment=data.fulfillment,suppliers=data.suppliers,links=data.supplier_products,feedback=data.feedback,guestSupport=data.guest_support,deposits=data.deposits,walletTransactions=data.wallet_transactions,audit=data.audit,announcements=data.announcements,memories=data.memory;
   const supportQueue=data.support_queue,loyalty=data.loyalty,loyaltyCoupons=data.loyalty_coupons,loyaltyTransactions=data.loyalty_transactions,securityEvents=data.security_events,pushLogs=data.push_logs,workPlan=data.work_plan,baroFinance=data.baro_finance,adminFinance=data.admin_finance;
   const mergedOrderMap=new Map<string,any>();
   for(const o of baseOrders)mergedOrderMap.set(String(o.id),{...o,source:"orders"});
   for(const o of manualOrders)if(!mergedOrderMap.has(String(o.id)))mergedOrderMap.set(String(o.id),{...o,total_price_usd:o.customer_price_usd,total_price_syp:o.customer_price_syp,supplier_total_cost:o.supplier_cost_usd_snapshot??o.supplier_cost_usd,source:"leo_manual_orders"});
   const orders=[...mergedOrderMap.values()].sort((a,b)=>new Date(b.created_at||0).getTime()-new Date(a.created_at||0).getTime());
-  const openTickets=feedback.filter(x=>x.feedback_type==="support"&&["pending","in_progress"].includes(x.status));
+  const openTickets=[...feedback.filter(x=>x.feedback_type==="support"&&["pending","in_progress"].includes(x.status)),...guestSupport.filter(x=>["pending","in_progress"].includes(x.status)).map(x=>({...x,feedback_type:"support",message:x.initial_message,source:"guest"}))];
   const reviews=feedback.filter(x=>x.feedback_type==="review"),failed=orders.filter(x=>["failed","error"].includes(String(x.status).toLowerCase()));
   const waiting=orders.filter(x=>["pending","processing","in_progress"].includes(String(x.status).toLowerCase()));
   const inactive=products.filter(x=>x.is_active!==true),missingPrices=products.filter(x=>x.price_usd==null&&x.price_syp==null);
@@ -114,7 +115,7 @@ Deno.serve(async(req:Request)=>{
   }
   if(ws){
    lines.push("\n🎧 تذاكر الدعم المفتوحة","عدد التذاكر المفتوحة: "+openTickets.length);
-   for(const t of openTickets.slice(0,25)){lines.push((t.ticket_code||String(t.id).slice(0,8))+" | "+(t.subject||"بدون عنوان")+" | "+t.status+" | "+String(t.message||"").replace(/\s+/g," ").slice(0,180));if(t.admin_reply)lines.push("آخر رد إداري مسجل: "+String(t.admin_reply).slice(0,120));}
+   for(const t of openTickets.slice(0,25)){lines.push((t.ticket_code||String(t.id).slice(0,8))+" | "+(t.subject||"بدون عنوان")+" | "+t.status+(t.source==="guest"?" | زائر: "+String(t.email||""):"")+" | "+String(t.message||"").replace(/\\s+/g," ").slice(0,260));if(t.admin_reply)lines.push("آخر رد إداري مسجل: "+String(t.admin_reply).slice(0,120));if(t.assistant_reason)lines.push("تحليل مساعد سابق: "+String(t.assistant_reason).slice(0,160));if(t.assistant_draft)lines.push("مسودة مساعد: "+String(t.assistant_draft).slice(0,240));}
    if(!openTickets.length)lines.push("لا توجد تذاكر دعم مفتوحة ضمن آخر 200 سجل.");
   }
   if(wsp){
