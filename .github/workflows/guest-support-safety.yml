@@ -1,0 +1,28 @@
+name: Guest support safety checks
+on:
+  push:
+    branches:
+      - feat/guest-support-tickets-20261122
+  pull_request:
+    paths:
+      - 'baran-guest-support.js'
+      - 'baran-guest-support-admin.js'
+      - 'supabase/functions/baran-guest-support/**'
+      - 'supabase/migrations/*baran_guest_support*'
+      - 'tests/guest-support-safety.test.mjs'
+      - '.github/workflows/guest-support-safety.yml'
+jobs:
+  guest-support-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: node --check baran-guest-support.js && node --check baran-guest-support-admin.js
+      - run: deno check supabase/functions/baran-guest-support/index.ts
+      - run: deno check supabase/functions/baran-admin-offline/index.ts
+      - run: node --test tests/guest-support-safety.test.mjs
