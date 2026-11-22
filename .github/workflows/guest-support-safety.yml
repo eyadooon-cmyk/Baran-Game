@@ -1,0 +1,22 @@
+name: Guest support safety checks
+on:
+  push:
+    branches:
+      - feat/guest-support-tickets-20261122
+  pull_request:
+    paths:
+      - 'baran-guest-support.js'
+      - 'baran-guest-support-admin.js'
+      - 'supabase/functions/baran-guest-support/**'
+      - 'supabase/migrations/*baran_guest_support*'
+      - 'tests/guest-support-safety.test.mjs'
+      - '.github/workflows/guest-support-safety.yml'
+jobs:
+  guest-support-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test tests/guest-support-safety.test.mjs
