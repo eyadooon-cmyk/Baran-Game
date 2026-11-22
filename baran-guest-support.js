@@ -18,6 +18,9 @@ function addStyle(){
  #baranGuestSupportPanel .guest-secondary{background:#30223b;color:#eee}
  #baranGuestSupportPanel .guest-row{display:flex;gap:8px}
  #baranGuestSupportPanel .guest-row button{flex:1}
+ #baranGuestSecretRow{display:flex;gap:7px;align-items:center}
+ #baranGuestSecretRow input{flex:1;min-width:0}
+ #baranGuestSecretEye{width:auto!important;min-width:48px;margin:0!important;padding:10px 14px;background:#30223b;color:#eee;border:1px solid #665078}
  #baranGuestSupportCaptcha{display:flex;justify-content:center;min-height:65px;margin:12px auto}
  #baranGuestSupportResult{padding:10px;margin-top:10px;border-radius:10px;background:#21182b;color:#eee;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}
  #baranGuestSupportMessages{max-height:300px;overflow:auto;margin:12px 0}
@@ -71,7 +74,7 @@ function panelMarkup(){
   </div>
   <div id="baranGuestSupportLookup" class="hidden">
    <input id="baranGuestTicketCode" placeholder="رقم التذكرة BG-G-..." autocomplete="off">
-   <input id="baranGuestTicketSecret" type="password" placeholder="الرمز السري للتذكرة" autocomplete="off">
+   <div id="baranGuestSecretRow"><input id="baranGuestTicketSecret" type="password" placeholder="الرمز السري للتذكرة" autocomplete="off"><button id="baranGuestSecretEye" type="button" aria-label="إظهار الرمز السري" aria-pressed="false" title="إظهار الرمز السري">👁️</button></div>
    <button id="baranGuestLookupBtn" type="button">عرض المحادثة</button>
    <button id="baranGuestBackCreate" class="guest-secondary" type="button">فتح تذكرة جديدة</button>
   </div>
@@ -142,6 +145,7 @@ async function init(){
   }catch(e){say(e.message,true);try{window.turnstile.reset(widget);}catch(x){}captchaToken="";}
   finally{btn.disabled=false;}
  };
+ $("baranGuestSecretEye").onclick=()=>{const input=$("baranGuestTicketSecret"),btn=$("baranGuestSecretEye");const show=input.type==="password";input.type=show?"text":"password";btn.textContent=show?"🙈":"👁️";btn.title=show?"إخفاء الرمز السري":"إظهار الرمز السري";btn.setAttribute("aria-label",btn.title);btn.setAttribute("aria-pressed",String(show));};
  $("baranGuestLookupBtn").onclick=()=>lookup(true);
  $("baranGuestRefreshBtn").onclick=()=>lookup(true);
  $("baranGuestReplyBtn").onclick=async()=>{
