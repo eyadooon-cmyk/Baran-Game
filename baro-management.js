@@ -127,8 +127,8 @@
       });
       return result;
     };
-    const dailyFlow=summarizePeriod(daily.filter(e=>e.entry_type!=="opening_balance"));
-    const weeklyFlow=summarizePeriod(entries.filter(e=>{const d=dateKey(e.created_at);return d>=weekStart&&d<=today&&e.entry_type!=="opening_balance";}));
+    const dailyFlow=financeData.cashflow_periods?.today||summarizePeriod(daily.filter(e=>e.entry_type!=="opening_balance"));
+    const weeklyFlow=financeData.cashflow_periods?.last_7_days||summarizePeriod(entries.filter(e=>{const d=dateKey(e.created_at);return d>=weekStart&&d<=today&&e.entry_type!=="opening_balance";}));
     const flowCards=(title,data)=>'<div class="baro-mgmt-panel"><h3>'+title+'</h3><p class="baro-mgmt-muted">حركة القيود المرحلة فقط؛ لا تشمل رأس المال الافتتاحي أو التحويلات، وليست بديلاً عن الربح المحقق.</p><div class="baro-mgmt-grid">'+["USD","SYP"].map(currency=>{const x=data[currency],out=x.costs+x.expenses+x.commissions+x.refunds;return statDual(currency+" · صافي الحركة",money(x.sales-out,currency), "مقبوض "+money(x.sales,currency)+" · مدفوع "+money(out,currency));}).join("")+'</div></div>';
 
     const productRows=products.map(p=>{
