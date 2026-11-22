@@ -13,6 +13,20 @@ async function request(payload){
  return out;
 }
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
+function buildGuestAnalysis(ticket){
+ const raw=String(ticket.initial_message||"").toLowerCase();
+ const normalized=raw.replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي");
+ if((/(نسيت|ناسي|ضاعت)/.test(normalized)&&/(كلمه المرور|كلمة السر|باسورد|password)/.test(normalized))||/(تسجيل الدخول|ما عم اقدر فوت|ما بقدر سجل|login|password reset)/.test(normalized)){
+  return {reason:"المشكلة تبدو مرتبطة بتسجيل الدخول أو استعادة كلمة المرور. يجب توجيه الزائر لمسار الاستعادة وعدم طلب كلمة المرور أو رمز التحقق.",draft:"أهلاً فيك ❤️ إذا نسيت كلمة المرور، اضغط «استعادة كلمة المرور» من شاشة الدخول، واكتب البريد المرتبط بحسابك، ثم افحص صندوق الوارد والرسائل غير المرغوب فيها. لا ترسل كلمة مرورك أو رمز التحقق لأي شخص. إذا لم يصلك الرابط، أخبرنا بالرسالة التي تظهر لك."};
+ }
+ if(/ما بيفتح|ما عم يفتح|الموقع|الصفحه|التطبيق|loading|not loading/.test(normalized)){
+  return {reason:"المشكلة تبدو مشكلة تحميل أو فتح الموقع؛ المقترح يبدأ بفحص الاتصال والمتصفح ويطلب تفاصيل تقنية غير حساسة عند استمرارها.",draft:"أهلاً فيك 🌟 تأكد من اتصال الإنترنت، ثم حدّث الصفحة وأعد فتح Chrome. إذا استمرت المشكلة، جرّب نافذة خاصة وأرسل لنا نوع جهازك ورسالة الخطأ الظاهرة، من دون مشاركة أي كلمة مرور."};
+ }
+ if(/اشعار|اشعارات|تنبيه|notifications/.test(normalized)){
+  return {reason:"المشكلة تتعلق غالباً بإذن الإشعارات أو إعدادات الهاتف والمتصفح؛ نطلب نوع الجهاز فقط إذا استمرت.",draft:"أهلاً فيك 🌟 تأكد من السماح بإشعارات BARAN GAME من إعدادات Chrome والهاتف، ثم افتح المتجر مجدداً. إذا استمرت المشكلة، أرسل نوع جهازك وإصدار Android."};
+ }
+ return {reason:"لم تظهر فئة مشكلة محددة من نص التذكرة؛ لذلك اختر Baran رداً عاماً آمناً يثبت استلام البلاغ ويطلب تفاصيل إضافية غير حساسة.",draft:"أهلاً فيك، وصلتنا رسالتك ورح يراجع فريق BARAN GAME المشكلة ويتابع معك عبر رقم التذكرة. إذا في تفاصيل إضافية غير حساسة، أرسلها هون. لا ترسل كلمة المرور أو رموز التحقق."};
+}
 function render(tickets){
  const root=$("baranGuestAdminTickets");root.innerHTML="";
  if(!tickets.length){root.append(el("p","small","لا توجد تذاكر زوار حالياً."));return;}
@@ -21,22 +35,34 @@ function render(tickets){
   const head=el("div","baran-guest-admin-head");
   head.append(el("strong","",t.ticket_code),el("span","",t.status==="pending"?"بانتظار الرد":t.status==="answered"?"تم الرد":t.status==="closed"?"مغلقة":"قيد المتابعة"));
   card.append(head,el("p","small","البريد: "+t.email),el("h4","",t.subject),el("p","",t.initial_message),el("small","small",new Date(t.created_at).toLocaleString("ar-SY")));
-  if(t.assistant_reason)card.append(el("p","small","تحليل Baran: "+t.assistant_reason));
-  if(t.assistant_draft)card.append(el("p","small","مسودة مقترحة: "+t.assistant_draft));
-  const reply=el("textarea","");reply.rows=3;reply.maxLength=5000;reply.placeholder="اكتب رد الإدارة للزبون...";
+  const analysis=el("div","baran-guest-admin-analysis");analysis.hidden=true;
+  const analysisTitle=el("strong","","تحليل Baran الداخلي");
+  const analysisText=el("p","small","");
+  analysis.append(analysisTitle,analysisText);
+  if(t.assistant_reason||t.assistant_draft){
+   analysis.hidden=false;
+   analysisText.textContent=t.assistant_reason||"اقتراح محفوظ سابقاً.";
+  }
+  const reply=el("textarea","");reply.rows=4;reply.maxLength=5000;reply.placeholder="اكتب رد الإدارة للزبون أو عدّل المسودة المقترحة...";
+  if(t.assistant_draft)reply.value=t.assistant_draft;
   const actions=el("div","baran-guest-admin-actions");
   const send=el("button","","إرسال الرد");send.type="button";
-  send.onclick=async()=>{send.disabled=true;try{await request({action:"admin_reply",ticket_id:t.id,message:reply.value});reply.value="";await load();}catch(e){alert(e.message);}finally{send.disabled=false;}};
+  send.onclick=async()=>{if(!reply.value.trim()){alert("اكتب الرد قبل الإرسال.");return;}send.disabled=true;try{await request({action:"admin_reply",ticket_id:t.id,message:reply.value.trim()});reply.value="";await load();}catch(e){alert(e.message);}finally{send.disabled=false;}};
   const close=el("button","guest-admin-secondary","إغلاق التذكرة");close.type="button";
   close.onclick=async()=>{close.disabled=true;try{await request({action:"admin_update",ticket_id:t.id,status:"closed"});await load();}catch(e){alert(e.message);}finally{close.disabled=false;}};
-  const analyze=el("button","guest-admin-secondary","تحليل واقتراح رد عبر Baran Assistant");analyze.type="button";
+  const analyze=el("button","guest-admin-secondary","تحليل واقتراح رد");analyze.type="button";
   analyze.onclick=()=>{
-   const input=$("baranAdminAssistantInput"),sendButton=$("baranAdminAssistantSend");
-   if(!input||!sendButton){alert("افتح مساعد Baran من لوحة الإدارة أولاً.");return;}
-   input.value="حلل تذكرة دعم الزائر "+t.ticket_code+" واقترح أفضل رد آمن، دون إرسال الرد أو تغيير أي بيانات.";
-   sendButton.click();
+   analyze.disabled=true;
+   try{
+    const result=buildGuestAnalysis(t);
+    analysisText.textContent=result.reason;
+    analysis.hidden=false;
+    reply.value=result.draft;
+    reply.focus();
+    analyze.textContent="إعادة التحليل";
+   }finally{analyze.disabled=false;}
   };
-  actions.append(analyze,send,close);card.append(reply,actions);root.append(card);
+  actions.append(analyze,send,close);card.append(analysis,reply,actions);root.append(card);
  });
 }
 async function load(){
