@@ -4711,7 +4711,7 @@ async function signIn(){
   document.getElementById("loginButton").disabled=true;
 
   try{
-    const {data,error}=await sb.auth.signInWithPassword({email,password,options:{captchaToken:await baranTurnstileToken("login")}});
+    const {data,error}=await sb.auth.signInWithPassword({email,password},{captchaToken:await baranTurnstileToken("login")});
     if(error) throw error;
     showApp(data.user);
   }catch(error){
