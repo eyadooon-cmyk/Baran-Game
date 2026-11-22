@@ -201,6 +201,43 @@ Deno.serve(async (req: Request) => {
         if (!page || page.length < pageSize) break;
       }
 
+      const damascusDateKey = (value: string | Date) => {
+        const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Damascus", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
+        const part = (key: string) => parts.find(x => x.type === key)?.value ?? "";
+        return part("year") + "-" + part("month") + "-" + part("day");
+      };
+      const todayKey = damascusDateKey(new Date());
+      const dayStart = new Date(todayKey + "T12:00:00Z");
+      dayStart.setUTCDate(dayStart.getUTCDate() - 6);
+      const weekStartKey = dayStart.toISOString().slice(0, 10);
+      const summarizeCashflow = (fromKey: string, toKey: string) => {
+        const result: Record<string, any> = {
+          USD: { sales: 0, costs: 0, expenses: 0, commissions: 0, refunds: 0, entries: 0 },
+          SYP: { sales: 0, costs: 0, expenses: 0, commissions: 0, refunds: 0, entries: 0 }
+        };
+        for (const row of allEntries) {
+          if (row.status !== "posted" || row.entry_type === "opening_balance" ||
+              !["USD", "SYP"].includes(row.currency)) continue;
+          const day = damascusDateKey(row.created_at);
+          if (day < fromKey || day > toKey) continue;
+          const bucket = result[row.currency];
+          const value = Number(row.amount || 0);
+          if (!Number.isFinite(value) || value <= 0) continue;
+          if (row.entry_type === "sale_received") bucket.sales += value;
+          else if (row.entry_type === "supplier_cost") bucket.costs += value;
+          else if (row.entry_type === "expense") bucket.expenses += value;
+          else if (row.entry_type === "commission") bucket.commissions += value;
+          else if (row.entry_type === "refund") bucket.refunds += value;
+          else continue;
+          bucket.entries++;
+        }
+        return result;
+      };
+      const cashflowPeriods = {
+        today: { date: todayKey, ...summarizeCashflow(todayKey, todayKey) },
+        last_7_days: { from: weekStartKey, to: todayKey, ...summarizeCashflow(weekStartKey, todayKey) }
+      };
+
       const totals = {
         sales: 0, realized_sales: 0, unmatched_sales: 0,
         supplier_costs: 0, realized_supplier_costs: 0,
@@ -256,7 +293,8 @@ Deno.serve(async (req: Request) => {
       ]);
       if (externalSalesResult.error || suppliersResult.error) return json({ error: "تعذر تحميل سجل المبيعات الخارجية أو الموردين." }, 500);
       return json({ entries: recentEntries ?? [], external_sales: externalSalesResult.data ?? [],
-        suppliers: suppliersResult.data ?? [], totals, totals_scope: "all_posted_history" });
+        suppliers: suppliersResult.data ?? [], totals, totals_scope: "all_posted_history",
+        cashflow_periods: cashflowPeriods });
     }
 
     if (req.method === "GET" && view === "suppliers") {
