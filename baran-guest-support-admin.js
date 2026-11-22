@@ -29,7 +29,14 @@ function render(tickets){
   send.onclick=async()=>{send.disabled=true;try{await request({action:"admin_reply",ticket_id:t.id,message:reply.value});reply.value="";await load();}catch(e){alert(e.message);}finally{send.disabled=false;}};
   const close=el("button","guest-admin-secondary","إغلاق التذكرة");close.type="button";
   close.onclick=async()=>{close.disabled=true;try{await request({action:"admin_update",ticket_id:t.id,status:"closed"});await load();}catch(e){alert(e.message);}finally{close.disabled=false;}};
-  actions.append(send,close);card.append(reply,actions);root.append(card);
+  const analyze=el("button","guest-admin-secondary","تحليل واقتراح رد عبر Baran Assistant");analyze.type="button";
+  analyze.onclick=()=>{
+   const input=$("baranAdminAssistantInput"),sendButton=$("baranAdminAssistantSend");
+   if(!input||!sendButton){alert("افتح مساعد Baran من لوحة الإدارة أولاً.");return;}
+   input.value="حلل تذكرة دعم الزائر "+t.ticket_code+" واقترح أفضل رد آمن، دون إرسال الرد أو تغيير أي بيانات.";
+   sendButton.click();
+  };
+  actions.append(analyze,send,close);card.append(reply,actions);root.append(card);
  });
 }
 async function load(){
