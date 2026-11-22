@@ -52,12 +52,6 @@ begin
      or char_length(coalesce(p_idempotency_key,''))>160 then
     raise exception using errcode='22023',message='بيانات الحركة المالية غير صحيحة.';
   end if;
-  if p_entry_type='opening_balance' and exists (
-    select 1 from public.baro_manual_finance_entries
-    where currency=p_currency and entry_type='opening_balance' and status='posted'
-  ) then
-    raise exception using errcode='23505',message='تم تسجيل الرصيد الافتتاحي لهذه العملة مسبقاً.';
-  end if;
   v_usd := case
     when p_entry_type='opening_balance' then null
     when p_currency='USD' then p_amount
