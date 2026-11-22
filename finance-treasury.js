@@ -2,6 +2,9 @@
 (function(){
   const esc = value => String(value == null ? "" : value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const money = (value,currency) => Number(value||0).toLocaleString("en-US",{minimumFractionDigits:currency==="USD"?2:0,maximumFractionDigits:currency==="USD"?2:0})+(currency==="USD"?" $":" ل.س");
+  const style=document.createElement("style");
+  style.textContent=".treasury-entry{padding:13px;border:1px solid #49345f;border-radius:12px;background:#17121e;margin:9px 0}.treasury-entry-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:5px}.treasury-entry small{display:block;color:#a998b8;margin-top:5px}.treasury-entry p{margin:6px 0 0}.treasury-in{color:#8ce0b2}.treasury-out{color:#f0a1a1}.finance-treasury-section .finance-grid .finance-card small{display:block;margin-top:7px;color:#b9a9c7;line-height:1.7}";
+  document.head.appendChild(style);
   const labels = {
     opening_balance:"رصيد افتتاحي",capital_in:"إيداع رأس مال",capital_out:"سحب رأس مال",
     cash_in:"وارد نقدي",cash_out:"صادر نقدي",transfer_in:"تحويل وارد",transfer_out:"تحويل صادر",correction_in:"تسوية تصحيحية واردة",correction_out:"تسوية تصحيحية صادرة"
@@ -18,7 +21,7 @@
     const balances=Array.isArray(data?.balances)?data.balances:[];
     summary.innerHTML=["USD","SYP"].map(currency=>{
       const item=balances.find(x=>x.currency===currency)||{};
-      return '<article class="finance-stat-card"><span>رصيد الخزينة · '+currency+'</span><strong dir="ltr">'+money(item.balance,currency)+'</strong><small>وارد '+money(item.inflows,currency)+' · صادر '+money(item.outflows,currency)+'</small><small>اليوم: +'+money(item.today_inflows,currency)+' / −'+money(item.today_outflows,currency)+'</small></article>';
+      return '<article class="finance-card"><span>رصيد الخزينة · '+currency+'</span><strong dir="ltr">'+money(item.balance,currency)+'</strong><small>وارد '+money(item.inflows,currency)+' · صادر '+money(item.outflows,currency)+'</small><small>اليوم: +'+money(item.today_inflows,currency)+' / −'+money(item.today_outflows,currency)+'</small></article>';
     }).join("");
     const entries=Array.isArray(data?.entries)?data.entries:[];
     if(!entries.length){list.innerHTML='<p class="small">لا توجد حركات خزينة بعد. ابدأ بتسجيل الرصيد الافتتاحي بعد مطابقة النقد الموجود فعلياً.</p>';return;}
