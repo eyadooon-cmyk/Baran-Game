@@ -112,6 +112,25 @@
     const openingUsd=posted.filter(e=>e.entry_type==="opening_balance"&&e.currency==="USD").reduce((sum,e)=>sum+Number(e.amount||0),0);
     const daily=entries.filter(e=>dateKey(e.created_at)===today);
     const monthly=entries.filter(e=>dateKey(e.created_at).slice(0,7)===month);
+    const dateShift=(key,days)=>{const d=new Date(key+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);};
+    const weekStart=dateShift(today,-6);
+    const summarizePeriod=(rows)=>{
+      const result={USD:{sales:0,costs:0,expenses:0,commissions:0,refunds:0},SYP:{sales:0,costs:0,expenses:0,commissions:0,refunds:0}};
+      rows.filter(e=>e.status==="posted"&&["USD","SYP"].includes(e.currency)).forEach(e=>{
+        const bucket=result[e.currency],amount=Number(e.amount||0);
+        if(!Number.isFinite(amount)||amount<=0)return;
+        if(e.entry_type==="sale_received")bucket.sales+=amount;
+        else if(e.entry_type==="supplier_cost")bucket.costs+=amount;
+        else if(e.entry_type==="expense")bucket.expenses+=amount;
+        else if(e.entry_type==="commission")bucket.commissions+=amount;
+        else if(e.entry_type==="refund")bucket.refunds+=amount;
+      });
+      return result;
+    };
+    const dailyFlow=summarizePeriod(daily.filter(e=>e.entry_type!=="opening_balance"));
+    const weeklyFlow=summarizePeriod(entries.filter(e=>{const d=dateKey(e.created_at);return d>=weekStart&&d<=today&&e.entry_type!=="opening_balance";}));
+    const flowCards=(title,data)=>'<div class="baro-mgmt-panel"><h3>'+title+'</h3><p class="baro-mgmt-muted">حركة القيود المرحلة فقط؛ لا تشمل رأس المال الافتتاحي أو التحويلات، وليست بديلاً عن الربح المحقق.</p><div class="baro-mgmt-grid">'+["USD","SYP"].map(currency=>{const x=data[currency],out=x.costs+x.expenses+x.commissions+x.refunds;return statDual(currency+" · صافي الحركة",money(x.sales-out,currency), "مقبوض "+money(x.sales,currency)+" · مدفوع "+money(out,currency));}).join("")+'</div></div>';
+
     const productRows=products.map(p=>{
       const costUsd=Number(p.supplier_cost_usd),costSyp=costUsd*rate;
       const saleSyp=Number(p.sale_price_syp),saleUsd=Number(p.sale_price_usd)>0?Number(p.sale_price_usd):saleSyp/rate;
@@ -126,7 +145,7 @@
       statDual("المصاريف",fmtUsd(t.expenses||0),fmtSyp((t.expenses||0)*rate))+statDual("العمولات",fmtUsd(t.commissions||0),fmtSyp((t.commissions||0)*rate))+
       statDual("المبالغ المستردة",fmtUsd(t.refunds||0),fmtSyp((t.refunds||0)*rate))+statDual("التسويات",fmtUsd(t.adjustments||0),fmtSyp((t.adjustments||0)*rate))+
       statDual("صافي الربح المحقق",fmtUsd(t.net_profit||0),fmtSyp((t.net_profit||0)*rate))+stat("الحركات المرحلة",posted.length)+stat("بانتظار الترحيل",pending)+
-      stat("حركات اليوم",daily.length)+stat("حركات الشهر",monthly.length)+
+      stat("حركات اليوم",daily.length)+stat("حركات الشهر",monthly.length)+\n      flowCards("حركة اليوم · "+today,dailyFlow)+flowCards("حركة آخر 7 أيام · "+weekStart+" إلى "+today,weeklyFlow)+
       '</div><div class="baro-mgmt-panel"><strong>معادلة صافي الربح</strong><p class="baro-mgmt-muted">المبيعات المقبوضة − تكاليف الموردين − المصاريف − العمولات − المبالغ المستردة + التسويات. الحركات المعلقة لا تدخل في الربح المحقق. الرصيد الافتتاحي رأس مال منفصل ولا يدخل في المبيعات أو الأرباح.</p></div>'+
       (entries.length===0?'<div class="baro-mgmt-empty">لا توجد حركات مالية مسجلة حالياً؛ الربح المحقق = صفر لأن لا توجد عمليات مالية مسجلة، وليس لأن المتجر خسر.</div>':'')+
       '<p class="baro-mgmt-muted">هذا الدفتر مستقل عن محافظ الزبائن والشحن الآلي والحسابات العامة.</p></div>'+
