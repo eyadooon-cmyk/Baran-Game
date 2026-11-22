@@ -4649,7 +4649,7 @@ async function signUp(){
   }
   if(referralCode&&!/^BG-[0-9]{6}$/.test(referralCode)){note.textContent="رمز الدعوة يجب أن يكون بالشكل BG-000123، أو اتركه فارغاً.";return;}
   if(password!==confirmPassword){note.textContent="كلمتا المرور غير متطابقتين.";return;}
-  if(password.length<8||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[!@#$%^&*()_+\-=[\]{};':"|<>?,./~]/.test(password)){
+  if(!passwordMeetsPolicy(password)){
     note.textContent="كلمة المرور يجب أن تكون 8 أحرف على الأقل، وتحتوي حرفاً كبيراً وصغيراً ورقماً ورمزاً.";return;
   }
   note.textContent="جاري فحص كلمة المرور ضمن قواعد التسريبات المعروفة...";
