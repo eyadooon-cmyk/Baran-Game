@@ -49,7 +49,7 @@ async function sendPasswordReset(){
   message.textContent="جاري إرسال رابط استعادة كلمة المرور...";
   try{
     const redirectTo=window.location.origin+window.location.pathname;
-    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo,captchaToken:await baranTurnstileToken("reset")});
     if(error)throw error;
     message.textContent="إذا كان البريد مسجلاً، سيصلك رابط استعادة. افتحه من نفس الجهاز لإدخال كلمة مرور جديدة.";
   }catch(error){
