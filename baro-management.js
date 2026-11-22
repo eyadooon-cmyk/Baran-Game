@@ -145,7 +145,8 @@
       statDual("المصاريف",fmtUsd(t.expenses||0),fmtSyp((t.expenses||0)*rate))+statDual("العمولات",fmtUsd(t.commissions||0),fmtSyp((t.commissions||0)*rate))+
       statDual("المبالغ المستردة",fmtUsd(t.refunds||0),fmtSyp((t.refunds||0)*rate))+statDual("التسويات",fmtUsd(t.adjustments||0),fmtSyp((t.adjustments||0)*rate))+
       statDual("صافي الربح المحقق",fmtUsd(t.net_profit||0),fmtSyp((t.net_profit||0)*rate))+stat("الحركات المرحلة",posted.length)+stat("بانتظار الترحيل",pending)+
-      stat("حركات اليوم",daily.length)+stat("حركات الشهر",monthly.length)+\n      flowCards("حركة اليوم · "+today,dailyFlow)+flowCards("حركة آخر 7 أيام · "+weekStart+" إلى "+today,weeklyFlow)+
+      stat("حركات اليوم",daily.length)+stat("حركات الشهر",monthly.length)+
+      flowCards("حركة اليوم · "+today,dailyFlow)+flowCards("حركة آخر 7 أيام · "+weekStart+" إلى "+today,weeklyFlow)+
       '</div><div class="baro-mgmt-panel"><strong>معادلة صافي الربح</strong><p class="baro-mgmt-muted">المبيعات المقبوضة − تكاليف الموردين − المصاريف − العمولات − المبالغ المستردة + التسويات. الحركات المعلقة لا تدخل في الربح المحقق. الرصيد الافتتاحي رأس مال منفصل ولا يدخل في المبيعات أو الأرباح.</p></div>'+
       (entries.length===0?'<div class="baro-mgmt-empty">لا توجد حركات مالية مسجلة حالياً؛ الربح المحقق = صفر لأن لا توجد عمليات مالية مسجلة، وليس لأن المتجر خسر.</div>':'')+
       '<p class="baro-mgmt-muted">هذا الدفتر مستقل عن محافظ الزبائن والشحن الآلي والحسابات العامة.</p></div>'+
