@@ -4,7 +4,7 @@
   const money = (value,currency) => Number(value||0).toLocaleString("en-US",{minimumFractionDigits:currency==="USD"?2:0,maximumFractionDigits:currency==="USD"?2:0})+(currency==="USD"?" $":" ل.س");
   const labels = {
     opening_balance:"رصيد افتتاحي",capital_in:"إيداع رأس مال",capital_out:"سحب رأس مال",
-    cash_in:"وارد نقدي",cash_out:"صادر نقدي",transfer_in:"تحويل وارد",transfer_out:"تحويل صادر"
+    cash_in:"وارد نقدي",cash_out:"صادر نقدي",transfer_in:"تحويل وارد",transfer_out:"تحويل صادر",correction_in:"تسوية تصحيحية واردة",correction_out:"تسوية تصحيحية صادرة"
   };
   const incoming = new Set(["opening_balance","capital_in","cash_in","transfer_in"]);
   function date(value){
