@@ -75,7 +75,7 @@ Deno.serve(async (req: Request) => {
     const windowStart = new Date(Math.floor(now.getTime() / 900000) * 900000).toISOString();
 
     async function rateLimit(limit: number) {
-      const { data, error } = await admin.rpc("consume_guest_support_rate_limit", {
+      const { data, error } = await admin.schema("private").rpc("consume_guest_support_rate_limit", {
         p_key_hash: ipHash,
         p_window_start: windowStart,
         p_limit: limit,
