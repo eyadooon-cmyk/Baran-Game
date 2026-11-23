@@ -2,13 +2,14 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = new Set([
   "https://eyadooon-cmyk.github.io",
+  "https://baran-game.pages.dev",
   "http://localhost:5500",
   "http://127.0.0.1:5500",
 ]);
 const MAX_BODY = 12000;
 
 function json(body: unknown, status = 200, origin = "") {
-  const allowed = ALLOWED_ORIGINS.has(origin) ? origin : "https://eyadooon-cmyk.github.io";
+  const allowed = ALLOWED_ORIGINS.has(origin) ? origin : "https://baran-game.pages.dev";
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -96,7 +97,7 @@ Deno.serve(async (req: Request) => {
       });
       if (!response.ok) return false;
       const result = await response.json();
-      return result.success === true && (!result.hostname || result.hostname === "eyadooon-cmyk.github.io");
+      return result.success === true && (!result.hostname || ALLOWED_ORIGINS.has("https://" + result.hostname));
     }
 
     async function adminUser() {
