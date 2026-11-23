@@ -2087,7 +2087,7 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
 @media(max-width:420px){.baran-theme-toggle-card{align-items:flex-start!important;flex-direction:column}.baran-theme-toggle{width:100%}}
 </style>
 
-<script>try{if(localStorage.getItem('baran-theme')==='day')document.documentElement.setAttribute('data-baran-theme','day');}catch(e){}</script>
+
 </head>
 <body>
 
@@ -2697,11 +2697,6 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
     </section>
 <section id="settings" class="hidden">
       <h2>الإعدادات ⚙️</h2>
-      <div class="baran-theme-toggle-card" id="baranThemeSettingsCard">
-        <div class="baran-theme-copy"><strong>مظهر التطبيق</strong><span id="baranThemeDescription">الوضع الليلي مفعّل</span></div>
-        <button type="button" id="baranThemeToggle" class="baran-theme-toggle" onclick="toggleBaranTheme()" aria-pressed="false"><span id="baranThemeIcon">☀️</span><span id="baranThemeLabel">تفعيل وضع النهار</span></button>
-      </div>
-
       <p class="small">تحكّم بإشعارات Baran Game على هذا الجهاز.</p>
       <div class="account-settings-group">
         <div class="account-dashboard-label"><strong>الأمان والخصوصية</strong><span>تحكم ببيانات الدخول وحماية حسابك</span></div>
@@ -8443,23 +8438,7 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 }
 </style>
 
-<script id="baran-theme-controller-20261123">
-(function(){
-  const key='baran-theme';
-  function apply(day){
-    document.documentElement.setAttribute('data-baran-theme',day?'day':'night');
-    try{localStorage.setItem(key,day?'day':'night');}catch(e){}
-    const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.setAttribute('content',day?'#f3eff8':'#09080d');
-    const label=document.getElementById('baranThemeLabel');const icon=document.getElementById('baranThemeIcon');const desc=document.getElementById('baranThemeDescription');const btn=document.getElementById('baranThemeToggle');
-    if(label)label.textContent=day?'تفعيل الوضع الليلي':'تفعيل وضع النهار';
-    if(icon)icon.textContent=day?'🌙':'☀️';
-    if(desc)desc.textContent=day?'وضع النهار مفعّل':'الوضع الليلي مفعّل';
-    if(btn)btn.setAttribute('aria-pressed',day?'true':'false');
-  }
-  window.toggleBaranTheme=function(){apply(document.documentElement.getAttribute('data-baran-theme')!=='day');};
-  apply(document.documentElement.getAttribute('data-baran-theme')==='day');
-})();
-</script>
+
 
 </body>
 </html>
