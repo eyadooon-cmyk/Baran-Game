@@ -5,14 +5,14 @@ let baranNotificationPoll=null;
 
 async function loadCommunity(){
   if(!currentUser)return;
-  await Promise.all([loadCompletedOrders(),loadMyFeedback(),loadPublicReviews(),typeof loadCustomerNotifications==="function"?loadCustomerNotifications():loadMyNotifications()]);
+  await Promise.all([loadCompletedOrders(),loadMyFeedback(),loadPublicReviews(),loadMyNotifications()]);
   startBaranNotificationPolling();
 }
 
 function startBaranNotificationPolling(){
   if(baranNotificationPoll)clearInterval(baranNotificationPoll);
   baranNotificationPoll=setInterval(()=>{
-    if(currentUser){if(typeof loadCustomerNotifications==="function")loadCustomerNotifications();else loadMyNotifications();}
+    if(currentUser)loadMyNotifications();
   },45000);
 }
 
