@@ -101,8 +101,7 @@ function renderBaroCustomerCatalog(products){
   const catalogStyle=document.createElement("style");catalogStyle.id=catalogStyleId;
   catalogStyle.textContent=`
    #baroCustomerCatalog .baro-catalog-category{display:block;margin:16px 0;padding:0;overflow:hidden;border:1px solid #72528a;border-radius:20px;background:linear-gradient(145deg,#21172c 0%,#120e19 72%);box-shadow:0 12px 28px #0008,inset 0 1px 0 #ffffff18;transform:translateZ(0)}
-   #baroCustomerCatalog .baro-catalog-category>summary{list-style:none;cursor:pointer}
-   #baroCustomerCatalog .baro-catalog-category>summary::-webkit-details-marker{display:none}
+
    #baroCustomerCatalog .baro-catalog-category-head{display:flex;align-items:center;gap:12px;min-height:88px;padding:15px;background:linear-gradient(115deg,#392448,#21172d 58%,#17111f);border-bottom:1px solid #8b68a744}
    #baroCustomerCatalog .baro-catalog-game-mark{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border:1px solid #c5a0e2;border-radius:16px;background:linear-gradient(145deg,#9b6ac2,#3c2751 58%,#21162e);box-shadow:0 7px 0 #171020,0 11px 18px #0009,inset 0 2px 5px #ffffff55;font-size:27px}
    #baroCustomerCatalog .baro-catalog-category-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
@@ -110,8 +109,7 @@ function renderBaroCustomerCatalog(products){
    #baroCustomerCatalog .baro-catalog-category-copy strong{color:#fff;font-size:17px;font-weight:900}
    #baroCustomerCatalog .baro-catalog-category-copy>span{color:#c2b2cf;font-size:11px}
    #baroCustomerCatalog .baro-catalog-count{flex:0 0 auto;padding:6px 9px;border:1px solid #8968a2;border-radius:999px;background:#130d1d;color:#e8d8f4;font-size:10px;font-weight:800}
-   #baroCustomerCatalog .baro-catalog-chevron{color:#e6d1f6;font-size:24px;transition:transform .2s}
-   #baroCustomerCatalog .baro-catalog-category[open] .baro-catalog-chevron{transform:rotate(180deg)}
+
    #baroCustomerCatalog .baro-catalog-category-content{padding:12px}
    #baroCustomerCatalog .baro-catalog-product-group{display:block;min-width:0;margin:8px 0 15px;padding:12px;overflow:visible;border:1px solid #765792;border-radius:17px;background:linear-gradient(150deg,#30213e 0%,#1c1427 55%,#130e1b 100%);box-shadow:0 7px 0 #100b16,0 12px 18px #0008,inset 0 1px 0 #ffffff22}
    #baroCustomerCatalog .baro-catalog-group-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:0 0 10px;border:0;border-bottom:1px solid #76558c66;cursor:default;list-style:none}
@@ -182,9 +180,8 @@ function renderBaroCustomerCatalog(products){
  });
  categories.forEach((category,index)=>{
   const meta=categoryMeta[category]||{label:String(category||"قسم").toUpperCase(),icon:"🎮",eyebrow:"BARO CATALOG",description:"منتجات رقمية"};
-  const section=document.createElement("details");section.className="baro-catalog-category";
-  section.open=false; // بطاقة اللعبة وحدها قابلة للفتح والإغلاق؛ مجموعات الباقات تبقى ظاهرة داخلها.
-  const summary=document.createElement("summary");summary.className="baro-catalog-category-head";
+  const section=document.createElement("section");section.className="baro-catalog-category";
+  const summary=document.createElement("div");summary.className="baro-catalog-category-head";
   const mark=document.createElement("span");mark.className="baro-catalog-game-mark";mark.textContent=meta.icon;
   const copy=document.createElement("span");copy.className="baro-catalog-category-copy";
   const eyebrow=document.createElement("small");eyebrow.textContent=meta.eyebrow;
@@ -194,7 +191,7 @@ function renderBaroCustomerCatalog(products){
   const count=document.createElement("span");count.className="baro-catalog-count";
   const categoryProducts=products.filter(p=>p.category_id===category);
   count.textContent=categoryProducts.length+" منتج";
-  const chevron=document.createElement("span");chevron.className="baro-catalog-chevron";chevron.setAttribute("aria-hidden","true");chevron.textContent="⌄";summary.append(mark,copy,count,chevron);
+  summary.append(mark,copy,count);
   section.append(summary);
   const content=document.createElement("div");content.className="baro-catalog-category-content";
   const presentGroups=[...new Set(categoryProducts.map(p=>p.group_id))];
