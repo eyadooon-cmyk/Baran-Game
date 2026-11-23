@@ -2250,7 +2250,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
           <span class="baran-shipping-number">01</span>
         </button>
 
-        <button class="baran-shipping-card baran-shipping-manual" type="button" onclick="showSection('baroManual',this);loadBaroCustomer()">
+        <button class="baran-shipping-card baran-shipping-manual" type="button" onclick="showSection('manualGames',this)">
           <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1400&q=85" alt="معدات ألعاب وشحن يدوي" loading="lazy">
           <span class="baran-shipping-shade"></span>
           <span class="baran-shipping-content">
@@ -2325,8 +2325,26 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
       </div>
     </section>
 
-        <section id="baroManual" class="hidden">
-      <button class="secondary games-back-button baran-back-button" type="button" onclick="showSection('home',null)">← العودة إلى الأقسام الرئيسية</button>
+        <section id="manualGames" class="hidden">
+  <button class="secondary games-back-button baran-back-button" type="button" onclick="showSection('home',null)">← العودة إلى الأقسام الرئيسية</button>
+  <div class="hero"><h2>الشحن اليدوي · الألعاب</h2><p>اختر اللعبة التي تريد استعراض منتجاتها.</p></div>
+  <div class="grid baran-manual-games-grid">
+    <button class="item" type="button" onclick="openBaroManualGame('freefire')">
+      <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE" loading="lazy">
+      <span class="item-content"><strong>FREE FIRE</strong><span>جواهر وعضويات فري فاير</span></span>
+    </button>
+    <button class="item" type="button" onclick="openBaroManualGame('pubg')">
+      <img src="https://pbs.twimg.com/media/EZrVgJ_XkAQX9jX.jpg" alt="PUBG MOBILE" loading="lazy">
+      <span class="item-content"><strong>PUBG MOBILE</strong><span>شدات UC وباقات ببجي</span></span>
+    </button>
+    <button class="item" type="button" onclick="openBaroManualGame('jawaker')">
+      <span class="baran-auto-game-art baran-jawaker-art"><span>J</span><small>JAWAKER</small></span>
+      <span class="item-content"><strong>جواكر · JAWAKER</strong><span>توكنز السيرفرات ومسرّعات جواكر</span></span>
+    </button>
+  </div>
+</section>
+<section id="baroManual" class="hidden">
+      <button class="secondary games-back-button baran-back-button" type="button" onclick="showSection('manualGames',null)">← العودة إلى ألعاب الشحن اليدوي</button>
       <div class="hero"><h2>BARO · الشحن اليدوي المستقل</h2><p id="baroCustomerIntro">كتالوج منتجات BARO وأسعار البيع المعتمدة بالدولار والليرة. يتم تحديث حالة الاستقبال تلقائياً.</p></div>
       <div class="deposit-card"><strong>حالة استقبال BARO</strong><p id="baroCustomerAvailability" class="small">يتم التحقق من حالة الاستقبال والمنتجات المفعّلة...</p></div>
       <div id="baroAiWidget" class="baro-ai-widget" aria-label="BARO NAVI — دليل الشحن اليدوي الذكي">
@@ -4298,6 +4316,28 @@ async function loadMyOrders(){
   renderMyOrders();
 }
 
+function openBaroManualGame(category){
+  const allowed=["pubg","freefire","jawaker"];
+  if(!allowed.includes(category))return;
+  showSection("baroManual",null);
+  const catalog=document.getElementById("baroCustomerCatalog");
+  if(!catalog)return;
+  const applyFilter=()=>{
+    const sections=[...catalog.querySelectorAll(".baro-catalog-category")];
+    if(!sections.length)return false;
+    const labels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
+    sections.forEach(section=>{
+      const title=section.querySelector(".baro-catalog-category-head")?.textContent||"";
+      section.hidden=!title.toUpperCase().includes(labels[category]);
+      if(!section.hidden)section.open=true;
+    });
+    return true;
+  };
+  const observer=new MutationObserver(()=>{if(applyFilter())observer.disconnect();});
+  observer.observe(catalog,{childList:true,subtree:true});
+  if(applyFilter())observer.disconnect();
+  loadBaroCustomer();
+}
 function showSection(id,button,options){
   if(!currentUser) return;
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
@@ -8105,6 +8145,11 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
  #authScreen #googleLoginButton{min-height:55px!important}
 }
 
+.baran-manual-games-grid .item{min-height:100%;display:flex;flex-direction:column;justify-content:stretch}
+.baran-manual-games-grid .item img,.baran-manual-games-grid .baran-auto-game-art{width:100%;height:155px;object-fit:cover;display:flex;align-items:center;justify-content:center}
+.baran-manual-games-grid .item-content{display:grid;gap:5px}
+.baran-manual-games-grid .item strong{margin:0}
+@media(max-width:430px){.baran-manual-games-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.baran-manual-games-grid .item img,.baran-manual-games-grid .baran-auto-game-art{height:125px}}
 </style>
 
 <style id="baran-admin-workspace-polish-20261119">
