@@ -2735,7 +2735,8 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
             <button type="button" class="admin-hub-card admin-hub-card-sensitive" data-admin-search="المشرفين الموظفين الصلاحيات فريق العمل staff management" id="staffManagementHubCard" onclick="showAdminPanel('staff-management')"><span class="admin-hub-icon">🛡️</span><strong>إدارة الفريق والصلاحيات</strong><small>إضافة المشرفين وتحديد صلاحياتهم ومراجعة الوصول — للمالك فقط.</small><span class="admin-hub-open">إدارة صلاحيات الفريق <b>←</b></span></button>
           </div></section>
         </div>
-        <div id="adminHubNoResults" class="admin-hub-no-results hidden">ما لقينا قسم بهذا الاسم. جرّب كلمة أقصر أو ابحث باسم الوظيفة.</div>
+        <div id="adminHubNoResults" class="admin-hub-no-results hidden">ما لقينا قسم بهذا الاسم. جرّب كلمة أقصر أو ابحث باسم الوظيفة.<section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>06</span><div><strong>تحليلات المتجر</strong><small>قياس الزيارات وسلوك تصفح الصفحات بصورة إجمالية تحترم الخصوصية.</small></div><em>VISITOR INSIGHTS</em></div><div class="admin-hub-grid"><button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="إحصائيات الزوار الزيارات المشاهدات البلدان الأجهزة analytics visitors traffic" onclick="showAdminPanel('visitor-analytics')"><span class="admin-hub-icon">📊</span><strong>إحصائيات الزوار</strong><small>مشاهدات اليوم والأسبوع والشهر، الأجهزة، البلدان، والصفحات الأكثر زيارة.</small><span class="admin-hub-open">فتح إحصائيات الزوار <b>←</b></span></button></div></section>
+          </div>
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="payment-gateway">
@@ -2802,6 +2803,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         </section>
       </div>
 
+      <div class="admin-subpanel hidden" data-admin-panel="visitor-analytics"><div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>إحصائيات الزوار 📊</h2></div><p class="small">لوحة مستقلة عن المالية والدعم. تعرض بيانات مجمعة فقط ولا تحفظ عناوين IP أو معلومات الاتصال الشخصية.</p><div id="baranVisitorAnalyticsMount"></div></div>
       <div class="admin-subpanel hidden" data-admin-panel="overview">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الرئيسية والإحصائيات</h2></div>
 <div class="admin-workgroup-label"><span>01</span><div><strong>نظرة عامة ومؤشرات الأداء</strong><small>ابدأ بقراءة وضع المتجر قبل الانتقال إلى الإجراءات</small></div></div>
@@ -3980,6 +3982,7 @@ function showAdminPanel(id){
     if(typeof loadAdminPanel==="function")panelLoad=loadAdminPanel();
   }
   if(id==="guest-support"&&typeof window.loadBaranGuestSupportAdmin==="function")panelLoad=Promise.resolve(window.loadBaranGuestSupportAdmin());
+  if(id==="visitor-analytics"&&typeof window.loadBaranVisitorAnalytics==="function")panelLoad=Promise.resolve(window.loadBaranVisitorAnalytics());
   if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")panelLoad=loadBaranPromotionsManager();
   if(id==="suppliers"&&typeof loadBaranAutomaticControl==="function")loadBaranAutomaticControl();
   if(id==="staff-management")loadBaranStaffList();
@@ -8187,6 +8190,8 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 })();
 </script>
 
+<script src="./baran-visitor-analytics.js?v=20261123-1"></script>
+<script src="./baran-visitor-analytics-admin.js?v=20261123-1"></script>
 <script src="./baran-turnstile-auth.js?v=20261122-turnstile-1"></script>
 <script src="./baran-guest-support.js?v=20261122-guest-support-1-eye2-help"></script>
 <script src="./baran-guest-support-admin.js?v=20261122-guest-support-admin-2"></script>
