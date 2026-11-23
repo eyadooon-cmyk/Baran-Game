@@ -6723,14 +6723,31 @@ function buildBaranNotificationCard(item,audience){
 async function loadCustomerNotifications(){
   const list=document.getElementById("customerNotificationsList");
   const count=document.getElementById("notificationCount");
-  if(!currentUser||!list)return;
+  if(!list)return;
+  if(!currentUser){
+    list.textContent="سجّل الدخول لعرض إشعاراتك.";
+    if(count){count.textContent="0";count.classList.add("hidden");}
+    return;
+  }
+  list.textContent="جاري تحميل الإشعارات...";
   const audience=currentUser.id===BARAN_OWNER_ID?"admin":"customer";
+  let timeoutId=null;
   try{
-    const [{data:rows,error},{count:unreadCount,error:countError}]=await Promise.all([
-      sb.from("baran_notifications").select("id,kind,title,body,entity_type,entity_id,read_at,created_at").eq("recipient_id",currentUser.id).eq("audience",audience).order("created_at",{ascending:false}).limit(50),
-      sb.from("baran_notifications").select("id",{count:"exact",head:true}).eq("recipient_id",currentUser.id).eq("audience",audience).is("read_at",null)
+    const loadPromise=Promise.all([
+      sb.from("baran_notifications")
+        .select("id,kind,title,body,entity_type,entity_id,read_at,created_at")
+        .eq("recipient_id",currentUser.id).eq("audience",audience)
+        .order("created_at",{ascending:false}).limit(50),
+      sb.from("baran_notifications")
+        .select("id",{count:"exact",head:true})
+        .eq("recipient_id",currentUser.id).eq("audience",audience).is("read_at",null)
     ]);
-    if(error)throw error;if(countError)throw countError;
+    const timeoutPromise=new Promise((_,reject)=>{
+      timeoutId=window.setTimeout(()=>reject(new Error("انتهت مهلة تحميل الإشعارات")),12000);
+    });
+    const [{data:rows,error},{count:unreadCount,error:countError}]=await Promise.race([loadPromise,timeoutPromise]);
+    if(error)throw error;
+    if(countError)throw countError;
     const total=Number(unreadCount||0),all=Array.isArray(rows)?rows:[];
     if(count){count.textContent=total>99?"99+":String(total);count.classList.toggle("hidden",total===0);}
     const totalNode=document.getElementById("notificationTotalCount"),unreadNode=document.getElementById("notificationUnreadCount");
@@ -6746,8 +6763,17 @@ async function loadCustomerNotifications(){
     }
     all.forEach(item=>list.appendChild(buildBaranNotificationCard(item,audience)));
   }catch(error){
-    list.replaceChildren();const message=document.createElement("div");message.className="notification-load-error";message.textContent="ما قدرنا نحمّل الإشعارات حالياً. جرّب التحديث بعد شوي.";list.appendChild(message);
+    list.replaceChildren();
+    const message=document.createElement("div");message.className="notification-load-error";
+    message.textContent=error?.message==="انتهت مهلة تحميل الإشعارات"
+      ?"تأخر الاتصال بخدمة الإشعارات. تحقق من الإنترنت واضغط إعادة المحاولة."
+      :"ما قدرنا نحمّل الإشعارات حالياً. جرّب مرة ثانية.";
+    const retry=document.createElement("button");retry.type="button";retry.className="notification-read-action";
+    retry.textContent="إعادة المحاولة";retry.onclick=()=>loadCustomerNotifications();
+    list.append(message,retry);
     console.error("Baran notifications:",error);
+  }finally{
+    if(timeoutId!==null)window.clearTimeout(timeoutId);
   }
 }
 async function markCustomerNotificationRead(id,button,audience="customer"){
