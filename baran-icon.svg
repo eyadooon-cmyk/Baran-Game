@@ -1,17 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="BARAN GAME">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#30243a"/>
-      <stop offset="1" stop-color="#09080d"/>
-    </linearGradient>
-    <linearGradient id="line" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#e5d6f2"/>
-      <stop offset="1" stop-color="#8b6ba8"/>
-    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#30213d"/><stop offset="1" stop-color="#09080d"/></linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4eafa"/><stop offset=".55" stop-color="#c5b4d6"/><stop offset="1" stop-color="#8b6ba8"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
   <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <rect x="30" y="30" width="452" height="452" rx="92" fill="none" stroke="#8b6ba8" stroke-width="12"/>
-  <path d="M150 112h104c91 0 144 51 144 144S345 400 254 400H150V112zm75 66v156h29c48 0 75-27 75-78s-27-78-75-78h-29z" fill="url(#line)"/>
-  <path d="M110 400V112h64v288z" fill="#f2eaf8" opacity=".92"/>
-  <circle cx="380" cy="112" r="20" fill="#c5b4d6"/>
+  <rect x="25" y="25" width="462" height="462" rx="91" fill="none" stroke="#8b6ba8" stroke-width="10"/>
+  <path d="M104 104h121c79 0 122 37 122 103 0 39-19 67-53 82 48 12 75 45 75 91 0 75-55 116-151 116H104V104zm72 62v99h45c39 0 59-17 59-50 0-32-20-49-59-49h-45zm0 157v109h55c43 0 66-18 66-54 0-37-23-55-66-55h-55z" fill="url(#metal)" opacity=".98" filter="url(#glow)"/>
+  <path d="M320 188c-18-23-42-35-74-38" fill="none" stroke="#f4eafa" stroke-width="13" stroke-linecap="round" opacity=".8"/>
+  <circle cx="392" cy="113" r="13" fill="#e8d7f4"/>
+  <rect x="90" y="424" width="332" height="52" rx="17" fill="#17101f" stroke="#8b6ba8" stroke-width="2"/>
+  <text x="256" y="459" text-anchor="middle" font-family="Arial,sans-serif" font-size="27" font-weight="900" letter-spacing="4" fill="#f2e8fa">BARAN GAME</text>
 </svg>
