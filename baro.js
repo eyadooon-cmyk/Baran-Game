@@ -148,12 +148,12 @@ function renderBaroCustomerCatalog(products){
   const content=document.createElement("div");content.className="baro-catalog-category-content";
   const presentGroups=[...new Set(categoryProducts.map(p=>p.group_id))];
   const preferred=groupOrder[category]||[];
-  const groups=presentGroups.sort((a,b)=>{
+  const groups=category==="freefire"?[null]:presentGroups.sort((a,b)=>{
    const ai=preferred.indexOf(a),bi=preferred.indexOf(b);
    return (ai<0?99:ai)-(bi<0?99:bi);
   });
   groups.forEach(group=>{
-   const groupInfo=groupMeta[group]||{label:String(group||"منتجات أخرى"),icon:"✦",description:""};
+   const groupInfo=group===null?{label:"باقات Free Fire",icon:"🔥",description:""}:(groupMeta[group]||{label:String(group||"منتجات أخرى"),icon:"✦",description:""});
    const groupSection=document.createElement("section");groupSection.className="baro-catalog-product-group";
    const groupHead=document.createElement("div");groupHead.className="baro-catalog-group-head";
    const groupIcon=document.createElement("span");groupIcon.className="baro-catalog-group-icon";groupIcon.textContent=groupInfo.icon;
@@ -162,12 +162,12 @@ function renderBaroCustomerCatalog(products){
    const groupDescription=document.createElement("small");groupDescription.textContent=groupInfo.description;
    groupCopy.append(groupTitle,groupDescription);
    const groupCount=document.createElement("span");groupCount.className="baro-catalog-group-count";
-   const items=categoryProducts.filter(p=>p.group_id===group);
+   const items=group===null?categoryProducts:categoryProducts.filter(p=>p.group_id===group);
    groupCount.textContent=items.length+" باقة";
    groupHead.append(groupIcon,groupCopy,groupCount);groupSection.append(groupHead);
    const grid=document.createElement("div");grid.className="baro-catalog-product-grid";
    items.forEach((p,productIndex)=>{
-    const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+group;
+    const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+(p.group_id||group||"all");
     const productAvailable=baroManualEnabled&&p.purchase_enabled===true;
     card.disabled=!productAvailable;
     card.setAttribute("aria-label",(productAvailable?"طلب ":"معاينة ")+String(p.product_name||"منتج رقمي"));
