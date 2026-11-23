@@ -124,7 +124,11 @@ function renderBaroCustomerCatalog(products){
    #baroCustomerCatalog .baro-catalog-product-card{position:relative;display:flex;min-width:0;flex-direction:column;align-items:stretch;gap:8px;padding:10px;border:1px solid #765792;border-radius:16px;background:linear-gradient(150deg,#392849 0%,#21172d 48%,#17111f 100%);color:#f4eafa;text-align:right;box-shadow:0 7px 0 #100b16,0 12px 18px #0008,inset 0 1px 0 #ffffff2b;transform:perspective(850px) rotateX(1deg);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
    #baroCustomerCatalog .baro-catalog-product-card:before{content:"";position:absolute;inset:1px 1px auto;height:42%;border-radius:15px 15px 45% 45%;background:linear-gradient(180deg,#ffffff12,transparent);pointer-events:none}
    #baroCustomerCatalog .baro-catalog-product-card:active:not(:disabled){transform:perspective(850px) translateY(4px) scale(.985);box-shadow:0 3px 0 #100b16,0 6px 10px #0008}
-   #baroCustomerCatalog .baro-catalog-product-card:disabled{opacity:1;cursor:default}
+   #baroCustomerCatalog .baro-catalog-product-card[aria-disabled="true"]{opacity:1;cursor:default;filter:none;color:#f4eafa!important;-webkit-text-fill-color:#f4eafa!important}
+   #baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-name,#baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-price,#baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-footer{visibility:visible!important;opacity:1!important;-webkit-text-security:none!important;text-security:none!important;filter:none!important;text-shadow:none!important}
+   #baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-name{color:#fff!important;-webkit-text-fill-color:#fff!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;unicode-bidi:plaintext;direction:auto}
+   #baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-price{color:#f0dcff!important;-webkit-text-fill-color:#f0dcff!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;unicode-bidi:plaintext}
+   #baroCustomerCatalog .baro-catalog-product-card[aria-disabled="true"] .baro-catalog-product-name,#baroCustomerCatalog .baro-catalog-product-card[aria-disabled="true"] .baro-catalog-product-price{color:#fff!important;-webkit-text-fill-color:#fff!important}
    #baroCustomerCatalog .baro-catalog-product-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
    #baroCustomerCatalog .baro-catalog-product-art{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;width:100%;min-height:82px;border:1px solid #9875b4;border-radius:12px;background:radial-gradient(ellipse at 50% 20%,#a77bc533,transparent 65%),linear-gradient(145deg,#30203e,#17101f);box-shadow:inset 0 2px 8px #0008,0 3px 0 #100b16}
    #baroCustomerCatalog .baro-catalog-product-art-icon{font-size:34px;line-height:1.1;filter:drop-shadow(0 5px 4px #0009)}
@@ -215,7 +219,7 @@ function renderBaroCustomerCatalog(products){
    items.forEach((p,productIndex)=>{
     const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+(p.group_id||group||"all");
     const productAvailable=baroManualEnabled&&p.purchase_enabled===true;
-    card.disabled=!productAvailable;
+    card.setAttribute("aria-disabled",String(!productAvailable));card.tabIndex=productAvailable?0:-1;
     card.setAttribute("aria-label",(productAvailable?"طلب ":"معاينة ")+String(p.product_name||"منتج رقمي"));
     if(productAvailable)card.addEventListener("click",()=>baroOpenProductCheckout(p));
     const cardTop=document.createElement("div");cardTop.className="baro-catalog-product-card-top";
@@ -237,10 +241,10 @@ function renderBaroCustomerCatalog(products){
     art.append(artIcon,artLabel);
     const preview=document.createElement("span");preview.className="baro-catalog-preview-tag";preview.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"معاينة فقط";
     cardTop.append(art,preview);
-    const name=document.createElement("strong");name.className="baro-catalog-product-name";name.textContent=productName;
+    const name=document.createElement("strong");name.className="baro-catalog-product-name";name.dir="auto";name.textContent=productName;
     const price=document.createElement("strong");price.className="baro-catalog-product-price";
     const usd=Number(p.sale_price_usd),syp=Number(p.sale_price_syp);
-    price.textContent=(Number.isFinite(usd)&&usd>0?"$"+usd.toFixed(2):"USD: غير محدد")+" · "+(Number.isFinite(syp)&&syp>0?syp.toLocaleString("en-US")+" SYP":"SYP: غير محدد");
+    price.dir="auto";price.textContent=(Number.isFinite(usd)&&usd>0?"$"+usd.toFixed(2):"السعر بالدولار غير محدد")+" · "+(Number.isFinite(syp)&&syp>0?syp.toLocaleString("en-US")+" SYP":"السعر بالليرة غير محدد");
     price.style.cssText="display:block;margin:10px 0 4px;color:#e4c5ff;font-size:1.05rem;font-weight:900;";
     const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
     const status=document.createElement("span");status.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"استقبال الطلبات مغلق حالياً";
