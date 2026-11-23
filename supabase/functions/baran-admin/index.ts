@@ -1,14 +1,23 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://eyadooon-cmyk.github.io",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Content-Type": "application/json",
-};
+const ALLOWED_ORIGINS = new Set([
+  "https://eyadooon-cmyk.github.io",
+  "https://baran-game.pages.dev",
+]);
+function corsHeaders(origin = ""): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Content-Type": "application/json",
+    "Vary": "Origin",
+    "Cache-Control": "no-store",
+  };
+  if (ALLOWED_ORIGINS.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: corsHeaders });
+function json(body: unknown, status = 200, origin = "") {
+  return new Response(JSON.stringify(body), { status, headers: corsHeaders(origin) });
 }
 
 function readKeyObject(name: string): string | undefined {
@@ -18,7 +27,12 @@ function readKeyObject(name: string): string | undefined {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const origin = req.headers.get("Origin") ?? "";
+  if (req.method === "OPTIONS") {
+    if (origin && !ALLOWED_ORIGINS.has(origin)) return new Response("Forbidden", { status: 403 });
+    return new Response("ok", { headers: corsHeaders(origin) });
+  }
+  if (origin && !ALLOWED_ORIGINS.has(origin)) return respond({ error: "Origin not allowed" }, 403, origin);
 
   try {
     const url = Deno.env.get("SUPABASE_URL");
@@ -33,13 +47,13 @@ Deno.serve(async (req: Request) => {
         hasLegacyServiceRoleKey: Boolean(legacyServiceKey),
         hasSecretKey: Boolean(secretKey),
       });
-      return json({ error: "Server configuration is incomplete" }, 500);
+      return respond({ error: "Server configuration is incomplete" }, 500);
     }
 
     console.log("baran-admin: configuration loaded", { hasSecretKey: Boolean(secretKey) });
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-    if (!token) return json({ error: "Authentication required" }, 401);
+    if (!token) return respond({ error: "Authentication required" }, 401);
 
     const userClient = createClient(url, anonKey, {
       global: { headers: { Authorization: `Bearer ${token}` } },
@@ -47,7 +61,7 @@ Deno.serve(async (req: Request) => {
     });
     const { data: authData, error: authError } = await userClient.auth.getUser(token);
     const user = authData?.user;
-    if (authError || !user) { console.error("baran-admin: auth failed", authError?.message ?? "missing user"); return json({ error: "Invalid session" }, 401); }
+    if (authError || !user) { console.error("baran-admin: auth failed", authError?.message ?? "missing user"); return respond({ error: "Invalid session" }, 401); }
     console.log("baran-admin: user authenticated");
 
     // New sb_secret keys belong in apikey only. Keep the legacy service-role JWT
@@ -64,9 +78,9 @@ Deno.serve(async (req: Request) => {
       p_user_id: user.id,
     });
 
-    if (adminError) { console.error("baran-admin: admin check failed", adminError.message); return json({ error: "Could not verify administrator" }, 500); }
+    if (adminError) { console.error("baran-admin: admin check failed", adminError.message); return respond({ error: "Could not verify administrator" }, 500); }
     console.log("baran-admin: admin check completed", { isAdmin: isAdmin === true });
-    if (isAdmin !== true) return json({ error: "Administrator access required" }, 403);
+    if (isAdmin !== true) return respond({ error: "Administrator access required" }, 403);
 
     if (req.method === "GET") {
       const { data: requests, error } = await admin
@@ -75,7 +89,7 @@ Deno.serve(async (req: Request) => {
         .order("created_at", { ascending: false })
         .limit(100);
 
-      if (error) { console.error("baran-admin: deposit query failed", error.message, error.code); return json({ error: "Could not load deposit requests" }, 500); }
+      if (error) { console.error("baran-admin: deposit query failed", error.message, error.code); return respond({ error: "Could not load deposit requests" }, 500); }
       console.log("baran-admin: deposit requests loaded", { count: requests?.length ?? 0 });
 
       console.log("baran-admin: starting customer email lookup");
@@ -101,7 +115,7 @@ Deno.serve(async (req: Request) => {
         .limit(100);
       if (feedbackError) {
         console.error("baran-admin: feedback query failed", feedbackError.message);
-        return json({ error: "Could not load customer feedback" }, 500);
+        return respond({ error: "Could not load customer feedback" }, 500);
       }
       const feedbackEnriched = await Promise.all((feedback ?? []).map(async (item) => {
         const { data, error: lookupError } = await admin.auth.admin.getUserById(item.user_id);
@@ -116,14 +130,16 @@ Deno.serve(async (req: Request) => {
         .limit(100);
       if (autoSupportQueueError) {
         console.error("baran-admin: auto support queue query failed", autoSupportQueueError.message);
-        return json({ error: "تعذر تحميل سجل الردود الآلية." }, 500);
+        return respond({ error: "تعذر تحميل سجل الردود الآلية." }, 500);
       }
+      const { data: treasury, error: treasuryError } = await admin.rpc("admin_treasury_data", { p_admin_id: user.id });
+      if (treasuryError) { console.error("baran-admin: treasury data failed", treasuryError.message); return respond({ error: "تعذر تحميل بيانات الخزينة." }, 500); }
       const { data: finance, error: financeError } = await admin.rpc("admin_finance_data", {
         p_admin_id: user.id,
       });
       if (financeError) {
         console.error("baran-admin: finance data failed", financeError.message);
-        return json({ error: "Could not load finance data" }, 500);
+        return respond({ error: "Could not load finance data" }, 500);
       }
       const reportParams = new URL(req.url).searchParams;
       const damascusParts = new Intl.DateTimeFormat("en-US", {
@@ -137,7 +153,7 @@ Deno.serve(async (req: Request) => {
         ? Number(reportParams.get("finance_year")) : damascusYear;
       if (!Number.isInteger(reportMonth) || reportMonth < 1 || reportMonth > 12 ||
           !Number.isInteger(reportYear) || reportYear < 2020 || reportYear > 2100) {
-        return json({ error: "فترة التقرير غير صحيحة." }, 400);
+        return respond({ error: "فترة التقرير غير صحيحة." }, 400);
       }
       const { data: productReport, error: productReportError } = await admin.rpc(
         "admin_finance_product_report",
@@ -145,7 +161,7 @@ Deno.serve(async (req: Request) => {
       );
       if (productReportError) {
         console.error("baran-admin: product report failed", productReportError.message);
-        return json({ error: "تعذر تحميل تقرير أرباح المنتجات." }, 500);
+        return respond({ error: "تعذر تحميل تقرير أرباح المنتجات." }, 500);
       }
       const financeWithReport = {
         ...finance,
@@ -160,7 +176,7 @@ Deno.serve(async (req: Request) => {
         .order("created_at", { ascending: false });
       if (productsError) {
         console.error("baran-admin: products query failed", productsError.message);
-        return json({ error: "Could not load products" }, 500);
+        return respond({ error: "Could not load products" }, 500);
       }
       const { data: settings, error: settingsError } = await admin
         .from("store_settings")
@@ -169,7 +185,7 @@ Deno.serve(async (req: Request) => {
         .single();
       if (settingsError) {
         console.error("baran-admin: exchange rate query failed", settingsError.message);
-        return json({ error: "Could not load exchange rate" }, 500);
+        return respond({ error: "Could not load exchange rate" }, 500);
       }
       const { data: recoveryAudit, error: recoveryAuditError } = await admin
         .from("account_recovery_audit")
@@ -178,7 +194,7 @@ Deno.serve(async (req: Request) => {
         .limit(30);
       if (recoveryAuditError) {
         console.error("baran-admin: recovery audit query failed", recoveryAuditError.message);
-        return json({ error: "Could not load account recovery history" }, 500);
+        return respond({ error: "Could not load account recovery history" }, 500);
       }
       const { data: notifications, error: notificationsError } = await admin
         .from("baran_notifications")
@@ -189,7 +205,7 @@ Deno.serve(async (req: Request) => {
         .limit(50);
       if (notificationsError) {
         console.error("baran-admin: notification query failed", notificationsError.message);
-        return json({ error: "Could not load admin notifications" }, 500);
+        return respond({ error: "Could not load admin notifications" }, 500);
       }
       // Keep support-ticket alerts in the admin bell only while their ticket is open.
       // Notifications remain stored for history; this only hides alerts for resolved/closed tickets.
@@ -225,13 +241,13 @@ Deno.serve(async (req: Request) => {
         console.error("baran-admin: operations dashboard query failed",
           suppliersError?.message || supplierProductsError?.message || ordersError?.message ||
           fulfillmentError?.message || loyaltyError?.message || userCountError?.message || orderCountError?.message);
-        return json({ error: "Could not load store operations dashboard" }, 500);
+        return respond({ error: "Could not load store operations dashboard" }, 500);
       }
       // Exclude administrator accounts: this directory is for store customers only.
       const { data: adminRows, error: adminRowsError } = await admin.from("admin_users").select("user_id");
       if (adminRowsError) {
         console.error("baran-admin: administrator directory exclusion failed", adminRowsError.message);
-        return json({ error:"تعذر التحقق من حسابات الإدارة." },500);
+        return respond({ error:"تعذر التحقق من حسابات الإدارة." },500);
       }
       const adminUserIds = new Set((adminRows ?? []).map((row) => row.user_id));
       // Load every customer in stable pages; do not silently cap the directory at 100.
@@ -246,7 +262,7 @@ Deno.serve(async (req: Request) => {
           .range(from, from + customerPageSize - 1);
         if (pageError) {
           console.error("baran-admin: customer directory query failed", pageError.message);
-          return json({ error:"تعذر تحميل قائمة الزبائن كاملة." },500);
+          return respond({ error:"تعذر تحميل قائمة الزبائن كاملة." },500);
         }
         customerProfiles.push(...(page ?? []).filter((profile) => !adminUserIds.has(profile.id)));
         if (!page || page.length < customerPageSize) break;
@@ -261,7 +277,7 @@ Deno.serve(async (req: Request) => {
           .range(from, from + customerPageSize - 1);
         if (pushPageError) {
           console.error("baran-admin: customer push subscription lookup failed", pushPageError.message);
-          return json({ error: "تعذر تحميل حالات اشتراكات الإشعارات." }, 500);
+          return respond({ error: "تعذر تحميل حالات اشتراكات الإشعارات." }, 500);
         }
         for (const row of page ?? []) {
           if (!adminUserIds.has(row.user_id)) pushSubscriptionCounts.set(row.user_id, (pushSubscriptionCounts.get(row.user_id) ?? 0) + 1);
@@ -278,7 +294,7 @@ Deno.serve(async (req: Request) => {
           .range(from, from + customerPageSize - 1);
         if (walletPageError) {
           console.error("baran-admin: customer wallet lookup failed", walletPageError.message);
-          return json({ error: "تعذر تحميل أرصدة الزبائن." }, 500);
+          return respond({ error: "تعذر تحميل أرصدة الزبائن." }, 500);
         }
         customerWalletRows.push(...(page ?? []));
         if (!page || page.length < customerPageSize) break;
@@ -294,7 +310,7 @@ Deno.serve(async (req: Request) => {
           .range(from, from + customerPageSize - 1);
         if (orderStatsError) {
           console.error("baran-admin: customer order analytics failed", orderStatsError.message);
-          return json({ error:"تعذر تحميل إحصائيات نشاط الزبائن." },500);
+          return respond({ error:"تعذر تحميل إحصائيات نشاط الزبائن." },500);
         }
         for (const order of page ?? []) {
           const current = customerOrderStats.get(order.user_id) ?? { count:0, spendUsd:0, spendSyp:0, lastOrderAt:null };
@@ -311,7 +327,7 @@ Deno.serve(async (req: Request) => {
         .from("customer_account_controls").select("user_id,status,reason,banned_until,updated_at");
       if (accountControlError) {
         console.error("baran-admin: customer account controls failed", accountControlError.message);
-        return json({ error: "تعذر تحميل حالات حماية الحسابات." }, 500);
+        return respond({ error: "تعذر تحميل حالات حماية الحسابات." }, 500);
       }
       const accountControlsByUser = new Map((accountControlRows ?? []).map((row) => {
         const activeBan = row.status === "banned" &&
@@ -322,7 +338,7 @@ Deno.serve(async (req: Request) => {
         .from("customer_presence").select("user_id,last_seen_at").order("last_seen_at", { ascending: false });
       if (customerPresenceError) {
         console.error("baran-admin: customer presence lookup failed", customerPresenceError.message);
-        return json({ error: "تعذر تحميل آخر نشاط للعملاء." }, 500);
+        return respond({ error: "تعذر تحميل آخر نشاط للعملاء." }, 500);
       }
       const customerLastSeenByUser = new Map<string, string>();
       for (const presence of customerPresenceRows ?? []) {
@@ -336,12 +352,12 @@ Deno.serve(async (req: Request) => {
         .from("customer_vip_tags").select("user_id,is_vip,updated_at,updated_by");
       if (customerVipError) {
         console.error("baran-admin: customer VIP tags failed", customerVipError.message);
-        return json({ error: "تعذر تحميل شارات VIP للعملاء." }, 500);
+        return respond({ error: "تعذر تحميل شارات VIP للعملاء." }, 500);
       }
       const customerVipByUser = new Map((customerVipRows ?? []).map((row) => [row.user_id, row]));
       if (customerAdminNotesError) {
         console.error("baran-admin: customer admin notes failed", customerAdminNotesError.message);
-        return json({ error: "تعذر تحميل الملاحظات الإدارية للعملاء." }, 500);
+        return respond({ error: "تعذر تحميل الملاحظات الإدارية للعملاء." }, 500);
       }
       const customerNotesByUser = new Map((customerAdminNotes ?? []).map((row) => [row.user_id, row]));
       const customers = await Promise.all(customerProfiles.map(async (profile) => {
@@ -392,7 +408,7 @@ Deno.serve(async (req: Request) => {
       }));
       const { data: orderStatusCounts, error: orderStatusError } = await admin
         .from("orders").select("status");
-      if (orderStatusError) return json({ error: "Could not load order statistics" }, 500);
+      if (orderStatusError) return respond({ error: "Could not load order statistics" }, 500);
       const statusCounts = (orderStatusCounts ?? []).reduce((acc: Record<string,number>, row) => {
         acc[row.status] = (acc[row.status] ?? 0) + 1; return acc;
       }, {});
@@ -404,19 +420,19 @@ Deno.serve(async (req: Request) => {
         .is("admin_read_at", null);
       if (unreadSupportError) {
         console.error("baran-admin: unread support count failed", unreadSupportError.message);
-        return json({ error: "تعذر تحميل عدد تذاكر الدعم غير المقروءة." }, 500);
+        return respond({ error: "تعذر تحميل عدد تذاكر الدعم غير المقروءة." }, 500);
       }
       const { data: auditLog, error: auditLogError } = await admin
         .from("admin_audit_log").select("id,admin_id,action,entity_type,entity_id,details,created_at")
         .order("created_at",{ascending:false}).limit(100);
-      if (auditLogError) return json({ error:"Could not load administrator audit log" },500);
+      if (auditLogError) return respond({ error:"Could not load administrator audit log" },500);
       const { data: customerSecurityEvents, error: customerSecurityEventsError } = await admin
         .from("customer_security_events")
         .select("id,user_id,actor_id,event_type,severity,details,created_at")
         .order("created_at", { ascending: false }).limit(100);
       if (customerSecurityEventsError) {
         console.error("baran-admin: customer security events failed", customerSecurityEventsError.message);
-        return json({ error: "تعذر تحميل سجل أحداث حماية العملاء." }, 500);
+        return respond({ error: "تعذر تحميل سجل أحداث حماية العملاء." }, 500);
       }
       const { count: productCount, error: productCountError } = await admin
         .from("products").select("id",{count:"exact",head:true});
@@ -427,15 +443,16 @@ Deno.serve(async (req: Request) => {
       );
       if (supplierIntegrationError) {
         console.error("baran-admin: supplier integration data failed", supplierIntegrationError.message);
-        return json({ error: "تعذر تحميل إعدادات ربط المورد." }, 500);
+        return respond({ error: "تعذر تحميل إعدادات ربط المورد." }, 500);
       }
-      if (productCountError || supplierCountError) return json({ error: "Could not load catalogue statistics" }, 500);
-      return json({
+      if (productCountError || supplierCountError) return respond({ error: "Could not load catalogue statistics" }, 500);
+      return respond({
         requests: enriched,
         notifications: visibleNotifications,
         feedback: feedbackEnriched,
         auto_support_queue: autoSupportQueue ?? [],
         finance: financeWithReport,
+        treasury: treasury ?? { balances: [], entries: [] },
         products: products ?? [],
         customers,
         suppliers: suppliers ?? [],
@@ -471,6 +488,9 @@ Deno.serve(async (req: Request) => {
         unit_sale_price?: number;
         unit_cost_price?: number;
         currency?: string;
+        treasury_entry_type?: string;
+        reference?: string;
+        notes?: string;
         product_id?: string;
         product_code?: string;
         category?: string;
@@ -492,7 +512,6 @@ Deno.serve(async (req: Request) => {
         verification_notes?: string;
         verified_facts?: string[];
         notification_id?: string;
-        recipient_id?: string;
         supplier_id?: string;
         supplier_name?: string;
         contact_name?: string;
@@ -531,22 +550,22 @@ Deno.serve(async (req: Request) => {
         products?: any[];
         input_schema?: any;
       };
-      try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+      try { body = await req.respond(); } catch { return respond({ error: "Invalid JSON" }, 400); }
 
       if (body.action === "customer_admin_note_update") {
         const targetId = typeof body.target_user_id === "string" ? body.target_user_id : "";
         const note = typeof body.note === "string" ? body.note.trim() : "";
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
         if (!uuidPattern.test(targetId) || note.length > 1000) {
-          return json({ error: "تحقق من معرّف العميل. الحد الأقصى للملاحظة 1000 حرف." }, 400);
+          return respond({ error: "تحقق من معرّف العميل. الحد الأقصى للملاحظة 1000 حرف." }, 400);
         }
         const { data: targetAdmin, error: targetAdminError } = await admin.rpc("admin_is_user", { p_user_id: targetId });
-        if (targetAdminError) return json({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
-        if (targetAdmin === true) return json({ error: "لا يمكن إضافة ملاحظة إلى حساب إداري من مركز العملاء." }, 403);
+        if (targetAdminError) return respond({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
+        if (targetAdmin === true) return respond({ error: "لا يمكن إضافة ملاحظة إلى حساب إداري من مركز العملاء." }, 403);
         const { data: targetProfile, error: targetProfileError } = await admin.from("profiles")
           .select("id").eq("id", targetId).maybeSingle();
-        if (targetProfileError) return json({ error: "تعذر التحقق من حساب العميل." }, 500);
-        if (!targetProfile) return json({ error: "حساب العميل غير موجود." }, 404);
+        if (targetProfileError) return respond({ error: "تعذر التحقق من حساب العميل." }, 500);
+        if (!targetProfile) return respond({ error: "حساب العميل غير موجود." }, 404);
         let updatedAt: string | null = null;
         if (note) {
           const { data: savedNote, error: saveError } = await admin.from("customer_admin_notes").upsert({
@@ -554,14 +573,14 @@ Deno.serve(async (req: Request) => {
           }, { onConflict: "user_id" }).select("user_id,note,updated_at").single();
           if (saveError) {
             console.error("baran-admin: customer note save failed", saveError.message);
-            return json({ error: "تعذر حفظ الملاحظة الإدارية." }, 500);
+            return respond({ error: "تعذر حفظ الملاحظة الإدارية." }, 500);
           }
           updatedAt = savedNote.updated_at;
         } else {
           const { error: deleteError } = await admin.from("customer_admin_notes").delete().eq("user_id", targetId);
           if (deleteError) {
             console.error("baran-admin: customer note delete failed", deleteError.message);
-            return json({ error: "تعذر حذف الملاحظة الإدارية." }, 500);
+            return respond({ error: "تعذر حذف الملاحظة الإدارية." }, 500);
           }
         }
         const { error: auditError } = await admin.from("admin_audit_log").insert({
@@ -570,35 +589,35 @@ Deno.serve(async (req: Request) => {
         });
         if (auditError) {
           console.error("baran-admin: customer note audit failed", auditError.message);
-          return json({ error: "تم حفظ الملاحظة لكن تعذر تسجيل العملية في سجل الإدارة." }, 500);
+          return respond({ error: "تم حفظ الملاحظة لكن تعذر تسجيل العملية في سجل الإدارة." }, 500);
         }
-        return json({ success: true, user_id: targetId, note: note || "", updated_at: updatedAt });
+        return respond({ success: true, user_id: targetId, note: note || "", updated_at: updatedAt });
       }
 
       if (body.action === "customer_vip_update") {
         const targetId = typeof body.target_user_id === "string" ? body.target_user_id : "";
         const isVip = body.is_vip;
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        if (!uuidPattern.test(targetId) || typeof isVip !== "boolean") return json({ error: "بيانات شارة VIP غير صحيحة." }, 400);
+        if (!uuidPattern.test(targetId) || typeof isVip !== "boolean") return respond({ error: "بيانات شارة VIP غير صحيحة." }, 400);
         const { data: targetAdmin, error: targetAdminError } = await admin.rpc("admin_is_user", { p_user_id: targetId });
-        if (targetAdminError) return json({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
-        if (targetAdmin === true) return json({ error: "لا يمكن منح شارة VIP لحساب إداري." }, 403);
+        if (targetAdminError) return respond({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
+        if (targetAdmin === true) return respond({ error: "لا يمكن منح شارة VIP لحساب إداري." }, 403);
         const { data: targetProfile, error: targetProfileError } = await admin.from("profiles").select("id").eq("id", targetId).maybeSingle();
-        if (targetProfileError) return json({ error: "تعذر التحقق من حساب العميل." }, 500);
-        if (!targetProfile) return json({ error: "حساب العميل غير موجود." }, 404);
+        if (targetProfileError) return respond({ error: "تعذر التحقق من حساب العميل." }, 500);
+        if (!targetProfile) return respond({ error: "حساب العميل غير موجود." }, 404);
         let newlyGrantedVip = false;
         if (isVip) {
           const { data: existingVip, error: existingVipError } = await admin.from("customer_vip_tags").select("is_vip").eq("user_id", targetId).maybeSingle();
-          if (existingVipError) { console.error("baran-admin: VIP tag lookup failed", existingVipError.message); return json({ error: "تعذر التحقق من عضوية VIP الحالية." }, 500); }
+          if (existingVipError) { console.error("baran-admin: VIP tag lookup failed", existingVipError.message); return respond({ error: "تعذر التحقق من عضوية VIP الحالية." }, 500); }
           newlyGrantedVip = existingVip?.is_vip !== true;
           const { error } = await admin.from("customer_vip_tags").upsert({ user_id: targetId, is_vip: true, updated_by: user.id, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
-          if (error) { console.error("baran-admin: VIP tag save failed", error.message); return json({ error: "تعذر حفظ شارة VIP." }, 500); }
+          if (error) { console.error("baran-admin: VIP tag save failed", error.message); return respond({ error: "تعذر حفظ شارة VIP." }, 500); }
         } else {
           const { error } = await admin.from("customer_vip_tags").delete().eq("user_id", targetId);
-          if (error) { console.error("baran-admin: VIP tag delete failed", error.message); return json({ error: "تعذر إزالة شارة VIP." }, 500); }
+          if (error) { console.error("baran-admin: VIP tag delete failed", error.message); return respond({ error: "تعذر إزالة شارة VIP." }, 500); }
         }
         const { error: auditError } = await admin.from("admin_audit_log").insert({ admin_id: user.id, action: "customer_vip_update", entity_type: "customer", entity_id: targetId, details: { is_vip: isVip } });
-        if (auditError) { console.error("baran-admin: VIP tag audit failed", auditError.message); return json({ error: "تم تحديث الشارة لكن تعذر تسجيل العملية في سجل الإدارة." }, 500); }
+        if (auditError) { console.error("baran-admin: VIP tag audit failed", auditError.message); return respond({ error: "تم تحديث الشارة لكن تعذر تسجيل العملية في سجل الإدارة." }, 500); }
 
         let notificationCreated = false;
         if (isVip && newlyGrantedVip) {
@@ -617,7 +636,7 @@ Deno.serve(async (req: Request) => {
             notificationCreated = true;
           }
         }
-        return json({ success: true, user_id: targetId, is_vip: isVip, notification_created: notificationCreated });
+        return respond({ success: true, user_id: targetId, is_vip: isVip, notification_created: notificationCreated });
       }
 
       if (body.action === "customer_profile_update") {
@@ -625,28 +644,28 @@ Deno.serve(async (req: Request) => {
         const displayName = typeof body.display_name === "string" ? body.display_name.trim().replace(/\s+/g, " ") : "";
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
         if (!uuidPattern.test(targetId) || displayName.length < 2 || displayName.length > 60) {
-          return json({ error: "الاسم يجب أن يكون بين حرفين و60 حرفاً." }, 400);
+          return respond({ error: "الاسم يجب أن يكون بين حرفين و60 حرفاً." }, 400);
         }
         const { data: targetAdmin, error: targetAdminError } = await admin.rpc("admin_is_user", { p_user_id: targetId });
-        if (targetAdminError) return json({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
-        if (targetAdmin === true) return json({ error: "لا يمكن تعديل اسم حساب إداري من مركز العملاء." }, 403);
+        if (targetAdminError) return respond({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
+        if (targetAdmin === true) return respond({ error: "لا يمكن تعديل اسم حساب إداري من مركز العملاء." }, 403);
         const { data: updatedProfile, error: profileUpdateError } = await admin
           .from("profiles").update({ full_name: displayName }).eq("id", targetId)
           .select("id,full_name").maybeSingle();
         if (profileUpdateError) {
           console.error("baran-admin: customer profile name update failed", profileUpdateError.message);
-          return json({ error: "تعذر حفظ اسم العميل." }, 500);
+          return respond({ error: "تعذر حفظ اسم العميل." }, 500);
         }
-        if (!updatedProfile) return json({ error: "حساب العميل غير موجود." }, 404);
+        if (!updatedProfile) return respond({ error: "حساب العميل غير موجود." }, 404);
         const { error: auditError } = await admin.from("admin_audit_log").insert({
           admin_id: user.id, action: "customer_name_update", entity_type: "customer", entity_id: targetId,
           details: { full_name: displayName },
         });
         if (auditError) {
           console.error("baran-admin: customer name audit failed", auditError.message);
-          return json({ error: "تم حفظ الاسم، لكن تعذر تسجيل العملية في سجل الإدارة." }, 500);
+          return respond({ error: "تم حفظ الاسم، لكن تعذر تسجيل العملية في سجل الإدارة." }, 500);
         }
-        return json({ success: true, user_id: targetId, full_name: updatedProfile.full_name });
+        return respond({ success: true, user_id: targetId, full_name: updatedProfile.full_name });
       }
 
       if (body.action === "customer_account_ban") {
@@ -657,21 +676,21 @@ Deno.serve(async (req: Request) => {
         const allowedDurations = new Set(["1h","24h","7d","30d","permanent","none"]);
         if (!uuidPattern.test(targetId) || !allowedDurations.has(duration) ||
             (duration !== "none" && (reason.length < 5 || reason.length > 500))) {
-          return json({ error: "حدد حساباً صحيحاً وسبباً واضحاً ومدة حظر صالحة." }, 400);
+          return respond({ error: "حدد حساباً صحيحاً وسبباً واضحاً ومدة حظر صالحة." }, 400);
         }
         const { data: targetAdmin, error: targetAdminError } = await admin.rpc("admin_is_user", { p_user_id: targetId });
-        if (targetAdminError) return json({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
-        if (targetAdmin === true) return json({ error: "لا يمكن حظر حساب إداري من مركز العملاء." }, 403);
+        if (targetAdminError) return respond({ error: "تعذر التحقق من نوع الحساب المستهدف." }, 500);
+        if (targetAdmin === true) return respond({ error: "لا يمكن حظر حساب إداري من مركز العملاء." }, 403);
         const banDuration = duration === "none" ? "none" :
           duration === "permanent" ? "876000h" :
           duration === "1h" ? "1h" : duration === "24h" ? "24h" :
           duration === "7d" ? "168h" : "720h";
         const { data: targetUser, error: targetLookupError } = await admin.auth.admin.getUserById(targetId);
-        if (targetLookupError || !targetUser?.user) return json({ error: "حساب العميل غير موجود." }, 404);
+        if (targetLookupError || !targetUser?.user) return respond({ error: "حساب العميل غير موجود." }, 404);
         const { data: previousControl, error: previousControlError } = await admin.from("customer_account_controls")
           .select("user_id,status,reason,banned_until,updated_by,updated_at")
           .eq("user_id", targetId).maybeSingle();
-        if (previousControlError) return json({ error: "تعذر قراءة حالة الحماية السابقة." }, 500);
+        if (previousControlError) return respond({ error: "تعذر قراءة حالة الحماية السابقة." }, 500);
         const bannedUntil = duration === "none" || duration === "permanent" ? null : new Date(Date.now() +
           (duration === "1h" ? 3600000 : duration === "24h" ? 86400000 :
            duration === "7d" ? 604800000 : 2592000000)).toISOString();
@@ -685,7 +704,7 @@ Deno.serve(async (req: Request) => {
           .upsert(nextControl, { onConflict: "user_id" });
         if (controlError) {
           console.error("baran-admin: customer control save failed", controlError.message);
-          return json({ error: "تعذر حفظ حالة حماية الحساب؛ لم يتم تغيير جلسة الدخول." }, 500);
+          return respond({ error: "تعذر حفظ حالة حماية الحساب؛ لم يتم تغيير جلسة الدخول." }, 500);
         }
         const { data: authUpdate, error: authUpdateError } = await admin.auth.admin.updateUserById(targetId, {
           ban_duration: banDuration,
@@ -705,7 +724,7 @@ Deno.serve(async (req: Request) => {
             user_id: targetId, actor_id: user.id, event_type: "customer_ban_auth_sync_failed",
             severity: "critical", details: { requested_duration: duration, error: authUpdateError.message.slice(0, 300) },
           });
-          return json({ error: "تعذر مزامنة الحظر مع تسجيل الدخول. تم التراجع عن تغيير الحالة؛ تحقق من سجل الحماية." }, 500);
+          return respond({ error: "تعذر مزامنة الحظر مع تسجيل الدخول. تم التراجع عن تغيير الحالة؛ تحقق من سجل الحماية." }, 500);
         }
         const { error: securityEventError } = await admin.from("customer_security_events").insert({
           user_id: targetId, actor_id: user.id,
@@ -720,20 +739,20 @@ Deno.serve(async (req: Request) => {
         });
         if (securityEventError || auditInsertError) {
           console.error("baran-admin: ban audit write failed", securityEventError?.message || auditInsertError?.message);
-          return json({ error: "تم تغيير حالة الحظر، لكن تعذر حفظ سجل التدقيق كاملاً. راجع سجلات الإدارة." }, 500);
+          return respond({ error: "تم تغيير حالة الحظر، لكن تعذر حفظ سجل التدقيق كاملاً. راجع سجلات الإدارة." }, 500);
         }
-        return json({ success: true, user_id: targetId, status: duration === "none" ? "active" : "banned",
+        return respond({ success: true, user_id: targetId, status: duration === "none" ? "active" : "banned",
           banned_until: bannedUntil, auth_user_updated: Boolean(authUpdate?.user) });
       }
 
-      if (body.action === "admin_check") return json({ success: true });
+      if (body.action === "admin_check") return respond({ success: true });
 
 
       if (body.action === "notification_read") {
         const id = body.notification_id;
         if (typeof id !== "string" ||
             !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-          return json({ error: "معرّف التنبيه غير صحيح." }, 400);
+          return respond({ error: "معرّف التنبيه غير صحيح." }, 400);
         }
         const { data: updated, error: readError } = await admin.from("baran_notifications")
           .update({ read_at: new Date().toISOString() })
@@ -741,9 +760,9 @@ Deno.serve(async (req: Request) => {
           .select("id,read_at").maybeSingle();
         if (readError) {
           console.error("baran-admin: notification read update failed", readError.message);
-          return json({ error: "تعذر تحديث التنبيه." }, 500);
+          return respond({ error: "تعذر تحديث التنبيه." }, 500);
         }
-        return json({ notification: updated ?? null, success: true });
+        return respond({ notification: updated ?? null, success: true });
       }
 
       if (body.action === "push_delivery_stats") {
@@ -756,7 +775,7 @@ Deno.serve(async (req: Request) => {
           .limit(1000);
         if (deliveryError) {
           console.error("baran-admin: push delivery report failed", deliveryError.message);
-          return json({ error: "تعذر تحميل سجل إرسال الإشعارات." }, 500);
+          return respond({ error: "تعذر تحميل سجل إرسال الإشعارات." }, 500);
         }
         const rows = deliveries || [];
         const stats = {
@@ -768,28 +787,28 @@ Deno.serve(async (req: Request) => {
           attempts: rows.reduce((sum, row) => sum + Number(row.attempt_count || 0), 0),
           last_updated: rows[0]?.updated_at || null
         };
-        return json({ success: true, period_days: 7, stats, recent: rows.slice(0, 12) });
+        return respond({ success: true, period_days: 7, stats, recent: rows.slice(0, 12) });
       }
 
       if (body.action === "notification_customer_search") {
         const query = typeof body.search_query === "string" ? body.search_query.trim() : "";
-        if (query.length < 3 || query.length > 120) return json({ error: "اكتب 3 أحرف أو أرقام على الأقل للبحث." }, 400);
+        if (query.length < 3 || query.length > 120) return respond({ error: "اكتب 3 أحرف أو أرقام على الأقل للبحث." }, 400);
         const safeQuery = query.replace(/[%,().]/g, " ").replace(/\s+/g, " ").trim();
-        if (safeQuery.length < 3) return json({ error: "عبارة البحث غير صالحة." }, 400);
+        if (safeQuery.length < 3) return respond({ error: "عبارة البحث غير صالحة." }, 400);
         const { data: profiles, error: profileError } = await admin.from("profiles")
           .select("id,full_name,phone,member_code")
           .or("full_name.ilike.%" + safeQuery + "%,phone.ilike.%" + safeQuery + "%,member_code.ilike.%" + safeQuery + "%")
           .order("created_at", { ascending: false }).limit(10);
         if (profileError) {
           console.error("baran-admin: notification customer search failed", profileError.message);
-          return json({ error: "تعذر البحث عن حسابات الزبائن." }, 500);
+          return respond({ error: "تعذر البحث عن حسابات الزبائن." }, 500);
         }
         const { data: adminRows, error: adminRowsError } = await admin.from("admin_users").select("user_id");
-        if (adminRowsError) return json({ error: "تعذر التحقق من حسابات الإدارة." }, 500);
+        if (adminRowsError) return respond({ error: "تعذر التحقق من حسابات الإدارة." }, 500);
         const adminIds = new Set((adminRows ?? []).map((row) => row.user_id));
         const customers = (profiles ?? []).filter((profile) => !adminIds.has(profile.id))
           .map((profile) => ({ id: profile.id, full_name: profile.full_name ?? null, phone: profile.phone ?? null, member_code: profile.member_code ?? null }));
-        return json({ success: true, customers });
+        return respond({ success: true, customers });
       }
 
       if (body.action === "send_targeted_notification") {
@@ -797,33 +816,33 @@ Deno.serve(async (req: Request) => {
         const title = typeof body.notification_title === "string" ? body.notification_title.trim() : "";
         const message = typeof body.notification_body === "string" ? body.notification_body.trim() : "";
         if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(recipientId)) {
-          return json({ error: "حساب المستلم غير صالح." }, 400);
+          return respond({ error: "حساب المستلم غير صالح." }, 400);
         }
         if (title.length < 3 || title.length > 100 || message.length < 5 || message.length > 500) {
-          return json({ error: "عنوان الإشعار من 3 إلى 100 حرف، ونصه من 5 إلى 500 حرف." }, 400);
+          return respond({ error: "عنوان الإشعار من 3 إلى 100 حرف، ونصه من 5 إلى 500 حرف." }, 400);
         }
         const { data: recipient, error: recipientError } = await admin.from("profiles")
           .select("id,full_name").eq("id", recipientId).maybeSingle();
-        if (recipientError) return json({ error: "تعذر التحقق من حساب المستلم." }, 500);
-        if (!recipient) return json({ error: "لم يتم العثور على حساب المستلم." }, 404);
+        if (recipientError) return respond({ error: "تعذر التحقق من حساب المستلم." }, 500);
+        if (!recipient) return respond({ error: "لم يتم العثور على حساب المستلم." }, 404);
         const { data: recipientAdmin, error: recipientAdminError } = await admin.from("admin_users")
           .select("user_id").eq("user_id", recipientId).maybeSingle();
-        if (recipientAdminError) return json({ error: "تعذر التحقق من صلاحيات المستلم." }, 500);
-        if (recipientAdmin) return json({ error: "لا يمكن إرسال إشعار العملاء إلى حساب إداري." }, 400);
+        if (recipientAdminError) return respond({ error: "تعذر التحقق من صلاحيات المستلم." }, 500);
+        if (recipientAdmin) return respond({ error: "لا يمكن إرسال إشعار العملاء إلى حساب إداري." }, 400);
         const { error: insertError } = await admin.from("baran_notifications").insert({
           recipient_id: recipientId, audience: "customer", kind: "store_announcement",
           title, body: message, entity_type: null, entity_id: null,
         });
         if (insertError) {
           console.error("baran-admin: targeted notification insert failed", insertError.message);
-          return json({ error: "تعذر تسجيل الإشعار للمستلم." }, 500);
+          return respond({ error: "تعذر تسجيل الإشعار للمستلم." }, 500);
         }
         await admin.from("admin_audit_log").insert({
           admin_id: user.id, action: "send_targeted_notification",
           entity_type: "baran_notifications",
           details: { title, recipient_id: recipientId },
         });
-        return json({ success: true, sent_to: 1, recipient_id: recipientId });
+        return respond({ success: true, sent_to: 1, recipient_id: recipientId });
       }
 
       if (body.action === "broadcast_announcement") {
@@ -832,20 +851,20 @@ Deno.serve(async (req: Request) => {
         const segment = typeof body.audience_segment === "string" ? body.audience_segment : "all";
         const allowedSegments = ["all","pubg","freefire","jawaker","ai","vpn","gift_card","app"];
         if (title.length < 3 || title.length > 100 || message.length < 5 || message.length > 500) {
-          return json({ error: "عنوان الإعلان من 3 إلى 100 حرف، ونصه من 5 إلى 500 حرف." }, 400);
+          return respond({ error: "عنوان الإعلان من 3 إلى 100 حرف، ونصه من 5 إلى 500 حرف." }, 400);
         }
-        if (!allowedSegments.includes(segment)) return json({ error: "فئة المستلمين غير صالحة." }, 400);
+        if (!allowedSegments.includes(segment)) return respond({ error: "فئة المستلمين غير صالحة." }, 400);
         let recipientIds: string[] = [];
         if (segment === "all") {
           const { data: adminRows, error: adminRowsError } = await admin.from("admin_users").select("user_id");
-          if (adminRowsError) return json({ error: "تعذر التحقق من حسابات الإدارة." }, 500);
+          if (adminRowsError) return respond({ error: "تعذر التحقق من حسابات الإدارة." }, 500);
           const adminIds = new Set((adminRows ?? []).map((row) => row.user_id));
           for (let offset = 0; offset < 100000; offset += 1000) {
             const { data: profiles, error: profilesError } = await admin.from("profiles")
               .select("id").order("id").range(offset, offset + 999);
             if (profilesError) {
               console.error("baran-admin: announcement recipients failed", profilesError.message);
-              return json({ error: "تعذر تحميل قائمة الزبائن." }, 500);
+              return respond({ error: "تعذر تحميل قائمة الزبائن." }, 500);
             }
             recipientIds.push(...(profiles ?? []).filter((profile) => !adminIds.has(profile.id)).map((profile) => profile.id));
             if (!profiles || profiles.length < 1000) break;
@@ -853,7 +872,7 @@ Deno.serve(async (req: Request) => {
         } else {
           const { data: products, error: productsError } = await admin.from("products")
             .select("product_code,category").eq("is_active", true);
-          if (productsError) return json({ error: "تعذر تحديد منتجات الفئة المطلوبة." }, 500);
+          if (productsError) return respond({ error: "تعذر تحديد منتجات الفئة المطلوبة." }, 500);
           const productCodes = (products ?? []).filter((product) => {
             const code = String(product.product_code || "").toUpperCase();
             if (segment === "pubg") return code.startsWith("PUBG_");
@@ -867,7 +886,7 @@ Deno.serve(async (req: Request) => {
               const { data: orders, error: ordersError } = await admin.from("orders")
                 .select("user_id,product_code").in("product_code", productCodes)
                 .order("created_at", { ascending: false }).order("id", { ascending: true }).range(offset, offset + 999);
-              if (ordersError) return json({ error: "تعذر تحديد الزبائن المهتمين بهذه الفئة." }, 500);
+              if (ordersError) return respond({ error: "تعذر تحديد الزبائن المهتمين بهذه الفئة." }, 500);
               for (const order of orders ?? []) if (order.user_id) matchedUsers.add(order.user_id);
               if (!orders || orders.length < 1000) break;
             }
@@ -878,12 +897,12 @@ Deno.serve(async (req: Request) => {
           recipient_id, audience: "customer", kind: "store_announcement",
           title, body: message, entity_type: null, entity_id: null,
         }));
-        if (!recipients.length) return json({ success: true, sent_to: 0, segment });
+        if (!recipients.length) return respond({ success: true, sent_to: 0, segment });
         for (let offset = 0; offset < recipients.length; offset += 500) {
           const { error: insertError } = await admin.from("baran_notifications").insert(recipients.slice(offset, offset + 500));
           if (insertError) {
             console.error("baran-admin: announcement insert failed", insertError.message);
-            return json({ error: "تعذر إرسال الإعلان بالكامل. راجع سجل الإدارة قبل إعادة المحاولة لتجنب التكرار." }, 500);
+            return respond({ error: "تعذر إرسال الإعلان بالكامل. راجع سجل الإدارة قبل إعادة المحاولة لتجنب التكرار." }, 500);
           }
         }
         await admin.from("admin_audit_log").insert({
@@ -891,16 +910,16 @@ Deno.serve(async (req: Request) => {
           entity_type: "baran_notifications",
           details: { title, recipients: recipients.length, segment },
         });
-        return json({ success: true, sent_to: recipients.length, segment });
+        return respond({ success: true, sent_to: recipients.length, segment });
       }
 
       if (body.action === "recovery_search") {
         const query = typeof body.search_query === "string" ? body.search_query.trim() : "";
-        if (query.length < 3 || query.length > 120) return json({ error: "اكتب 3 أحرف على الأقل للبحث عن الزبون." }, 400);
+        if (query.length < 3 || query.length > 120) return respond({ error: "اكتب 3 أحرف على الأقل للبحث عن الزبون." }, 400);
         let candidates: Array<{ id: string; full_name?: string | null; phone?: string | null; created_at?: string | null }> = [];
         if (query.includes("@")) {
           const { data: usersPage, error: usersError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-          if (usersError) return json({ error: "تعذر البحث عن الحساب." }, 500);
+          if (usersError) return respond({ error: "تعذر البحث عن الحساب." }, 500);
           const match = (usersPage.users ?? []).find((item) => (item.email ?? "").toLowerCase() === query.toLowerCase());
           if (match) {
             const { data: profile } = await admin.from("profiles").select("id,full_name,phone,created_at").eq("id", match.id).maybeSingle();
@@ -908,12 +927,12 @@ Deno.serve(async (req: Request) => {
           }
         } else {
           const safeQuery = query.replace(/[%,().]/g, " ").replace(/\s+/g, " ").trim();
-          if (safeQuery.length < 3) return json({ error: "عبارة البحث غير صالحة." }, 400);
+          if (safeQuery.length < 3) return respond({ error: "عبارة البحث غير صالحة." }, 400);
           const { data: profiles, error: profileError } = await admin.from("profiles")
             .select("id,full_name,phone,created_at")
             .or("full_name.ilike.%" + safeQuery + "%,phone.ilike.%" + safeQuery + "%")
             .order("created_at", { ascending: false }).limit(10);
-          if (profileError) return json({ error: "تعذر البحث عن حسابات الزبائن." }, 500);
+          if (profileError) return respond({ error: "تعذر البحث عن حسابات الزبائن." }, 500);
           candidates = profiles ?? [];
         }
         const enrichedCandidates = await Promise.all(candidates.map(async (candidate) => {
@@ -928,7 +947,7 @@ Deno.serve(async (req: Request) => {
             created_at: candidate.created_at ?? null, customer_email: authResult?.user?.email ?? null,
             orders: orders ?? [], deposits: deposits ?? [] };
         }));
-        return json({ customers: enrichedCandidates });
+        return respond({ customers: enrichedCandidates });
       }
 
       if (body.action === "recovery_send_reset") {
@@ -941,23 +960,23 @@ Deno.serve(async (req: Request) => {
         if (typeof targetId !== "string" ||
             !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(targetId) ||
             notes.length < 30 || notes.length > 2000 || facts.length < 2) {
-          return json({ error: "يلزم تحديد الحساب وتوثيق ملاحظات التحقق واختيار حقيقتين مستقلتين على الأقل." }, 400);
+          return respond({ error: "يلزم تحديد الحساب وتوثيق ملاحظات التحقق واختيار حقيقتين مستقلتين على الأقل." }, 400);
         }
         const { data: targetData, error: targetError } = await admin.auth.admin.getUserById(targetId);
         const target = targetData?.user;
-        if (targetError || !target?.email) return json({ error: "لم يتم العثور على حساب ببريد مسجل." }, 404);
+        if (targetError || !target?.email) return respond({ error: "لم يتم العثور على حساب ببريد مسجل." }, 404);
         const { data: recentReset, error: recentError } = await admin.from("account_recovery_audit")
           .select("created_at").eq("target_user_id", targetId).eq("action", "password_reset_sent")
           .order("created_at", { ascending: false }).limit(1).maybeSingle();
-        if (recentError) return json({ error: "تعذر التحقق من سجل الاستعادة." }, 500);
+        if (recentError) return respond({ error: "تعذر التحقق من سجل الاستعادة." }, 500);
         if (recentReset && Date.now() - new Date(recentReset.created_at).getTime() < 60_000) {
-          return json({ error: "تم إرسال رابط لهذا الحساب مؤخراً. انتظر دقيقة قبل إعادة الإرسال." }, 429);
+          return respond({ error: "تم إرسال رابط لهذا الحساب مؤخراً. انتظر دقيقة قبل إعادة الإرسال." }, 429);
         }
-        const redirectTo = "https://eyadooon-cmyk.github.io/Baran-Game/";
+        const redirectTo = origin === "https://eyadooon-cmyk.github.io" ? "https://eyadooon-cmyk.github.io/Baran-Game/" : "https://baran-game.pages.dev/";
         const { error: resetError } = await userClient.auth.resetPasswordForEmail(target.email, { redirectTo });
         if (resetError) {
           console.error("baran-admin: password reset email failed", resetError.message);
-          return json({ error: "تعذر إرسال رابط الاستعادة إلى البريد المسجل." }, 502);
+          return respond({ error: "تعذر إرسال رابط الاستعادة إلى البريد المسجل." }, 502);
         }
         const { data: auditRow, error: auditError } = await admin.from("account_recovery_audit").insert({
           target_user_id: targetId, admin_id: user.id, action: "password_reset_sent", target_email: target.email,
@@ -965,16 +984,16 @@ Deno.serve(async (req: Request) => {
         }).select("id,created_at,target_email,verified_facts,verification_notes").single();
         if (auditError) {
           console.error("baran-admin: recovery audit insert failed", auditError.message);
-          return json({ error: "أُرسل الرابط لكن تعذر حفظ سجل التدقيق. راجع سجل الوظيفة قبل إعادة الإرسال." }, 500);
+          return respond({ error: "أُرسل الرابط لكن تعذر حفظ سجل التدقيق. راجع سجل الوظيفة قبل إعادة الإرسال." }, 500);
         }
-        return json({ recovery: auditRow, message: "تم إرسال رابط إعادة التعيين إلى البريد المسجل." });
+        return respond({ recovery: auditRow, message: "تم إرسال رابط إعادة التعيين إلى البريد المسجل." });
       }
 
       if (body.action === "feedback_mark_read") {
         const id = body.feedback_id;
         if (typeof id !== "string" ||
             !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-          return json({ error: "معرّف تذكرة الدعم غير صحيح." }, 400);
+          return respond({ error: "معرّف تذكرة الدعم غير صحيح." }, 400);
         }
         const { data: updated, error: readError } = await admin.from("customer_feedback")
           .update({ admin_read_at: new Date().toISOString() })
@@ -982,16 +1001,16 @@ Deno.serve(async (req: Request) => {
           .select("id,admin_read_at").maybeSingle();
         if (readError) {
           console.error("baran-admin: support ticket read update failed", readError.message);
-          return json({ error: "تعذر تحديد تذكرة الدعم كمقروءة." }, 500);
+          return respond({ error: "تعذر تحديد تذكرة الدعم كمقروءة." }, 500);
         }
-        return json({ success: true, feedback: updated ?? null });
+        return respond({ success: true, feedback: updated ?? null });
       }
 
       if (body.action === "support_ticket_delete") {
         const id = body.feedback_id;
         if (typeof id !== "string" ||
             !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-          return json({ error: "معرّف تذكرة الدعم غير صحيح." }, 400);
+          return respond({ error: "معرّف تذكرة الدعم غير صحيح." }, 400);
         }
         const { data: deleted, error: deleteError } = await admin.rpc("admin_delete_support_ticket", {
           p_admin_id: user.id,
@@ -1000,10 +1019,10 @@ Deno.serve(async (req: Request) => {
         if (deleteError) {
           console.error("baran-admin: support ticket delete failed", deleteError.message, deleteError.code);
           const status = deleteError.code === "P0002" ? 404 : deleteError.code === "42501" ? 403 : 500;
-          return json({ error: status === 404 ? "تذكرة الدعم غير موجودة." :
+          return respond({ error: status === 404 ? "تذكرة الدعم غير موجودة." :
             status === 403 ? "صلاحية المدير غير كافية." : "تعذر حذف تذكرة الدعم." }, status);
         }
-        return json({ success: true, deleted });
+        return respond({ success: true, deleted });
       }
 
       if (body.action === "feedback_update") {
@@ -1013,7 +1032,7 @@ Deno.serve(async (req: Request) => {
         if (typeof id !== "string" ||
             !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) ||
             typeof nextStatus !== "string" || reply.length > 2000) {
-          return json({ error: "بيانات تحديث الرسالة غير صحيحة." }, 400);
+          return respond({ error: "بيانات تحديث الرسالة غير صحيحة." }, 400);
         }
         const { data: updated, error: updateError } = await admin.rpc("admin_update_customer_feedback", {
           p_admin_id: user.id,
@@ -1026,18 +1045,18 @@ Deno.serve(async (req: Request) => {
           const status = updateError.code === "P0002" ? 404 :
             updateError.code === "42501" ? 403 :
             updateError.code === "22023" ? 400 : 500;
-          return json({ error: status === 404 ? "الرسالة غير موجودة." :
+          return respond({ error: status === 404 ? "الرسالة غير موجودة." :
             status === 403 ? "صلاحية المدير غير كافية." :
             status === 400 ? "حالة غير مناسبة لنوع الرسالة أو بيانات غير صحيحة." :
             "تعذر حفظ الرد وتسجيل العملية." }, status);
         }
-        return json({ feedback: updated, notification_created: updated?.notification_created === true, audit_logged: true });
+        return respond({ feedback: updated, notification_created: updated?.notification_created === true, audit_logged: true });
       }
 
       if (body.action === "exchange_rate_update") {
         const rate = body.exchange_rate;
         if (typeof rate !== "number" || !Number.isFinite(rate) || rate <= 0 || rate > 100000000) {
-          return json({ error: "أدخل سعر صرف صحيحاً أكبر من صفر." }, 400);
+          return respond({ error: "أدخل سعر صرف صحيحاً أكبر من صفر." }, 400);
         }
         const { data: settings, error: rateError } = await admin
           .from("store_settings")
@@ -1047,19 +1066,19 @@ Deno.serve(async (req: Request) => {
           .single();
         if (rateError) {
           console.error("baran-admin: exchange rate update failed", rateError.message);
-          return json({ error: "تعذر تحديث سعر الصرف." }, 400);
+          return respond({ error: "تعذر تحديث سعر الصرف." }, 400);
         }
-        return json({ exchange_rate: Number(settings.exchange_rate), updated_at: settings.updated_at });
+        return respond({ exchange_rate: Number(settings.exchange_rate), updated_at: settings.updated_at });
       }
 
       if (body.action === "product_bulk_save") {
         if (!Array.isArray(body.products) || body.products.length < 1 || body.products.length > 30) {
-          return json({ error: "أرسل من 1 إلى 30 منتجاً." }, 400);
+          return respond({ error: "أرسل من 1 إلى 30 منتجاً." }, 400);
         }
         const categories = ["game", "ai", "vpn", "gift_card", "app"];
         const { data: settings, error: settingsError } = await admin
           .from("store_settings").select("exchange_rate").eq("id", "main").single();
-        if (settingsError) return json({ error: "تعذر قراءة سعر الصرف الحالي." }, 500);
+        if (settingsError) return respond({ error: "تعذر قراءة سعر الصرف الحالي." }, 500);
         const results: Array<{ product_code: string; status: string; name?: string }> = [];
         for (const item of body.products) {
           const code = typeof item?.product_code === "string" ? item.product_code.trim().toUpperCase() : "";
@@ -1094,7 +1113,7 @@ Deno.serve(async (req: Request) => {
         const created = results.filter((x) => x.status === "created").length;
         const skipped = results.filter((x) => x.status === "skipped_duplicate").length;
         const failed = results.filter((x) => x.status !== "created" && x.status !== "skipped_duplicate").length;
-        return json({ results, created, skipped, failed, exchange_rate: Number(settings.exchange_rate) });
+        return respond({ results, created, skipped, failed, exchange_rate: Number(settings.exchange_rate) });
       }
 
       if (body.action === "product_save") {
@@ -1108,19 +1127,19 @@ Deno.serve(async (req: Request) => {
           .from("store_settings").select("exchange_rate").eq("id", "main").single();
         if (settingsError) {
           console.error("baran-admin: exchange rate lookup failed", settingsError.message);
-          return json({ error: "تعذر قراءة سعر الصرف الحالي." }, 500);
+          return respond({ error: "تعذر قراءة سعر الصرف الحالي." }, 500);
         }
         const syp = usd === null ? null : Math.round(Number(usd) * Number(settings.exchange_rate));
         if (!/^[A-Z0-9][A-Z0-9_-]{1,59}$/.test(code)) {
-          return json({ error: "رمز المنتج يجب أن يكون من 2 إلى 60 حرفاً إنجليزياً أو رقماً." }, 400);
+          return respond({ error: "رمز المنتج يجب أن يكون من 2 إلى 60 حرفاً إنجليزياً أو رقماً." }, 400);
         }
-        if (!categories.includes(body.category ?? "")) return json({ error: "اختر تصنيفاً صحيحاً." }, 400);
+        if (!categories.includes(body.category ?? "")) return respond({ error: "اختر تصنيفاً صحيحاً." }, 400);
         if (name.length < 2 || name.length > 120 || description.length > 500) {
-          return json({ error: "تحقق من اسم المنتج والوصف." }, 400);
+          return respond({ error: "تحقق من اسم المنتج والوصف." }, 400);
         }
         if ((usd !== null && (typeof usd !== "number" || !Number.isFinite(usd) || usd <= 0 || usd > 100000000)) ||
             !Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 100000) {
-          return json({ error: "إذا توفر السعر فأدخل قيمة صحيحة أكبر من صفر، وتحقق من ترتيب العرض." }, 400);
+          return respond({ error: "إذا توفر السعر فأدخل قيمة صحيحة أكبر من صفر، وتحقق من ترتيب العرض." }, 400);
         }
         const values = {
           product_code: code,
@@ -1137,7 +1156,7 @@ Deno.serve(async (req: Request) => {
         let saveError;
         if (body.product_id) {
           if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.product_id)) {
-            return json({ error: "معرّف المنتج غير صحيح." }, 400);
+            return respond({ error: "معرّف المنتج غير صحيح." }, 400);
           }
           const result = await admin.from("products").update(values).eq("id", body.product_id)
             .select("id,product_code,category,name,description,price_usd,price_syp,is_active,sort_order,created_at,updated_at").single();
@@ -1152,16 +1171,16 @@ Deno.serve(async (req: Request) => {
         if (saveError) {
           console.error("baran-admin: product save failed", saveError.message);
           const duplicate = saveError.code === "23505";
-          return json({ error: duplicate ? "رمز المنتج مستخدم مسبقاً." : "تعذر حفظ المنتج." }, duplicate ? 409 : 400);
+          return respond({ error: duplicate ? "رمز المنتج مستخدم مسبقاً." : "تعذر حفظ المنتج." }, duplicate ? 409 : 400);
         }
-        return json({ product: saved });
+        return respond({ product: saved });
       }
 
       if (body.action === "product_status") {
         if (typeof body.product_id !== "string" ||
             !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.product_id) ||
             typeof body.is_active !== "boolean") {
-          return json({ error: "بيانات حالة المنتج غير صحيحة." }, 400);
+          return respond({ error: "بيانات حالة المنتج غير صحيحة." }, 400);
         }
         const { data: updated, error: statusError } = await admin.from("products")
           .update({ is_active: body.is_active, updated_at: new Date().toISOString() })
@@ -1170,9 +1189,9 @@ Deno.serve(async (req: Request) => {
           .single();
         if (statusError) {
           console.error("baran-admin: product status failed", statusError.message);
-          return json({ error: "تعذر تحديث حالة المنتج." }, 400);
+          return respond({ error: "تعذر تحديث حالة المنتج." }, 400);
         }
-        return json({ product: updated });
+        return respond({ product: updated });
       }
 
       if (body.action === "supplier_api_config_save") {
@@ -1182,7 +1201,7 @@ Deno.serve(async (req: Request) => {
             (body.api_base_url !== null && body.api_base_url !== undefined && typeof body.api_base_url !== "string") ||
             (body.low_balance_threshold !== undefined && (typeof body.low_balance_threshold !== "number" || !Number.isFinite(body.low_balance_threshold))) ||
             !["USD","SYP"].includes(body.balance_currency ?? "")) {
-          return json({ error: "تحقق من بيانات إعداد ربط المورد." }, 400);
+          return respond({ error: "تحقق من بيانات إعداد ربط المورد." }, 400);
         }
         const { data, error } = await admin.rpc("baran_admin_save_supplier_api_config", {
           p_admin_id: user.id,
@@ -1202,24 +1221,24 @@ Deno.serve(async (req: Request) => {
         });
         if (error) {
           console.error("baran-admin: supplier API config save failed", error.message);
-          return json({ error: error.message || "تعذر حفظ إعدادات الربط." }, 400);
+          return respond({ error: error.message || "تعذر حفظ إعدادات الربط." }, 400);
         }
-        return json({ supplier_integration_config: data });
+        return respond({ supplier_integration_config: data });
       }
 
       if (body.action === "supplier_api_simulate") {
         const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
         if (typeof body.supplier_id !== "string" || !uuidPattern.test(body.supplier_id)) {
-          return json({ error: "اختر مورداً صحيحاً للفحص." }, 400);
+          return respond({ error: "اختر مورداً صحيحاً للفحص." }, 400);
         }
         const { data, error } = await admin.rpc("baran_admin_supplier_simulation", {
           p_admin_id: user.id, p_supplier_id: body.supplier_id,
         });
         if (error) {
           console.error("baran-admin: supplier simulation failed", error.message);
-          return json({ error: error.message || "تعذر إجراء الفحص التجريبي." }, 400);
+          return respond({ error: error.message || "تعذر إجراء الفحص التجريبي." }, 400);
         }
-        return json({ simulation: data });
+        return respond({ simulation: data });
       }
 
       if (body.action === "supplier_order_refund") {
@@ -1227,16 +1246,16 @@ Deno.serve(async (req: Request) => {
         const reason = typeof body.failure_reason === "string" ? body.failure_reason.trim() : "";
         if (typeof body.order_id !== "string" || !uuidPattern.test(body.order_id) ||
             reason.length < 3 || reason.length > 500) {
-          return json({ error: "يجب تحديد الطلب وسبب الفشل المؤكد." }, 400);
+          return respond({ error: "يجب تحديد الطلب وسبب الفشل المؤكد." }, 400);
         }
         const { data, error } = await admin.rpc("baran_refund_failed_supplier_order_authorized", {
           p_order_id: body.order_id, p_reason: reason, p_actor_id: user.id,
         });
         if (error) {
           console.error("baran-admin: supplier order refund failed", error.message);
-          return json({ error: error.message || "تعذر إعادة المبلغ." }, 400);
+          return respond({ error: error.message || "تعذر إعادة المبلغ." }, 400);
         }
-        return json({ refund: data });
+        return respond({ refund: data });
       }
 
       if (body.action === "supplier_save") {
@@ -1247,17 +1266,17 @@ Deno.serve(async (req: Request) => {
         const notes = typeof body.notes === "string" ? body.notes.trim() : "";
         if (name.length < 2 || name.length > 120 || contactName.length > 120 || phone.length > 40 ||
             email.length > 254 || notes.length > 2000 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
-          return json({ error: "تحقق من اسم المورد وبيانات التواصل." }, 400);
+          return respond({ error: "تحقق من اسم المورد وبيانات التواصل." }, 400);
         }
         const values = { name, contact_name: contactName || null, contact_phone: phone || null,
           contact_email: email || null, notes, is_active: body.is_active !== false, updated_at: new Date().toISOString() };
         const result = body.supplier_id
           ? await admin.from("suppliers").update(values).eq("id",body.supplier_id).select("*").single()
           : await admin.from("suppliers").insert(values).select("*").single();
-        if (result.error) return json({ error: "تعذر حفظ المورد." }, 400);
+        if (result.error) return respond({ error: "تعذر حفظ المورد." }, 400);
         await admin.from("admin_audit_log").insert({admin_id:user.id,action:"supplier_save",entity_type:"supplier",
           entity_id:result.data.id,details:{name}});
-        return json({ supplier: result.data });
+        return respond({ supplier: result.data });
       }
 
       if (body.action === "supplier_product_save") {
@@ -1266,10 +1285,10 @@ Deno.serve(async (req: Request) => {
             !["USD","SYP"].includes(body.currency ?? "") ||
             (body.supplier_sku ?? "").toString().length > 120 ||
             (body.notes ?? "").toString().length > 1000) {
-          return json({ error: "بيانات سعر المورد غير صحيحة." }, 400);
+          return respond({ error: "بيانات سعر المورد غير صحيحة." }, 400);
         }
         const rawSchema=body.input_schema??[];
-        if(!Array.isArray(rawSchema)||rawSchema.length>12)return json({error:"يمكن تعريف 12 حقلاً كحد أقصى."},400);
+        if(!Array.isArray(rawSchema)||rawSchema.length>12)return respond({error:"يمكن تعريف 12 حقلاً كحد أقصى."},400);
         const allowedFieldKeys=new Set(["key","label","type","required","placeholder","min_length","max_length","options"]);
         const seenFieldKeys=new Set<string>();
         const inputSchema=[];
@@ -1285,7 +1304,7 @@ Deno.serve(async (req: Request) => {
              (field.min_length!==undefined&&field.max_length!==undefined&&field.min_length>field.max_length)||
              (field.type==="select"&&(!Array.isArray(field.options)||field.options.length<1||field.options.length>30||field.options.some((option:any)=>typeof option!=="string"||option.trim().length<1||option.length>60)))||
              (field.type!=="select"&&field.options!==undefined)){
-            return json({error:"تعريف أحد حقول الطلب غير صالح. راجع key وlabel وtype والخيارات."},400);
+            return respond({error:"تعريف أحد حقول الطلب غير صالح. راجع key وlabel وtype والخيارات."},400);
           }
           seenFieldKeys.add(field.key);
           inputSchema.push({key:field.key,label:field.label.trim(),type:field.type,required:field.required===true,
@@ -1301,10 +1320,10 @@ Deno.serve(async (req: Request) => {
           notes:(body.notes ?? "").toString().trim(), input_schema:inputSchema, updated_at:new Date().toISOString() };
         const result = await admin.from("supplier_products").upsert(values,{onConflict:"supplier_id,product_id"})
           .select("id,supplier_id,product_id,supplier_sku,unit_cost,currency,is_preferred,lead_time_hours,notes,input_schema,updated_at").single();
-        if (result.error) return json({ error: "تعذر حفظ سعر المورد. تأكد من المورد والمنتج." }, 400);
+        if (result.error) return respond({ error: "تعذر حفظ سعر المورد. تأكد من المورد والمنتج." }, 400);
         await admin.from("admin_audit_log").insert({admin_id:user.id,action:"supplier_product_save",entity_type:"product",
           entity_id:body.product_id,details:{supplier_id:body.supplier_id,unit_cost:body.unit_cost,currency:body.currency}});
-        return json({ supplier_product:result.data });
+        return respond({ supplier_product:result.data });
       }
 
       if (body.action === "order_fulfillment_update") {
@@ -1320,11 +1339,11 @@ Deno.serve(async (req: Request) => {
               (typeof body.supplier_unit_cost !== "number" || !Number.isFinite(body.supplier_unit_cost) || body.supplier_unit_cost < 0)) ||
             (body.supplier_unit_cost !== null && body.supplier_unit_cost !== undefined &&
               !["USD","SYP"].includes(body.supplier_cost_currency ?? ""))) {
-          return json({ error:"بيانات متابعة المورد غير صحيحة." },400);
+          return respond({ error:"بيانات متابعة المورد غير صحيحة." },400);
         }
         const { data: orderRow, error: orderLookupError } = await admin.from("orders")
           .select("id,quantity,exchange_rate").eq("id",body.order_id).maybeSingle();
-        if (orderLookupError || !orderRow) return json({error:"الطلب غير موجود أو تعذر قراءته."},404);
+        if (orderLookupError || !orderRow) return respond({error:"الطلب غير موجود أو تعذر قراءته."},404);
         let costRate: number | null = null;
         let totalCost: number | null = null;
         const unitCost = body.supplier_unit_cost === null || body.supplier_unit_cost === undefined
@@ -1336,7 +1355,7 @@ Deno.serve(async (req: Request) => {
             const { data: rateRow, error: rateLookupError } = await admin.from("store_settings")
               .select("exchange_rate").eq("id","main").single();
             if (rateLookupError || !rateRow || Number(rateRow.exchange_rate) <= 0)
-              return json({error:"تعذر تحديد سعر الصرف لحفظ تكلفة المورد."},500);
+              return respond({error:"تعذر تحديد سعر الصرف لحفظ تكلفة المورد."},500);
             costRate = Number(rateRow.exchange_rate);
           }
           totalCost = Number((unitCost * Number(orderRow.quantity)).toFixed(4));
@@ -1353,49 +1372,70 @@ Deno.serve(async (req: Request) => {
           failure_reason:body.supplier_status==="failed"?(body.internal_notes||"تم تأكيد فشل التنفيذ") : null,
           updated_by:user.id,updated_at:new Date().toISOString()
         },{onConflict:"order_id"}).select("order_id,supplier_id,supplier_reference,supplier_status,internal_notes,supplier_unit_cost,supplier_total_cost,supplier_cost_currency,supplier_cost_exchange_rate,updated_at").single();
-        if(result.error) return json({error:"تعذر حفظ متابعة المورد."},400);
+        if(result.error) return respond({error:"تعذر حفظ متابعة المورد."},400);
         await admin.from("admin_audit_log").insert({admin_id:user.id,action:"order_fulfillment_update",
           entity_type:"order",entity_id:body.order_id,details:{supplier_id:body.supplier_id ?? null,
           supplier_status:body.supplier_status,supplier_unit_cost:unitCost,
           supplier_total_cost:totalCost,supplier_cost_currency:costCurrency,
           supplier_cost_exchange_rate:costRate}});
-        return json({fulfillment:result.data, refund_available:body.supplier_status==="failed"});
+        return respond({fulfillment:result.data, refund_available:body.supplier_status==="failed"});
       }
 
       if (body.action === "order_status_update") {
         if (typeof body.order_id !== "string" ||
             !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.order_id) ||
-            typeof body.new_status !== "string") return json({ error:"بيانات تحديث الطلب غير صحيحة." },400);
+            typeof body.new_status !== "string") return respond({ error:"بيانات تحديث الطلب غير صحيحة." },400);
         const { data, error } = await admin.rpc("admin_update_order_status",{
           p_admin_id:user.id,p_order_id:body.order_id,p_new_status:body.new_status,
           p_customer_message:typeof body.customer_message==="string"?body.customer_message.trim():""
         });
-        if(error) return json({ error:error.message },400);
-        return json({ order:data });
+        if(error) return respond({ error:error.message },400);
+        return respond({ order:data });
       }
 
       if (body.action === "loyalty_adjust") {
         if (typeof body.target_user_id !== "string" || typeof body.points_delta !== "number" ||
             !Number.isInteger(body.points_delta) || typeof body.description !== "string") {
-          return json({ error:"بيانات تعديل النقاط غير صحيحة." },400);
+          return respond({ error:"بيانات تعديل النقاط غير صحيحة." },400);
         }
         const { data, error } = await admin.rpc("admin_adjust_loyalty",{
           p_admin_id:user.id,p_user_id:body.target_user_id,p_points:body.points_delta,
           p_description:body.description.trim()
         });
-        if(error) return json({ error:error.message },400);
-        return json({ loyalty:data });
+        if(error) return respond({ error:error.message },400);
+        return respond({ loyalty:data });
+      }
+
+      if (body.action === "treasury_add") {
+        const allowedTypes = ["opening_balance","capital_in","capital_out","cash_in","cash_out","transfer_in","transfer_out","correction_in","correction_out"];
+        if (!allowedTypes.includes(body.treasury_entry_type ?? "")) return respond({ error: "نوع حركة الخزينة غير صحيح." }, 400);
+        if (!["USD","SYP"].includes(body.currency ?? "")) return respond({ error: "العملة غير صحيحة." }, 400);
+        if (typeof body.title !== "string" || body.title.trim().length < 2 || body.title.trim().length > 160)
+          return respond({ error: "اكتب وصفاً من حرفين إلى 160 حرفاً." }, 400);
+        if (typeof body.amount !== "number" || !Number.isFinite(body.amount) || body.amount <= 0)
+          return respond({ error: "أدخل مبلغاً صحيحاً أكبر من صفر." }, 400);
+        if (body.reference !== undefined && (typeof body.reference !== "string" || body.reference.length > 120))
+          return respond({ error: "المرجع يجب ألا يتجاوز 120 حرفاً." }, 400);
+        if (body.notes !== undefined && (typeof body.notes !== "string" || body.notes.length > 500))
+          return respond({ error: "الملاحظات يجب ألا تتجاوز 500 حرف." }, 400);
+        const { data: entry, error } = await admin.rpc("admin_treasury_add", {
+          p_admin_id: user.id, p_entry_type: body.treasury_entry_type,
+          p_title: body.title.trim(), p_amount: body.amount, p_currency: body.currency,
+          p_reference: body.reference ?? null, p_notes: body.notes ?? "",
+        });
+        if (error) return respond({ error: error.message }, 400);
+        return respond({ entry });
       }
 
       if (body.action === "finance_add") {
         if (!["capital", "sale", "expense"].includes(body.entry_type ?? "")) {
-          return json({ error: "Invalid finance entry type" }, 400);
+          return respond({ error: "Invalid finance entry type" }, 400);
         }
         if (!["USD", "SYP"].includes(body.currency ?? "")) {
-          return json({ error: "Invalid currency" }, 400);
+          return respond({ error: "Invalid currency" }, 400);
         }
         if (typeof body.title !== "string" || body.title.trim().length < 2 || body.title.trim().length > 160) {
-          return json({ error: "اكتب وصفاً من حرفين إلى 160 حرفاً." }, 400);
+          return respond({ error: "اكتب وصفاً من حرفين إلى 160 حرفاً." }, 400);
         }
         const isSale = body.entry_type === "sale";
         if (isSale) {
@@ -1404,10 +1444,10 @@ Deno.serve(async (req: Request) => {
               !Number.isInteger(body.quantity) || (body.quantity ?? 0) < 1 ||
               typeof body.unit_sale_price !== "number" || !Number.isFinite(body.unit_sale_price) || body.unit_sale_price <= 0 ||
               typeof body.unit_cost_price !== "number" || !Number.isFinite(body.unit_cost_price) || body.unit_cost_price < 0) {
-            return json({ error: "بيانات البيع أو تكلفة الشراء غير صحيحة." }, 400);
+            return respond({ error: "بيانات البيع أو تكلفة الشراء غير صحيحة." }, 400);
           }
         } else if (typeof body.amount !== "number" || !Number.isFinite(body.amount) || body.amount <= 0) {
-          return json({ error: "أدخل مبلغاً صحيحاً أكبر من صفر." }, 400);
+          return respond({ error: "أدخل مبلغاً صحيحاً أكبر من صفر." }, 400);
         }
 
         const { data: entry, error: financeAddError } = await admin.rpc("admin_finance_add", {
@@ -1423,16 +1463,16 @@ Deno.serve(async (req: Request) => {
         });
         if (financeAddError) {
           console.error("baran-admin: finance add failed", financeAddError.message);
-          return json({ error: financeAddError.message }, 400);
+          return respond({ error: financeAddError.message }, 400);
         }
-        return json({ entry });
+        return respond({ entry });
       }
 
       if (!body.request_id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.request_id)) {
-        return json({ error: "Invalid request ID" }, 400);
+        return respond({ error: "Invalid request ID" }, 400);
       }
       if (body.decision !== "approved" && body.decision !== "rejected") {
-        return json({ error: "Invalid decision" }, 400);
+        return respond({ error: "Invalid decision" }, 400);
       }
 
       // The owner/admin gateway has already authenticated the user.
@@ -1444,14 +1484,14 @@ Deno.serve(async (req: Request) => {
       });
       if (error) {
         const conflict = /already reviewed/i.test(error.message);
-        return json({ error: conflict ? "This request has already been reviewed" : error.message }, conflict ? 409 : 400);
+        return respond({ error: conflict ? "This request has already been reviewed" : error.message }, conflict ? 409 : 400);
       }
-      return json(data);
+      return respond(data);
     }
 
-    return json({ error: "Method not allowed" }, 405);
+    return respond({ error: "Method not allowed" }, 405);
   } catch (error) {
     console.error("baran-admin request failed", error instanceof Error ? error.message : String(error));
-    return json({ error: "Unexpected server error" }, 500);
+    return respond({ error: "Unexpected server error" }, 500);
   }
 });
