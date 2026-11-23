@@ -128,6 +128,23 @@ async function openBaranNotificationTarget(item,audience){
   const section=isAdmin?"admin":
     (isSupportTarget?"support":isOrderTarget?"orders":isDepositTarget?"wallet":
      entityType==="leo_manual_order"?"baroManual":"account");
+  // Some legacy ticket-status notifications contain the ticket code but no entity UUID.
+  // Resolve only within the signed-in customer's own tickets before opening the conversation.
+  let supportTicketId=isSupportTarget?entityId:null;
+  let supportTicketCode="";
+  if(isSupportTarget&&!isAdmin&&!supportTicketId&&currentUser){
+    const codeMatch=String(item.title||"").concat(" ",String(item.body||"")).match(/BG-[A-Z0-9-]{8,40}/i);
+    supportTicketCode=codeMatch?codeMatch[0].toUpperCase():"";
+    if(supportTicketCode){
+      try{
+        const {data:ticket,error:ticketError}=await sb.from("customer_feedback")
+          .select("id").eq("user_id",currentUser.id).eq("feedback_type","support")
+          .eq("ticket_code",supportTicketCode).maybeSingle();
+        if(ticketError)throw ticketError;
+        supportTicketId=ticket?.id||null;
+      }catch(error){console.warn("تعذر العثور على التذكرة من رقمها:",error);}
+    }
+  }
   if(!item.read_at){
     try{
       if(isAdmin)await callAdminApi("POST",{action:"notification_read",notification_id:item.id});
@@ -231,13 +248,26 @@ async function openBaranNotificationTarget(item,audience){
     if(typeof loadDepositRequests==="function")await loadDepositRequests();
     else if(typeof loadWalletTransactions==="function")await loadWalletTransactions();
   }
-  if(isSupportTarget&&entityId&&typeof openSupportConversation==="function"){
-    try{await openSupportConversation(String(entityId),isAdmin?"admin":"customer");}
-    catch(error){console.warn("تعذر فتح محادثة الدعم من الإشعار:",error);}
+  if(isSupportTarget&&supportTicketId&&typeof openSupportConversation==="function"){
+    try{await openSupportConversation(String(supportTicketId),isAdmin?"admin":"customer");}
+    catch(error){
+      console.warn("تعذر فتح محادثة الدعم من الإشعار:",error);
+      const box=document.getElementById(isAdmin?"adminSupportConversation":"customerSupportConversation");
+      const messages=document.getElementById(isAdmin?"adminSupportConversationMessages":"customerSupportConversationMessages");
+      if(box)box.classList.remove("hidden");
+      if(messages)messages.textContent="تعذر تحميل محادثة التذكرة حالياً. جرّب فتحها من قائمة طلباتي ورسائلي السابقة.";
+    }
+  }else if(isSupportTarget&&!isAdmin&&!supportTicketId&&supportTicketCode){
+    const box=document.getElementById("customerSupportConversation");
+    const messages=document.getElementById("customerSupportConversationMessages");
+    const title=document.getElementById("customerSupportConversationTitle");
+    if(box)box.classList.remove("hidden");
+    if(title)title.textContent=supportTicketCode+" — محادثة الدعم";
+    if(messages)messages.textContent="لم نعثر على تذكرة مرتبطة بهذا الإشعار ضمن حسابك. افتح قائمة رسائلك السابقة للتحقق من حالتها.";
   }
   const target=isSupportTarget
-    ?(entityId?document.getElementById(isAdmin?"adminSupportConversation":"customerSupportConversation")
-      :(isAdmin?(document.getElementById("supportTicketsView")||document.getElementById("adminFeedback")):null))
+    ?(supportTicketId||supportTicketCode?document.getElementById(isAdmin?"adminSupportConversation":"customerSupportConversation")
+      :(isAdmin?(document.getElementById("supportTicketsView")||document.getElementById("adminFeedback")):document.getElementById("myFeedbackList")))
     :isAdmin&&kind.includes("monitor")
       ?(document.getElementById("opsMonitorAlerts")||document.getElementById("opsMonitorStatus"))
       :(entityId?Array.from(document.querySelectorAll("[data-notification-entity-id]")).find(node=>node.dataset.notificationEntityId===String(entityId)):null);
