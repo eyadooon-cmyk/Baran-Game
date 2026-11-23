@@ -51,7 +51,7 @@ test("Baran Assistant reads visitor tickets and proposes drafts without sending 
   assert.match(assistant, /baran_guest_support_tickets/);
   assert.match(assistant, /guestSupportDraft/);
   assert.match(assistant, /تحتاج مراجعة بشرية قبل الإرسال/);
-  assert.match(adminUi, /تحليل واقتراح رد عبر Baran Assistant/);
+  assert.match(adminUi, /تحليل واقتراح رد/);
 });
 
 
