@@ -7,6 +7,7 @@ const api = readFileSync(new URL("../supabase/functions/baran-guest-support/inde
 const guestUi = readFileSync(new URL("../baran-guest-support.js", import.meta.url), "utf8");
 const adminUi = readFileSync(new URL("../baran-guest-support-admin.js", import.meta.url), "utf8");
 const assistant = readFileSync(new URL("../supabase/functions/baran-admin-offline/index.ts", import.meta.url), "utf8");
+const app = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 
 test("guest support tables are isolated behind RLS and service role", () => {
   assert.match(migration, /alter table public\.baran_guest_support_tickets enable row level security/i);
@@ -51,4 +52,14 @@ test("Baran Assistant reads visitor tickets and proposes drafts without sending 
   assert.match(assistant, /guestSupportDraft/);
   assert.match(assistant, /تحتاج مراجعة بشرية قبل الإرسال/);
   assert.match(adminUi, /تحليل واقتراح رد عبر Baran Assistant/);
+});
+
+
+test("guest support has a standalone admin destination separate from BARO finance", () => {
+  assert.match(app, /onclick="showAdminPanel\(\x27guest-support\x27\)"/);
+  assert.match(app, /data-admin-panel="guest-support"[\s\S]*?id="baranGuestAdminMount"/);
+  assert.match(app, /if\(id==="guest-support"&&typeof window\.loadBaranGuestSupportAdmin==="function"\)/);
+  assert.match(adminUi, /\$\("baranGuestAdminMount"\)/);
+  assert.match(adminUi, /mount\.appendChild\(panel\)/);
+  assert.doesNotMatch(adminUi, /admin\.appendChild\(panel\)/);
 });
