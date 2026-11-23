@@ -1,17 +1,23 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const allowedOrigin = "https://eyadooon-cmyk.github.io";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": allowedOrigin,
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Vary": "Origin",
-  "Content-Type": "application/json",
-  "Cache-Control": "no-store",
-};
+const ALLOWED_ORIGINS = new Set([
+  "https://eyadooon-cmyk.github.io",
+  "https://baran-game.pages.dev",
+]);
+function corsHeaders(origin = ""): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store",
+  };
+  if (ALLOWED_ORIGINS.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: corsHeaders });
+function json(body: unknown, status = 200, origin = "") {
+  return new Response(JSON.stringify(body), { status, headers: corsHeaders(origin) });
 }
 
 function readKeyObject(name: string): string | undefined {
@@ -178,14 +184,13 @@ function internalCustomerAnswer(question: string, context: any, conversation: Ar
 }
 
 Deno.serve(async (req: Request) => {
+  const origin = req.headers.get("Origin") ?? "";
   if (req.method === "OPTIONS") {
-    const origin = req.headers.get("Origin");
-    if (origin && origin !== allowedOrigin) return new Response("Forbidden", { status: 403 });
-    return new Response("ok", { headers: corsHeaders });
+    if (origin && !ALLOWED_ORIGINS.has(origin)) return new Response("Forbidden", { status: 403 });
+    return new Response("ok", { headers: corsHeaders(origin) });
   }
-  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
-  const origin = req.headers.get("Origin");
-  if (origin && origin !== allowedOrigin) return json({ error: "Origin not allowed" }, 403);
+  if (origin && !ALLOWED_ORIGINS.has(origin)) return respond({ error: "Origin not allowed" }, 403, origin);
+  if (req.method !== "POST") return respond({ error: "Method not allowed" }, 405, origin);
 
   try {
     const url = Deno.env.get("SUPABASE_URL");
@@ -193,24 +198,24 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !anonKey || !serviceKey) {
       console.error("baran-assistant: Supabase server configuration missing");
-      return json({ error: "Server configuration is incomplete" }, 500);
+      return respond({ error: "Server configuration is incomplete" }, 500);
     }
 
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-    if (!token) return json({ error: "Authentication required" }, 401);
+    if (!token) return respond({ error: "Authentication required" }, 401);
 
     const userClient = createClient(url, anonKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const { data: authData, error: authError } = await userClient.auth.getUser(token);
     const user = authData?.user;
-    if (authError || !user) return json({ error: "Invalid session" }, 401);
+    if (authError || !user) return respond({ error: "Invalid session" }, 401);
 
     let body: { messages?: Array<{ role?: string; content?: string }> };
-    try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+    try { body = await req.respond(); } catch { return respond({ error: "Invalid JSON" }, 400); }
     if (!Array.isArray(body.messages) || body.messages.length < 1 || body.messages.length > 12) {
-      return json({ error: "Invalid conversation" }, 400);
+      return respond({ error: "Invalid conversation" }, 400);
     }
     const messages = body.messages
       .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
@@ -218,20 +223,20 @@ Deno.serve(async (req: Request) => {
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content!.trim().slice(0, 1200) }))
       .filter((m) => m.content.length > 0);
     if (!messages.length || messages[messages.length - 1].role !== "user") {
-      return json({ error: "A user message is required" }, 400);
+      return respond({ error: "A user message is required" }, 400);
     }
     const latestQuestion = messages[messages.length - 1].content;
-    if (latestQuestion.length < 1) return json({ error: "Empty message" }, 400);
+    if (latestQuestion.length < 1) return respond({ error: "Empty message" }, 400);
 
     const admin = createClient(url, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const { data: accountControl, error: accountControlError } = await admin.from("customer_account_controls")
       .select("status,banned_until").eq("user_id", user.id).maybeSingle();
-    if (accountControlError) return json({ error: "تعذر التحقق من حالة حماية الحساب." }, 500);
+    if (accountControlError) return respond({ error: "تعذر التحقق من حالة حماية الحساب." }, 500);
     if (accountControl?.status === "banned" &&
         (!accountControl.banned_until || new Date(accountControl.banned_until).getTime() > Date.now())) {
-      return json({ error: "هذا الحساب موقوف حالياً. لا يمكن استخدام المساعد أثناء الحظر." }, 403);
+      return respond({ error: "هذا الحساب موقوف حالياً. لا يمكن استخدام المساعد أثناء الحظر." }, 403);
     }
 
     // Deterministic action: an explicit request for a human agent or a support ticket
@@ -264,7 +269,7 @@ Deno.serve(async (req: Request) => {
         .maybeSingle();
       if (recentError) {
         console.error("baran-assistant: recent ticket lookup failed", recentError.message);
-        return json({ error: "تعذر التحقق من تذكرة الدعم. لم يتم إنشاء تذكرة جديدة؛ حاول مرة أخرى." }, 500);
+        return respond({ error: "تعذر التحقق من تذكرة الدعم. لم يتم إنشاء تذكرة جديدة؛ حاول مرة أخرى." }, 500);
       }
 
       let ticketCode: string | null = null;
@@ -277,7 +282,7 @@ Deno.serve(async (req: Request) => {
           .eq("user_id", user.id);
         if (updateError) {
           console.error("baran-assistant: ticket update failed", updateError.message);
-          return json({ error: "تعذر تحديث تذكرة الدعم. لم يتم تأكيد تسجيل الطلب." }, 500);
+          return respond({ error: "تعذر تحديث تذكرة الدعم. لم يتم تأكيد تسجيل الطلب." }, 500);
         }
         ticketCode = recentTicket.ticket_code ?? null;
         ticketId = recentTicket.id;
@@ -291,19 +296,19 @@ Deno.serve(async (req: Request) => {
         }).select("id,ticket_code").single();
         if (insertError || !inserted) {
           console.error("baran-assistant: explicit ticket creation failed", insertError?.message);
-          return json({ error: "ما قدرت سجّل التذكرة حالياً. ما رح أقول إنها انعملت قبل ما أتأكد." }, 500);
+          return respond({ error: "ما قدرت سجّل التذكرة حالياً. ما رح أقول إنها انعملت قبل ما أتأكد." }, 500);
         }
         ticketCode = inserted.ticket_code ?? null;
         ticketId = inserted.id;
       }
 
       if (!ticketId) {
-        return json({ error: "تعذر تأكيد تسجيل التذكرة. تواصل مع الدعم من جديد." }, 500);
+        return respond({ error: "تعذر تأكيد تسجيل التذكرة. تواصل مع الدعم من جديد." }, 500);
       }
       const reply = ticketCode
         ? "تم تسجيل طلبك بنجاح وتحويله للإدارة. رقم التذكرة: " + ticketCode + ". رح تتابع الإدارة الطلب من لوحة الدعم."
         : "تم تسجيل طلبك وتحويله للإدارة بنجاح. رح تتابع الإدارة الطلب من لوحة الدعم.";
-      return json({ reply, escalated: true, ticket_code: ticketCode, ticket_created: !recentTicket?.id });
+      return respond({ reply, escalated: true, ticket_code: ticketCode, ticket_created: !recentTicket?.id });
     }
     const [
       profileResult,
@@ -330,7 +335,7 @@ Deno.serve(async (req: Request) => {
     const queryErrors = [profileResult.error, walletResult.error, ordersResult.error, manualOrdersResult.error, depositsResult.error, productsResult.error, manualProductsResult.error].filter(Boolean);
     if (queryErrors.length) {
       console.error("baran-assistant: customer context query failed", queryErrors.map((e: any) => e.message));
-      return json({ error: "تعذر تحميل بعض بيانات حسابك حالياً. جرّب بعد قليل، ولم يتم إجراء أي تغيير على رصيدك أو طلباتك." }, 503);
+      return respond({ error: "تعذر تحميل بعض بيانات حسابك حالياً. جرّب بعد قليل، ولم يتم إجراء أي تغيير على رصيدك أو طلباتك." }, 503);
     }
     const profile = profileResult.data;
     const wallet = walletResult.data;
@@ -421,9 +426,9 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    return json({ reply: answer.reply.trim().slice(0, 1800), escalated, ticket_code: escalationTicketCode });
+    return respond({ reply: answer.reply.trim().slice(0, 1800), escalated, ticket_code: escalationTicketCode });
   } catch (error) {
     console.error("baran-assistant request failed", error instanceof Error ? error.message : String(error));
-    return json({ error: "حدث خطأ غير متوقع. جرّب مرة ثانية." }, 500);
+    return respond({ error: "حدث خطأ غير متوقع. جرّب مرة ثانية." }, 500);
   }
 });
