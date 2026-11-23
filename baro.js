@@ -113,13 +113,9 @@ function renderBaroCustomerCatalog(products){
    #baroCustomerCatalog .baro-catalog-chevron{color:#e6d1f6;font-size:24px;transition:transform .2s}
    #baroCustomerCatalog .baro-catalog-category[open] .baro-catalog-chevron{transform:rotate(180deg)}
    #baroCustomerCatalog .baro-catalog-category-content{padding:12px}
-   #baroCustomerCatalog .baro-catalog-product-group{display:block;margin:8px 0 15px;padding:0;overflow:hidden;border:1px solid #59416d;border-radius:17px;background:linear-gradient(145deg,#1d1627,#120e18);box-shadow:0 8px 18px #0006,inset 0 1px 0 #ffffff0d}
-   #baroCustomerCatalog .baro-catalog-group-head{display:flex;align-items:center;gap:10px;margin:0;padding:12px;border:0;cursor:pointer;list-style:none}
-   #baroCustomerCatalog .baro-catalog-group-head::-webkit-details-marker{display:none}
-   #baroCustomerCatalog .baro-catalog-group-chevron{flex:0 0 auto;color:#e6d1f6;font-size:21px;transition:transform .2s}
-   #baroCustomerCatalog .baro-catalog-product-group[open] .baro-catalog-group-chevron{transform:rotate(180deg)}
-   #baroCustomerCatalog .baro-catalog-product-group .baro-catalog-product-grid{padding:0 12px 12px}
-   #baroCustomerCatalog .baro-catalog-product-group[open] .baro-catalog-group-head{border-bottom:1px solid #76558c66}
+   #baroCustomerCatalog .baro-catalog-product-group{display:block;min-width:0;margin:8px 0 15px;padding:12px;overflow:visible;border:1px solid #765792;border-radius:17px;background:linear-gradient(150deg,#30213e 0%,#1c1427 55%,#130e1b 100%);box-shadow:0 7px 0 #100b16,0 12px 18px #0008,inset 0 1px 0 #ffffff22}
+   #baroCustomerCatalog .baro-catalog-group-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:0 0 10px;border:0;border-bottom:1px solid #76558c66;cursor:default;list-style:none}
+   #baroCustomerCatalog .baro-catalog-product-group .baro-catalog-product-grid{padding:0}
    #baroCustomerCatalog .baro-catalog-group-icon{display:grid;place-items:center;width:39px;height:39px;flex:0 0 39px;border:1px solid #a17bc0;border-radius:12px;background:linear-gradient(145deg,#63427c,#291d38);box-shadow:0 4px 0 #100b16,0 7px 12px #0008,inset 0 1px 4px #ffffff33;font-size:20px}
    #baroCustomerCatalog .baro-catalog-group-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:1px}
    #baroCustomerCatalog .baro-catalog-group-copy strong{color:#f1e4fa;font-size:14px;font-weight:900}
@@ -209,9 +205,8 @@ function renderBaroCustomerCatalog(products){
   });
   groups.forEach(group=>{
    const groupInfo=group===null?{label:"باقات جواهر",icon:"💎",description:""}:(groupMeta[group]||{label:String(group||"منتجات أخرى"),icon:"✦",description:""});
-   const groupSection=document.createElement("details");groupSection.className="baro-catalog-product-group";
-   groupSection.open=false; // درج مستقل لكل مجموعة باقات داخل بطاقة اللعبة التابعة لها.
-   const groupHead=document.createElement("summary");groupHead.className="baro-catalog-group-head";
+   const groupSection=document.createElement("section");groupSection.className="baro-catalog-product-group";
+   const groupHead=document.createElement("div");groupHead.className="baro-catalog-group-head";
    const groupIcon=document.createElement("span");groupIcon.className="baro-catalog-group-icon";groupIcon.textContent=groupInfo.icon;
    const groupCopy=document.createElement("div");groupCopy.className="baro-catalog-group-copy";
    const groupTitle=document.createElement("strong");groupTitle.textContent=groupInfo.label;
@@ -220,8 +215,7 @@ function renderBaroCustomerCatalog(products){
    const groupCount=document.createElement("span");groupCount.className="baro-catalog-group-count";
    const items=group===null?categoryProducts:categoryProducts.filter(p=>p.group_id===group);
    groupCount.textContent=items.length+" باقة";
-   const groupChevron=document.createElement("span");groupChevron.className="baro-catalog-group-chevron";groupChevron.setAttribute("aria-hidden","true");groupChevron.textContent="⌄";
-   groupHead.append(groupIcon,groupCopy,groupCount,groupChevron);groupSection.append(groupHead);
+   groupHead.append(groupIcon,groupCopy,groupCount);groupSection.append(groupHead);
    const grid=document.createElement("div");grid.className="baro-catalog-product-grid";
    items.forEach((p,productIndex)=>{
     const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+(p.group_id||group||"all");
