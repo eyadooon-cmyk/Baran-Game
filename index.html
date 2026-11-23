@@ -2719,6 +2719,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
             <button type="button" class="admin-hub-card" data-admin-search="تجربة العملاء تحليلات شرائح العملاء الولاء نشاط المستخدمين customer experience intelligence" onclick="showAdminPanel('customer-experience')"><span class="admin-hub-icon">✦</span><strong>مركز تجربة العملاء</strong><small>إحصائيات النشاط والولاء والشرائح والأمان — منفصل عن إدارة الحسابات.</small><span class="admin-hub-open">تحليل تجربة العملاء <b>←</b></span></button>
             <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="الإشعارات إرسال تنبيهات رسائل للعملاء مركز الإشعارات" onclick="showAdminPanel('notifications-center')"><span class="admin-hub-icon">🔔</span><strong>مركز الإشعارات</strong><small>أرسل تنبيهاً لزبون محدد أو لفئة من العملاء أو للجميع.</small><span class="admin-hub-open">إدارة الإشعارات <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="الدعم الرسائل التذاكر الردود الآلية مساعد الزبائن support" onclick="showAdminPanel('support')"><span class="admin-hub-icon">🎧</span><strong>مركز خدمة العملاء</strong><small>تابع الرسائل والتذاكر والردود الآلية، واعرف ما ينتظر تدخلك.</small><span class="admin-hub-open">فتح مركز الدعم <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="دعم الزوار بدون تسجيل دخول تذاكر الزوار المساعدة العامة guest support" onclick="showAdminPanel('guest-support')"><span class="admin-hub-icon">🌐</span><strong>مركز دعم الزوار</strong><small>استقبل بلاغات الزوار الذين لا يستطيعون تسجيل الدخول، وراجع الردود قبل إرسالها.</small><span class="admin-hub-open">فتح دعم الزوار <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="استعادة الحساب كلمة المرور recovery" onclick="showAdminPanel('recovery')"><span class="admin-hub-icon">🔐</span><strong>استعادة الحسابات</strong><small>راجع طلبات الاستعادة وتحقق من الملكية قبل أي إجراء.</small><span class="admin-hub-open">مراجعة الاستعادة <b>←</b></span></button>
           </div></section>
           <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>04</span><div><strong>المال والتحصيل</strong><small>الأرباح، المحافظ، الحوالات، والتكاملات المالية الحساسة.</small></div><em>FINANCE</em></div><div class="admin-hub-grid">
@@ -3283,6 +3284,11 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
         </section>
       </div>
 
+      <div class="admin-subpanel hidden" data-admin-panel="guest-support">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز دعم الزوار 🌐</h2></div>
+        <p class="small">تذاكر الزوار الذين لا يستطيعون تسجيل الدخول. التحليل يقترح مسودة فقط؛ الإرسال والإغلاق يحتاجان إجراءً يدوياً من الإدارة.</p>
+        <div id="baranGuestAdminMount"></div>
+      </div>
       <div class="admin-subpanel hidden" data-admin-panel="support">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الدعم والردود الآلية</h2></div>
         <div class="support-workspace">
@@ -3973,6 +3979,7 @@ function showAdminPanel(id){
   if(id==="overview"||id==="financial-support"||id==="users"||id==="user-directory"||id==="orders"||id==="suppliers"||id==="loyalty"||id==="security"||id==="recovery"||id==="support"||id==="finance"||id==="shamcash-control"){
     if(typeof loadAdminPanel==="function")panelLoad=loadAdminPanel();
   }
+  if(id==="guest-support"&&typeof window.loadBaranGuestSupportAdmin==="function")panelLoad=Promise.resolve(window.loadBaranGuestSupportAdmin());
   if(id==="promotions"&&typeof loadBaranPromotionsManager==="function")panelLoad=loadBaranPromotionsManager();
   if(id==="suppliers"&&typeof loadBaranAutomaticControl==="function")loadBaranAutomaticControl();
   if(id==="staff-management")loadBaranStaffList();
