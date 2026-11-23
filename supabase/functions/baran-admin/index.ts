@@ -551,7 +551,7 @@ Deno.serve(async (req: Request) => {
         products?: any[];
         input_schema?: any;
       };
-      try { body = await req.respond(); } catch { return respond({ error: "Invalid JSON" }, 400); }
+      try { body = await req.json(); } catch { return respond({ error: "Invalid JSON" }, 400); }
 
       if (body.action === "customer_admin_note_update") {
         const targetId = typeof body.target_user_id === "string" ? body.target_user_id : "";
