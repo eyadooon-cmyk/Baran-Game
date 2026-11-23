@@ -4319,24 +4319,8 @@ async function loadMyOrders(){
 function openBaroManualGame(category){
   const allowed=["pubg","freefire","jawaker"];
   if(!allowed.includes(category))return;
+  window.baroManualSelectedCategory=category;
   showSection("baroManual",null);
-  const catalog=document.getElementById("baroCustomerCatalog");
-  if(!catalog)return;
-  const applyFilter=()=>{
-    const sections=[...catalog.querySelectorAll(".baro-catalog-category")];
-    if(!sections.length)return false;
-    const labels={pubg:"PUBG MOBILE",freefire:"FREE FIRE",jawaker:"JAWAKER"};
-    sections.forEach(section=>{
-      const title=section.querySelector(".baro-catalog-category-head")?.textContent||"";
-      section.hidden=!title.toUpperCase().includes(labels[category]);
-      if(!section.hidden)section.open=true;
-    });
-    return true;
-  };
-  const observer=new MutationObserver(()=>{if(applyFilter())observer.disconnect();});
-  observer.observe(catalog,{childList:true,subtree:true});
-  if(applyFilter())observer.disconnect();
-  loadBaroCustomer();
 }
 function showSection(id,button,options){
   if(!currentUser) return;
