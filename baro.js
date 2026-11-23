@@ -94,173 +94,26 @@ function baroOpenProductCheckout(product){
  if(baroCheckoutModal){baroCheckoutModal.modal.querySelector(".baro-checkout-dialog")?.append(baroEl("baroSubmitOrder")?.closest(".game-checkout"));baroCheckoutModal.modal.classList.add("is-open");baroCheckoutModal.modal.setAttribute("aria-hidden","false");baroEl("baroPlayerId")?.focus();}
 }
 function renderBaroCustomerCatalog(products){
- const box=baroEl("baroCustomerCatalog");if(!box)return;
- box.replaceChildren();
- const catalogStyleId="baro-catalog-3d-style";
- if(!document.getElementById(catalogStyleId)){
-  const catalogStyle=document.createElement("style");catalogStyle.id=catalogStyleId;
-  catalogStyle.textContent=`
-   #baroCustomerCatalog .baro-catalog-category{display:block;margin:16px 0;padding:0;overflow:hidden;border:1px solid #72528a;border-radius:20px;background:linear-gradient(145deg,#21172c 0%,#120e19 72%);box-shadow:0 12px 28px #0008,inset 0 1px 0 #ffffff18;transform:translateZ(0)}
-   #baroCustomerCatalog .baro-catalog-category>summary{list-style:none;cursor:pointer}
-   #baroCustomerCatalog .baro-catalog-category>summary::-webkit-details-marker{display:none}
-   #baroCustomerCatalog .baro-catalog-category-head{display:flex;align-items:center;gap:12px;min-height:88px;padding:15px;background:linear-gradient(115deg,#392448,#21172d 58%,#17111f);border-bottom:1px solid #8b68a744}
-   #baroCustomerCatalog .baro-catalog-game-mark{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border:1px solid #c5a0e2;border-radius:16px;background:linear-gradient(145deg,#9b6ac2,#3c2751 58%,#21162e);box-shadow:0 7px 0 #171020,0 11px 18px #0009,inset 0 2px 5px #ffffff55;font-size:27px}
-   #baroCustomerCatalog .baro-catalog-category-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
-   #baroCustomerCatalog .baro-catalog-category-copy small{color:#c5a7dc;font-size:9px;letter-spacing:1.5px}
-   #baroCustomerCatalog .baro-catalog-category-copy strong{color:#fff;font-size:17px;font-weight:900}
-   #baroCustomerCatalog .baro-catalog-category-copy>span{color:#c2b2cf;font-size:11px}
-   #baroCustomerCatalog .baro-catalog-count{flex:0 0 auto;padding:6px 9px;border:1px solid #8968a2;border-radius:999px;background:#130d1d;color:#e8d8f4;font-size:10px;font-weight:800}
-   #baroCustomerCatalog .baro-catalog-chevron{color:#e6d1f6;font-size:24px;transition:transform .2s}
-   #baroCustomerCatalog .baro-catalog-category[open] .baro-catalog-chevron{transform:rotate(180deg)}
-   #baroCustomerCatalog .baro-catalog-category-content{padding:12px}
-   #baroCustomerCatalog .baro-catalog-product-group{display:block;min-width:0;margin:8px 0 15px;padding:12px;overflow:visible;border:1px solid #765792;border-radius:17px;background:linear-gradient(150deg,#30213e 0%,#1c1427 55%,#130e1b 100%);box-shadow:0 7px 0 #100b16,0 12px 18px #0008,inset 0 1px 0 #ffffff22}
-   #baroCustomerCatalog .baro-catalog-group-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:0 0 10px;border:0;border-bottom:1px solid #76558c66;cursor:default;list-style:none}
-   #baroCustomerCatalog .baro-catalog-product-group .baro-catalog-product-grid{padding:0}
-   #baroCustomerCatalog .baro-catalog-group-icon{display:grid;place-items:center;width:39px;height:39px;flex:0 0 39px;border:1px solid #a17bc0;border-radius:12px;background:linear-gradient(145deg,#63427c,#291d38);box-shadow:0 4px 0 #100b16,0 7px 12px #0008,inset 0 1px 4px #ffffff33;font-size:20px}
-   #baroCustomerCatalog .baro-catalog-group-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:1px}
-   #baroCustomerCatalog .baro-catalog-group-copy strong{color:#f1e4fa;font-size:14px;font-weight:900}
-   #baroCustomerCatalog .baro-catalog-group-copy small{color:#bba9c9;font-size:10px}
-   #baroCustomerCatalog .baro-catalog-group-count{padding:5px 8px;border-radius:9px;background:#2c2038;color:#d9c1ed;font-size:10px;font-weight:800}
-   #baroCustomerCatalog .baro-catalog-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-   #baroCustomerCatalog .baro-catalog-product-card{position:relative;display:flex;min-width:0;flex-direction:column;align-items:stretch;gap:8px;padding:10px;border:1px solid #765792;border-radius:16px;background:linear-gradient(150deg,#392849 0%,#21172d 48%,#17111f 100%);color:#f4eafa;text-align:right;box-shadow:0 7px 0 #100b16,0 12px 18px #0008,inset 0 1px 0 #ffffff2b;transform:perspective(850px) rotateX(1deg);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
-   #baroCustomerCatalog .baro-catalog-product-card:before{content:"";position:absolute;inset:1px 1px auto;height:42%;border-radius:15px 15px 45% 45%;background:linear-gradient(180deg,#ffffff12,transparent);pointer-events:none}
-   #baroCustomerCatalog .baro-catalog-product-card:active:not(:disabled){transform:perspective(850px) translateY(4px) scale(.985);box-shadow:0 3px 0 #100b16,0 6px 10px #0008}
-   #baroCustomerCatalog .baro-catalog-product-card[aria-disabled="true"]{opacity:1;cursor:default;filter:none;color:#f4eafa!important;-webkit-text-fill-color:#f4eafa!important}
-   #baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-name,#baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-price,#baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-footer{visibility:visible!important;opacity:1!important;-webkit-text-security:none!important;text-security:none!important;filter:none!important;text-shadow:none!important}
-   #baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-name{color:#fff!important;-webkit-text-fill-color:#fff!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;unicode-bidi:plaintext;direction:auto}
-   #baroCustomerCatalog .baro-catalog-product-card .baro-catalog-product-price{color:#f0dcff!important;-webkit-text-fill-color:#f0dcff!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;unicode-bidi:plaintext}
-   #baroCustomerCatalog .baro-catalog-product-card[aria-disabled="true"] .baro-catalog-product-name,#baroCustomerCatalog .baro-catalog-product-card[aria-disabled="true"] .baro-catalog-product-price{color:#fff!important;-webkit-text-fill-color:#fff!important}
-   #baroCustomerCatalog .baro-catalog-product-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
-   #baroCustomerCatalog .baro-catalog-product-art{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;width:100%;min-height:82px;border:1px solid #9875b4;border-radius:12px;background:radial-gradient(ellipse at 50% 20%,#a77bc533,transparent 65%),linear-gradient(145deg,#30203e,#17101f);box-shadow:inset 0 2px 8px #0008,0 3px 0 #100b16}
-   #baroCustomerCatalog .baro-catalog-product-art-icon{font-size:34px;line-height:1.1;filter:drop-shadow(0 5px 4px #0009)}
-   #baroCustomerCatalog .baro-catalog-product-art-label{color:#cdb5e1;font:800 8px Orbitron,Cairo,sans-serif;letter-spacing:1px}
-   #baroCustomerCatalog .baro-catalog-preview-tag{position:absolute;top:15px;right:15px;padding:4px 7px;border:1px solid #76578d;border-radius:999px;background:#100b16dd;color:#e1d1ed;font-size:8px}
-   #baroCustomerCatalog .baro-catalog-product-name{display:block;min-height:40px;color:#fff;font-size:12px;line-height:1.65;font-weight:900}
-   #baroCustomerCatalog .baro-catalog-product-price{display:block;margin:0!important;padding:8px 6px;border:1px solid #76578d;border-radius:10px;background:linear-gradient(100deg,#2d203a,#1a1323);color:#e8d2fa!important;font-size:11px!important;line-height:1.8;text-align:center;overflow-wrap:anywhere}
-   #baroCustomerCatalog .baro-catalog-product-footer{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:auto;padding-top:7px;border-top:1px solid #76558b66;color:#bfaecc;font-size:9px}
-   #baroCustomerCatalog .baro-catalog-product-index{color:#d4b7ec;font:800 10px Orbitron,sans-serif}
-   #baroCustomerCatalog .baro-catalog-footnote{margin:12px 2px;color:#b9a9c9;font-size:10px;line-height:1.8}
-   @media(hover:hover){#baroCustomerCatalog .baro-catalog-product-card:hover:not(:disabled){transform:perspective(850px) translateY(-3px) rotateX(0);border-color:#c39be0;box-shadow:0 10px 0 #100b16,0 18px 24px #0009,inset 0 1px 0 #ffffff35}}
-   @media(max-width:390px){#baroCustomerCatalog .baro-catalog-category-head{gap:8px;padding:12px}#baroCustomerCatalog .baro-catalog-game-mark{width:46px;height:46px;flex-basis:46px;font-size:23px}#baroCustomerCatalog .baro-catalog-category-copy strong{font-size:14px}#baroCustomerCatalog .baro-catalog-count{font-size:9px;padding:5px 6px}#baroCustomerCatalog .baro-catalog-category-content{padding:8px}#baroCustomerCatalog .baro-catalog-product-group{padding:9px}#baroCustomerCatalog .baro-catalog-product-grid{gap:8px}#baroCustomerCatalog .baro-catalog-product-card{padding:8px}#baroCustomerCatalog .baro-catalog-product-art{min-height:70px}}
-   @media(prefers-reduced-motion:reduce){#baroCustomerCatalog .baro-catalog-product-card{transition:none;transform:none}}
-  `;
-  document.head.append(catalogStyle);
- }
-
- const categoryMeta={
-  pubg:{label:"PUBG MOBILE",icon:"🎯",eyebrow:"BATTLEGROUNDS",description:"شدات UC والاشتراكات وباقات PUBG"},
-  freefire:{label:"FREE FIRE",icon:"🔥",eyebrow:"BOOYAH!",description:"جواهر فري فاير والعضويات"},
-  jawaker:{label:"JAWAKER",icon:"🃏",eyebrow:"CARD GAMES",description:"توكنز جواكر ومسرّعات اللعب"}
- };
- const groupMeta={
-  uc:{label:"شدات UC",icon:"💎",description:"باقات الشدات"},
-  growth:{label:"حزم واشتراكات PUBG",icon:"🚀",description:"Prime والاشتراكات والباقات"},
-  diamonds:{label:"جواهر Free Fire",icon:"💠",description:"باقات الجواهر"},
-  memberships:{label:"عضويات Free Fire",icon:"👑",description:"العضويات الأسبوعية وغيرها"},
-  tokens:{label:"جواكر توكنز",icon:"🪙",description:"السيرفر الأول والسيرفر الثاني"},
-  boosters:{label:"مسرّعات جواكر",icon:"⚡",description:"الأحمر والأزرق والأسود والذهبي"}
- };
- const categoryOrder=["pubg","freefire","jawaker"];
- const groupOrder={pubg:["uc","growth"],freefire:["diamonds","memberships"],jawaker:["tokens","boosters"]};
- const intro=document.createElement("div");intro.className="baro-catalog-intro";
- const introMark=document.createElement("span");introMark.className="baro-catalog-intro-mark";introMark.textContent="✦";
- const introCopy=document.createElement("div");
- const introTitle=document.createElement("strong");introTitle.textContent="اكتشف منتجات BARO";
- const introText=document.createElement("p");introText.textContent=baroManualEnabled?"اختر باقة متاحة، ثم أدخل ID اللاعب وأكّده قبل إرسال الطلب. يُحجز المبلغ من المحفظة عند الإرسال، ويُثبّت عند نجاح الشحن أو يُعاد عند الفشل أو الإلغاء.":"تصفّح منتجات BARO وشاهد أسعار البيع المعتمدة بالدولار والليرة. استقبال الطلبات اليدوية مغلق حالياً."
- introCopy.append(introTitle,introText);intro.append(introMark,introCopy);box.append(intro);
- if(!products.length){
-  const empty=document.createElement("div");empty.className="baro-catalog-empty";
-  empty.textContent="لا توجد منتجات معتمدة للعرض حالياً. سنعرض المنتجات هنا فور تجهيزها.";
-  box.append(empty);return;
- }
- const total=document.createElement("div");total.className="baro-catalog-total";
- total.textContent=products.length+" منتج ضمن "+new Set(products.map(p=>p.category_id)).size+" أقسام";
- box.append(total);
- const categories=[...new Set(products.map(p=>p.category_id))].sort((a,b)=>{
-  const ai=categoryOrder.indexOf(a),bi=categoryOrder.indexOf(b);
-  return (ai<0?99:ai)-(bi<0?99:bi);
- });
- categories.forEach((category,index)=>{
-  const meta=categoryMeta[category]||{label:String(category||"قسم").toUpperCase(),icon:"🎮",eyebrow:"BARO CATALOG",description:"منتجات رقمية"};
-  const section=document.createElement("details");section.className="baro-catalog-category";
-  section.open=false; // بطاقة اللعبة وحدها قابلة للفتح والإغلاق؛ مجموعات الباقات تبقى ظاهرة داخلها.
-  const summary=document.createElement("summary");summary.className="baro-catalog-category-head";
-  const mark=document.createElement("span");mark.className="baro-catalog-game-mark";mark.textContent=meta.icon;
-  const copy=document.createElement("span");copy.className="baro-catalog-category-copy";
-  const eyebrow=document.createElement("small");eyebrow.textContent=meta.eyebrow;
-  const heading=document.createElement("strong");heading.textContent=meta.label;
-  const description=document.createElement("span");description.textContent=meta.description;
-  copy.append(eyebrow,heading,description);
-  const count=document.createElement("span");count.className="baro-catalog-count";
-  const categoryProducts=products.filter(p=>p.category_id===category);
-  count.textContent=categoryProducts.length+" منتج";
-  const chevron=document.createElement("span");chevron.className="baro-catalog-chevron";chevron.setAttribute("aria-hidden","true");chevron.textContent="⌄";summary.append(mark,copy,count,chevron);
-  section.append(summary);
-  const content=document.createElement("div");content.className="baro-catalog-category-content";
-  const presentGroups=[...new Set(categoryProducts.map(p=>p.group_id))];
-  const preferred=groupOrder[category]||[];
-  const groups=presentGroups.sort((a,b)=>{
-   const ai=preferred.indexOf(a),bi=preferred.indexOf(b);
-   return (ai<0?99:ai)-(bi<0?99:bi);
-  });
-  groups.forEach(group=>{
-   const groupInfo=group===null?{label:"باقات جواهر",icon:"💎",description:""}:(groupMeta[group]||{label:String(group||"منتجات أخرى"),icon:"✦",description:""});
-   const groupSection=document.createElement("section");groupSection.className="baro-catalog-product-group";
-   const groupHead=document.createElement("div");groupHead.className="baro-catalog-group-head";
-   const groupIcon=document.createElement("span");groupIcon.className="baro-catalog-group-icon";groupIcon.textContent=groupInfo.icon;
-   const groupCopy=document.createElement("div");groupCopy.className="baro-catalog-group-copy";
-   const groupTitle=document.createElement("strong");groupTitle.textContent=groupInfo.label;
-   const groupDescription=document.createElement("small");groupDescription.textContent=groupInfo.description;
-   groupCopy.append(groupTitle,groupDescription);
-   const groupCount=document.createElement("span");groupCount.className="baro-catalog-group-count";
-   const items=group===null?categoryProducts:categoryProducts.filter(p=>p.group_id===group);
-   groupCount.textContent=items.length+" باقة";
-   groupHead.append(groupIcon,groupCopy,groupCount);groupSection.append(groupHead);
-   const grid=document.createElement("div");grid.className="baro-catalog-product-grid";
-   items.forEach((p,productIndex)=>{
-    const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+(p.group_id||group||"all");
-    const productAvailable=baroManualEnabled&&p.purchase_enabled===true;
-    card.setAttribute("aria-disabled",String(!productAvailable));card.tabIndex=productAvailable?0:-1;
-    card.setAttribute("aria-label",(productAvailable?"طلب ":"معاينة ")+String(p.product_name||"منتج رقمي"));
-    if(productAvailable)card.addEventListener("click",()=>baroOpenProductCheckout(p));
-    const cardTop=document.createElement("div");cardTop.className="baro-catalog-product-card-top";
-    const art=document.createElement("div");art.className="baro-catalog-product-art";
-    const artIcon=document.createElement("span");artIcon.className="baro-catalog-product-art-icon";
-    const artLabel=document.createElement("small");artLabel.className="baro-catalog-product-art-label";
-    const productName=String(p.product_name||"منتج رقمي");
-    let visualIcon=groupInfo.icon,visualLabel=groupInfo.label;
-    if(category==="freefire"&&group===null){visualIcon="💎";visualLabel="DIAMONDS";}
-    if(category==="pubg"&&group==="uc"){visualIcon="💎";visualLabel="UNKNOWN CASH";}
-    else if(category==="pubg"&&group==="growth"){
-     visualIcon=/prime plus/i.test(productName)?"👑":/prime/i.test(productName)?"✦":"🎁";
-     visualLabel=/prime plus/i.test(productName)?"PRIME PLUS":/prime/i.test(productName)?"PRIME":"PUBG BUNDLES";
-    }else if(category==="freefire"&&group==="diamonds"){visualIcon="💠";visualLabel="DIAMONDS";}
-    else if(category==="freefire"&&group==="memberships"){visualIcon="👑";visualLabel="MEMBERSHIP";}
-    else if(category==="jawaker"&&group==="tokens"){visualIcon="🪙";visualLabel="JAWAKER TOKENS";}
-    else if(category==="jawaker"&&group==="boosters"){visualIcon="⚡";visualLabel="BOOSTERS";}
-    artIcon.textContent=visualIcon;artLabel.textContent=visualLabel;
-    art.append(artIcon,artLabel);
-    const preview=document.createElement("span");preview.className="baro-catalog-preview-tag";preview.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"معاينة فقط";
-    cardTop.append(art,preview);
-    const name=document.createElement("strong");name.className="baro-catalog-product-name";name.dir="auto";name.textContent=productName;
-    const price=document.createElement("strong");price.className="baro-catalog-product-price";
-    const usd=Number(p.sale_price_usd),syp=Number(p.sale_price_syp);
-    price.dir="auto";price.textContent=(Number.isFinite(usd)&&usd>0?"$"+usd.toFixed(2):"السعر بالدولار غير محدد")+" · "+(Number.isFinite(syp)&&syp>0?syp.toLocaleString("en-US")+" SYP":"السعر بالليرة غير محدد");
-    price.style.cssText="display:block;margin:10px 0 4px;color:#e4c5ff;font-size:1.05rem;font-weight:900;";
-    const footer=document.createElement("div");footer.className="baro-catalog-product-footer";
-    const status=document.createElement("span");status.textContent=baroManualEnabled&&p.purchase_enabled===true?"متاح للطلب":"استقبال الطلبات مغلق حالياً";
-    const indexMark=document.createElement("span");indexMark.className="baro-catalog-product-index";indexMark.textContent=String(productIndex+1).padStart(2,"0");
-    footer.append(status,indexMark);card.append(cardTop,name,price,footer);grid.append(card);
-   });
-   groupSection.append(grid);content.append(groupSection);
-  });
-  section.append(content);box.append(section);
- });
- const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";
- footnote.textContent="الأسعار معروضة بالدولار والليرة · يُحجز المبلغ عند إرسال الطلب، ويُثبّت عند نجاح الشحن أو يُعاد عند الفشل أو الإلغاء."
- box.append(footnote);
-}
-async function loadBaroCustomer(){
+ const box=baroEl("baroCustomerCatalog");if(!box)return;box.replaceChildren();
+ const styleId="baro-catalog-navigation-style";if(!document.getElementById(styleId)){const s=document.createElement("style");s.id=styleId;s.textContent="#baroCustomerCatalog .baro-catalog-nav-card{display:flex;width:100%;align-items:center;gap:13px;padding:15px;border:1px solid #9a70b8;border-radius:19px;background:linear-gradient(145deg,#442957,#24172f 58%,#15101e);color:#fff;text-align:right;box-shadow:0 8px 0 #100b16,0 14px 22px #0009,inset 0 1px 0 #ffffff2b;cursor:pointer}#baroCustomerCatalog .baro-catalog-nav-card:active{transform:translateY(4px)}#baroCustomerCatalog .baro-catalog-nav-card .baro-catalog-game-mark{width:60px;height:60px;flex-basis:60px;font-size:30px}#baroCustomerCatalog .baro-catalog-nav-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}#baroCustomerCatalog .baro-catalog-nav-copy strong{font-size:16px;font-weight:900}#baroCustomerCatalog .baro-catalog-nav-copy small{color:#cbb4dc;font-size:10px}#baroCustomerCatalog .baro-catalog-nav-arrow{font-size:24px;color:#e5c5ff}#baroCustomerCatalog .baro-catalog-back{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;padding:9px 14px;border:1px solid #8c68a7;border-radius:12px;background:#24182f;color:#f1e2fc;font-weight:800}#baroCustomerCatalog .baro-catalog-view-title{margin:4px 0 12px;color:#f5eaff;font-size:16px;font-weight:900}#baroCustomerCatalog .baro-catalog-category-content{display:grid;grid-template-columns:1fr;gap:12px;padding:12px 0}#baroCustomerCatalog .baro-catalog-game-mark{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border:1px solid #c5a0e2;border-radius:16px;background:linear-gradient(145deg,#9b6ac2,#3c2751 58%,#21162e);box-shadow:0 7px 0 #171020,0 11px 18px #0009,inset 0 2px 5px #ffffff55;font-size:27px}#baroCustomerCatalog .baro-catalog-product-group{display:block;min-width:0;margin:0 0 12px;padding:12px;overflow:visible;border:1px solid #765792;border-radius:17px;background:linear-gradient(150deg,#30213e 0%,#1c1427 55%,#130e1b 100%);box-shadow:0 7px 0 #100b16,0 12px 18px #0008,inset 0 1px 0 #ffffff22}#baroCustomerCatalog .baro-catalog-group-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #76558c66}#baroCustomerCatalog .baro-catalog-group-icon{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;border:1px solid #a17bc0;border-radius:12px;background:linear-gradient(145deg,#63427c,#291d38);box-shadow:0 4px 0 #100b16,0 7px 12px #0008;font-size:21px}#baroCustomerCatalog .baro-catalog-group-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}#baroCustomerCatalog .baro-catalog-group-copy strong{color:#f1e4fa;font-size:14px;font-weight:900}#baroCustomerCatalog .baro-catalog-group-copy small{color:#bba9c9;font-size:10px}#baroCustomerCatalog .baro-catalog-group-count{padding:5px 8px;border-radius:9px;background:#2c2038;color:#d9c1ed;font-size:10px;font-weight:800}#baroCustomerCatalog .baro-catalog-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}#baroCustomerCatalog .baro-catalog-product-card{position:relative;display:flex;min-width:0;flex-direction:column;align-items:stretch;gap:8px;padding:10px;border:1px solid #765792;border-radius:16px;background:linear-gradient(150deg,#392849 0%,#21172d 48%,#17111f 100%);color:#f4eafa;text-align:right;box-shadow:0 7px 0 #100b16,0 12px 18px #0008,inset 0 1px 0 #ffffff2b;transform:perspective(850px) rotateX(1deg)}#baroCustomerCatalog .baro-catalog-product-card[aria-disabled="true"]{opacity:1;cursor:default;filter:none}#baroCustomerCatalog .baro-catalog-product-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}#baroCustomerCatalog .baro-catalog-product-art{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;width:100%;min-height:82px;border:1px solid #9875b4;border-radius:12px;background:radial-gradient(ellipse at 50% 20%,#a77bc533,transparent 65%),linear-gradient(145deg,#30203e,#17101f);box-shadow:inset 0 2px 8px #0008,0 3px 0 #100b16}#baroCustomerCatalog .baro-catalog-product-art-icon{font-size:34px;line-height:1.1;filter:drop-shadow(0 5px 4px #0009)}#baroCustomerCatalog .baro-catalog-product-art-label{color:#cdb5e1;font:800 8px Orbitron,Cairo,sans-serif;letter-spacing:1px}#baroCustomerCatalog .baro-catalog-preview-tag{position:absolute;top:15px;right:15px;padding:4px 7px;border:1px solid #76578d;border-radius:999px;background:#100b16dd;color:#e1d1ed;font-size:8px}#baroCustomerCatalog .baro-catalog-product-name{display:block;min-height:40px;color:#fff!important;font-size:12px;line-height:1.65;font-weight:900;white-space:normal;overflow-wrap:anywhere}#baroCustomerCatalog .baro-catalog-product-price{display:block;margin:0!important;padding:8px 6px;border:1px solid #76578d;border-radius:10px;background:linear-gradient(100deg,#2d203a,#1a1323);color:#e8d2fa!important;font-size:11px!important;line-height:1.8;text-align:center;overflow-wrap:anywhere}#baroCustomerCatalog .baro-catalog-product-footer{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:auto;padding-top:7px;border-top:1px solid #76558b66;color:#bfaecc;font-size:9px}#baroCustomerCatalog .baro-catalog-product-index{color:#d4b7ec;font:800 10px Orbitron,sans-serif}";document.head.append(s);}
+ const categoryMeta={pubg:{label:"PUBG MOBILE",icon:"🎯",description:"شدات UC والاشتراكات والحزم"},freefire:{label:"FREE FIRE",icon:"🔥",description:"باقات جواهر فري فاير"},jawaker:{label:"JAWAKER",icon:"🃏",description:"توكنز ومسرّعات جواكر"}};
+ const groupMeta={uc:{label:"شدات PUBG UC",icon:"💎",description:"باقات الشدات"},growth:{label:"اشتراكات وحزم PUBG",icon:"🚀",description:"Prime وPrime Plus وباقي الحزم"},diamonds:{label:"جواهر Free Fire",icon:"💠",description:"باقات الجواهر"},memberships:{label:"عضويات Free Fire",icon:"👑",description:"العضويات"},tokens:{label:"جواكر توكنز",icon:"🪙",description:"السيرفر الأول والسيرفر الثاني"},boosters:{label:"مسرّعات جواكر",icon:"⚡",description:"الأحمر والأزرق والأسود والذهبي"}};
+ const categoryOrder=["freefire","pubg","jawaker"],groupOrder={pubg:["uc","growth"],freefire:["diamonds","memberships"],jawaker:["tokens","boosters"]};
+ const productsForCategory=(category)=>products.filter(p=>p.category_id===category&&(category!=="freefire"||p.group_id==="diamonds"));
+ const intro=document.createElement("div");intro.className="baro-catalog-intro";const introMark=document.createElement("span");introMark.className="baro-catalog-intro-mark";introMark.textContent="✦";const introCopy=document.createElement("div");const introTitle=document.createElement("strong");introTitle.textContent="كتالوج الشحن اليدوي BARO";const introText=document.createElement("p");introText.textContent=baroManualEnabled?"اختر اللعبة، ثم التصنيف، وبعدها الباقة المطلوبة.":"تصفّح الألعاب والتصنيفات والأسعار المعتمدة. استقبال الطلبات اليدوية مغلق حالياً.";introCopy.append(introTitle,introText);intro.append(introMark,introCopy);box.append(intro);
+ if(!products.length){const empty=document.createElement("div");empty.className="baro-catalog-empty";empty.textContent="لا توجد منتجات معتمدة للعرض حالياً.";box.append(empty);return;}
+ const total=document.createElement("div");total.className="baro-catalog-total";total.textContent=products.length+" منتج ضمن "+new Set(products.map(p=>p.category_id)).size+" ألعاب";box.append(total);
+ const categories=[...new Set(products.map(p=>p.category_id))].sort((a,b)=>{const ai=categoryOrder.indexOf(a),bi=categoryOrder.indexOf(b);return(ai<0?99:ai)-(bi<0?99:bi);});
+ const makeBack=(label,action)=>{const b=document.createElement("button");b.type="button";b.className="baro-catalog-back";b.textContent="← "+label;b.addEventListener("click",action);return b;};
+ const makeHeading=(label)=>{const h=document.createElement("div");h.className="baro-catalog-view-title";h.textContent=label;return h;};
+ const makeNavCard=(icon,label,description,count,action)=>{const b=document.createElement("button");b.type="button";b.className="baro-catalog-nav-card";const mark=document.createElement("span");mark.className="baro-catalog-game-mark";mark.textContent=icon;const copy=document.createElement("span");copy.className="baro-catalog-nav-copy";const strong=document.createElement("strong");strong.textContent=label;const small=document.createElement("small");small.textContent=description+" · "+count;copy.append(strong,small);const arrow=document.createElement("span");arrow.className="baro-catalog-nav-arrow";arrow.textContent="‹";b.append(mark,copy,arrow);b.addEventListener("click",action);return b;};
+ const makeProductCard=(p,category,group,info,index)=>{const card=document.createElement("button");card.type="button";card.className="baro-catalog-product-card baro-card-"+category+" baro-card-"+(p.group_id||group||"all");const available=baroManualEnabled&&p.purchase_enabled===true;card.setAttribute("aria-disabled",String(!available));card.tabIndex=available?0:-1;card.setAttribute("aria-label",(available?"طلب ":"معاينة ")+String(p.product_name||"منتج رقمي"));if(available)card.addEventListener("click",()=>baroOpenProductCheckout(p));const top=document.createElement("div");top.className="baro-catalog-product-card-top";const art=document.createElement("div");art.className="baro-catalog-product-art";const artIcon=document.createElement("span");artIcon.className="baro-catalog-product-art-icon";const artLabel=document.createElement("small");artLabel.className="baro-catalog-product-art-label";const nameText=String(p.product_name||"منتج رقمي");let visualIcon=info.icon,visualLabel=info.label;if(category==="pubg"&&group==="uc"){visualIcon="💎";visualLabel="UNKNOWN CASH";}else if(category==="pubg"&&group==="growth"){visualIcon=/prime plus/i.test(nameText)?"👑":/prime/i.test(nameText)?"✦":"🎁";visualLabel=/prime plus/i.test(nameText)?"PRIME PLUS":/prime/i.test(nameText)?"PRIME":"PUBG BUNDLES";}else if(category==="freefire"&&group==="diamonds"){visualIcon="💠";visualLabel="DIAMONDS";}else if(category==="jawaker"&&group==="tokens"){visualIcon="🪙";visualLabel="JAWAKER TOKENS";}else if(category==="jawaker"&&group==="boosters"){visualIcon="⚡";visualLabel="BOOSTERS";}artIcon.textContent=visualIcon;artLabel.textContent=visualLabel;art.append(artIcon,artLabel);const tag=document.createElement("span");tag.className="baro-catalog-preview-tag";tag.textContent=available?"متاح للطلب":"معاينة فقط";top.append(art,tag);const name=document.createElement("strong");name.className="baro-catalog-product-name";name.dir="auto";name.textContent=nameText;const price=document.createElement("strong");price.className="baro-catalog-product-price";const usd=Number(p.sale_price_usd),syp=Number(p.sale_price_syp);price.dir="auto";price.textContent=(Number.isFinite(usd)&&usd>0?"$"+usd.toFixed(2):"السعر بالدولار غير محدد")+" · "+(Number.isFinite(syp)&&syp>0?syp.toLocaleString("en-US")+" SYP":"السعر بالليرة غير محدد");const footer=document.createElement("div");footer.className="baro-catalog-product-footer";const status=document.createElement("span");status.textContent=available?"متاح للطلب":"استقبال الطلبات مغلق حالياً";const number=document.createElement("span");number.className="baro-catalog-product-index";number.textContent=String(index+1).padStart(2,"0");footer.append(status,number);card.append(top,name,price,footer);return card;};
+ const clearView=()=>box.querySelectorAll(".baro-catalog-dynamic").forEach(n=>n.remove());
+ const renderHome=()=>{clearView();const grid=document.createElement("div");grid.className="baro-catalog-category-content baro-catalog-dynamic";categories.forEach(category=>{const meta=categoryMeta[category]||{label:String(category||"قسم"),icon:"🎮",description:"منتجات رقمية"};const items=productsForCategory(category);grid.append(makeNavCard(meta.icon,meta.label,meta.description,items.length+" منتج",()=>renderCategory(category)));});box.append(grid);};
+ const renderCategory=(category)=>{clearView();const meta=categoryMeta[category]||{label:String(category||"قسم")};const items=productsForCategory(category);const view=document.createElement("div");view.className="baro-catalog-dynamic";view.append(makeBack("كل الألعاب",renderHome),makeHeading(meta.label));const groups=[...new Set(items.map(p=>p.group_id))].sort((a,b)=>{const pref=groupOrder[category]||[];return(pref.indexOf(a)<0?99:pref.indexOf(a))-(pref.indexOf(b)<0?99:pref.indexOf(b));});const grid=document.createElement("div");grid.className="baro-catalog-category-content";groups.forEach(group=>{const list=items.filter(p=>p.group_id===group),info=groupMeta[group]||{label:String(group||"باقات أخرى"),icon:"✦",description:""};grid.append(makeNavCard(info.icon,info.label,info.description,list.length+" باقة",()=>renderGroup(category,group)));});view.append(grid);box.append(view);};
+ const renderGroup=(category,group)=>{clearView();const meta=categoryMeta[category]||{label:String(category||"قسم")},info=groupMeta[group]||{label:"الباقات",icon:"✦",description:""},items=products.filter(p=>p.category_id===category&&p.group_id===group);const view=document.createElement("div");view.className="baro-catalog-dynamic";view.append(makeBack("رجوع إلى "+meta.label,()=>renderCategory(category)),makeHeading(info.label));const section=document.createElement("section");section.className="baro-catalog-product-group";const head=document.createElement("div");head.className="baro-catalog-group-head";const icon=document.createElement("span");icon.className="baro-catalog-group-icon";icon.textContent=info.icon;const copy=document.createElement("div");copy.className="baro-catalog-group-copy";const title=document.createElement("strong");title.textContent=info.label;const desc=document.createElement("small");desc.textContent=info.description;copy.append(title,desc);const count=document.createElement("span");count.className="baro-catalog-group-count";count.textContent=items.length+" باقة";head.append(icon,copy,count);const grid=document.createElement("div");grid.className="baro-catalog-product-grid";items.forEach((p,i)=>grid.append(makeProductCard(p,category,group,info,i)));section.append(head,grid);view.append(section);box.append(view);};
+ renderHome();const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";footnote.textContent="الأسعار معروضة بالدولار والليرة · يُحجز المبلغ عند إرسال الطلب، ويُثبّت عند نجاح الشحن أو يُعاد عند الفشل أو الإلغاء.";box.append(footnote);
+}async function loadBaroCustomer(){
  const catalog=baroEl("baroCustomerCatalog"),orders=baroEl("baroCustomerOrders");
  if(!catalog||!orders||!currentUser)return;
  catalog.textContent="جاري تحميل منتجات BARO...";
