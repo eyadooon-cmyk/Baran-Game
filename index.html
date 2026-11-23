@@ -8222,5 +8222,59 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 <script src="./baran-turnstile-auth.js?v=20261122-turnstile-1"></script>
 <script src="./baran-guest-support.js?v=20261122-guest-support-1-eye2-help"></script>
 <script src="./baran-guest-support-admin.js?v=20261122-guest-support-admin-2"></script>
+
+<style id="baran-support-composer-mobile-fix">
+/* Keep support reply input readable and the send button on its own row. */
+.support-conversation-compose{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  grid-template-rows:auto auto !important;
+  align-items:stretch !important;
+  justify-items:stretch !important;
+  direction:rtl !important;
+  gap:10px !important;
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+.support-conversation-compose textarea{
+  display:block !important;
+  grid-column:1 !important;
+  grid-row:1 !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:76px !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+  direction:rtl !important;
+  text-align:right !important;
+  unicode-bidi:plaintext !important;
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+  white-space:pre-wrap !important;
+  overflow-wrap:break-word !important;
+  word-break:normal !important;
+  line-height:1.8 !important;
+  font-family:Tahoma,Arial,sans-serif !important;
+  font-size:16px !important;
+  letter-spacing:normal !important;
+}
+.support-conversation-compose button{
+  display:flex !important;
+  grid-column:1 !important;
+  grid-row:2 !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:46px !important;
+  max-width:100% !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+  white-space:normal !important;
+  line-height:1.5 !important;
+}
+</style>
 </body>
 </html>
