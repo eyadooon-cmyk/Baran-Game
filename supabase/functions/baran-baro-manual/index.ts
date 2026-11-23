@@ -372,7 +372,7 @@ Deno.serve(async (req: Request) => {
         p_player_id_confirmed: true, p_wallet_currency: walletCurrency
       });
       if (error) return json({ error: error.message || "تعذر تسجيل طلب BARO." }, 400);
-      return json({ ...(data ?? { success: true }), message: "تم تسجيل طلب BARO اليدوي دون خصم. سيتم الخصم من المحفظة فقط بعد اكتمال الشحن." });
+      return json({ ...(data ?? { success: true }), message: "تم تسجيل طلب BARO اليدوي وحجز المبلغ من المحفظة. يُثبّت الحجز عند نجاح الشحن أو يُعاد المبلغ عند الفشل أو الإلغاء." });
     }
 
     if (body.action === "manual_toggle") {
