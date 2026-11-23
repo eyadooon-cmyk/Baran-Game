@@ -73,7 +73,7 @@ async function load(){
  finally{busy=false;}
 }
 function init(){
- const admin=$("admin");if(!admin||installed)return;
+ const mount=$("baranGuestAdminMount");if(!mount||installed)return;
  installed=true;
  const style=el("style");style.textContent=`
  #baranGuestAdminPanel{margin:16px 0;padding:16px;border:1px solid #80619a;border-radius:16px;background:linear-gradient(150deg,#21182b,#15111c)}
@@ -92,9 +92,7 @@ function init(){
  const status=el("p","small","اضغط تحديث لقراءة تذاكر الزوار.");status.id="baranGuestAdminStatus";
  const refresh=el("button","","تحديث التذاكر");refresh.type="button";refresh.onclick=load;
  const list=el("div","");list.id="baranGuestAdminTickets";
- panel.append(title,status,refresh,list);admin.appendChild(panel);
- const observer=new MutationObserver(()=>{if(!admin.classList.contains("hidden"))load();});
- observer.observe(admin,{attributes:true,attributeFilter:["class","style"]});
+ panel.append(title,status,refresh,list);mount.appendChild(panel);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 window.loadBaranGuestSupportAdmin=load;
