@@ -3722,7 +3722,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 <script src="./admin-operations.js?v=20261121-service-monitor-v2"></script>
 <script src="./admin-assistant.js?v=20261121-admin-assistant-syntax-fix-2"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
-<script src="./baro.js?v=20261123-baro-timeout-fix-1"></script>
+<script src="./baro.js?v=20261123-baro-visible-error-1"></script>
 <script src="./baro-management.js?v=20261119-external-sales-2"></script>
 <script src="./baro-ai.js?v=20261121-navi-v3"></script>
 <script>
@@ -4374,7 +4374,7 @@ function showSection(id,button,options){
   if(id==="vpnStore")loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️");
   if(id==="giftCardsStore")loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁");
   if(id==="appsStore")loadBaranServiceCatalog("app","appsProductCatalog","التطبيقات المدفوعة","📱");
-  if(id==="baroManual"&&typeof loadBaroCustomer==="function")loadBaroCustomer();
+  if(id==="baroManual"){const box=document.getElementById("baroCustomerCatalog"),orders=document.getElementById("baroCustomerOrders");if(typeof loadBaroCustomer!=="function"){const msg="تعذر تشغيل BARO: ملف baro.js لم يحمّل أو يحتوي خطأ JavaScript. أعد تحميل الصفحة، وإذا استمرت المشكلة أبلغ الدعم.";if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] loadBaroCustomer is unavailable");}else{try{const task=loadBaroCustomer();if(task&&typeof task.catch==="function")task.catch(error=>{const msg="تعذر تشغيل BARO: "+(error?.message||"خطأ غير معروف");if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] customer loader rejected",error);});}catch(error){const msg="تعذر تشغيل BARO: "+(error?.message||"خطأ غير معروف");if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] customer loader threw",error);}}}
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
   if(id==="staffTasks")loadStaffTasks();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
