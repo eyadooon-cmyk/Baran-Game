@@ -11,13 +11,13 @@
 <title>BARAN GAME | متجر الألعاب والخدمات الرقمية</title>
 <meta name="description" content="BARAN GAME متجر للألعاب والخدمات الرقمية. اشحن PUBG MOBILE وFree Fire بالشحن اليدوي أو الآلي، واجمع نقاط ومكافآت BARAN CLUB مع الشحن اليدوي.">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<link rel="canonical" href="https://eyadooon-cmyk.github.io/Baran-Game/">
+<link rel="canonical" href="https://baran-game.pages.dev/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ar_SY">
 <meta property="og:site_name" content="BARAN GAME">
 <meta property="og:title" content="BARAN GAME | متجر الألعاب والخدمات الرقمية">
 <meta property="og:description" content="اشحن PUBG MOBILE وFree Fire بالشحن اليدوي أو الآلي، واجمع نقاط ومكافآت BARAN CLUB مع الشحن اليدوي.">
-<meta property="og:url" content="https://eyadooon-cmyk.github.io/Baran-Game/">
+<meta property="og:url" content="https://baran-game.pages.dev/">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="BARAN GAME | متجر الألعاب والخدمات الرقمية">
 <meta name="twitter:description" content="اشحن PUBG MOBILE وFree Fire بالشحن اليدوي أو الآلي، واجمع نقاط ومكافآت BARAN CLUB مع الشحن اليدوي.">
@@ -4686,7 +4686,7 @@ async function signInWithGoogle(){
   try{
     const {error}=await sb.auth.signInWithOAuth({
       provider:"google",
-      options:{redirectTo:"https://eyadooon-cmyk.github.io/Baran-Game/"}
+      options:{redirectTo:window.location.origin+window.location.pathname}
     });
     if(error)throw error;
   }catch(error){
