@@ -8,14 +8,27 @@ const baroEl=id=>document.getElementById(id);
 function baroEscape(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function baroMoney(value,currency){if(value===null||value===undefined||value==="")return "بانتظار تحديد السعر";const n=Number(value);return !Number.isFinite(n)?"—":currency==="USD"?"$"+n.toFixed(2):n.toLocaleString("en-US")+" SYP";}
 async function baroApi(method="GET",body=null,view="admin"){
- const {data:{session},error}=await sb.auth.getSession();
+ const timeout=(promise,ms,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label)),ms))]);
+ let sessionResult;
+ try{
+  sessionResult=await timeout(sb.auth.getSession(),12000,"انتهت مهلة التحقق من جلسة الدخول. حدّث الصفحة وحاول مجدداً.");
+ }catch(error){throw new Error(error?.message||"تعذر التحقق من جلسة الدخول.");}
+ const {data:{session},error}=sessionResult||{};
  if(error||!session)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
- const response=await fetch(baroEndpoint()+(method==="GET"?"?view="+encodeURIComponent(view):""),{
-  method,headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
-  body:body?JSON.stringify(body):undefined
- });
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),18000);
+ let response;
+ try{
+  response=await fetch(baroEndpoint()+(method==="GET"?"?view="+encodeURIComponent(view):""),{
+   method,headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+   body:body?JSON.stringify(body):undefined,signal:controller.signal
+  });
+ }catch(error){
+  if(error?.name==="AbortError")throw new Error("انتهت مهلة الاتصال بخادم BARO بعد 18 ثانية. تحقق من الإنترنت ثم اضغط تحديث القسم.");
+  throw new Error("تعذر الاتصال بخادم BARO. تحقق من الإنترنت وحاول مجدداً.");
+ }finally{clearTimeout(timer);}
  const data=await response.json().catch(()=>({}));
- if(!response.ok)throw new Error(data.error||"تعذر الاتصال بقسم BARO.");
+ if(!response.ok)throw new Error(data.error||"تعذر الاتصال بقسم BARO (HTTP "+response.status+").");
  return data;
 }
 let baroPendingSubmission=null;
