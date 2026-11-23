@@ -131,20 +131,21 @@ function renderBaroCustomerCatalog(products){
  });
  categories.forEach((category,index)=>{
   const meta=categoryMeta[category]||{label:String(category||"قسم").toUpperCase(),icon:"🎮",eyebrow:"BARO CATALOG",description:"منتجات رقمية"};
-  const section=document.createElement("details");section.className="baro-catalog-category";
-  section.open=category==="freefire";
-  const summary=document.createElement("summary");summary.className="baro-catalog-category-head";
+  const isFreeFire=category==="freefire";
+  const section=document.createElement(isFreeFire?"section":"details");section.className="baro-catalog-category";
+  if(!isFreeFire)section.open=false;
+  const summary=document.createElement(isFreeFire?"div":"summary");summary.className="baro-catalog-category-head";
   const mark=document.createElement("span");mark.className="baro-catalog-game-mark";mark.textContent=meta.icon;
   const copy=document.createElement("span");copy.className="baro-catalog-category-copy";
   const eyebrow=document.createElement("small");eyebrow.textContent=meta.eyebrow;
-  const heading=document.createElement("strong");heading.textContent=meta.label;
-  const description=document.createElement("span");description.textContent=meta.description;
+  const heading=document.createElement("strong");heading.textContent=isFreeFire?"باقات جواهر":meta.label;
+  const description=document.createElement("span");description.textContent=isFreeFire?"جواهر وعضويات Free Fire":meta.description;
   copy.append(eyebrow,heading,description);
   const count=document.createElement("span");count.className="baro-catalog-count";
   const categoryProducts=products.filter(p=>p.category_id===category);
   count.textContent=categoryProducts.length+" منتج";
-  const chevron=document.createElement("span");chevron.className="baro-catalog-chevron";chevron.setAttribute("aria-hidden","true");chevron.textContent="⌄";
-  summary.append(mark,copy,count,chevron);section.append(summary);
+  if(!isFreeFire){const chevron=document.createElement("span");chevron.className="baro-catalog-chevron";chevron.setAttribute("aria-hidden","true");chevron.textContent="⌄";summary.append(mark,copy,count,chevron);}else{summary.append(mark,copy,count);}
+  section.append(summary);
   const content=document.createElement("div");content.className="baro-catalog-category-content";
   const presentGroups=[...new Set(categoryProducts.map(p=>p.group_id))];
   const preferred=groupOrder[category]||[];
@@ -153,7 +154,7 @@ function renderBaroCustomerCatalog(products){
    return (ai<0?99:ai)-(bi<0?99:bi);
   });
   groups.forEach(group=>{
-   const groupInfo=group===null?{label:"باقات Free Fire",icon:"🔥",description:""}:(groupMeta[group]||{label:String(group||"منتجات أخرى"),icon:"✦",description:""});
+   const groupInfo=group===null?{label:"باقات جواهر",icon:"💎",description:""}:(groupMeta[group]||{label:String(group||"منتجات أخرى"),icon:"✦",description:""});
    const groupSection=document.createElement("section");groupSection.className="baro-catalog-product-group";
    const groupHead=document.createElement("div");groupHead.className="baro-catalog-group-head";
    const groupIcon=document.createElement("span");groupIcon.className="baro-catalog-group-icon";groupIcon.textContent=groupInfo.icon;
@@ -178,6 +179,7 @@ function renderBaroCustomerCatalog(products){
     const artLabel=document.createElement("small");artLabel.className="baro-catalog-product-art-label";
     const productName=String(p.product_name||"منتج رقمي");
     let visualIcon=groupInfo.icon,visualLabel=groupInfo.label;
+    if(category==="freefire"&&group===null){visualIcon="💎";visualLabel="DIAMONDS";}
     if(category==="pubg"&&group==="uc"){visualIcon="💎";visualLabel="UNKNOWN CASH";}
     else if(category==="pubg"&&group==="growth"){
      visualIcon=/prime plus/i.test(productName)?"👑":/prime/i.test(productName)?"✦":"🎁";
