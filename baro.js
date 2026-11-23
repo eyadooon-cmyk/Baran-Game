@@ -96,6 +96,52 @@ function baroOpenProductCheckout(product){
 function renderBaroCustomerCatalog(products){
  const box=baroEl("baroCustomerCatalog");if(!box)return;
  box.replaceChildren();
+ const catalogStyleId="baro-catalog-3d-style";
+ if(!document.getElementById(catalogStyleId)){
+  const catalogStyle=document.createElement("style");catalogStyle.id=catalogStyleId;
+  catalogStyle.textContent=`
+   #baroCustomerCatalog .baro-catalog-category{display:block;margin:16px 0;padding:0;overflow:hidden;border:1px solid #72528a;border-radius:20px;background:linear-gradient(145deg,#21172c 0%,#120e19 72%);box-shadow:0 12px 28px #0008,inset 0 1px 0 #ffffff18;transform:translateZ(0)}
+   #baroCustomerCatalog .baro-catalog-category>summary{list-style:none;cursor:pointer}
+   #baroCustomerCatalog .baro-catalog-category>summary::-webkit-details-marker{display:none}
+   #baroCustomerCatalog .baro-catalog-category-head{display:flex;align-items:center;gap:12px;min-height:88px;padding:15px;background:linear-gradient(115deg,#392448,#21172d 58%,#17111f);border-bottom:1px solid #8b68a744}
+   #baroCustomerCatalog .baro-catalog-game-mark{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border:1px solid #c5a0e2;border-radius:16px;background:linear-gradient(145deg,#9b6ac2,#3c2751 58%,#21162e);box-shadow:0 7px 0 #171020,0 11px 18px #0009,inset 0 2px 5px #ffffff55;font-size:27px}
+   #baroCustomerCatalog .baro-catalog-category-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+   #baroCustomerCatalog .baro-catalog-category-copy small{color:#c5a7dc;font-size:9px;letter-spacing:1.5px}
+   #baroCustomerCatalog .baro-catalog-category-copy strong{color:#fff;font-size:17px;font-weight:900}
+   #baroCustomerCatalog .baro-catalog-category-copy>span{color:#c2b2cf;font-size:11px}
+   #baroCustomerCatalog .baro-catalog-count{flex:0 0 auto;padding:6px 9px;border:1px solid #8968a2;border-radius:999px;background:#130d1d;color:#e8d8f4;font-size:10px;font-weight:800}
+   #baroCustomerCatalog .baro-catalog-chevron{color:#e6d1f6;font-size:24px;transition:transform .2s}
+   #baroCustomerCatalog .baro-catalog-category[open] .baro-catalog-chevron{transform:rotate(180deg)}
+   #baroCustomerCatalog .baro-catalog-category-content{padding:12px}
+   #baroCustomerCatalog .baro-catalog-product-group{display:block;margin:8px 0 15px;padding:12px;border:1px solid #59416d;border-radius:17px;background:linear-gradient(145deg,#1d1627,#120e18);box-shadow:0 8px 18px #0006,inset 0 1px 0 #ffffff0d}
+   #baroCustomerCatalog .baro-catalog-group-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:2px 2px 11px;border-bottom:1px solid #76558c66}
+   #baroCustomerCatalog .baro-catalog-group-icon{display:grid;place-items:center;width:39px;height:39px;flex:0 0 39px;border:1px solid #a17bc0;border-radius:12px;background:linear-gradient(145deg,#63427c,#291d38);box-shadow:0 4px 0 #100b16,0 7px 12px #0008,inset 0 1px 4px #ffffff33;font-size:20px}
+   #baroCustomerCatalog .baro-catalog-group-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:1px}
+   #baroCustomerCatalog .baro-catalog-group-copy strong{color:#f1e4fa;font-size:14px;font-weight:900}
+   #baroCustomerCatalog .baro-catalog-group-copy small{color:#bba9c9;font-size:10px}
+   #baroCustomerCatalog .baro-catalog-group-count{padding:5px 8px;border-radius:9px;background:#2c2038;color:#d9c1ed;font-size:10px;font-weight:800}
+   #baroCustomerCatalog .baro-catalog-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+   #baroCustomerCatalog .baro-catalog-product-card{position:relative;display:flex;min-width:0;flex-direction:column;align-items:stretch;gap:8px;padding:10px;border:1px solid #765792;border-radius:16px;background:linear-gradient(150deg,#392849 0%,#21172d 48%,#17111f 100%);color:#f4eafa;text-align:right;box-shadow:0 7px 0 #100b16,0 12px 18px #0008,inset 0 1px 0 #ffffff2b;transform:perspective(850px) rotateX(1deg);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+   #baroCustomerCatalog .baro-catalog-product-card:before{content:"";position:absolute;inset:1px 1px auto;height:42%;border-radius:15px 15px 45% 45%;background:linear-gradient(180deg,#ffffff12,transparent);pointer-events:none}
+   #baroCustomerCatalog .baro-catalog-product-card:active:not(:disabled){transform:perspective(850px) translateY(4px) scale(.985);box-shadow:0 3px 0 #100b16,0 6px 10px #0008}
+   #baroCustomerCatalog .baro-catalog-product-card:disabled{opacity:1;cursor:default}
+   #baroCustomerCatalog .baro-catalog-product-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+   #baroCustomerCatalog .baro-catalog-product-art{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;width:100%;min-height:82px;border:1px solid #9875b4;border-radius:12px;background:radial-gradient(ellipse at 50% 20%,#a77bc533,transparent 65%),linear-gradient(145deg,#30203e,#17101f);box-shadow:inset 0 2px 8px #0008,0 3px 0 #100b16}
+   #baroCustomerCatalog .baro-catalog-product-art-icon{font-size:34px;line-height:1.1;filter:drop-shadow(0 5px 4px #0009)}
+   #baroCustomerCatalog .baro-catalog-product-art-label{color:#cdb5e1;font:800 8px Orbitron,Cairo,sans-serif;letter-spacing:1px}
+   #baroCustomerCatalog .baro-catalog-preview-tag{position:absolute;top:15px;right:15px;padding:4px 7px;border:1px solid #76578d;border-radius:999px;background:#100b16dd;color:#e1d1ed;font-size:8px}
+   #baroCustomerCatalog .baro-catalog-product-name{display:block;min-height:40px;color:#fff;font-size:12px;line-height:1.65;font-weight:900}
+   #baroCustomerCatalog .baro-catalog-product-price{display:block;margin:0!important;padding:8px 6px;border:1px solid #76578d;border-radius:10px;background:linear-gradient(100deg,#2d203a,#1a1323);color:#e8d2fa!important;font-size:11px!important;line-height:1.8;text-align:center;overflow-wrap:anywhere}
+   #baroCustomerCatalog .baro-catalog-product-footer{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:auto;padding-top:7px;border-top:1px solid #76558b66;color:#bfaecc;font-size:9px}
+   #baroCustomerCatalog .baro-catalog-product-index{color:#d4b7ec;font:800 10px Orbitron,sans-serif}
+   #baroCustomerCatalog .baro-catalog-footnote{margin:12px 2px;color:#b9a9c9;font-size:10px;line-height:1.8}
+   @media(hover:hover){#baroCustomerCatalog .baro-catalog-product-card:hover:not(:disabled){transform:perspective(850px) translateY(-3px) rotateX(0);border-color:#c39be0;box-shadow:0 10px 0 #100b16,0 18px 24px #0009,inset 0 1px 0 #ffffff35}}
+   @media(max-width:390px){#baroCustomerCatalog .baro-catalog-category-head{gap:8px;padding:12px}#baroCustomerCatalog .baro-catalog-game-mark{width:46px;height:46px;flex-basis:46px;font-size:23px}#baroCustomerCatalog .baro-catalog-category-copy strong{font-size:14px}#baroCustomerCatalog .baro-catalog-count{font-size:9px;padding:5px 6px}#baroCustomerCatalog .baro-catalog-category-content{padding:8px}#baroCustomerCatalog .baro-catalog-product-group{padding:9px}#baroCustomerCatalog .baro-catalog-product-grid{gap:8px}#baroCustomerCatalog .baro-catalog-product-card{padding:8px}#baroCustomerCatalog .baro-catalog-product-art{min-height:70px}}
+   @media(prefers-reduced-motion:reduce){#baroCustomerCatalog .baro-catalog-product-card{transition:none;transform:none}}
+  `;
+  document.head.append(catalogStyle);
+ }
+
  const categoryMeta={
   pubg:{label:"PUBG MOBILE",icon:"🎯",eyebrow:"BATTLEGROUNDS",description:"شدات UC والاشتراكات وباقات PUBG"},
   freefire:{label:"FREE FIRE",icon:"🔥",eyebrow:"BOOYAH!",description:"جواهر فري فاير والعضويات"},
@@ -132,7 +178,7 @@ function renderBaroCustomerCatalog(products){
  categories.forEach((category,index)=>{
   const meta=categoryMeta[category]||{label:String(category||"قسم").toUpperCase(),icon:"🎮",eyebrow:"BARO CATALOG",description:"منتجات رقمية"};
   const section=document.createElement("details");section.className="baro-catalog-category";
-  section.open=false;
+  section.open=false; // بطاقة اللعبة وحدها قابلة للفتح والإغلاق؛ مجموعات الباقات تبقى ظاهرة داخلها.
   const summary=document.createElement("summary");summary.className="baro-catalog-category-head";
   const mark=document.createElement("span");mark.className="baro-catalog-game-mark";mark.textContent=meta.icon;
   const copy=document.createElement("span");copy.className="baro-catalog-category-copy";
@@ -154,7 +200,7 @@ function renderBaroCustomerCatalog(products){
   });
   groups.forEach(group=>{
    const groupInfo=group===null?{label:"باقات جواهر",icon:"💎",description:""}:(groupMeta[group]||{label:String(group||"منتجات أخرى"),icon:"✦",description:""});
-   const groupSection=document.createElement("section");groupSection.className="baro-catalog-product-group";
+   const groupSection=document.createElement("section");groupSection.className="baro-catalog-product-group"; // قسم ثابت وليس درجاً قابلاً للطي.
    const groupHead=document.createElement("div");groupHead.className="baro-catalog-group-head";
    const groupIcon=document.createElement("span");groupIcon.className="baro-catalog-group-icon";groupIcon.textContent=groupInfo.icon;
    const groupCopy=document.createElement("div");groupCopy.className="baro-catalog-group-copy";
