@@ -4374,6 +4374,7 @@ function showSection(id,button,options){
   if(id==="vpnStore")loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️");
   if(id==="giftCardsStore")loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁");
   if(id==="appsStore")loadBaranServiceCatalog("app","appsProductCatalog","التطبيقات المدفوعة","📱");
+  if(id==="baroManual"&&typeof loadBaroCustomer==="function")loadBaroCustomer();
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
   if(id==="staffTasks")loadStaffTasks();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
