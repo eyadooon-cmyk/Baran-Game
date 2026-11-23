@@ -8462,75 +8462,77 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 </script>
 
 
-<style id="baran-day-theme-premium-contrast-20261123">
-/* Premium light theme: enforce readable contrast without changing layout or behavior. */
+<style id="baran-day-theme-calm-lavender-20261123">
+/* Calm premium daytime palette: soft lavender surfaces, plum typography, restrained violet accents. */
 html[data-baran-theme="day"]{
  color-scheme:light;
- --bg:#f7f5fa;--panel:#ffffff;--line:#ded5e8;--muted:#62566f;--green:#70429a;
- --baran-text:#292331;--baran-subtext:#51465d;--baran-accent:#68408e;
- --baran-soft:#f0eaf6;--baran-border:#ded3e8;
+ --bg:#f5f1fa;--panel:#fbf9fe;--line:#e5dced;--muted:#786b86;--green:#268568;
+ --baran-text:#40304f;--baran-subtext:#695b78;--baran-accent:#8060a8;
+ --baran-soft:#eee7f6;--baran-border:#e2d7ed;
 }
 html[data-baran-theme="day"] body,
-html[data-baran-theme="day"] main{background:#f7f5fa!important;color:#292331!important}
-html[data-baran-theme="day"] :is(h1,h2,h3,h4,h5,h6,p,label,legend,li,dt,dd,figcaption,caption,.small,.muted,.description,.subtitle,.hint,.help-text,.empty-state,.section-description){
- color:#51465d!important;text-shadow:none!important;
+html[data-baran-theme="day"] main{
+ background:linear-gradient(180deg,#f7f3fb 0%,#f1edf7 100%)!important;
+ color:#40304f!important;
 }
-html[data-baran-theme="day"] :is(h1,h2,h3,h4,h5,h6,.section-title,.page-title,.product-title,.item-title,.card-title,strong.balance,.balance-value){
- color:#30213d!important;
+html[data-baran-theme="day"] :is(h1,h2,h3,h4,h5,h6,.section-title,.page-title,.product-title,.item-title,.card-title){
+ color:#49345d!important;text-shadow:none!important;
 }
-html[data-baran-theme="day"] :is(.small,.muted,.description,.subtitle,.hint,.help-text,.text-muted,[class*="subtitle"],[class*="description"]){
- color:#62566f!important;opacity:1!important;
+html[data-baran-theme="day"] :is(p,label,legend,li,dt,dd,figcaption,caption,.small,.muted,.description,.subtitle,.hint,.help-text,.empty-state,.section-description,.text-muted){
+ color:#756881!important;text-shadow:none!important;opacity:1!important;
 }
 html[data-baran-theme="day"] :is(section,article,.card,.item,.product-card,.deposit-card,.deposit-row,.deposit-request-card,.admin-request,.finance-card,.finance-entry,.notification-box,.notification-item,.account-panel-pro,.account-security-card,.account-security-content,.auth-card,.support-section,.support-ticket,.support-message,.chat-panel,.chat-container,.modal-content,.drawer-profile-card,.hero,.overview-panel,.finance-section,.ai-assistant-panel,.ai-assistant-head,[class*="-card"],[class*="-panel"],[class*="-box"],[class*="-entry"],[class*="-request"],[class*="-section"],[class*="-group"]):not(.baran-theme-toggle-card){
- background-color:#fff!important;color:#30263a!important;border-color:#ded5e8!important;
- box-shadow:0 5px 18px rgba(47,29,62,.07)!important;
+ background-color:#fbf9fe!important;color:#493a59!important;border-color:#e5dced!important;
+ box-shadow:0 4px 16px rgba(83,57,111,.055)!important;
 }
 html[data-baran-theme="day"] :is(.item,.product-card,.deposit-row,.finance-card,.finance-entry,.admin-request,.deposit-request-card,.account-security-card,.account-panel-pro,.account-security-content,.support-ticket,.support-message,[class*="detail-card"],[class*="stat-card"]){
- background:#fff!important;color:#30263a!important;
+ background:#f9f6fd!important;
 }
 html[data-baran-theme="day"] :is(.item,.product-card,.deposit-card,.deposit-row,.finance-card,.finance-entry,.admin-request,.deposit-request-card,.account-security-card,.account-panel-pro,.account-security-content,.support-ticket,.support-message,[class*="-card"],[class*="-panel"],[class*="-box"],[class*="-entry"],[class*="-request"],[class*="-section"]) :is(h1,h2,h3,h4,h5,h6,p,span,small,label,strong,li,div,a:not(.button),.muted,.small){
- color:#352b40!important;text-shadow:none!important;opacity:1;
+ color:#554365!important;text-shadow:none!important;opacity:1;
 }
 html[data-baran-theme="day"] :is(.price,.product-price,.balance,.amount,.total,.profit,.baran-price,[class*="price"],[class*="amount"]){
- color:#60358a!important;font-weight:800;
+ color:#278365!important;font-weight:800;
 }
-html[data-baran-theme="day"] :is(.status,.badge,.pill,.tag,[class*="status"],[class*="badge"]){opacity:1!important}
 html[data-baran-theme="day"] :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select){
- background:#fff!important;color:#292331!important;border:1px solid #cfc2dc!important;
- caret-color:#68408e!important;box-shadow:inset 0 1px 2px rgba(35,20,48,.04)!important;
+ background:#fcfaff!important;color:#49345d!important;border:1px solid #d9cce7!important;
+ caret-color:#8060a8!important;box-shadow:inset 0 1px 2px rgba(83,57,111,.035)!important;
 }
-html[data-baran-theme="day"] :is(input,textarea,select)::placeholder{color:#746981!important;opacity:1!important}
+html[data-baran-theme="day"] :is(input,textarea,select)::placeholder{color:#9386a0!important;opacity:1!important}
 html[data-baran-theme="day"] :is(input,textarea,select):focus{
- outline:2px solid #9b79b6!important;outline-offset:1px;border-color:#76509a!important;
+ outline:2px solid #c5b2dc!important;outline-offset:1px;border-color:#987bb8!important;
 }
-html[data-baran-theme="day"] a:not([class*="button"]){color:#60358a}
+html[data-baran-theme="day"] a:not([class*="button"]){color:#765493}
 html[data-baran-theme="day"] button:not(.active):not(.primary):not(.full):not([class*="danger"]):not([class*="success"]):not([class*="approve"]):not([class*="reject"]):not([class*="delete"]):not([class*="warning"]){
- border-color:#d7c9e3;
+ border-color:#ded2e9;
 }
 html[data-baran-theme="day"] button.secondary,
 html[data-baran-theme="day"] :is(.section-back-button,.games-back-button,.menu-toggle,.notification-bell,.section-refresh-button,.admin-back,.drawer-link,.security-tab,.support-tab){
- background:#eee7f4!important;color:#56356f!important;border-color:#d7c9e3!important;
+ background:#eee7f6!important;color:#624879!important;border-color:#dfd3eb!important;
 }
-html[data-baran-theme="day"] nav{background:#fff!important;border-color:#ded5e8!important}
-html[data-baran-theme="day"] nav button{background:#eee7f4!important;color:#49345c!important}
-html[data-baran-theme="day"] nav button.active{background:#70429a!important;color:#fff!important}
-html[data-baran-theme="day"] header{border-color:#70429a!important}
-html[data-baran-theme="day"] header p{color:#40334d!important}
-html[data-baran-theme="day"] .deposit-id{background:#f5f0f9!important;color:#60358a!important;border-color:#9b7ab4!important}
-html[data-baran-theme="day"] .deposit-request-detail{background:#f8f5fb!important;border-color:#ded5e8!important}
-html[data-baran-theme="day"] .deposit-request-detail :is(span,strong){color:#352b40!important}
-html[data-baran-theme="day"] .side-drawer{background:#fff!important;color:#30263a!important;border-color:#ded5e8!important}
-html[data-baran-theme="day"] .drawer-title,html[data-baran-theme="day"] .drawer-link{color:#56356f!important}
-html[data-baran-theme="day"] .ai-chat-message.bot{background:#eee7f4!important;color:#30263a!important}
-html[data-baran-theme="day"] .ai-chat-message.user{background:#70429a!important;color:#fff!important}
+html[data-baran-theme="day"] nav{
+ background:rgba(251,249,254,.96)!important;border-color:#e5dced!important;
+ box-shadow:0 3px 14px rgba(83,57,111,.06)!important;
+}
+html[data-baran-theme="day"] nav button{background:#f0eaf7!important;color:#624e75!important}
+html[data-baran-theme="day"] nav button.active{background:#8060a8!important;color:#fff!important}
+html[data-baran-theme="day"] header{border-color:#d9cce7!important}
+html[data-baran-theme="day"] header p{color:#756881!important}
+html[data-baran-theme="day"] .deposit-id{background:#f1eafa!important;color:#765493!important;border-color:#d8c8e7!important}
+html[data-baran-theme="day"] .deposit-request-detail{background:#f6f1fa!important;border-color:#e5dced!important}
+html[data-baran-theme="day"] .deposit-request-detail :is(span,strong){color:#554365!important}
+html[data-baran-theme="day"] .side-drawer{background:#fbf9fe!important;color:#49345d!important;border-color:#e5dced!important}
+html[data-baran-theme="day"] .drawer-title,html[data-baran-theme="day"] .drawer-link{color:#624879!important}
+html[data-baran-theme="day"] .ai-chat-message.bot{background:#eee7f6!important;color:#554365!important}
+html[data-baran-theme="day"] .ai-chat-message.user{background:#8060a8!important;color:#fff!important}
 html[data-baran-theme="day"] .ai-chat-message.user *{color:#fff!important}
-html[data-baran-theme="day"] :is(.baran-theme-toggle-card,.baran-theme-toggle-card *){color:#30263a!important}
-html[data-baran-theme="day"] .baran-theme-toggle{background:#70429a!important;color:#fff!important;border-color:#70429a!important}
-html[data-baran-theme="day"] :is(.approved,.success,.status-approved){color:#17633e!important}
-html[data-baran-theme="day"] :is(.pending,.warning,.status-pending){color:#80530b!important}
-html[data-baran-theme="day"] :is(.rejected,.danger,.error,.status-rejected){color:#a12d45!important}
-html[data-baran-theme="day"] :is(table th){background:#eee7f4!important;color:#40334d!important}
-html[data-baran-theme="day"] :is(table td){color:#352b40!important;border-color:#e5ddeb!important}
+html[data-baran-theme="day"] :is(.baran-theme-toggle-card,.baran-theme-toggle-card *){color:#554365!important}
+html[data-baran-theme="day"] .baran-theme-toggle{background:#8060a8!important;color:#fff!important;border-color:#8060a8!important}
+html[data-baran-theme="day"] :is(.approved,.success,.status-approved){color:#247451!important}
+html[data-baran-theme="day"] :is(.pending,.warning,.status-pending){color:#94651b!important}
+html[data-baran-theme="day"] :is(.rejected,.danger,.error,.status-rejected){color:#a33f58!important}
+html[data-baran-theme="day"] :is(table th){background:#eee7f6!important;color:#624e75!important}
+html[data-baran-theme="day"] :is(table td){color:#554365!important;border-color:#e8dfef!important}
 @media(prefers-reduced-motion:reduce){html[data-baran-theme="day"] *{scroll-behavior:auto!important}}
 </style>
 
