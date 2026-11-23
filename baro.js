@@ -115,7 +115,19 @@ function renderBaroCustomerCatalog(products){
  renderHome();const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";footnote.textContent="الأسعار معروضة بالدولار والليرة · يُحجز المبلغ عند إرسال الطلب، ويُثبّت عند نجاح الشحن أو يُعاد عند الفشل أو الإلغاء.";box.append(footnote);
 }async function loadBaroCustomer(){
  const catalog=baroEl("baroCustomerCatalog"),orders=baroEl("baroCustomerOrders");
- if(!catalog||!orders||!currentUser)return;
+ if(!catalog||!orders){
+  const reason="تعذر بدء تحميل BARO: "+(!catalog?"عنصر كتالوج المنتجات غير موجود. ":"")+(!orders?"عنصر طلبات BARO غير موجود.":"");
+  if(catalog)catalog.textContent=reason;
+  if(orders)orders.textContent=reason;
+  console.error("[BARO] customer loader stopped: missing DOM elements",{catalog:!!catalog,orders:!!orders});
+  return;
+ }
+ if(!currentUser){
+  const reason="تعذر بدء تحميل BARO: جلسة المستخدم لم تجهز بعد. حدّث الصفحة مرة واحدة.";
+  catalog.textContent=reason;orders.textContent=reason;
+  console.error("[BARO] customer loader stopped: currentUser is empty");
+  return;
+ }
  catalog.textContent="جاري تحميل منتجات BARO...";
  orders.textContent="جاري تحميل طلباتك...";
  const statusLabel=baroEl("baranBaroStatus");
