@@ -28,6 +28,7 @@ function readKeyObject(name: string): string | undefined {
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("Origin") ?? "";
+  const respond = (body: unknown, status = 200, responseOrigin = origin) => json(body, status, responseOrigin);
   if (req.method === "OPTIONS") {
     if (origin && !ALLOWED_ORIGINS.has(origin)) return new Response("Forbidden", { status: 403 });
     return new Response("ok", { headers: corsHeaders(origin) });
