@@ -63,3 +63,11 @@ test("guest support has a standalone admin destination separate from BARO financ
   assert.match(adminUi, /mount\.appendChild\(panel\)/);
   assert.doesNotMatch(adminUi, /admin\.appendChild\(panel\)/);
 });
+
+
+test("closing a visitor ticket removes it from the open list and confirms success", () => {
+  assert.match(adminUi, /const openTickets=tickets\.filter\(t=>t\.status!==\"closed\"\)/);
+  assert.match(adminUi, /لا توجد تذاكر مفتوحة حالياً/);
+  assert.match(adminUi, /await load\(\"تم إغلاق التذكرة بنجاح\.\"\)/);
+  assert.match(adminUi, /successMessage\|\|/);
+});

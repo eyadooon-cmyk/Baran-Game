@@ -29,8 +29,9 @@ function buildGuestAnalysis(ticket){
 }
 function render(tickets){
  const root=$("baranGuestAdminTickets");root.innerHTML="";
- if(!tickets.length){root.append(el("p","small","لا توجد تذاكر زوار حالياً."));return;}
- tickets.forEach(t=>{
+ const openTickets=tickets.filter(t=>t.status!=="closed");
+ if(!openTickets.length){root.append(el("p","small","لا توجد تذاكر مفتوحة حالياً."));return;}
+ openTickets.forEach(t=>{
   const card=el("article","baran-guest-admin-card");
   const head=el("div","baran-guest-admin-head");
   head.append(el("strong","",t.ticket_code),el("span","",t.status==="pending"?"بانتظار الرد":t.status==="answered"?"تم الرد":t.status==="closed"?"مغلقة":"قيد المتابعة"));
@@ -49,7 +50,7 @@ function render(tickets){
   const send=el("button","","إرسال الرد");send.type="button";
   send.onclick=async()=>{if(!reply.value.trim()){alert("اكتب الرد قبل الإرسال.");return;}send.disabled=true;try{await request({action:"admin_reply",ticket_id:t.id,message:reply.value.trim()});reply.value="";await load();}catch(e){alert(e.message);}finally{send.disabled=false;}};
   const close=el("button","guest-admin-secondary","إغلاق التذكرة");close.type="button";
-  close.onclick=async()=>{close.disabled=true;try{await request({action:"admin_update",ticket_id:t.id,status:"closed"});await load();}catch(e){alert(e.message);}finally{close.disabled=false;}};
+  close.onclick=async()=>{close.disabled=true;try{await request({action:"admin_update",ticket_id:t.id,status:"closed"});await load("تم إغلاق التذكرة بنجاح.");}catch(e){alert(e.message);}finally{close.disabled=false;}};
   const analyze=el("button","guest-admin-secondary","تحليل واقتراح رد");analyze.type="button";
   analyze.onclick=()=>{
    analyze.disabled=true;
@@ -65,10 +66,10 @@ function render(tickets){
   actions.append(analyze,send,close);card.append(analysis,reply,actions);root.append(card);
  });
 }
-async function load(){
+async function load(successMessage){
  if(busy)return;busy=true;
  const status=$("baranGuestAdminStatus");if(status)status.textContent="جاري تحميل تذاكر الزوار...";
- try{const data=await request({action:"admin_list"});render(data.tickets||[]);if(status)status.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-SY")+" — "+(data.tickets||[]).length+" تذكرة";}
+ try{const data=await request({action:"admin_list"});render(data.tickets||[]);if(status)status.textContent=successMessage||("آخر تحديث: "+new Date().toLocaleTimeString("ar-SY")+" — "+(data.tickets||[]).filter(t=>t.status!=="closed").length+" تذكرة مفتوحة");}
  catch(e){if(status)status.textContent=e.message;}
  finally{busy=false;}
 }
