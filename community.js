@@ -31,12 +31,24 @@ function openCustomerNotifications(){
 
 async function loadMyNotifications(){
   const box=document.getElementById("myNotifications");
-  if(!box||!currentUser)return;
+  if(!box)return;
+  if(!currentUser){
+    box.textContent="سجّل الدخول لعرض إشعاراتك.";
+    return;
+  }
+  box.textContent="جاري تحميل إشعاراتك...";
+  const retry=document.createElement("button");
+  retry.type="button";
+  retry.className="notification-read-action";
+  retry.textContent="إعادة المحاولة";
   try{
-    const {data,error}=await sb.from("baran_notifications")
+    // Prevent a stalled network request from leaving the customer-facing loader forever.
+    const query=sb.from("baran_notifications")
       .select("id,kind,title,body,entity_type,entity_id,read_at,created_at")
       .eq("recipient_id",currentUser.id).eq("audience","customer")
       .order("created_at",{ascending:false}).limit(30);
+    const timeout=new Promise((_,reject)=>window.setTimeout(()=>reject(new Error("انتهت مهلة الاتصال")),12000));
+    const {data,error}=await Promise.race([query,timeout]);
     if(error)throw error;
     const items=data||[],unread=items.filter(item=>!item.read_at);
     const badge=document.getElementById("notificationCount");
@@ -48,9 +60,14 @@ async function loadMyNotifications(){
     markAll.textContent=unread.length?"قراءة الكل":"محدّثة";markAll.disabled=!unread.length;
     markAll.onclick=async()=>{
       markAll.disabled=true;
-      const {error:readError}=await sb.rpc("mark_baran_notifications_read",{p_ids:unread.map(item=>item.id)});
-      if(readError){markAll.disabled=false;alert("تعذر تحديث الإشعارات.");return;}
-      await loadMyNotifications();
+      try{
+        const {error:readError}=await sb.rpc("mark_baran_notifications_read",{p_ids:unread.map(item=>item.id)});
+        if(readError)throw readError;
+        await loadMyNotifications();
+      }catch(readError){
+        markAll.disabled=false;
+        alert("تعذر تحديث الإشعارات. حاول مرة أخرى.");
+      }
     };
     heading.append(title,markAll);box.appendChild(heading);
     if(!items.length){
@@ -73,7 +90,14 @@ async function loadMyNotifications(){
       card.append(name,body,date);box.appendChild(card);
     });
   }catch(error){
-    box.replaceChildren();const message=document.createElement("div");message.className="notification-load-error";message.textContent="تعذر تحميل الإشعارات حالياً. حاول لاحقاً.";box.appendChild(message);
+    console.warn("تعذر تحميل إشعارات الزبون:",error);
+    box.replaceChildren();
+    const message=document.createElement("div");message.className="notification-load-error";
+    message.textContent=error?.message==="انتهت مهلة الاتصال"
+      ?"استغرق تحميل الإشعارات وقتاً أطول من المعتاد. تحقق من الاتصال وحاول مجدداً."
+      :"تعذر تحميل الإشعارات حالياً. حاول مرة أخرى.";
+    retry.onclick=()=>loadMyNotifications();
+    box.append(message,retry);
   }
 }
 
