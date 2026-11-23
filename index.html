@@ -2040,7 +2040,10 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 <style id="baran-automatic-games-navigation">
 .baran-auto-category-grid,.baran-auto-games-grid{margin-top:14px;gap:13px}
 .baran-auto-category-art,.baran-auto-game-art{display:grid;place-items:center;width:100%;min-height:118px;border-radius:13px;background:radial-gradient(circle at 50% 35%,#694b82,#251a32 72%,#120d18);color:#f0ddff;font-size:48px}
-.baran-auto-services-art{background:radial-gradient(circle at 50% 35%,#5a4774,#241a31 72%,#120d18)}
+.baran-auto-services-art,.baran-auto-apps-art{background:radial-gradient(circle at 50% 35%,#5a4774,#241a31 72%,#120d18)}
+.baran-auto-chat-art{background:radial-gradient(circle at 50% 35%,#426b86,#1b2b3a 72%,#10141c)}
+.baran-auto-vpn-art{background:radial-gradient(circle at 50% 35%,#397b69,#193b35 72%,#101a19)}
+.baran-auto-gifts-art{background:radial-gradient(circle at 50% 35%,#9b6847,#493022 72%,#1b1210)}
 .baran-jawaker-art{gap:4px;background:radial-gradient(circle at 50% 35%,#a87938,#392719 72%,#171018);color:#ffe2a8}
 .baran-jawaker-art>span{font:900 48px Orbitron,Arial,sans-serif;line-height:1;text-shadow:0 3px 12px #0008}
 .baran-jawaker-art>small{font-size:11px;font-weight:900;letter-spacing:2px}
@@ -2284,9 +2287,21 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
           <span class="baran-auto-category-art">🎮</span>
           <span class="item-content"><strong>الألعاب</strong><span>PUBG MOBILE وFree Fire وجواكر وألعاب أخرى</span><span class="small">استعراض الألعاب ←</span></span>
         </button>
-        <button class="item" type="button" onclick="showSection('services',null)">
-          <span class="baran-auto-category-art baran-auto-services-art">✦</span>
-          <span class="item-content"><strong>الخدمات الرقمية</strong><span>ChatGPT وVPN والتطبيقات والبطاقات الرقمية</span><span class="small">استعراض الخدمات ←</span></span>
+        <button class="item" type="button" onclick="showSection('appsStore',null)">
+          <span class="baran-auto-category-art baran-auto-apps-art">📱</span>
+          <span class="item-content"><strong>البرامج والتطبيقات</strong><span>تطبيقات مدفوعة وخدمات رقمية</span><span class="small">استعراض البرامج ←</span></span>
+        </button>
+        <button class="item" type="button" onclick="showSection('chatgptStore',null)">
+          <span class="baran-auto-category-art baran-auto-chat-art">💬</span>
+          <span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT واشتراكات وخدمات المحادثة</span><span class="small">استعراض خدمات الدردشة ←</span></span>
+        </button>
+        <button class="item" type="button" onclick="showSection('vpnStore',null)">
+          <span class="baran-auto-category-art baran-auto-vpn-art">🛡️</span>
+          <span class="item-content"><strong>اشتراكات VPN</strong><span>خدمات الشبكات الخاصة والاتصال</span><span class="small">استعراض اشتراكات VPN ←</span></span>
+        </button>
+        <button class="item" type="button" onclick="showSection('giftCardsStore',null)">
+          <span class="baran-auto-category-art baran-auto-gifts-art">🎁</span>
+          <span class="item-content"><strong>البطاقات الرقمية</strong><span>Google Play وبطاقات رقمية أخرى</span><span class="small">استعراض البطاقات ←</span></span>
         </button>
       </div>
     </section>
