@@ -115,7 +115,7 @@ function renderBaroCustomerCatalog(products){
  const introMark=document.createElement("span");introMark.className="baro-catalog-intro-mark";introMark.textContent="✦";
  const introCopy=document.createElement("div");
  const introTitle=document.createElement("strong");introTitle.textContent="اكتشف منتجات BARO";
- const introText=document.createElement("p");introText.textContent=baroManualEnabled?"اختر باقة Free Fire متاحة، ثم أدخل ID اللاعب وأكّده قبل إرسال الطلب. لا يُخصم أي مبلغ إلا بعد اكتمال الشحن بنجاح.":"تصفّح منتجات BARO وشاهد أسعار البيع المعتمدة بالدولار والليرة. استقبال الطلبات اليدوية مغلق حالياً."
+ const introText=document.createElement("p");introText.textContent=baroManualEnabled?"اختر باقة متاحة، ثم أدخل ID اللاعب وأكّده قبل إرسال الطلب. يُحجز المبلغ من المحفظة عند الإرسال، ويُثبّت عند نجاح الشحن أو يُعاد عند الفشل أو الإلغاء.":"تصفّح منتجات BARO وشاهد أسعار البيع المعتمدة بالدولار والليرة. استقبال الطلبات اليدوية مغلق حالياً."
  introCopy.append(introTitle,introText);intro.append(introMark,introCopy);box.append(intro);
  if(!products.length){
   const empty=document.createElement("div");empty.className="baro-catalog-empty";
@@ -207,7 +207,7 @@ function renderBaroCustomerCatalog(products){
   section.append(content);box.append(section);
  });
  const footnote=document.createElement("p");footnote.className="baro-catalog-footnote";
- footnote.textContent="الأسعار معروضة بالدولار والليرة · لا يُخصم أي مبلغ عند إرسال الطلب؛ يتم الخصم فقط بعد تأكيد اكتمال الشحن بنجاح."
+ footnote.textContent="الأسعار معروضة بالدولار والليرة · يُحجز المبلغ عند إرسال الطلب، ويُثبّت عند نجاح الشحن أو يُعاد عند الفشل أو الإلغاء."
  box.append(footnote);
 }
 async function loadBaroCustomer(){
@@ -224,7 +224,7 @@ async function loadBaroCustomer(){
   if(statusLabel)statusLabel.textContent=label;
   if(homeCopy)homeCopy.textContent=enabled?"قسم مستقل للشحن اليدوي — باقات Free Fire المتاحة جاهزة للطلب.":"قسم مستقل عن الشحن الآلي — تصفّح المنتجات والأسعار.";
   if(heroStatus)heroStatus.textContent=enabled?"اختر باقة Free Fire المتاحة، ثم أدخل ID اللاعب وأكّده قبل إرسال الطلب.":"كتالوج BARO وأسعار البيع المعتمدة. يمكنك التصفح وإدخال ID، لكن إرسال الطلبات متوقف حالياً.";
-  if(previewCard)previewCard.textContent=enabled?"الاستقبال اليدوي متاح للمنتجات المفعّلة فقط. لا يُخصم أي مبلغ عند إرسال الطلب؛ يتم الخصم فقط بعد تأكيد اكتمال الشحن بنجاح.":"الاستقبال اليدوي متوقف حالياً. يمكنك تصفح المنتجات والأسعار؛ لن يتم إنشاء طلب أو خصم رصيد.";
+  if(previewCard)previewCard.textContent=enabled?"الاستقبال اليدوي متاح للمنتجات المفعّلة فقط. يتم حجز قيمة الطلب من المحفظة عند إرساله، ويُثبّت الخصم عند نجاح الشحن أو يُعاد المبلغ عند الفشل أو الإلغاء.":"الاستقبال اليدوي متوقف حالياً. يمكنك تصفح المنتجات والأسعار؛ لن يتم إنشاء طلب أو حجز رصيد.";
  };
  try{
   const c=await baroApi("GET",null,"catalog");
@@ -422,6 +422,36 @@ function baroProductCard(p){
  card.append(title,code,state,referenceCost,cost,sale,margin,form);return card;
 }
 function baroAdminMessage(text){const el=baroEl("baroAdminMessage");if(el)el.textContent=text;}
+async function baroAdminReservedOrderUpdate(order,nextStatus){
+ const hold=order?.wallet_hold;
+ if(!hold||hold.status!=="reserved"){baroAdminMessage("لم يتم تأكيد حجز الرصيد لهذا الطلب؛ أوقفنا التحديث لحماية المحفظة.");return;}
+ if(!["in_progress","completed","failed"].includes(nextStatus))return;
+ const quoteAmount=order.customer_price_usd!==null&&order.customer_price_usd!==undefined?Number(order.customer_price_usd):Number(order.customer_price_syp);
+ const quoteCurrency=order.customer_price_usd!==null&&order.customer_price_usd!==undefined?"USD":"SYP";
+ if(!Number.isFinite(quoteAmount)||quoteAmount<=0){baroAdminMessage("سعر الطلب المحفوظ غير صالح؛ لم يتم تغيير الطلب.");return;}
+ const supplierCost=Number(order.supplier_cost_usd??order.supplier_cost_usd_snapshot??0);
+ if(nextStatus==="completed"&&(!Number.isFinite(supplierCost)||supplierCost<=0)){baroAdminMessage("لا توجد تكلفة مورد صالحة؛ لم يتم إكمال الطلب أو تثبيت الحجز.");return;}
+ const prompts={
+  in_progress:"تأكيد بدء تنفيذ طلب BARO؟ سيبقى المبلغ محجوزاً حتى نجاح الشحن أو إرجاعه عند الفشل.",
+  completed:"تأكيد نجاح الشحن؟ سيتم تثبيت المبلغ المحجوز نهائياً بعد اعتماد اكتمال الطلب.",
+  failed:"تأكيد تعذر تنفيذ الشحن؟ سيتم إرجاع المبلغ المحجوز إلى محفظة الزبون."
+ };
+ if(!confirm(prompts[nextStatus]))return;
+ const button=document.querySelector('[data-baro-reserved-action="'+order.id+'"][data-status="'+nextStatus+'"]');
+ if(button){button.disabled=true;button.textContent="جارٍ التحديث...";}
+ try{
+  const result=await baroApi("POST",{action:"order_admin_update",order_id:order.id,status:nextStatus,
+   quote_amount:quoteAmount,quote_currency:quoteCurrency,payment_method:order.payment_method,
+   payment_status:"verified",customer_message:nextStatus==="in_progress"?"تم استلام طلبك وبدأ تنفيذ الشحن اليدوي.":nextStatus==="completed"?"تم شحن طلبك بنجاح! يرجى التحقق من وصول الرصيد إلى حسابك. شكراً لثقتك بـ BARAN GAME.":"تعذر تنفيذ الشحن، وتمت إعادة المبلغ المحجوز إلى محفظتك.",
+   supplier_cost_usd:nextStatus==="completed"?supplierCost:(order.supplier_cost_usd??null),
+   supplier_reference:order.supplier_reference||"",
+   exception_reason:nextStatus==="completed"?"تم تنفيذ الشحن اليدوي والتحقق من وصوله إلى حساب الزبون.":"",
+   internal_notes:order.internal_notes||""});
+  baroAdminMessage(nextStatus==="completed"?(result.finance_posted?"اكتمل الشحن وثُبّت حجز المحفظة وسُجلت القيود المالية.":"تم تحديث الطلب؛ راجع سجل BARO للتأكد من القيود المالية."):nextStatus==="failed"?"تعذر الشحن وأُعيد المبلغ إلى محفظة الزبون.":"بدأ تنفيذ الطلب، وما زال المبلغ محجوزاً.");
+  await loadBaroAdmin();
+ }catch(error){baroAdminMessage(error.message);}
+ finally{if(button)button.disabled=false;}
+}
 async function baroAdminQuickOrderStatus(order,nextStatus){
  if(nextStatus!=="completed")return;
  const completedMessage="تم شحن طلبك بنجاح! يرجى التحقق من وصول الرصيد إلى حسابك. شكراً لثقتك بـ BARAN GAME.";
@@ -481,12 +511,30 @@ function renderBaroAdmin(){
    const complete=document.createElement("button");complete.type="button";complete.className="primary";complete.textContent="✓ تم الشحن — مكتمل";
    complete.setAttribute("data-baro-complete-order",o.id);complete.style.cssText="width:100%;margin-top:12px;font-weight:900";
    complete.onclick=()=>baroAdminQuickOrderStatus(o,"completed");card.append(complete);
+  }else if(o.wallet_charge_mode!=="wallet_on_completion"){
+   const settlement=document.createElement("div");settlement.className="small";settlement.style.cssText="margin-top:10px;padding:9px;border:1px solid #76518f;border-radius:10px;background:#a56bd61c";
+   settlement.textContent=o.wallet_hold?.status==="reserved"?"المبلغ محجوز من المحفظة بانتظار التنفيذ.":o.wallet_hold?.status==="captured"?"تم تثبيت خصم المحفظة بعد نجاح الشحن.":o.wallet_hold?.status==="refunded"?"تم إرجاع المبلغ إلى محفظة الزبون.":"تنبيه: لم تصلنا حالة حجز الرصيد؛ لا تُكمل الطلب قبل مراجعة سجل المحفظة.";
+   card.append(settlement);
+   if(o.wallet_hold?.status==="reserved"&&o.status==="paid"){
+    const start=document.createElement("button");start.type="button";start.className="secondary";start.textContent="▶ بدء التنفيذ";
+    start.setAttribute("data-baro-reserved-action",o.id);start.setAttribute("data-status","in_progress");start.style.cssText="width:100%;margin-top:10px";
+    start.onclick=()=>baroAdminReservedOrderUpdate(o,"in_progress");card.append(start);
+   }
+   if(o.wallet_hold?.status==="reserved"&&o.status==="in_progress"){
+    const complete=document.createElement("button");complete.type="button";complete.className="primary";complete.textContent="✓ تم الشحن — تثبيت الخصم";
+    complete.setAttribute("data-baro-reserved-action",o.id);complete.setAttribute("data-status","completed");complete.style.cssText="width:100%;margin-top:10px;font-weight:900";
+    complete.onclick=()=>baroAdminReservedOrderUpdate(o,"completed");card.append(complete);
+    const fail=document.createElement("button");fail.type="button";fail.className="secondary";fail.textContent="تعذر الشحن — إرجاع الرصيد";
+    fail.setAttribute("data-baro-reserved-action",o.id);fail.setAttribute("data-status","failed");fail.style.cssText="width:100%;margin-top:8px";
+    fail.onclick=()=>baroAdminReservedOrderUpdate(o,"failed");card.append(fail);
+   }
+   if(o.wallet_hold?.status==="reserved"&&o.status==="paid"){
+    const fail=document.createElement("button");fail.type="button";fail.className="secondary";fail.textContent="تعذر الشحن — إرجاع الرصيد";
+    fail.setAttribute("data-baro-reserved-action",o.id);fail.setAttribute("data-status","failed");fail.style.cssText="width:100%;margin-top:8px";
+    fail.onclick=()=>baroAdminReservedOrderUpdate(o,"failed");card.append(fail);
+   }
   }else if(o.status==="completed"){
    const done=document.createElement("div");done.className="small";done.textContent="✓ اكتمل الشحن وسُجل الطلب.";card.append(done);
-  }
-  if(o.wallet_charge_mode!=="wallet_on_completion"){
-   const legacy=document.createElement("details");const summary=document.createElement("summary");summary.textContent="إجراءات الطلب القديم";legacy.append(summary);
-   const info=document.createElement("div");info.className="small";info.textContent="هذا الطلب يتبع نظام BARO السابق؛ لا تستخدم زر الإكمال المباشر عليه.";legacy.append(info);card.append(legacy);
   }
   orders.append(card);
  });
