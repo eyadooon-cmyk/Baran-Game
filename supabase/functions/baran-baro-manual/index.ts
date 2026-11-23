@@ -141,12 +141,18 @@ Deno.serve(async (req: Request) => {
       let enriched: any[] = [];
       if (canOrders) {
         const orderIds = orders.map((o: any) => o.id);
-        const { data: orderEvents, error: orderEventsError } = orderIds.length
-          ? await admin.from("leo_manual_order_events")
-              .select("order_id,actor_id,event_type,details,created_at")
-              .in("order_id", orderIds).order("created_at", { ascending: true })
-          : { data: [], error: null };
+        const [{ data: orderEvents, error: orderEventsError }, { data: orderHolds, error: orderHoldsError }] = orderIds.length
+          ? await Promise.all([
+              admin.from("leo_manual_order_events")
+                .select("order_id,actor_id,event_type,details,created_at")
+                .in("order_id", orderIds).order("created_at", { ascending: true }),
+              admin.from("baro_manual_wallet_holds")
+                .select("order_id,amount,currency,status").in("order_id", orderIds)
+            ])
+          : [{ data: [], error: null }, { data: [], error: null }];
         if (orderEventsError) return json({ error: "تعذر تحميل سجل منفذي طلبات BARO." }, 500);
+        if (orderHoldsError) return json({ error: "تعذر تحميل حجوزات محفظة طلبات BARO." }, 500);
+        const holdByOrder = new Map((orderHolds ?? []).map((hold: any) => [hold.order_id, hold]));
         const actorIds = [...new Set((orderEvents ?? []).map((event: any) => event.actor_id).filter(Boolean))];
         const actorLabels = new Map<string, string>();
         await Promise.all(actorIds.map(async (actorId: string) => {
@@ -165,7 +171,8 @@ Deno.serve(async (req: Request) => {
           const { data } = await admin.auth.admin.getUserById(o.user_id);
           const events = eventsByOrder.get(o.id) ?? [];
           const lastActorEvent = [...events].reverse().find((event: any) => event.actor_id && event.actor_label);
-          return { ...o, customer_email: data?.user?.email ?? null, events, last_actor_label: lastActorEvent?.actor_label ?? null };
+          return { ...o, customer_email: data?.user?.email ?? null, events, last_actor_label: lastActorEvent?.actor_label ?? null,
+            wallet_hold: holdByOrder.get(o.id) ?? null };
         }));
       }
       const { data: gate } = await admin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle();
@@ -372,7 +379,7 @@ Deno.serve(async (req: Request) => {
         p_player_id_confirmed: true, p_wallet_currency: walletCurrency
       });
       if (error) return json({ error: error.message || "تعذر تسجيل طلب BARO." }, 400);
-      return json({ ...(data ?? { success: true }), message: "تم تسجيل طلب BARO اليدوي دون خصم. سيتم الخصم من المحفظة فقط بعد اكتمال الشحن." });
+      return json({ ...(data ?? { success: true }), message: "تم تسجيل طلب BARO اليدوي وحجز المبلغ من المحفظة. يُثبّت الحجز عند نجاح الشحن أو يُعاد المبلغ عند الفشل أو الإلغاء." });
     }
 
     if (body.action === "manual_toggle") {
