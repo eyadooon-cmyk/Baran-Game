@@ -63,3 +63,25 @@ body:has(#appShell:not(.hidden)) main{
 @media(prefers-reduced-motion:reduce){
   .baran-bottom-nav button{transition:none}
 }
+
+/* BARAN support robot — compact floating, draggable launcher */
+#aiAssistantFab.ai-assistant-fab{
+  position:fixed;left:16px;right:auto;top:auto;
+  bottom:calc(88px + env(safe-area-inset-bottom,0px));
+  z-index:30;width:60px;height:60px;min-width:60px;min-height:60px;
+  display:grid;place-items:center;padding:0!important;margin:0;
+  border-radius:50%;background:radial-gradient(circle at 32% 24%,#f5eaff 0%,#c99ee9 32%,#8053a6 72%,#39254d 100%);
+  border:2px solid rgba(245,225,255,.9);
+  box-shadow:0 7px 24px rgba(0,0,0,.48),0 0 0 5px rgba(185,139,217,.13),inset 0 2px 5px rgba(255,255,255,.55);
+  cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+  transition:box-shadow .2s,filter .2s;
+}
+#aiAssistantFab.ai-assistant-fab:active{cursor:grabbing;transform:scale(.97)}
+#aiAssistantFab .baran-support-robot{display:grid;place-items:center;width:43px;height:43px;filter:drop-shadow(0 3px 3px #25153188);animation:baranBotFloat 3s ease-in-out infinite}
+#aiAssistantFab .baran-support-robot svg{display:block;width:100%;height:100%}
+#aiAssistantFab .baran-support-pulse{position:absolute;right:2px;top:3px;width:11px;height:11px;border-radius:50%;background:#62e6a0;border:2px solid #251a31;box-shadow:0 0 0 0 rgba(98,230,160,.55);animation:baranSupportPulse 2s infinite}
+@keyframes baranBotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes baranSupportPulse{0%{box-shadow:0 0 0 0 rgba(98,230,160,.5)}70%{box-shadow:0 0 0 7px rgba(98,230,160,0)}100%{box-shadow:0 0 0 0 rgba(98,230,160,0)}}
+#aiAssistantFab.baran-support-dragging{transition:none;cursor:grabbing;filter:brightness(1.08)}
+@media(min-width:760px){#aiAssistantFab.ai-assistant-fab{bottom:110px}}
+@media(prefers-reduced-motion:reduce){#aiAssistantFab .baran-support-robot,#aiAssistantFab .baran-support-pulse{animation:none}}
