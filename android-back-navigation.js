@@ -160,14 +160,17 @@
 
   // The in-page Back buttons use the same browser history as Android's system Back.
   window.goBackSection = function () {
-    if (!(window.currentUser || typeof currentUser !== "undefined" && currentUser)) return;
+    const signedIn = !!(window.currentUser || typeof currentUser !== "undefined" && currentUser);
+    // Guests browse public storefront sections without login; use the in-app stack directly.
+    if (!signedIn) {
+      if (typeof originalGoBackSection === "function") originalGoBackSection.call(window);
+      return;
+    }
     if (history.state?.baranGame === true && !history.state.root) {
       history.back();
       return;
     }
-    if (typeof originalGoBackSection === "function") {
-      originalGoBackSection.call(window);
-    }
+    if (typeof originalGoBackSection === "function") originalGoBackSection.call(window);
   };
 
   // Make the root history entry available immediately after a successful login.
