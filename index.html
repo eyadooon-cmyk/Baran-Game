@@ -2091,6 +2091,27 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
 <link rel="stylesheet" href="./baran-sidebar-redesign.css?v=20261124-sidebar-v1">
 <link rel="stylesheet" href="./baran-bottom-nav.css?v=20261124-bottom-v1">
 <link rel="stylesheet" href="./baran-store-header-compact.css?v=20261124-header-compact-v1">
+<style id="baran-favorites-style">
+.baran-favorite-toggle{display:inline-flex;align-items:center;justify-content:center;width:42px;height:40px;margin:9px 0 3px;padding:0;border:1px solid #75538d;border-radius:12px;background:#251a30;color:#cbb4dc;font-size:24px;line-height:1;box-shadow:0 3px 12px #0003;transition:transform .16s,border-color .16s,background .16s}
+.baran-favorite-toggle:active{transform:scale(.92)}
+.baran-favorite-toggle.is-favorite{background:#4b1d37;border-color:#dc638f;color:#ff83ad;text-shadow:0 0 10px #e65b91}
+.drawer-shortcut-icon.favorites{color:#ff83ad;background:linear-gradient(145deg,#4b1d37,#2b172b);border-color:#a64b78}
+.baran-favorites-list{display:grid;gap:11px}
+.baran-favorites-empty{display:grid;justify-items:center;gap:7px;padding:30px 16px;text-align:center;border:1px dashed #74578a;border-radius:16px;background:#191321;color:#eee5f5}
+.baran-favorites-empty>span{font-size:42px;color:#e66b9b}
+.baran-favorites-empty strong{font-size:16px;color:#eadcf5}
+.baran-favorites-empty p{margin:0;color:#b9a9c9;font-size:12px}
+.baran-favorite-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border:1px solid #59416d;border-radius:15px;background:linear-gradient(145deg,#241a30,#17121e)}
+.baran-favorite-info{display:grid;gap:4px;min-width:0}
+.baran-favorite-info small{color:#b995d5;font-size:11px}
+.baran-favorite-info strong{color:#f0e5f8;font-size:14px;overflow-wrap:anywhere}
+.baran-favorite-info>span{color:#cdb9dd;font-size:12px}
+.baran-favorite-actions{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+.baran-favorite-actions button{min-width:82px;padding:8px 10px;border-radius:9px;font-size:11px}
+.baran-favorite-open{background:#6d4788;color:#fff}
+.baran-favorite-remove{background:#3a1c2d;border:1px solid #8b3e61;color:#ffb0ca}
+@media(max-width:390px){.baran-favorite-item{align-items:flex-start;padding:11px}.baran-favorite-actions button{min-width:74px;padding:7px 8px}}
+</style>
 </head>
 <body>
 
@@ -2253,7 +2274,7 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
       <button type="button" onclick="navigateDrawer('account')"><span class="drawer-shortcut-icon account">♙</span><strong>حسابي</strong></button>
       <button type="button" onclick="navigateDrawer('orders')"><span class="drawer-shortcut-icon orders">▤</span><strong>طلباتي</strong></button>
       <button type="button" onclick="navigateDrawer('rewards')"><span class="drawer-shortcut-icon rewards">✦</span><strong>BARAN CLUB</strong></button>
-      <button type="button" onclick="navigateDrawer('support')"><span class="drawer-shortcut-icon support">◉</span><strong>الدعم</strong></button>
+      <button type="button" onclick="navigateDrawer('favorites')"><span class="drawer-shortcut-icon favorites">♡</span><strong>المفضلة</strong></button>
     </div>
 
     <div class="drawer-section drawer-account-section">
@@ -2502,6 +2523,11 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
+
+    <section id="favorites" class="hidden baran-favorites-page">
+      <div class="hero"><h2>المفضلة <span aria-hidden="true">♥</span></h2><p>كل المنتجات التي حفظتها بقلبك، لتصل إليها بسرعة في أي وقت.</p></div>
+      <div id="baranFavoritesList" class="baran-favorites-list" aria-live="polite"></div>
+    </section>
 
     <section id="wallet" class="hidden wallet-page">
       <div class="wallet-hero">
@@ -4415,6 +4441,7 @@ function showSection(id,button,options){
   document.querySelectorAll("main > section[id]").forEach(s=>s.classList.add("hidden"));
   target.classList.remove("hidden");
   if(id==="account"&&currentUser?.id)refreshBaranAccountVipBadge(currentUser.id);
+  if(id==="favorites")renderBaranFavorites();
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
   document.querySelectorAll("#sideDrawer .drawer-link[data-section]").forEach(link=>{
@@ -4423,7 +4450,7 @@ function showSection(id,button,options){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الشحن الآلي",automaticGames:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات الرقمية",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
+  const labels={home:"الرئيسية",games:"الشحن الآلي",automaticGames:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات الرقمية",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",favorites:"المفضلة",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
@@ -7439,7 +7466,89 @@ function baranUpdateGameSummary(game){
   }
 }
 // تعريف مبكر لأن كتالوج الألعاب قد يُحمّل قبل تنفيذ سكربت الخدمات.
+function baranFavoritesStorageKey(){
+ const userId=currentUser?.id;
+ return userId?"baran_favorites_"+userId:null;
+}
+function readBaranFavorites(){
+ const key=baranFavoritesStorageKey();
+ if(!key)return [];
+ try{const parsed=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(parsed)?parsed:[];}
+ catch(error){console.warn("تعذر قراءة مفضلة Baran Game:",error);return [];}
+}
+function writeBaranFavorites(items){
+ const key=baranFavoritesStorageKey();
+ if(!key)return false;
+ try{localStorage.setItem(key,JSON.stringify(items));return true;}
+ catch(error){console.warn("تعذر حفظ مفضلة Baran Game:",error);return false;}
+}
+function baranFavoriteDestination(product){
+ const code=String(product?.product_code||"").toUpperCase();
+ const category=String(product?.category||"").toLowerCase();
+ if(code.startsWith("PUBG"))return "pubgStore";
+ if(code.startsWith("FREEFIRE"))return "freeFireStore";
+ if(code.startsWith("JAWAKER"))return "jawakerStore";
+ if(category==="ai"||code.includes("CHATGPT"))return "chatgptStore";
+ if(category==="vpn")return "vpnStore";
+ if(category==="gift_card"||code.includes("GOOGLE_PLAY"))return "giftCardsStore";
+ if(category==="app")return "appsStore";
+ return "games";
+}
+function toggleBaranFavorite(product,categoryLabel,button){
+ const code=String(product?.product_code||"").trim();
+ if(!currentUser||!code)return;
+ const items=readBaranFavorites();
+ const exists=items.some(item=>item.product_code===code);
+ const next=exists?items.filter(item=>item.product_code!==code):[...items,{
+  product_code:code,product_id:product.id||null,name:product.name||code,
+  description:product.description||"",category:product.category||"",
+  category_label:categoryLabel||"",price_usd:Number(product.price_usd)||0,
+  price_syp:Number(product.price_syp)||0,updated_at:Date.now()
+ }];
+ if(!writeBaranFavorites(next)){alert("تعذر حفظ المفضلة على هذا الجهاز. تحقق من مساحة التخزين ثم حاول مجدداً.");return;}
+ if(button){button.classList.toggle("is-favorite",!exists);button.textContent=exists?"♡":"♥";button.setAttribute("aria-pressed",String(!exists));button.setAttribute("aria-label",exists?"إزالة من المفضلة":"إضافة إلى المفضلة");}
+ if(document.getElementById("favorites")&&!document.getElementById("favorites").classList.contains("hidden"))renderBaranFavorites();
+}
+function renderBaranFavorites(){
+ const list=document.getElementById("baranFavoritesList");
+ if(!list)return;
+ const items=readBaranFavorites();
+ list.replaceChildren();
+ if(!items.length){
+  const empty=document.createElement("div");empty.className="baran-favorites-empty";
+  const icon=document.createElement("span");icon.textContent="♡";
+  const title=document.createElement("strong");title.textContent="لسا ما أضفت منتجات للمفضلة";
+  const hint=document.createElement("p");hint.textContent="اضغط على القلب بأي بطاقة منتج حتى تحفظها هون.";
+  empty.append(icon,title,hint);list.append(empty);return;
+ }
+ items.forEach(item=>{
+  const card=document.createElement("article");card.className="baran-favorite-item";
+  const info=document.createElement("div");info.className="baran-favorite-info";
+  const category=document.createElement("small");category.textContent=item.category_label||"منتج رقمي";
+  const name=document.createElement("strong");name.textContent=item.name||item.product_code;
+  const price=document.createElement("span");
+  const prices=[];
+  if(item.price_usd>0)prices.push(item.price_usd.toFixed(2)+" $");
+  if(item.price_syp>0)prices.push(item.price_syp.toLocaleString("en-US")+" ل.س");
+  price.textContent=prices.length?prices.join(" · "):"السعر قيد التجهيز";
+  info.append(category,name,price);
+  const actions=document.createElement("div");actions.className="baran-favorite-actions";
+  const open=document.createElement("button");open.type="button";open.className="baran-favorite-open";open.textContent="فتح القسم";
+  open.addEventListener("click",()=>showSection(baranFavoriteDestination(item),null));
+  const remove=document.createElement("button");remove.type="button";remove.className="baran-favorite-remove";remove.textContent="♥ إزالة";
+  remove.addEventListener("click",()=>{writeBaranFavorites(readBaranFavorites().filter(saved=>saved.product_code!==item.product_code));renderBaranFavorites();});
+  actions.append(open,remove);card.append(info,actions);list.append(card);
+ });
+}
 function baranAddProductDetails(parent,product,categoryLabel){
+ const favorite=document.createElement("button");
+ favorite.type="button";favorite.className="baran-favorite-toggle";
+ const saved=readBaranFavorites().some(item=>item.product_code===String(product?.product_code||""));
+ favorite.classList.toggle("is-favorite",saved);favorite.textContent=saved?"♥":"♡";
+ favorite.setAttribute("aria-pressed",String(saved));
+ favorite.setAttribute("aria-label",saved?"إزالة من المفضلة":"إضافة إلى المفضلة");
+ favorite.title=saved?"إزالة من المفضلة":"إضافة إلى المفضلة";
+ favorite.addEventListener("click",()=>toggleBaranFavorite(product,categoryLabel,favorite));
  const toggle=document.createElement("button");toggle.type="button";toggle.className="baran-product-detail-toggle";toggle.textContent="＋ تفاصيل المنتج";toggle.setAttribute("aria-expanded","false");
  const panel=document.createElement("div");panel.className="baran-product-detail-panel";panel.hidden=true;
  const title=document.createElement("strong");title.textContent="تفاصيل "+(product.name||"المنتج");
@@ -7450,7 +7559,7 @@ function baranAddProductDetails(parent,product,categoryLabel){
  const availability=document.createElement("div");availability.textContent="حالة الشراء: "+((Number(product.price_usd)>0||Number(product.price_syp)>0)?"السعر مسجل — تنفيذ الطلب غير مفعّل قبل اعتماد المورد":"بانتظار اعتماد السعر والمورد");
  panel.append(title,description,category,code,price,availability);
  toggle.addEventListener("click",()=>{const opening=panel.hidden;panel.hidden=!opening;toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"－ إخفاء التفاصيل":"＋ تفاصيل المنتج";});
- parent.append(toggle,panel);
+ parent.append(favorite,toggle,panel);
 }
 async function loadBaranGameCatalog(game){
   const isPubg=game==="PUBG";
@@ -7566,6 +7675,14 @@ document.addEventListener("input",event=>{
 <script id="baran-service-catalog">
 
 function baranAddProductDetails(parent,product,categoryLabel){
+ const favorite=document.createElement("button");
+ favorite.type="button";favorite.className="baran-favorite-toggle";
+ const saved=readBaranFavorites().some(item=>item.product_code===String(product?.product_code||""));
+ favorite.classList.toggle("is-favorite",saved);favorite.textContent=saved?"♥":"♡";
+ favorite.setAttribute("aria-pressed",String(saved));
+ favorite.setAttribute("aria-label",saved?"إزالة من المفضلة":"إضافة إلى المفضلة");
+ favorite.title=saved?"إزالة من المفضلة":"إضافة إلى المفضلة";
+ favorite.addEventListener("click",()=>toggleBaranFavorite(product,categoryLabel,favorite));
  const toggle=document.createElement("button");toggle.type="button";toggle.className="baran-product-detail-toggle";toggle.textContent="＋ تفاصيل المنتج";toggle.setAttribute("aria-expanded","false");
  const panel=document.createElement("div");panel.className="baran-product-detail-panel";panel.hidden=true;
  const title=document.createElement("strong");title.textContent="تفاصيل "+(product.name||"المنتج");
@@ -7576,7 +7693,7 @@ function baranAddProductDetails(parent,product,categoryLabel){
  const availability=document.createElement("div");availability.textContent="حالة الشراء: "+((Number(product.price_usd)>0||Number(product.price_syp)>0)?"السعر مسجل — تنفيذ الطلب غير مفعّل قبل اعتماد المورد":"بانتظار اعتماد السعر والمورد");
  panel.append(title,description,category,code,price,availability);
  toggle.addEventListener("click",()=>{const opening=panel.hidden;panel.hidden=!opening;toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"－ إخفاء التفاصيل":"＋ تفاصيل المنتج";});
- parent.append(toggle,panel);
+ parent.append(favorite,toggle,panel);
 }
 
 function baranServicePrice(product){
