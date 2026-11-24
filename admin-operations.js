@@ -457,6 +457,25 @@ async function lookupSyriaMarketAuditIds(){
     status.textContent="تعذر البحث: "+(error?.message||"خطأ غير معروف");
   }finally{button.disabled=false;}
 }
+async function startSyriaMarketFullAudit(){
+  const button=document.getElementById("syriaMarketFullAuditButton");
+  const status=document.getElementById("syriaMarketFullAuditStatus");
+  if(!button||!status)return;
+  button.disabled=true;
+  status.textContent="جارٍ طلب بدء تدقيق شامل جديد... لن يتم تعديل الكتالوج الحي.";
+  try{
+    const result=await callSyriaMarketCatalog("audit_start");
+    const runId=result.run_id||"";
+    status.textContent=(result.already_running?"يوجد تدقيق شامل قيد التنفيذ بالفعل.":"تم بدء التدقيق الشامل بنجاح.")+
+      " الحالة: "+opsText(result.status)+" | الصفحة التالية: "+Number(result.next_page||1)+
+      (runId?" | رقم الدورة: "+runId:"")+
+      " | سيعالج المجدول صفحة كل دقيقة تقريباً، دون لمس الكاش أو الأسعار أو الطلبات.";
+  }catch(error){
+    status.textContent="تعذر بدء التدقيق: "+(error?.message||"خطأ غير معروف");
+  }finally{
+    button.disabled=false;
+  }
+}
 async function loadSyriaMarketCatalog(){
   const status=document.getElementById("syriaMarketV1CatalogStatus");
   if(status)status.textContent="جاري تحميل النسخة المحفوظة...";
