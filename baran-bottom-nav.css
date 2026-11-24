@@ -36,13 +36,29 @@ body:has(#appShell:not(.hidden)) main{
   padding-bottom:calc(94px + env(safe-area-inset-bottom,0px));
 }
 #aiAssistantFab{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+
+/* Support page: reserve clear space above the fixed bottom navigation. */
+#support{
+  scroll-margin-bottom:calc(112px + env(safe-area-inset-bottom,0px));
+  padding-bottom:calc(104px + env(safe-area-inset-bottom,0px)) !important;
+}
+#support .ai-assistant-panel{
+  height:min(430px,calc(100dvh - 210px)) !important;
+  max-height:calc(100dvh - 210px) !important;
+  min-height:250px;
+  margin-bottom:calc(104px + env(safe-area-inset-bottom,0px)) !important;
+}
+#support .ai-assistant-messages{min-height:0}
 @media(min-width:760px){
   .baran-bottom-nav{right:50%;left:auto;bottom:14px;width:min(520px,calc(100% - 32px));transform:translateX(50%);border:1px solid #624878;border-radius:18px;padding:7px 10px;box-shadow:0 8px 30px #0009}
   body:has(#appShell:not(.hidden)) main{padding-bottom:110px}
+  #support{padding-bottom:30px !important}
+  #support .ai-assistant-panel{height:430px !important;max-height:65vh !important;min-height:300px;margin-bottom:24px !important}
 }
 @media(max-width:360px){
   .baran-bottom-nav{gap:1px;padding-right:5px;padding-left:5px}
   .baran-bottom-nav button{font-size:9px}
+  #support .ai-assistant-panel{height:calc(100dvh - 230px) !important;max-height:calc(100dvh - 230px) !important}
 }
 @media(prefers-reduced-motion:reduce){
   .baran-bottom-nav button{transition:none}
