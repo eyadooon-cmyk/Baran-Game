@@ -3244,6 +3244,18 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
       <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
       <hr style="border-color:#40334b;margin:24px 0">
       <div class="admin-workgroup-label"><span>06</span><div><strong>تكامل المورد والمتابعة</strong><small>جهّز إعدادات الاتصال، ثم راجع الحالة وسجل الأحداث والمحاولات</small></div></div>
+      <section class="deposit-card" id="syriaMarketCatalogPanel" style="margin:14px 0;border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.25),rgba(16,13,24,.96));">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div><h3 style="margin:0">كتالوج Syria Market</h3><p class="small" style="margin:5px 0 0">سحب خدمات المورد وتخزين نسخة قراءة فقط داخل BARAN GAME</p></div>
+          <span class="ops-pill">قراءة فقط · بلا طلبات</span>
+        </div>
+        <div class="ops-actions" style="margin-top:12px">
+          <button type="button" onclick="syncSyriaMarketCatalog()" id="syriaMarketCatalogSyncButton">↻ مزامنة كتالوج المورد</button>
+          <button type="button" class="secondary" onclick="loadSyriaMarketCatalog()">عرض النسخة المحفوظة</button>
+        </div>
+        <div id="syriaMarketCatalogStatus" class="ops-muted" role="status" style="margin:10px 0">لم تتم مزامنة كتالوج سوريا ماركت بعد. أضف Secret باسم SYRIAMARKET_API_TOKEN أولاً.</div>
+        <div id="syriaMarketCatalogList" class="ops-list">لا توجد بيانات كتالوج محفوظة.</div>
+      </section>
       <h3>إعداد ربط API المورد</h3>
       <p class="small">هذه إعدادات تحضيرية فقط. لا يتم الاتصال بالمورد أو إرسال طلبات حقيقية من هذه الصفحة. مفاتيح API تحفظ لاحقاً في Supabase Secrets، ولا تكتبها هنا.</p>
       <div class="ops-form">
