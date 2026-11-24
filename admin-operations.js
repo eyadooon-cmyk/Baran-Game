@@ -435,11 +435,11 @@ async function lookupSyriaMarketAuditIds(){
   const box=document.getElementById("syriaMarketAuditLookupResults");
   const button=document.getElementById("syriaMarketAuditLookupButton");
   if(!status||!box||!button)return;
-  button.disabled=true;status.textContent="جارٍ البحث المباشر لدى المورد...";box.replaceChildren();
+  button.disabled=true;status.textContent="جارٍ فحص 4 معرّفات مباشرة لدى المورد (قراءة فقط)...";box.replaceChildren();
   try{
-    const result=await callSyriaMarketCatalog("audit_lookup_ids",{product_ids:["863","1099","212"]});
+    const result=await callSyriaMarketCatalog("audit_lookup_ids",{product_ids:["1161","1772","1781","212"]});
     const rows=Array.isArray(result.found)?result.found:[];
-    status.textContent="اكتمل البحث · الصفحات المقروءة: "+Number(result.scanned_pages||0)+" · الكتالوج الحي لم يتغير.";
+    status.textContent="اكتمل فحص المعرّفات الأربعة · الصفحات المقروءة: "+Number(result.scanned_pages||0)+" · الكتالوج الحي لم يتغير.";
     rows.forEach(item=>{
       const card=opsNode("article","ops-item");
       card.append(
