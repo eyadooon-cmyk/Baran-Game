@@ -1059,3 +1059,20 @@ footer{background:linear-gradient(180deg,#0d0a12,#08060b);border-top-color:#4b36
  .store-toolbar .notification-bell{width:39px;height:39px;min-width:39px;flex-basis:39px;border-radius:14px!important}
 }
 @media(prefers-reduced-motion:reduce){.store-toolbar .notification-bell{transition:none}}
+
+
+/* Fix duplicate notification glyph: keep the single inline SVG only */
+#notificationBell::before{content:none!important;display:none!important}
+#notificationBell{
+  border-radius:14px!important;
+  background:linear-gradient(145deg,#3b2850,#1a1324)!important;
+  border:1px solid rgba(193,151,224,.48)!important;
+  color:#ead7fb!important;
+  box-shadow:0 5px 16px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.13),0 0 16px rgba(157,105,196,.12)!important;
+}
+#notificationBell .notification-bell-icon{
+  display:block!important;width:21px!important;height:21px!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+#notificationBell:active{transform:scale(.93)}
