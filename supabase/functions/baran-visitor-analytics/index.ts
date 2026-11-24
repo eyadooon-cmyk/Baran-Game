@@ -65,9 +65,9 @@ Deno.serve(async (req: Request) => {
       }
 
       const page = safePath(body.page_path);
-      const since = new Date(Date.now() - 30_000).toISOString();
+      // One page view per page and browser tab session. Refreshes do not inflate page views.
       const { data: recent, error: recentError } = await admin.from("baran_visitor_events")
-        .select("id").eq("session_id", body.session_id).eq("page_path", page).gte("created_at", since).limit(1);
+        .select("id").eq("session_id", body.session_id).eq("page_path", page).limit(1);
       if (recentError) return json({ error: "Could not record visit" }, 500);
       if (!recent?.length) {
         const country = (req.headers.get("cf-ipcountry") || "").toUpperCase();
