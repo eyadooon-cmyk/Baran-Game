@@ -405,7 +405,9 @@ function renderSyriaMarketCatalog(result){
   if(!box)return;
   const products=Array.isArray(result.products)?result.products:[];
   const categories=Array.isArray(result.categories)?result.categories:[];
-  if(status)status.textContent="آخر مزامنة: "+opsDate(result.fetched_at)+" | المنتجات: "+Number(result.product_count??products.length)+" | الفئات: "+Number(result.category_count??categories.length)+(result.cached?" | نسخة محفوظة":" | تحديث جديد");
+  const pageInfo=Number(result.total_pages??0)>0?" | الصفحة: "+Number(result.current_page??1)+"/"+Number(result.total_pages):"";
+  const completion=result.sync_complete===true?" | اكتملت كل الصفحات":(Number(result.total_pages??0)>1?" | انتظر 65 ثانية ثم اضغط مزامنة للمتابعة":"");
+  if(status)status.textContent="آخر تحديث: "+opsDate(result.fetched_at)+" | المنتجات المحفوظة: "+Number(result.product_count??products.length)+" | الفئات: "+Number(result.category_count??categories.length)+pageInfo+completion+(result.cached?" | نسخة محفوظة":" | تحديث جديد");
   box.replaceChildren();
   if(categories.length){
     const cats=opsNode("div","ops-item");
