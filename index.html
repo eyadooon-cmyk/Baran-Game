@@ -4818,6 +4818,7 @@ function showApp(user){
   window.baranGuestMode=false;
   document.querySelectorAll('#sideDrawer [data-section="wallet"],#sideDrawer [data-section="paymentMethods"],#sideDrawer [data-section="shamCashPayment"],#sideDrawer [data-section="orders"],#sideDrawer [data-section="rewards"],#sideDrawer [data-section="support"],#sideDrawer [data-section="settings"],#sideDrawer [data-section="account"],#sideDrawer [data-section="learning"]').forEach(el=>el.classList.remove("hidden"));
   document.querySelectorAll("#sideDrawer .drawer-balance-card,#sideDrawer .drawer-vip-card,#sideDrawer .drawer-account-section,#sideDrawer .drawer-bottom .logout,#sideDrawer .drawer-shortcuts button").forEach(el=>el.classList.remove("hidden"));
+  document.querySelectorAll("#baranBottomNav [data-nav]").forEach(el=>el.classList.remove("hidden"));
   updateBaranAccountIdentity(user);
   showBaranFirstWelcome(user);
   passwordRecoveryActive=false;
@@ -7337,6 +7338,7 @@ function showGuestStore(){
   document.getElementById("drawerSypBalance")?.replaceChildren(document.createTextNode("—"));
   document.querySelectorAll('#sideDrawer [data-section="wallet"],#sideDrawer [data-section="paymentMethods"],#sideDrawer [data-section="shamCashPayment"],#sideDrawer [data-section="orders"],#sideDrawer [data-section="rewards"],#sideDrawer [data-section="support"],#sideDrawer [data-section="settings"],#sideDrawer [data-section="account"],#sideDrawer [data-section="learning"]').forEach(el=>el.classList.add("hidden"));
   document.querySelectorAll("#sideDrawer .drawer-balance-card,#sideDrawer .drawer-vip-card,#sideDrawer .drawer-account-section,#sideDrawer .drawer-bottom .logout,#sideDrawer .drawer-shortcuts button:not(:last-child)").forEach(el=>el.classList.add("hidden"));
+  document.querySelectorAll("#baranBottomNav [data-nav=\"account\"],#baranBottomNav [data-nav=\"wallet\"],#baranBottomNav [data-nav=\"orders\"],#baranBottomNav [data-nav=\"support\"]").forEach(el=>el.classList.add("hidden"));
   document.querySelectorAll('#sideDrawer [data-section="home"],#sideDrawer [data-section="games"],#sideDrawer [data-section="automaticGames"],#sideDrawer [data-section="services"],#sideDrawer [data-section="favorites"]').forEach(el=>el.classList.remove("hidden"));
   const profile=document.querySelector("#sideDrawer .drawer-profile-card");
   if(profile){const name=profile.querySelector(".drawer-profile-details strong");const detail=profile.querySelector(".drawer-profile-details>span");const hint=profile.querySelector(".drawer-profile-details small");if(name)name.textContent="زائر BARAN GAME";if(detail)detail.textContent="تصفّح المتجر بحرية";if(hint)hint.textContent="سجّل الدخول عند إتمام طلبك";}
@@ -7523,7 +7525,7 @@ function baranUpdateGameSummary(game){
 // تعريف مبكر لأن كتالوج الألعاب قد يُحمّل قبل تنفيذ سكربت الخدمات.
 function baranFavoritesStorageKey(){
  const userId=currentUser?.id;
- return userId?"baran_favorites_"+userId:null;
+ return userId?"baran_favorites_"+userId:(window.baranGuestMode?"baran_favorites_guest":null);
 }
 function readBaranFavorites(){
  const key=baranFavoritesStorageKey();
