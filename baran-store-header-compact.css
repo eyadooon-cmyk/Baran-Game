@@ -1,0 +1,50 @@
+/* BARAN GAME — compact premium storefront masthead */
+body>header{
+  min-height:0;
+  padding:24px 16px 18px;
+  background-position:center 44%;
+  border-bottom-width:1px;
+  box-shadow:0 8px 24px #0007;
+}
+body>header .logo{
+  gap:9px;
+  font-size:clamp(24px,4.5vw,34px);
+  letter-spacing:1.4px;
+}
+body>header .logo-mark{
+  width:42px;height:42px;border-radius:13px;
+  font-size:24px;
+}
+body>header .header-subtitle{
+  margin:6px 0 0;
+  font-size:13px;
+  line-height:1.55;
+}
+body>header .header-seo-description{
+  max-width:680px;
+  margin:4px auto 0;
+  color:#cbbbd8;
+  font-size:10px;
+  line-height:1.55;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+body>header .header-tag{
+  margin-top:8px;
+  padding:4px 11px;
+  font-size:9px;
+  letter-spacing:1.5px;
+}
+@media(max-width:520px){
+  body>header{padding:16px 12px 13px}
+  body>header .logo{gap:8px;font-size:clamp(22px,7vw,29px)}
+  body>header .logo-mark{width:36px;height:36px;border-radius:11px;font-size:21px}
+  body>header .header-subtitle{margin-top:5px;font-size:11px;line-height:1.45}
+  body>header .header-seo-description{max-width:430px;margin-top:3px;font-size:9px;line-height:1.45;-webkit-line-clamp:2}
+  body>header .header-tag{margin-top:7px;padding:3px 9px;font-size:8px;letter-spacing:1.2px}
+}
+@media(prefers-reduced-motion:reduce){
+  body>header .logo{animation:none}
+}
