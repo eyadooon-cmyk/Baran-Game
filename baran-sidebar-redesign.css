@@ -1,0 +1,107 @@
+/* BARAN GAME — Homscard-inspired customer drawer, adapted to Baran identity */
+.side-drawer{
+  width:min(410px,88vw);
+  padding:14px 13px 22px;
+  background:linear-gradient(180deg,#251832 0%,#171020 34%,#0c0912 100%);
+  border-left:1px solid #76558f;
+  scrollbar-width:thin;
+  scrollbar-color:#65477d transparent;
+}
+.drawer-head{
+  min-height:58px;
+  padding:4px 3px 13px;
+  margin-bottom:12px;
+  border-bottom:0;
+}
+.drawer-brand-lockup{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 13px;border:1px solid #8b6ba8;
+  border-radius:15px;background:linear-gradient(110deg,#382448,#20162b);
+  box-shadow:0 7px 20px #0005;
+}
+.drawer-brand-mark{
+  display:grid;place-items:center;width:36px;height:36px;
+  border-radius:11px;background:linear-gradient(145deg,#b98bd9,#674486);
+  color:#170f20;font:900 23px Orbitron,Cairo,sans-serif;
+}
+.drawer-brand-lockup>span:last-child{display:grid;gap:1px}
+.drawer-brand-lockup small{color:#bda9cc;font:700 8px Orbitron,sans-serif;letter-spacing:1px}
+.drawer-title{font-size:17px;letter-spacing:.5px;color:#f2e7fa}
+.drawer-close{
+  flex:0 0 38px;width:38px;height:38px;border-radius:12px;
+  background:#ffffff0b;border-color:#76558f;color:#f5eafa;
+}
+.drawer-profile-card{
+  position:relative;display:flex;align-items:center;gap:12px;width:100%;
+  margin:0 0 12px;padding:14px;text-align:right;
+  border:1px solid #8b6ba8;border-radius:17px;
+  background:linear-gradient(125deg,#4a3060 0%,#30203e 62%,#21172c 100%);
+  box-shadow:0 10px 24px #0005,inset 0 1px 0 #ffffff18;
+}
+.drawer-profile-avatar{width:58px;height:58px;flex:0 0 58px;border:2px solid #d9c0ec;padding:2px;background:#75538f}
+.drawer-profile-details{gap:3px}
+.drawer-profile-details strong{font-size:14px;color:#fff}
+.drawer-profile-details>span{font-size:10px;color:#e0d0eb}
+.drawer-profile-details small{font-size:10px;color:#d7b9ed}
+.drawer-profile-chevron{color:#e2c8f3;font-size:25px}
+.drawer-balance-card,.drawer-vip-card,.drawer-install-card{
+  position:relative;width:100%;margin:0 0 11px;border-radius:17px;
+  border:1px solid #6d5185;background:linear-gradient(135deg,#2b1e39,#1b1425);
+  color:#f2eaf8;box-shadow:0 7px 20px #0004;
+}
+.drawer-balance-card{padding:13px;display:grid;gap:11px}
+.drawer-balance-heading{display:flex;align-items:center;gap:10px}
+.drawer-balance-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#a77acb26;color:#d9b9ef;font-size:22px}
+.drawer-balance-heading>span:last-child{display:grid;gap:2px}
+.drawer-balance-heading strong{font-size:13px;color:#f6edfb}
+.drawer-balance-heading small{font-size:10px;color:#bba9ca}
+.drawer-balance-values{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.drawer-balance-values>div{min-width:0;padding:9px 10px;border:1px solid #59416d;border-radius:12px;background:#100c18}
+.drawer-balance-values small{display:block;margin-bottom:4px;color:#bda9cc;font-size:9px}
+.drawer-balance-values strong{display:block;color:#f1e6fa;font-size:16px;font-weight:900;direction:ltr;text-align:right;overflow-wrap:anywhere}
+.drawer-recharge-button{width:100%;min-height:41px;padding:9px 12px;border:1px solid #d4b2eb;border-radius:12px;background:linear-gradient(110deg,#d9b8f0,#a77acb);color:#1c1027;font-size:12px;font-weight:900}
+.drawer-vip-card,.drawer-install-card{display:flex;align-items:center;gap:11px;padding:12px;text-align:right}
+.drawer-vip-card{background:linear-gradient(110deg,#382647,#21172e);border-color:#76558f}
+.drawer-vip-icon,.drawer-install-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:13px;background:#a77acb26;color:#e0c2f5;font-size:24px}
+.drawer-vip-copy,.drawer-install-copy{display:grid;flex:1;gap:3px;min-width:0}
+.drawer-vip-copy strong,.drawer-install-copy strong{font-size:13px;color:#f6edfb}
+.drawer-vip-copy small,.drawer-install-copy small{font-size:10px;color:#bcaacb;line-height:1.5}
+.drawer-vip-arrow{font-size:24px;color:#c7a4e1}
+.drawer-install-card{border-color:#554269;background:linear-gradient(110deg,#21192d,#17111f)}
+.drawer-install-icon{background:#4b3760;color:#e1c4f3}
+.drawer-install-action{padding:7px 12px;border-radius:10px;background:#b98bd9;color:#1a1022;font-size:10px;font-weight:900}
+.drawer-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:2px 0 16px}
+.drawer-shortcuts button{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  min-width:0;min-height:88px;padding:10px 4px;border:1px solid #3e3150;border-radius:15px;
+  background:linear-gradient(145deg,#21192f,#171222);color:#eee6f6;
+}
+.drawer-shortcuts button:active{transform:scale(.97);border-color:#b98bd9}
+.drawer-shortcut-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;font-size:20px;background:#a77acb20;color:#d6b2ed}
+.drawer-shortcut-icon.notifications{color:#a88cf3}
+.drawer-shortcut-icon.wallet{color:#54c4ee}
+.drawer-shortcut-icon.account{color:#a88cf3}
+.drawer-shortcut-icon.orders{color:#7799ff}
+.drawer-shortcut-icon.rewards{color:#e6bd62}
+.drawer-shortcut-icon.support{color:#69d3b0}
+.drawer-shortcuts strong{font-size:10px;font-weight:800;line-height:1.4;text-align:center}
+.drawer-account-section{margin:0 0 12px;padding:0 0 9px;border-bottom:1px solid #ffffff16}
+.drawer-section-label{margin:0 4px 7px;color:#d7c4e6;font-size:13px;font-weight:900}
+.drawer-link{
+  min-height:49px;margin:4px 0;padding:7px 9px;border:1px solid #392c48;border-radius:12px;
+  background:linear-gradient(145deg,#21192e,#171220);color:#eee6f6;
+}
+.drawer-link .drawer-icon{flex-basis:34px;width:34px;height:34px;border-radius:10px}
+.drawer-link-copy strong{font-size:11px}
+.drawer-link-copy small{font-size:9px}
+.drawer-link.active{border-color:#a77acb;background:#30213d}
+.drawer-admin-section:empty{display:none}
+.drawer-bottom{padding-top:5px}
+.drawer-legal-link{color:#b9a9c9}
+.drawer-version{margin-top:10px;color:#857493;font-size:9px;text-align:center;letter-spacing:1px}
+@media(max-width:360px){
+ .side-drawer{width:90vw;padding:12px 10px 18px}
+ .drawer-balance-values strong{font-size:14px}
+ .drawer-shortcuts{gap:6px}
+ .drawer-shortcuts button{min-height:80px}
+}
