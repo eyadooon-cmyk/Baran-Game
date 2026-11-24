@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://eyadooon-cmyk.github.io",
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Content-Type": "application/json; charset=utf-8",
@@ -27,6 +27,30 @@ Deno.serve(async (req: Request) => {
     if (!url || !anon || !service) return json({ error: "إعدادات BARO غير مكتملة." }, 500);
     const auth = req.headers.get("Authorization") ?? "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    const requestedView = new URL(req.url).searchParams.get("view") ?? "admin";
+    if (!token && req.method === "GET" && requestedView === "catalog") {
+      const publicAdmin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
+      const [{ data: products, error }, { data: settings, error: settingsError }] = await Promise.all([
+        publicAdmin.from("leo_manual_products").select("product_code,category_id,group_id,product_name,input_label,purchase_enabled,sale_price_usd,sale_price_syp")
+          .eq("catalog_visible", true).order("category_id").order("group_id").order("product_name"),
+        publicAdmin.from("baro_manual_settings").select("enabled").eq("id", "main").maybeSingle()
+      ]);
+      if (error || settingsError) return json({ error: "تعذر تحميل كتالوج BARO." }, 500);
+      const catalogProducts = (products ?? []).map((p: any) => ({
+        product_code: p.product_code, category_id: p.category_id, group_id: p.group_id,
+        product_name: p.product_name, input_label: p.input_label, purchase_enabled: p.purchase_enabled,
+        sale_price_usd: p.sale_price_usd, sale_price_syp: p.sale_price_syp
+      })).sort((a: any, b: any) => {
+        if (a.category_id === "freefire" && b.category_id === "freefire"
+            && a.group_id === "diamonds" && b.group_id === "diamonds") {
+          const amountA = Number(String(a.product_name).match(/\d+/)?.[0] ?? Number.MAX_SAFE_INTEGER);
+          const amountB = Number(String(b.product_name).match(/\d+/)?.[0] ?? Number.MAX_SAFE_INTEGER);
+          return amountA - amountB;
+        }
+        return 0;
+      });
+      return json({ products: catalogProducts, manual_enabled: settings?.enabled === true });
+    }
     if (!token) return json({ error: "يلزم تسجيل الدخول." }, 401);
     const userClient = createClient(url, anon, {
       global: { headers: { Authorization: "Bearer " + token } },
