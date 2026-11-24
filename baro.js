@@ -7,6 +7,7 @@ let baroManualEnabled=false,baroAdminManualEnabled=false,baroAdminSettings={low_
 const baroEl=id=>document.getElementById(id);
 function baroEscape(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function baroMoney(value,currency){if(value===null||value===undefined||value==="")return "بانتظار تحديد السعر";const n=Number(value);return !Number.isFinite(n)?"—":currency==="USD"?"$"+n.toFixed(2):n.toLocaleString("en-US")+" SYP";}
+// Anonymous access is restricted to the read-only catalog view; every other view requires a verified session.
 async function baroApi(method="GET",body=null,view="admin"){
  const timeout=(promise,ms,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(label)),ms))]);
  let sessionResult;
