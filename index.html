@@ -4331,8 +4331,8 @@ function updateSectionBackButton(){
   button.classList.toggle("hidden",baranSectionHistory.length===0);
 }
 function goBackSection(){
-  if(!currentUser)return;
   const previous=baranSectionHistory.pop()||"home";
+  if(previous===document.querySelector("main > section[id]:not(.hidden)")?.id)return;
   showSection(previous,null,{fromHistory:true});
 }
 
@@ -8556,7 +8556,7 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 @media(max-width:420px){#baranPushInvite{padding:12px}#baranPushInvite .baran-welcome-art{height:105px}#baranPushInvite .baran-welcome-content{padding:17px 15px}#baranPushInvite .baran-welcome-content h2{font-size:21px}#baranPushInvite .baran-push-guide{font-size:12px;padding:10px}}
 </style>
 <script src="./notification-enhancements.js?v=20261119-collapse-v3"></script>
-<script src="./android-back-navigation.js?v=20261120-1"></script>
+<script src="./android-back-navigation.js?v=20261124-guest-back-fix-1"></script>
 <script src="./loyalty-coupons.js?v=20261121-club-v4"></script>
 <script src="./finance-treasury.js?v=20261122-treasury-v1"></script>
 <script>
