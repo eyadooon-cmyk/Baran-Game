@@ -3146,6 +3146,8 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
           <div><h2 style="margin:0">Syria Market — استيراد الكتالوج</h2><p class="small" style="margin:4px 0 0">اتصال إداري محمي لقراءة بيانات المورد فقط. لا ينشئ طلبات ولا يخصم رصيداً.</p></div>
         </div>
         <div class="small" style="margin:12px 0;padding:10px;border:1px solid #514064;border-radius:10px;background:#100b16">المفتاح محفوظ في Supabase Secrets ولا يظهر في المتصفح. كل العمليات أدناه قراءة فقط.</div>
+        <button class="full secondary" type="button" id="syriaMarketFullAuditButton" onclick="startSyriaMarketFullAudit()">🧾 بدء تدقيق شامل جديد</button>
+        <div id="syriaMarketFullAuditStatus" class="small" role="status" aria-live="polite" style="margin-top:10px">التدقيق الشامل يجلب صفحات المورد ويحفظ أرقام التدقيق ومعرّفات المنتجات فقط؛ لا يغيّر الكاش الحي.</div>
         <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
           <button class="secondary" type="button" onclick="baranSyriaMarketFetch('profile')">🔌 اختبار الاتصال والحساب</button>
           <button class="secondary" type="button" onclick="baranSyriaMarketFetch('products')">📦 جلب المنتجات</button>
@@ -3253,11 +3255,9 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
           <button type="button" onclick="syncSyriaMarketCatalog()" id="syriaMarketCatalogSyncButton">↻ مزامنة كتالوج المورد</button>
           <button type="button" class="secondary" onclick="loadSyriaMarketCatalog()">عرض النسخة المحفوظة</button>
           <button type="button" class="secondary" id="syriaMarketAuditLookupButton" onclick="lookupSyriaMarketAuditIds()">🔎 البحث عن المنتجات الثلاثة المفقودة</button>
-          <button type="button" class="secondary" id="syriaMarketFullAuditButton" onclick="startSyriaMarketFullAudit()">🧾 بدء تدقيق شامل جديد</button>
         </div>
         <div id="syriaMarketV1CatalogStatus" class="ops-muted" role="status" style="margin:10px 0">لم تتم مزامنة كتالوج سوريا ماركت بعد. أضف Secret باسم SYRIAMARKET_API_TOKEN أولاً.</div>
         <div id="syriaMarketAuditLookupStatus" class="ops-muted" role="status" aria-live="polite" style="margin:8px 0">البحث يقرأ بيانات المورد فقط ولا يعدّل الكتالوج.</div>
-        <div id="syriaMarketFullAuditStatus" class="ops-muted" role="status" aria-live="polite" style="margin:8px 0">التدقيق الشامل يجلب صفحات المورد ويحفظ أرقام التدقيق ومعرّفات المنتجات فقط؛ لا يغيّر الكاش الحي.</div>
         <div id="syriaMarketAuditLookupResults" class="ops-list" style="margin-bottom:12px"></div>
         <div id="syriaMarketV1CatalogList" class="ops-list">لا توجد بيانات كتالوج محفوظة.</div>
       </section>
