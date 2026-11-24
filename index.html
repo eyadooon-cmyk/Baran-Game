@@ -2114,6 +2114,14 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
 .baran-favorite-open{background:#6d4788;color:#fff}
 .baran-favorite-remove{background:#3a1c2d;border:1px solid #8b3e61;color:#ffb0ca}
 @media(max-width:390px){.baran-favorite-item{align-items:flex-start;padding:11px}.baran-favorite-actions button{min-width:74px;padding:7px 8px}}
+
+.baran-guest-prompt{position:fixed;inset:0;z-index:100100;display:none;align-items:center;justify-content:center;padding:18px;background:#050309d9;backdrop-filter:blur(7px)}
+.baran-guest-prompt.open{display:flex}
+.baran-guest-prompt-card{position:relative;width:min(100%,420px);padding:26px 20px 20px;border:1px solid #8b6ba8;border-radius:22px;background:linear-gradient(155deg,#24182f,#100d16 78%);box-shadow:0 22px 70px #000b;text-align:center}
+.baran-guest-prompt-mark{display:grid;place-items:center;width:54px;height:54px;margin:0 auto 12px;border:1px solid #c5a3df;border-radius:17px;background:linear-gradient(145deg,#70458f,#24172f);font:900 27px Orbitron,Arial;color:#fff}
+.baran-guest-prompt-card h2{margin:8px 0;color:#e6d6f2;font-size:20px}
+.baran-guest-prompt-card p{color:#c5b4d6;font-size:13px;line-height:1.8}
+.baran-guest-prompt-close{position:absolute;top:10px;left:10px;width:36px;height:36px;padding:0;border:1px solid #59456b;background:#21172c;color:#fff;font-size:24px}
 </style>
 </head>
 <body>
@@ -4428,7 +4436,8 @@ function openBaroManualGame(category){
   showSection("baroManual",null);
 }
 function showSection(id,button,options){
-  if(!currentUser) return;
+  const publicSections=new Set(["home","games","automaticGames","manualGames","pubgStore","freeFireStore","jawakerStore","baroManual","services","chatgptStore","vpnStore","giftCardsStore","appsStore","favorites"]);
+  if(!currentUser&&!publicSections.has(id)){showGuestAccountPrompt("سجّل الدخول للوصول إلى هذه الخدمة وإكمال طلباتك بأمان.");return;}
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
   if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
   if(id==="staffTasks"&&!baranStaffPortalAuthorized){alert("إدارة المهام غير متاحة قبل التحقق من صلاحية المشرفة.");return;}
@@ -4806,6 +4815,10 @@ async function showBaranFirstWelcome(user){
 function showApp(user){
   document.getElementById("sessionBoot")?.classList.add("done");
   currentUser=user;
+  window.baranGuestMode=false;
+  document.querySelectorAll('#sideDrawer [data-section="wallet"],#sideDrawer [data-section="paymentMethods"],#sideDrawer [data-section="shamCashPayment"],#sideDrawer [data-section="orders"],#sideDrawer [data-section="rewards"],#sideDrawer [data-section="support"],#sideDrawer [data-section="settings"],#sideDrawer [data-section="account"],#sideDrawer [data-section="learning"]').forEach(el=>el.classList.remove("hidden"));
+  document.querySelectorAll("#sideDrawer .drawer-balance-card,#sideDrawer .drawer-vip-card,#sideDrawer .drawer-account-section,#sideDrawer .drawer-bottom .logout,#sideDrawer .drawer-shortcuts button").forEach(el=>el.classList.remove("hidden"));
+  document.querySelectorAll("#baranBottomNav [data-nav]").forEach(el=>el.classList.remove("hidden"));
   updateBaranAccountIdentity(user);
   showBaranFirstWelcome(user);
   passwordRecoveryActive=false;
@@ -4826,11 +4839,12 @@ function showApp(user){
     if("Notification" in window && Notification.permission==="granted")syncBaranPushOnLogin();
     else if("Notification" in window && (Notification.permission==="default"||Notification.permission==="denied") && user.user_metadata?.baran_welcome_pending!==true)showBaranPushInvite();
   },900);
-  if(typeof loadCatalog==="function")loadCatalog();
+  if(typeof loadBaranStoreSearchProducts==="function")loadBaranStoreSearchProducts().catch(error=>console.warn("Guest catalog prefetch:",error));
   if(typeof loadCommunity==="function")loadCommunity();
 }
 
 function openSignupScreen(){
+  document.getElementById("appShell")?.classList.add("hidden");
   document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("passwordRecoveryScreen").classList.add("hidden");
   document.getElementById("signupScreen").classList.remove("hidden");
@@ -4988,7 +5002,7 @@ async function signOut(){
   // Keep this device subscription available for other accounts on the same phone.
   await sb.auth.signOut({scope:"local"});
   currentUser=null;
-  showLogin("تم تسجيل الخروج بنجاح.");
+  showGuestStore();
 }
 
 async function copyShamCashReceiver(){
@@ -7291,6 +7305,47 @@ async function openBaranPushNotificationFromUrl(){
   }catch(error){console.warn("تعذر فتح وجهة إشعار الهاتف:",error);}
 }
 
+function showGuestAccountPrompt(message){
+  let modal=document.getElementById("baranGuestAccountPrompt");
+  if(!modal){
+    modal=document.createElement("div");
+    modal.id="baranGuestAccountPrompt";
+    modal.className="baran-guest-prompt";
+    modal.innerHTML='<div class="baran-guest-prompt-card" role="dialog" aria-modal="true" aria-labelledby="baranGuestPromptTitle"><button type="button" class="baran-guest-prompt-close" aria-label="إغلاق" onclick="closeGuestAccountPrompt()">×</button><div class="baran-guest-prompt-mark">B</div><h2 id="baranGuestPromptTitle">أهلاً بك في BARAN GAME</h2><p id="baranGuestPromptMessage">سجّل دخولك أو أنشئ حساباً للمتابعة.</p><button type="button" class="full" onclick="closeGuestAccountPrompt();showLogin()">تسجيل الدخول</button><button type="button" class="full secondary" onclick="closeGuestAccountPrompt();openSignupScreen()">إنشاء حساب جديد</button><button type="button" class="full secondary" onclick="closeGuestAccountPrompt()">متابعة التصفح</button></div>';
+    document.body.appendChild(modal);
+  }
+  const note=document.getElementById("baranGuestPromptMessage");
+  if(note&&message)note.textContent=message;
+  modal.classList.add("open");
+}
+function closeGuestAccountPrompt(){
+  document.getElementById("baranGuestAccountPrompt")?.classList.remove("open");
+}
+// Public browsing keeps account-only destinations and writes behind the sign-in gate.
+function showGuestStore(){
+  document.getElementById("sessionBoot")?.classList.add("done");
+  currentUser=null;
+  window.baranGuestMode=true;
+  passwordRecoveryActive=false;
+  document.getElementById("passwordRecoveryScreen")?.classList.add("hidden");
+  document.getElementById("signupScreen")?.classList.add("hidden");
+  document.getElementById("authScreen")?.classList.add("hidden");
+  document.getElementById("lockScreen")?.classList.add("hidden");
+  document.getElementById("appShell")?.classList.remove("hidden");
+  document.getElementById("aiAssistantFab")?.classList.add("hidden");
+  document.getElementById("usd").textContent="—";
+  document.getElementById("syp").textContent="—";
+  document.getElementById("drawerUsdBalance")?.replaceChildren(document.createTextNode("—"));
+  document.getElementById("drawerSypBalance")?.replaceChildren(document.createTextNode("—"));
+  document.querySelectorAll('#sideDrawer [data-section="wallet"],#sideDrawer [data-section="paymentMethods"],#sideDrawer [data-section="shamCashPayment"],#sideDrawer [data-section="orders"],#sideDrawer [data-section="rewards"],#sideDrawer [data-section="support"],#sideDrawer [data-section="settings"],#sideDrawer [data-section="account"],#sideDrawer [data-section="learning"]').forEach(el=>el.classList.add("hidden"));
+  document.querySelectorAll("#sideDrawer .drawer-balance-card,#sideDrawer .drawer-vip-card,#sideDrawer .drawer-account-section,#sideDrawer .drawer-bottom .logout,#sideDrawer .drawer-shortcuts button:not(:last-child)").forEach(el=>el.classList.add("hidden"));
+  document.querySelectorAll("#baranBottomNav [data-nav=\"account\"],#baranBottomNav [data-nav=\"wallet\"],#baranBottomNav [data-nav=\"orders\"],#baranBottomNav [data-nav=\"support\"]").forEach(el=>el.classList.add("hidden"));
+  document.querySelectorAll('#sideDrawer [data-section="home"],#sideDrawer [data-section="games"],#sideDrawer [data-section="automaticGames"],#sideDrawer [data-section="services"],#sideDrawer [data-section="favorites"]').forEach(el=>el.classList.remove("hidden"));
+  const profile=document.querySelector("#sideDrawer .drawer-profile-card");
+  if(profile){const name=profile.querySelector(".drawer-profile-details strong");const detail=profile.querySelector(".drawer-profile-details>span");const hint=profile.querySelector(".drawer-profile-details small");if(name)name.textContent="زائر BARAN GAME";if(detail)detail.textContent="تصفّح المتجر بحرية";if(hint)hint.textContent="سجّل الدخول عند إتمام طلبك";}
+  showSection("home",null,{fromHistory:true});
+  if(typeof loadCatalog==="function")loadCatalog();
+}
 async function restoreSession(){
   try{
     const {data,error}=await sb.auth.getSession();
@@ -7335,7 +7390,7 @@ async function restoreSession(){
       }
       await openBaranPushNotificationFromUrl();
     }else{
-      showLogin("سجّل الدخول للبدء باستخدام المتجر.");
+      showGuestStore();
     }
   }catch(error){
     showLogin("تعذر استعادة الجلسة. سجّل الدخول مجدداً.");
@@ -7350,7 +7405,7 @@ sb.auth.onAuthStateChange((event,session)=>{
   }
   if(event==="SIGNED_OUT"){
     currentUser=null;
-    showLogin("تم تسجيل الخروج. سجّل الدخول للمتابعة.");
+    showGuestStore();
   }
 });
 
@@ -7471,7 +7526,7 @@ function baranUpdateGameSummary(game){
 // تعريف مبكر لأن كتالوج الألعاب قد يُحمّل قبل تنفيذ سكربت الخدمات.
 function baranFavoritesStorageKey(){
  const userId=currentUser?.id;
- return userId?"baran_favorites_"+userId:null;
+ return userId?"baran_favorites_"+userId:(window.baranGuestMode?"baran_favorites_guest":null);
 }
 function readBaranFavorites(){
  const key=baranFavoritesStorageKey();
@@ -7567,7 +7622,7 @@ function baranAddProductDetails(parent,product,categoryLabel){
 async function loadBaranGameCatalog(game){
   const isPubg=game==="PUBG";
   const container=document.getElementById(isPubg?"pubgProductCatalog":"freeFireProductCatalog");
-  if(!container||!currentUser)return;
+  if(!container)return;
   container.replaceChildren();
   const heading=document.createElement("strong");heading.textContent=isPubg?"باقات PUBG MOBILE":"باقات جواهر وعضويات Free Fire";
   const status=document.createElement("p");status.className="small";status.textContent="جاري تحميل الباقات المعتمدة...";
@@ -7627,7 +7682,7 @@ async function loadBaranGameCatalog(game){
 }
 async function loadBaranJawakerCatalog(){
   const container=document.getElementById("jawakerProductCatalog");
-  if(!container||!currentUser)return;
+  if(!container)return;
   container.replaceChildren();
   const heading=document.createElement("strong");heading.textContent="باقات جواكر";
   const status=document.createElement("p");status.className="small";status.textContent="جاري تحميل الباقات المعتمدة...";
@@ -7722,7 +7777,7 @@ function baranShowServiceSelection(product,category,containerId){
 }
 async function loadBaranServiceCatalog(category,containerId,title,icon){
  const container=document.getElementById(containerId);
- if(!container||!currentUser)return;
+ if(!container)return;
  container.replaceChildren();
  const heading=document.createElement("strong");heading.textContent=title;
  const loading=document.createElement("p");loading.className="small";loading.textContent="جاري تحميل المنتجات المعتمدة...";

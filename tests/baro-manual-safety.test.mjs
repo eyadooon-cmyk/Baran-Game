@@ -105,11 +105,21 @@ test("Customer BARO catalogue exposes approved Free Fire SYP sale prices only, n
 test("BARO is embedded inside the existing BARAN customer app and admin panel", () => {
   const app = read("../index.html");
   assert.match(app, /<section id="baroManual" class="hidden">/);
-  assert.match(app, /onclick="showSection\('baroManual',this\);loadBaroCustomer\(\)"/);
+  assert.match(app, /onclick="showSection\('manualGames',this\)"/);
   assert.match(app, /data-admin-panel="baro"/);
   assert.match(app, /onclick="showAdminPanel\('baro'\)"/);
   assert.match(app, /loadBaroAdmin\(\)/);
   assert.match(app, /loadBaranAutomaticControl\(\)/);
+});
+
+test("Signed-out visitors can read only the public BARO catalogue, never customer or finance data", () => {
+  assert.match(edge, /if \(!token && req\.method === "GET" && requestedView === "catalog"\)/);
+  const publicCatalog = edge.split('if (!token && req.method === "GET" && requestedView === "catalog")')[1]?.split('if (!token) return json')[0] ?? "";
+  assert.match(publicCatalog, /leo_manual_products/);
+  assert.match(publicCatalog, /sale_price_usd,sale_price_syp/);
+  assert.doesNotMatch(publicCatalog, /leo_manual_orders|wallets|supplier_cost|admin_audit_log/);
+  assert.match(ui, /const publicCatalogRequest=method==="GET"&&view==="catalog"/);
+  assert.match(ui, /if\(!currentUser\)[\s\S]*تسجيل الدخول مطلوب لمتابعة طلبات BARO/);
 });
 
 test("BARO and automatic fulfilment remain separate client modules and controls", () => {
@@ -174,8 +184,8 @@ test("Channel SECURITY DEFINER trigger functions are not callable through the Da
 
 test("BARO customer catalogue keeps grouped sections and is not overwritten by the legacy renderer", () => {
   const customerCatalogue = ui.slice(ui.indexOf("function renderBaroCustomerCatalog(products)"), ui.indexOf("async function loadBaroCustomer()"));
-  assert.match(customerCatalogue, /const categoryOrder=\["pubg","freefire","jawaker"\]/);
-  assert.match(customerCatalogue, /const groupOrder=/);
+  assert.match(customerCatalogue, /const categoryOrder=\["freefire","pubg","jawaker"\]/);
+  assert.match(customerCatalogue, /groupOrder=\{pubg:/);
   assert.match(customerCatalogue, /baro-catalog-category/);
   assert.doesNotMatch(ui, /function baroRenderCustomerProductCards\(\)/);
   assert.doesNotMatch(ui, /loadBaroCustomer=async function\(\)/);
