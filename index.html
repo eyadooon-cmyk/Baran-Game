@@ -7321,6 +7321,7 @@ function showGuestAccountPrompt(message){
 function closeGuestAccountPrompt(){
   document.getElementById("baranGuestAccountPrompt")?.classList.remove("open");
 }
+// Public browsing keeps account-only destinations and writes behind the sign-in gate.
 function showGuestStore(){
   document.getElementById("sessionBoot")?.classList.add("done");
   currentUser=null;
