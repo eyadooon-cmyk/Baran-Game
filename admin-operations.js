@@ -400,8 +400,8 @@ async function callSyriaMarketCatalog(action){
   return result;
 }
 function renderSyriaMarketCatalog(result){
-  const status=document.getElementById("syriaMarketCatalogStatus");
-  const box=document.getElementById("syriaMarketCatalogList");
+  const status=document.getElementById("syriaMarketV1CatalogStatus");
+  const box=document.getElementById("syriaMarketV1CatalogList");
   if(!box)return;
   const products=Array.isArray(result.products)?result.products:[];
   const categories=Array.isArray(result.categories)?result.categories:[];
@@ -428,14 +428,14 @@ function renderSyriaMarketCatalog(result){
   });
 }
 async function loadSyriaMarketCatalog(){
-  const status=document.getElementById("syriaMarketCatalogStatus");
+  const status=document.getElementById("syriaMarketV1CatalogStatus");
   if(status)status.textContent="جاري تحميل النسخة المحفوظة...";
   try{const result=await callSyriaMarketCatalog("get");renderSyriaMarketCatalog(result);}
   catch(error){if(status)status.textContent="تعذر تحميل الكاتلوج: "+(error?.message||"خطأ غير معروف");}
 }
 async function syncSyriaMarketCatalog(){
   const button=document.getElementById("syriaMarketCatalogSyncButton");
-  const status=document.getElementById("syriaMarketCatalogStatus");
+  const status=document.getElementById("syriaMarketV1CatalogStatus");
   if(button)button.disabled=true;
   if(status)status.textContent="جاري الاتصال بسوريا ماركت وسحب المنتجات... لن يتم إنشاء أي طلب.";
   try{const result=await callSyriaMarketCatalog("sync");renderSyriaMarketCatalog(result);}
