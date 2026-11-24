@@ -4815,6 +4815,9 @@ async function showBaranFirstWelcome(user){
 function showApp(user){
   document.getElementById("sessionBoot")?.classList.add("done");
   currentUser=user;
+  window.baranGuestMode=false;
+  document.querySelectorAll('#sideDrawer [data-section="wallet"],#sideDrawer [data-section="paymentMethods"],#sideDrawer [data-section="shamCashPayment"],#sideDrawer [data-section="orders"],#sideDrawer [data-section="rewards"],#sideDrawer [data-section="support"],#sideDrawer [data-section="settings"],#sideDrawer [data-section="account"],#sideDrawer [data-section="learning"]').forEach(el=>el.classList.remove("hidden"));
+  const guestProfile=document.querySelector("#sideDrawer .drawer-profile-card");if(guestProfile){guestProfile.onclick=null;}
   updateBaranAccountIdentity(user);
   showBaranFirstWelcome(user);
   passwordRecoveryActive=false;
@@ -7334,7 +7337,7 @@ function showGuestStore(){
   document.querySelectorAll('#sideDrawer [data-section="wallet"],#sideDrawer [data-section="paymentMethods"],#sideDrawer [data-section="shamCashPayment"],#sideDrawer [data-section="orders"],#sideDrawer [data-section="rewards"],#sideDrawer [data-section="support"],#sideDrawer [data-section="settings"],#sideDrawer [data-section="account"],#sideDrawer [data-section="learning"]').forEach(el=>el.classList.add("hidden"));
   document.querySelectorAll('#sideDrawer [data-section="home"],#sideDrawer [data-section="games"],#sideDrawer [data-section="automaticGames"],#sideDrawer [data-section="services"],#sideDrawer [data-section="favorites"]').forEach(el=>el.classList.remove("hidden"));
   const profile=document.querySelector("#sideDrawer .drawer-profile-card");
-  if(profile){profile.onclick=()=>showGuestAccountPrompt("أنشئ حسابك أو سجّل الدخول لحفظ بياناتك ومتابعة طلباتك.");const name=profile.querySelector(".drawer-profile-details strong");const detail=profile.querySelector(".drawer-profile-details>span");if(name)name.textContent="زائر BARAN GAME";if(detail)detail.textContent="تصفّح المتجر بحرية";}
+  if(profile){const name=profile.querySelector(".drawer-profile-details strong");const detail=profile.querySelector(".drawer-profile-details>span");if(name)name.textContent="زائر BARAN GAME";if(detail)detail.textContent="تصفّح المتجر بحرية";}
   showSection("home",null,{fromHistory:true});
   if(typeof loadCatalog==="function")loadCatalog();
 }
