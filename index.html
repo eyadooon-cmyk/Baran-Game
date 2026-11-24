@@ -3252,8 +3252,11 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
         <div class="ops-actions" style="margin-top:12px">
           <button type="button" onclick="syncSyriaMarketCatalog()" id="syriaMarketCatalogSyncButton">↻ مزامنة كتالوج المورد</button>
           <button type="button" class="secondary" onclick="loadSyriaMarketCatalog()">عرض النسخة المحفوظة</button>
+          <button type="button" class="secondary" id="syriaMarketAuditLookupButton" onclick="lookupSyriaMarketAuditIds()">🔎 البحث عن المنتجات الثلاثة المفقودة</button>
         </div>
         <div id="syriaMarketV1CatalogStatus" class="ops-muted" role="status" style="margin:10px 0">لم تتم مزامنة كتالوج سوريا ماركت بعد. أضف Secret باسم SYRIAMARKET_API_TOKEN أولاً.</div>
+        <div id="syriaMarketAuditLookupStatus" class="ops-muted" role="status" aria-live="polite" style="margin:8px 0">البحث يقرأ بيانات المورد فقط ولا يعدّل الكتالوج.</div>
+        <div id="syriaMarketAuditLookupResults" class="ops-list" style="margin-bottom:12px"></div>
         <div id="syriaMarketV1CatalogList" class="ops-list">لا توجد بيانات كتالوج محفوظة.</div>
       </section>
       <h3>إعداد ربط API المورد</h3>
