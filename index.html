@@ -2089,6 +2089,7 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
 
 
 <link rel="stylesheet" href="./baran-sidebar-redesign.css?v=20261124-sidebar-v1">
+<link rel="stylesheet" href="./baran-bottom-nav.css?v=20261124-bottom-v1">
 </head>
 <body>
 
@@ -3737,6 +3738,13 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
       <div id="moderatorAssistantStatus" class="small" role="status" aria-live="polite"></div>
     </section>
   </main>
+  <nav id="baranBottomNav" class="baran-bottom-nav" aria-label="التنقل الرئيسي">
+    <button type="button" data-nav="account" aria-label="حسابي" onclick="showSection('account',null)"><span class="baran-bottom-icon" aria-hidden="true">♙</span><span>حسابي</span></button>
+    <button type="button" data-nav="wallet" aria-label="رصيدي" onclick="showSection('wallet',null)"><span class="baran-bottom-icon" aria-hidden="true">◉</span><span>رصيدي</span></button>
+    <button type="button" data-nav="home" class="active" aria-current="page" aria-label="المتجر" onclick="showSection('home',null)"><span class="baran-bottom-icon" aria-hidden="true">⌂</span><span>المتجر</span></button>
+    <button type="button" data-nav="orders" aria-label="طلباتي" onclick="showSection('orders',null)"><span class="baran-bottom-icon" aria-hidden="true">▤</span><span>طلباتي</span></button>
+    <button type="button" data-nav="support" aria-label="الدعم" onclick="showSection('support',null)"><span class="baran-bottom-icon" aria-hidden="true">☏</span><span>الدعم</span></button>
+  </nav>
 <button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="openBaranSupportAssistant()" aria-controls="aiAssistantPanel">💬 الدعم الفني</button>
   </div>
 
@@ -4430,6 +4438,16 @@ function showSection(id,button,options){
   if(id==="staffTasks")loadStaffTasks();
   if(id==="rewards"&&typeof loadMyRewards==="function")loadMyRewards();
   if(id==="settings"&&typeof showBaranPushHelpIfNeeded==="function")showBaranPushHelpIfNeeded();
+  const bottomNav=document.getElementById("baranBottomNav");
+  if(bottomNav){
+    const bottomTarget=({account:"account",settings:"account",wallet:"wallet",paymentMethods:"wallet",shamCashPayment:"wallet",orders:"orders",support:"support",customerSupportConversation:"support"})[id]||"home";
+    bottomNav.querySelectorAll("[data-nav]").forEach(item=>{
+      const active=item.dataset.nav===bottomTarget;
+      item.classList.toggle("active",active);
+      if(active)item.setAttribute("aria-current","page");else item.removeAttribute("aria-current");
+    });
+    bottomNav.classList.toggle("hidden",["admin","baranAutoMonitor","baranAdminAssistant","baranFinancialSupportPanel","baranExperienceSuite","baranCatalogReadinessReport","syriaMarketCatalogPanel","baranFreeFireRegionTest","baranAdminOrderPreflight","supplierManagerAi","securityDepositsView","securityAuditView","baranAutoSupportPanel","adminSupportConversation","staffPortal","staffTasks","staffAssistant"].includes(id));
+  }
   updateSectionBackButton();
   window.scrollTo({top:0,behavior:"smooth"});
 }
