@@ -3253,9 +3253,11 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
           <button type="button" onclick="syncSyriaMarketCatalog()" id="syriaMarketCatalogSyncButton">↻ مزامنة كتالوج المورد</button>
           <button type="button" class="secondary" onclick="loadSyriaMarketCatalog()">عرض النسخة المحفوظة</button>
           <button type="button" class="secondary" id="syriaMarketAuditLookupButton" onclick="lookupSyriaMarketAuditIds()">🔎 البحث عن المنتجات الثلاثة المفقودة</button>
+          <button type="button" class="secondary" id="syriaMarketFullAuditButton" onclick="startSyriaMarketFullAudit()">🧾 بدء تدقيق شامل جديد</button>
         </div>
         <div id="syriaMarketV1CatalogStatus" class="ops-muted" role="status" style="margin:10px 0">لم تتم مزامنة كتالوج سوريا ماركت بعد. أضف Secret باسم SYRIAMARKET_API_TOKEN أولاً.</div>
         <div id="syriaMarketAuditLookupStatus" class="ops-muted" role="status" aria-live="polite" style="margin:8px 0">البحث يقرأ بيانات المورد فقط ولا يعدّل الكتالوج.</div>
+        <div id="syriaMarketFullAuditStatus" class="ops-muted" role="status" aria-live="polite" style="margin:8px 0">التدقيق الشامل يجلب صفحات المورد ويحفظ أرقام التدقيق ومعرّفات المنتجات فقط؛ لا يغيّر الكاش الحي.</div>
         <div id="syriaMarketAuditLookupResults" class="ops-list" style="margin-bottom:12px"></div>
         <div id="syriaMarketV1CatalogList" class="ops-list">لا توجد بيانات كتالوج محفوظة.</div>
       </section>
