@@ -385,14 +385,14 @@ async function opsRegisterShamCashWebhook(button,output){
     button.disabled=false;
   }
 }
-async function callSyriaMarketCatalog(action){
+async function callSyriaMarketCatalog(action,extraPayload={}){
   if(typeof sb==="undefined"||!currentUser)throw new Error("سجّل الدخول بحساب الإدارة أولاً.");
   const {data:{session},error:sessionError}=await sb.auth.getSession();
   if(sessionError||!session?.access_token)throw new Error("انتهت جلسة المدير. سجّل الدخول مجدداً.");
   const response=await fetch(SUPABASE_URL+"/functions/v1/baran-syrimarket-v1-catalog",{
     method:"POST",
     headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
-    body:JSON.stringify({action}),
+    body:JSON.stringify({action,...extraPayload}),
     cache:"no-store"
   });
   let result={};try{result=await response.json();}catch(_){}
@@ -428,6 +428,34 @@ function renderSyriaMarketCatalog(result){
     const pre=document.createElement("pre");pre.textContent=JSON.stringify(p,null,2);pre.style.whiteSpace="pre-wrap";pre.style.wordBreak="break-word";pre.style.fontSize="12px";pre.style.direction="ltr";pre.style.textAlign="left";
     details.append(summary,pre);card.appendChild(details);box.appendChild(card);
   });
+}
+
+async function lookupSyriaMarketAuditIds(){
+  const status=document.getElementById("syriaMarketAuditLookupStatus");
+  const box=document.getElementById("syriaMarketAuditLookupResults");
+  const button=document.getElementById("syriaMarketAuditLookupButton");
+  if(!status||!box||!button)return;
+  button.disabled=true;status.textContent="جارٍ البحث المباشر لدى المورد...";box.replaceChildren();
+  try{
+    const result=await callSyriaMarketCatalog("audit_lookup_ids",{product_ids:["863","1099","212"]});
+    const rows=Array.isArray(result.found)?result.found:[];
+    status.textContent="اكتمل البحث · الصفحات المقروءة: "+Number(result.scanned_pages||0)+" · الكتالوج الحي لم يتغير.";
+    rows.forEach(item=>{
+      const card=opsNode("article","ops-item");
+      card.append(
+        opsNode("strong","", "معرّف المورد: "+opsText(item.id)),
+        opsNode("div","ops-muted","الاسم: "+opsText(item.name)),
+        opsNode("div","ops-muted","التصنيف: "+opsText(item.category)),
+        opsNode("div","ops-muted","التصنيف ID: "+opsText(item.category_id)),
+        opsNode("div","ops-muted","السعر: "+opsText(item.price)+(item.currency?" "+item.currency:"")),
+        opsNode("div","ops-muted","الحالة: "+opsText(item.status))
+      );
+      if(item.found===false)card.appendChild(opsNode("div","ops-muted","لم يظهر هذا المعرّف ضمن الصفحات التي تم فحصها."));
+      box.appendChild(card);
+    });
+  }catch(error){
+    status.textContent="تعذر البحث: "+(error?.message||"خطأ غير معروف");
+  }finally{button.disabled=false;}
 }
 async function loadSyriaMarketCatalog(){
   const status=document.getElementById("syriaMarketV1CatalogStatus");
