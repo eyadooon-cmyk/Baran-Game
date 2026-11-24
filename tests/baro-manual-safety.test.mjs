@@ -184,7 +184,7 @@ test("Channel SECURITY DEFINER trigger functions are not callable through the Da
 
 test("BARO customer catalogue keeps grouped sections and is not overwritten by the legacy renderer", () => {
   const customerCatalogue = ui.slice(ui.indexOf("function renderBaroCustomerCatalog(products)"), ui.indexOf("async function loadBaroCustomer()"));
-  assert.match(customerCatalogue, /const categoryOrder=\["pubg","freefire","jawaker"\]/);
+  assert.match(customerCatalogue, /const categoryOrder=\["freefire","pubg","jawaker"\]/);
   assert.match(customerCatalogue, /const groupOrder=/);
   assert.match(customerCatalogue, /baro-catalog-category/);
   assert.doesNotMatch(ui, /function baroRenderCustomerProductCards\(\)/);
