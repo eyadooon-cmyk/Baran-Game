@@ -4817,7 +4817,6 @@ function showApp(user){
   currentUser=user;
   window.baranGuestMode=false;
   document.querySelectorAll('#sideDrawer [data-section="wallet"],#sideDrawer [data-section="paymentMethods"],#sideDrawer [data-section="shamCashPayment"],#sideDrawer [data-section="orders"],#sideDrawer [data-section="rewards"],#sideDrawer [data-section="support"],#sideDrawer [data-section="settings"],#sideDrawer [data-section="account"],#sideDrawer [data-section="learning"]').forEach(el=>el.classList.remove("hidden"));
-  const guestProfile=document.querySelector("#sideDrawer .drawer-profile-card");if(guestProfile){guestProfile.onclick=null;}
   updateBaranAccountIdentity(user);
   showBaranFirstWelcome(user);
   passwordRecoveryActive=false;
@@ -4843,6 +4842,7 @@ function showApp(user){
 }
 
 function openSignupScreen(){
+  document.getElementById("appShell")?.classList.add("hidden");
   document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("passwordRecoveryScreen").classList.add("hidden");
   document.getElementById("signupScreen").classList.remove("hidden");
@@ -5000,7 +5000,7 @@ async function signOut(){
   // Keep this device subscription available for other accounts on the same phone.
   await sb.auth.signOut({scope:"local"});
   currentUser=null;
-  showLogin("تم تسجيل الخروج بنجاح.");
+  showGuestStore();
 }
 
 async function copyShamCashReceiver(){
