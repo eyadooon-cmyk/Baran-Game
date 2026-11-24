@@ -2089,7 +2089,7 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
 
 
 <link rel="stylesheet" href="./baran-sidebar-redesign.css?v=20261124-sidebar-v1">
-<link rel="stylesheet" href="./baran-bottom-nav.css?v=20261124-bottom-v1">
+<link rel="stylesheet" href="./baran-bottom-nav.css?v=20261124-support-toggle-v2">
 <link rel="stylesheet" href="./baran-store-header-compact.css?v=20261124-header-compact-v1">
 <style id="baran-favorites-style">
 /* Product favorite: clearly visible soft-red heart, filled red when saved */
@@ -3671,7 +3671,7 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
       <section class="support-block support-chat-block" aria-labelledby="supportChatTitle">
         <div class="support-block-heading"><div><h3 id="supportChatTitle">🤖 مساعد Baran Game</h3><p class="small">اسأله عن الحساب والطلبات والإيداعات وطريقة استخدام المتجر.</p></div><span class="support-live-label">مساعدة فورية</span></div>
         <div id="aiAssistantPanel" class="ai-assistant-panel" role="region" aria-label="محادثة الدعم الفني مع مساعد باران">
-          <div class="ai-assistant-head"><strong>🤖 مساعد باران — دعم فوري</strong></div>
+          <div class="ai-assistant-head"><div class="baran-chat-brand"><span class="baran-chat-avatar" aria-hidden="true">🤖</span><span><strong>مساعد باران الذكي</strong><small>متواجد لمساعدتك داخل المتجر</small></span></div><button type="button" class="baran-chat-close" onclick="closeBaranSupportAssistant()" aria-label="إغلاق نافذة الدعم" title="إغلاق">×</button></div>
           <div class="ai-assistant-notice">إذا احتجت تدخّل الإدارة، بيساعدك المساعد بفتح تذكرة. لا ترسل كلمات مرور أو رموز تحقق أو بيانات دفع سرية.</div>
           <div id="aiAssistantMessages" class="ai-assistant-messages" aria-live="polite">
             <div class="ai-chat-message bot">أهلاً فيك! أنا مساعد باران 🤖 موجود لمساعدتك مباشرة. شو المشكلة اللي عم تواجهها؟</div>
@@ -3783,7 +3783,7 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
     <button type="button" data-nav="orders" aria-label="طلباتي" onclick="showSection('orders',null)"><span class="baran-bottom-icon" aria-hidden="true">▤</span><span>طلباتي</span></button>
     <button type="button" data-nav="support" aria-label="الدعم" onclick="showSection('support',null)"><span class="baran-bottom-icon" aria-hidden="true">☏</span><span>الدعم</span></button>
   </nav>
-<button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="openBaranSupportAssistant()" aria-label="افتح دعم BARAN GAME" title="دعم BARAN GAME" aria-controls="aiAssistantPanel"><span class="baran-support-robot" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><defs><linearGradient id="baranBotShell" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d9c7ed"/></linearGradient><linearGradient id="baranBotFace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#39264e"/><stop offset="1" stop-color="#171020"/></linearGradient></defs><path d="M32 5v7" stroke="#f4d8ff" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="5" r="4" fill="#d9a8ff"/><rect x="10" y="16" width="44" height="36" rx="13" fill="url(#baranBotShell)" stroke="#fff" stroke-width="2"/><rect x="15" y="22" width="34" height="23" rx="9" fill="url(#baranBotFace)"/><circle cx="25" cy="33" r="3.5" fill="#cda2ff"/><circle cx="39" cy="33" r="3.5" fill="#cda2ff"/><path d="M26 40q6 5 12 0" fill="none" stroke="#e9d7ff" stroke-width="2" stroke-linecap="round"/><path d="M10 30H5m49 0h5" stroke="#d8b8f0" stroke-width="4" stroke-linecap="round"/><rect x="20" y="50" width="24" height="8" rx="4" fill="#b98bd9"/></svg></span><span class="baran-support-pulse" aria-hidden="true"></span></button>
+<button id="aiAssistantFab" class="ai-assistant-fab hidden" type="button" onclick="openBaranSupportAssistant()" aria-label="افتح دعم BARAN GAME" title="دعم BARAN GAME" aria-controls="aiAssistantPanel" aria-expanded="false"><span class="baran-support-robot" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><defs><linearGradient id="baranBotShell" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d9c7ed"/></linearGradient><linearGradient id="baranBotFace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#39264e"/><stop offset="1" stop-color="#171020"/></linearGradient></defs><path d="M32 5v7" stroke="#f4d8ff" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="5" r="4" fill="#d9a8ff"/><rect x="10" y="16" width="44" height="36" rx="13" fill="url(#baranBotShell)" stroke="#fff" stroke-width="2"/><rect x="15" y="22" width="34" height="23" rx="9" fill="url(#baranBotFace)"/><circle cx="25" cy="33" r="3.5" fill="#cda2ff"/><circle cx="39" cy="33" r="3.5" fill="#cda2ff"/><path d="M26 40q6 5 12 0" fill="none" stroke="#e9d7ff" stroke-width="2" stroke-linecap="round"/><path d="M10 30H5m49 0h5" stroke="#d8b8f0" stroke-width="4" stroke-linecap="round"/><rect x="20" y="50" width="24" height="8" rx="4" fill="#b98bd9"/></svg></span><span class="baran-support-pulse" aria-hidden="true"></span></button>
   </div>
 
 <footer>© 2026 Baran Game<br><a href="./terms.html" style="color:#c5b4d6;margin:0 8px">شروط الاستخدام</a> | <a href="./privacy.html" style="color:#c5b4d6;margin:0 8px">سياسة الخصوصية</a></footer>
