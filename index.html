@@ -7619,7 +7619,7 @@ function baranAddProductDetails(parent,product,categoryLabel){
 async function loadBaranGameCatalog(game){
   const isPubg=game==="PUBG";
   const container=document.getElementById(isPubg?"pubgProductCatalog":"freeFireProductCatalog");
-  if(!container||!currentUser)return;
+  if(!container)return;
   container.replaceChildren();
   const heading=document.createElement("strong");heading.textContent=isPubg?"باقات PUBG MOBILE":"باقات جواهر وعضويات Free Fire";
   const status=document.createElement("p");status.className="small";status.textContent="جاري تحميل الباقات المعتمدة...";
@@ -7679,7 +7679,7 @@ async function loadBaranGameCatalog(game){
 }
 async function loadBaranJawakerCatalog(){
   const container=document.getElementById("jawakerProductCatalog");
-  if(!container||!currentUser)return;
+  if(!container)return;
   container.replaceChildren();
   const heading=document.createElement("strong");heading.textContent="باقات جواكر";
   const status=document.createElement("p");status.className="small";status.textContent="جاري تحميل الباقات المعتمدة...";
@@ -7774,7 +7774,7 @@ function baranShowServiceSelection(product,category,containerId){
 }
 async function loadBaranServiceCatalog(category,containerId,title,icon){
  const container=document.getElementById(containerId);
- if(!container||!currentUser)return;
+ if(!container)return;
  container.replaceChildren();
  const heading=document.createElement("strong");heading.textContent=title;
  const loading=document.createElement("p");loading.className="small";loading.textContent="جاري تحميل المنتجات المعتمدة...";
