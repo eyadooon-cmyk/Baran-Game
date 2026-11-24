@@ -1,11 +1,11 @@
 /* BARAN GAME — fixed mobile bottom navigation */
 #appShell>#baranBottomNav{display:grid}
 .baran-bottom-nav{
-  position:fixed;right:0;left:0;bottom:0;z-index:24;
+  position:fixed;top:auto;right:0;left:0;bottom:0;z-index:24;
   display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
-  align-items:stretch;gap:4px;
+  align-items:stretch;justify-content:stretch;flex-wrap:nowrap;gap:4px;
   padding:8px 9px calc(8px + env(safe-area-inset-bottom,0px));
-  border-top:1px solid #624878;
+  border-top:1px solid #624878;border-bottom:0;margin:0;
   background:linear-gradient(180deg,rgba(34,24,45,.97),rgba(12,9,17,.99));
   box-shadow:0 -8px 26px #0008;
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
