@@ -23,7 +23,7 @@ function openBaranSupportAssistant() {
 function closeBaranSupportAssistant() {
   const support = document.getElementById("support");
   if (support && !support.classList.contains("hidden")) {
-    const previous = Array.isArray(window.baranSectionHistory) ? window.baranSectionHistory : [];
+    const previous = typeof baranSectionHistory !== "undefined" && Array.isArray(baranSectionHistory) ? baranSectionHistory : [];
     const last = previous.pop();
     if (last && typeof showSection === "function") showSection(last, null, { fromHistory: true });
     else if (typeof showSection === "function") showSection("home", null, { fromHistory: true });
