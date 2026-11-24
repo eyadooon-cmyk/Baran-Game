@@ -28,5 +28,6 @@ test("visitor analytics Edge Function excludes verified administrators from trac
   assert.match(fn, /auth\.getUser\(token\)/);
   assert.match(fn, /admin\.rpc\("admin_is_user"/);
   assert.match(fn, /excluded: "admin"/);
-  assert.match(fn, /gte\("created_at", since\)/);
+  assert.match(fn, /eq\("session_id", body\.session_id\)\.eq\("page_path", page\)\.limit\(1\)/);
+  assert.match(fn, /One page view per page and browser tab session/);
 });
