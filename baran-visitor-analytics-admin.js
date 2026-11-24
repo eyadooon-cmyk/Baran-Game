@@ -14,7 +14,7 @@ window.loadBaranVisitorAnalytics=async function(){
   const response=await fetch(endpoint,{method:"POST",headers:{"Authorization":"Bearer "+data.session.access_token,"apikey":sb.supabaseKey,"Content-Type":"application/json"},body:JSON.stringify({action:"stats"})});
   const out=await response.json().catch(()=>({}));if(!response.ok)throw new Error(out.error||"تعذر تحميل الإحصائيات.");
   root.replaceChildren();
-  const note=node("p","small","البيانات تبدأ من تفعيل هذا النظام، ولا تشمل الزيارات السابقة. الزائر الفريد تقديري حسب جلسة المتصفح، وليس شخصاً معروف الهوية.");
+  const note=node("p","small","البيانات تبدأ من تفعيل هذا النظام، ولا تشمل الزيارات السابقة. كل صفحة تُحتسب مرة واحدة ضمن جلسة المتصفح؛ تحديث الصفحة لا يكرر المشاهدة. الزائر الفريد تقديري حسب الجلسة، وليس شخصاً معروف الهوية.");
   root.append(note);
   const grid=node("div","finance-grid");
   grid.append(metric("مشاهدات اليوم",out.page_views_today),metric("زوار اليوم التقريبيون",out.unique_visitors_today),metric("مشاهدات آخر 7 أيام",out.page_views_7d),metric("زوار آخر 7 أيام",out.unique_visitors_7d),metric("مشاهدات آخر 30 يوماً",out.page_views_30d),metric("زوار آخر 30 يوماً",out.unique_visitors_30d));
