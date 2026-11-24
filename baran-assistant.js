@@ -90,3 +90,64 @@ async function sendBaranAssistantMessage(event) {
     if (input) { input.disabled = false; input.focus(); }
   }
 }
+
+
+// Allow customers to move the floating support robot away from navigation controls.
+(function initBaranSupportDrag(){
+  function setup(){
+    const btn=document.getElementById("aiAssistantFab");
+    if(!btn||btn.dataset.dragReady==="1")return;
+    btn.dataset.dragReady="1";
+    const KEY="baran_support_robot_position_v1";
+    let startX=0,startY=0,startLeft=0,startTop=0,moved=false,pointerId=null;
+    const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+    function applyPosition(left,top){
+      const maxLeft=Math.max(8,window.innerWidth-btn.offsetWidth-8);
+      const maxTop=Math.max(8,window.innerHeight-btn.offsetHeight-8);
+      btn.style.left=clamp(left,8,maxLeft)+"px";
+      btn.style.top=clamp(top,8,maxTop)+"px";
+      btn.style.right="auto";btn.style.bottom="auto";
+    }
+    try{
+      const saved=JSON.parse(localStorage.getItem(KEY)||"null");
+      if(saved&&Number.isFinite(saved.left)&&Number.isFinite(saved.top))applyPosition(saved.left,saved.top);
+    }catch(_){}
+    btn.addEventListener("pointerdown",function(e){
+      if(e.button!==undefined&&e.button!==0)return;
+      pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;
+      const rect=btn.getBoundingClientRect();startLeft=rect.left;startTop=rect.top;
+      moved=false;
+      try{btn.setPointerCapture(pointerId)}catch(_){}
+    });
+    btn.addEventListener("pointermove",function(e){
+      if(pointerId===null||e.pointerId!==pointerId)return;
+      const dx=e.clientX-startX,dy=e.clientY-startY;
+      if(!moved&&Math.hypot(dx,dy)<7)return;
+      moved=true;btn.classList.add("baran-support-dragging");
+      applyPosition(startLeft+dx,startTop+dy);
+      e.preventDefault();
+    });
+    function finish(e){
+      if(pointerId===null||(e&&e.pointerId!==pointerId))return;
+      if(moved){
+        const rect=btn.getBoundingClientRect();
+        try{localStorage.setItem(KEY,JSON.stringify({left:rect.left,top:rect.top}))}catch(_){}
+        btn.dataset.dragged="1";
+      }
+      pointerId=null;btn.classList.remove("baran-support-dragging");
+    }
+    btn.addEventListener("pointerup",finish);
+    btn.addEventListener("pointercancel",finish);
+    btn.addEventListener("click",function(e){
+      if(btn.dataset.dragged==="1"){
+        e.preventDefault();e.stopImmediatePropagation();delete btn.dataset.dragged;
+      }
+    },true);
+    window.addEventListener("resize",function(){
+      const rect=btn.getBoundingClientRect();
+      if(btn.style.top)applyPosition(rect.left,rect.top);
+    });
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup,{once:true});
+  else setup();
+})();
