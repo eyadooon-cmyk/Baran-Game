@@ -4838,7 +4838,7 @@ function showApp(user){
     if("Notification" in window && Notification.permission==="granted")syncBaranPushOnLogin();
     else if("Notification" in window && (Notification.permission==="default"||Notification.permission==="denied") && user.user_metadata?.baran_welcome_pending!==true)showBaranPushInvite();
   },900);
-  if(typeof loadCatalog==="function")loadCatalog();
+  if(typeof loadBaranStoreSearchProducts==="function")loadBaranStoreSearchProducts().catch(error=>console.warn("Guest catalog prefetch:",error));
   if(typeof loadCommunity==="function")loadCommunity();
 }
 
