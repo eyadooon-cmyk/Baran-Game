@@ -385,6 +385,64 @@ async function opsRegisterShamCashWebhook(button,output){
     button.disabled=false;
   }
 }
+async function callSyriaMarketCatalog(action){
+  if(typeof sb==="undefined"||!currentUser)throw new Error("سجّل الدخول بحساب الإدارة أولاً.");
+  const {data:{session},error:sessionError}=await sb.auth.getSession();
+  if(sessionError||!session?.access_token)throw new Error("انتهت جلسة المدير. سجّل الدخول مجدداً.");
+  const response=await fetch(SUPABASE_URL+"/functions/v1/baran-syrimarket-v1-catalog",{
+    method:"POST",
+    headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({action}),
+    cache:"no-store"
+  });
+  let result={};try{result=await response.json();}catch(_){}
+  if(!response.ok||result.success!==true)throw new Error(result.error||"تعذر تحميل كتالوج سوريا ماركت.");
+  return result;
+}
+function renderSyriaMarketCatalog(result){
+  const status=document.getElementById("syriaMarketCatalogStatus");
+  const box=document.getElementById("syriaMarketCatalogList");
+  if(!box)return;
+  const products=Array.isArray(result.products)?result.products:[];
+  const categories=Array.isArray(result.categories)?result.categories:[];
+  if(status)status.textContent="آخر مزامنة: "+opsDate(result.fetched_at)+" | المنتجات: "+Number(result.product_count??products.length)+" | الفئات: "+Number(result.category_count??categories.length)+(result.cached?" | نسخة محفوظة":" | تحديث جديد");
+  box.replaceChildren();
+  if(categories.length){
+    const cats=opsNode("div","ops-item");
+    cats.append(opsNode("strong","","الفئات ("+categories.length+")"),opsNode("div","ops-muted",categories.map(c=>String(c?.name??c?.title??c?.id??c)).join(" · ")));
+    box.appendChild(cats);
+  }
+  if(!products.length){box.appendChild(opsNode("div","ops-item","لم يرجع المورد منتجات ضمن الكاتلوج."));return;}
+  products.forEach((p,index)=>{
+    const card=opsNode("article","ops-item");
+    const name=p?.name??p?.title??p?.product_name??("منتج "+(index+1));
+    const id=p?.id??p?.product_id??p?.public_product_id??"—";
+    const category=p?.category_name??p?.category??p?.category_path??"غير مصنف";
+    card.append(opsNode("strong","",String(name)),opsNode("div","ops-muted","معرّف المورد: "+String(id)+" | الفئة: "+String(category)));
+    const price=p?.price??p?.cost??p?.amount??p?.pricing??p?.quantity_options??null;
+    if(price!==null)card.append(opsNode("div","ops-muted","بيانات السعر/الخيارات: "+(typeof price==="object"?JSON.stringify(price):String(price))));
+    const details=document.createElement("details");
+    const summary=document.createElement("summary");summary.textContent="تفاصيل المنتج من المورد";
+    const pre=document.createElement("pre");pre.textContent=JSON.stringify(p,null,2);pre.style.whiteSpace="pre-wrap";pre.style.wordBreak="break-word";pre.style.fontSize="12px";pre.style.direction="ltr";pre.style.textAlign="left";
+    details.append(summary,pre);card.appendChild(details);box.appendChild(card);
+  });
+}
+async function loadSyriaMarketCatalog(){
+  const status=document.getElementById("syriaMarketCatalogStatus");
+  if(status)status.textContent="جاري تحميل النسخة المحفوظة...";
+  try{const result=await callSyriaMarketCatalog("get");renderSyriaMarketCatalog(result);}
+  catch(error){if(status)status.textContent="تعذر تحميل الكاتلوج: "+(error?.message||"خطأ غير معروف");}
+}
+async function syncSyriaMarketCatalog(){
+  const button=document.getElementById("syriaMarketCatalogSyncButton");
+  const status=document.getElementById("syriaMarketCatalogStatus");
+  if(button)button.disabled=true;
+  if(status)status.textContent="جاري الاتصال بسوريا ماركت وسحب المنتجات... لن يتم إنشاء أي طلب.";
+  try{const result=await callSyriaMarketCatalog("sync");renderSyriaMarketCatalog(result);}
+  catch(error){if(status)status.textContent="لم تكتمل المزامنة: "+(error?.message||"خطأ غير معروف");}
+  finally{if(button)button.disabled=false;}
+}
+
 function renderOpsSupplierIntegration(integration,suppliers){
   const select=document.getElementById("opsApiSupplierSelect");
   const statusBox=document.getElementById("opsApiStatus");
