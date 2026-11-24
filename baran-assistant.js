@@ -5,15 +5,35 @@ let baranAssistantBusy = false;
 
 function openBaranSupportAssistant() {
   if (!currentUser) return;
+  const support = document.getElementById("support");
+  const isOpen = support && !support.classList.contains("hidden");
+  if (isOpen) {
+    closeBaranSupportAssistant();
+    return;
+  }
   if (typeof showSection === "function") showSection("support", null);
+  const fab = document.getElementById("aiAssistantFab");
+  if (fab) { fab.classList.add("is-open"); fab.setAttribute("aria-expanded", "true"); }
+  const panel = document.getElementById("aiAssistantPanel");
+  if (panel) panel.classList.add("baran-chat-enter");
   const input = document.getElementById("aiAssistantInput");
-  if (input) setTimeout(() => input.focus(), 120);
+  if (input) setTimeout(() => input.focus(), 220);
 }
 
-// Compatibility alias for any older button references.
-function toggleBaranAssistant() {
-  openBaranSupportAssistant();
+function closeBaranSupportAssistant() {
+  const support = document.getElementById("support");
+  if (support && !support.classList.contains("hidden")) {
+    const previous = Array.isArray(window.baranSectionHistory) ? window.baranSectionHistory : [];
+    const last = previous.pop();
+    if (last && typeof showSection === "function") showSection(last, null, { fromHistory: true });
+    else if (typeof showSection === "function") showSection("home", null, { fromHistory: true });
+  }
+  const fab = document.getElementById("aiAssistantFab");
+  if (fab) { fab.classList.remove("is-open"); fab.setAttribute("aria-expanded", "false"); }
 }
+
+// Compatibility alias for older button references.
+function toggleBaranAssistant() { openBaranSupportAssistant(); }
 
 function appendBaranAssistantMessage(text, role = "bot", isError = false) {
   const container = document.getElementById("aiAssistantMessages");
