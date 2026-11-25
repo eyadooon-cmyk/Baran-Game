@@ -76,3 +76,66 @@
  .baran-game-package-card .game-package-price{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.baran-auto-category-grid .item,.baran-auto-games-grid .item{transition:none}}
+
+
+/* BARAN GAME — full catalogue artwork and category architecture */
+.baran-auto-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.baran-auto-category-grid .item{display:flex;flex-direction:column;min-height:0;text-align:right;border:1px solid #5b426d;border-radius:17px;background:linear-gradient(145deg,#241a30,#120e18);overflow:hidden;box-shadow:0 9px 22px #0005}
+.baran-auto-category-art{display:grid;place-items:center;width:100%;height:auto;min-height:0;aspect-ratio:16/9;border-radius:0;background:#17111f;overflow:hidden}
+.baran-auto-category-art img{display:block;width:100%;height:100%;max-height:140px;object-fit:contain;padding:16px;box-sizing:border-box;background:radial-gradient(circle at 50% 35%,#5b426b,#1b1423 72%,#100c16)}
+.baran-auto-category-grid .item-content{width:100%;min-height:88px;box-sizing:border-box;padding:11px 12px 13px;align-items:flex-start}
+.baran-auto-category-grid .item-content strong{font-size:13px;line-height:1.5}
+.baran-auto-category-grid .item-content>span:not(.small){font-size:10px;line-height:1.7}
+.baran-auto-category-grid .item-content .small{font-size:10px}
+.baran-auto-category-art.baran-auto-chat-art img{background:radial-gradient(circle at 50% 35%,#285d63,#142a32 75%)}
+.baran-auto-category-art.baran-auto-subscriptions-art img{background:#100c12}
+.baran-auto-category-art.baran-auto-gifts-art img{background:radial-gradient(circle at 50% 35%,#315c78,#162538 75%)}
+.baran-game-library-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:18px 0 10px;padding:0 2px}
+.baran-game-library-heading strong{font-size:15px;color:#f5eaff}
+.baran-game-library-heading>span{font-size:10px;color:#bca9ca;text-align:left}
+.baran-auto-games-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:12px 0 18px}
+.baran-auto-games-grid .item{display:flex;flex-direction:column;align-items:stretch;min-width:0;min-height:0;padding:0;text-align:right;border:1px solid #584267;border-radius:16px;background:linear-gradient(145deg,#251a31,#120e18);overflow:hidden;box-shadow:0 8px 20px #0005}
+.baran-auto-games-grid .item>img{display:block;width:100%;height:auto;aspect-ratio:1/1;max-height:180px;object-fit:cover;object-position:center;background:#18121f}
+.baran-auto-games-grid .item-content{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;padding:10px 11px 12px}
+.baran-auto-games-grid .item-content strong{font-size:12px;line-height:1.55;color:#f7edff}
+.baran-auto-games-grid .item-content>span:not(.baran-game-status){font-size:10px;line-height:1.6;color:#c9b8d5}
+.baran-game-status{display:inline-flex;align-items:center;max-width:100%;margin-top:4px;padding:5px 8px;border:1px solid #715483;border-radius:999px;background:#251a31;color:#d8b7ed;font-size:9px;font-weight:900;line-height:1.4}
+.baran-game-status.is-live{border-color:#5b8a78;background:#17372e;color:#a9e4c8}
+.baran-game-coming{position:relative}
+.baran-game-coming:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:16px;box-shadow:inset 0 0 0 1px #ffffff08}
+.baran-game-coming .item-content{min-height:91px}
+.baran-game-live{border-color:#7c5a95!important}
+.baran-game-library-heading+ .baran-auto-games-grid{margin-top:0}
+.baran-chat-library{margin:15px 0 20px;padding:13px;border:1px solid #584267;border-radius:18px;background:linear-gradient(145deg,#21182b,#100c16);box-shadow:0 9px 22px #0004}
+.baran-chat-brand-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.baran-chat-brand-card{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;padding:12px 8px 11px;border:1px solid #4d3b5e;border-radius:14px;background:linear-gradient(150deg,#2a2035,#15101b);text-align:center}
+.baran-chat-brand-card img{display:block;width:66px;height:66px;object-fit:contain;border-radius:15px;background:#fff;padding:5px;box-sizing:border-box}
+.baran-chat-brand-card strong{font-size:12px;color:#f6eaff}
+.baran-chat-brand-card span{font-size:10px;color:#c9b8d5;line-height:1.5}
+.baran-chat-brand-card small{display:inline-block;margin-top:1px;padding:4px 7px;border:1px solid #735b83;border-radius:999px;background:#21172b;color:#d7b6e9;font-size:9px;font-weight:800}
+.baran-subscription-feature{display:flex;align-items:center;gap:14px;margin:15px 0;padding:14px;border:1px solid #67252b;border-radius:17px;background:radial-gradient(circle at 0 50%,#8b142433,transparent 55%),linear-gradient(120deg,#251116,#100d13);box-shadow:0 9px 23px #0005}
+.baran-subscription-feature img{width:74px;height:74px;flex:0 0 74px;object-fit:contain;border-radius:15px;background:#1a1518}
+.baran-subscription-feature div{display:flex;flex-direction:column;gap:4px}
+.baran-subscription-feature strong{font-size:17px;letter-spacing:1.5px;color:#fff}
+.baran-subscription-feature span{font-size:11px;color:#e6cdd0}
+.baran-subscription-feature small{font-size:10px;color:#bd9ca2}
+.baran-service-brand-visual img{width:100%;height:100%;object-fit:contain;padding:8px;box-sizing:border-box}
+.baran-package-art img{object-fit:contain;padding:4px;background:#17111f}
+.baran-game-package-card .baran-package-art:after{background:linear-gradient(0deg,#0c091255,transparent 80%)}
+@media(min-width:650px){
+ .baran-auto-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .baran-auto-games-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+ .baran-chat-brand-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(min-width:980px){
+ .baran-auto-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .baran-auto-games-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .baran-chat-brand-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+@media(max-width:370px){
+ .baran-auto-category-grid,.baran-auto-games-grid{gap:8px}
+ .baran-auto-games-grid .item-content{padding:8px 9px 10px}
+ .baran-auto-games-grid .item-content strong{font-size:11px}
+ .baran-game-library-heading strong{font-size:13px}
+ .baran-chat-brand-card img{width:58px;height:58px}
+}
