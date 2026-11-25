@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09080d">
+<title>BARAN GAME — Syria Market Preview</title>
+<style>
+:root{color-scheme:dark;--bg:#09080d;--panel:#17131d;--line:#3b2d49;--purple:#a77ac7;--soft:#cdb9df;--muted:#9c8ba9;--green:#82d6a5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -10%,#352044 0,transparent 42%),var(--bg);color:#f8f3fb;font-family:system-ui,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:1080px;margin:auto;padding:18px 14px 44px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0 20px;border-bottom:1px solid var(--line)}
+.brand{font-weight:950;letter-spacing:1.5px;font-size:20px}.brand span{color:var(--purple)}.draft{font-size:11px;color:#f2d7a0;border:1px solid #80633a;border-radius:30px;padding:6px 10px;background:#342714}
+.hero{padding:26px 0 18px}.eyebrow{color:var(--purple);font-size:12px;font-weight:800;letter-spacing:1px}.hero h1{font-size:clamp(24px,5vw,38px);margin:8px 0}.hero p{color:var(--muted);line-height:1.8;margin:0;max-width:720px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:16px 0 20px}.stat{background:#17121d;border:1px solid var(--line);border-radius:14px;padding:12px}.stat b{display:block;font-size:19px;color:#e9d8f5}.stat small{color:var(--muted)}
+.toolbar{display:grid;grid-template-columns:1fr;gap:10px;margin:18px 0}.search,.select{width:100%;background:#120e17;color:#fff;border:1px solid var(--line);border-radius:12px;padding:13px;font:inherit;outline:none}.chips{display:flex;gap:8px;overflow:auto;padding:2px 0 8px}.chip{white-space:nowrap;border:1px solid var(--line);background:#17121d;color:var(--soft);border-radius:30px;padding:8px 13px;font:inherit;font-size:13px}.chip.active{background:#593c70;border-color:#a77ac7;color:white}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.card{min-width:0;border:1px solid var(--line);border-radius:16px;background:linear-gradient(155deg,#201729,#121017);padding:13px;display:flex;flex-direction:column;gap:9px;box-shadow:0 8px 25px #0004}.tag{font-size:10px;color:#d7c1e8;background:#372443;border:1px solid #5a426d;border-radius:20px;padding:5px 8px;align-self:flex-start}.name{font-weight:850;font-size:15px;line-height:1.55;min-height:44px;overflow-wrap:anywhere}.cat{font-size:11px;color:var(--muted)}.pricebox{margin-top:auto;border-top:1px solid #35283f;padding-top:10px}.price-label{font-size:10px;color:#c1adcf}.price{font:800 18px ui-monospace,monospace;color:#fff;direction:ltr;text-align:right;overflow-wrap:anywhere}.retail{font-size:11px;color:#d6bdea;margin-top:5px}.meta{font-size:11px;color:var(--muted);line-height:1.6}.disabled{border:1px dashed #665273;border-radius:10px;padding:9px;text-align:center;color:#bca8ca;font-size:11px;background:#1b1422}
+.notice{margin:18px 0;padding:14px;border:1px solid #80633a;background:#241b10;border-radius:14px;color:#f3ddb8;font-size:12px;line-height:1.8}.footer{border-top:1px solid var(--line);margin-top:25px;padding-top:15px;color:var(--muted);font-size:11px;line-height:1.8}
+@media(min-width:680px){.toolbar{grid-template-columns:1fr 230px}.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.wrap{padding:24px}}
+@media(max-width:370px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:span 2}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="top"><div class="brand">BARAN <span>GAME</span></div><span class="draft">مسودة داخلية · غير منشورة</span></header>
+<section class="hero"><div class="eyebrow">SYRIA MARKET · CATALOG PREVIEW</div><h1>معاينة المنتجات والأسعار</h1><p>تصميم تجريبي لعرض منتجات المورد بعد تصنيفها. السعر الظاهر هو تكلفة المورد بالدولار فقط، وليس سعر بيع للعميل.</p></section>
+<section class="stats"><div class="stat"><b>796</b><small>منتج في الكتالوج</small></div><div class="stat"><b>106</b><small>تصنيف محفوظ</small></div><div class="stat"><b>10</b><small>نماذج فعلية للعرض</small></div></section>
+<div class="toolbar"><input id="search" class="search" placeholder="ابحث عن منتج أو تصنيف…" aria-label="بحث"><select id="sort" class="select" aria-label="ترتيب"><option value="default">الترتيب الافتراضي</option><option value="low">تكلفة المورد: الأقل أولاً</option><option value="high">تكلفة المورد: الأعلى أولاً</option><option value="name">الاسم أبجدياً</option></select></div>
+<nav class="chips" id="chips" aria-label="تصنيفات المنتجات"></nav>
+<section class="grid" id="products"></section>
+<div class="notice"><b>تنبيه مهم:</b> لا يوجد سعر بيع معتمد في هذه المعاينة. لا يوجد زر شراء أو إنشاء طلب أو شحن. لا يتم تعديل كتالوج Syria Market الحي أو BARO أو المحافظ أو الطلبات.</div>
+<footer class="footer">BARAN GAME · مراجعة داخلية فقط<br>بيانات الأمثلة مأخوذة من نسخة الكتالوج المحفوظة بتاريخ 25-11-2026. قد تتغير تكلفة المورد مع المزامنة. التصنيف غير المكتمل لا يُخفى ولا يُعاد تصنيفه تلقائياً.</footer>
+</main>
+<script>
+const items=[
+{id:"1827",name:"60 شدة روبوت",cat:"بوبجي عالمي",price:0.983235,type:"باقة ثابتة",qty:"باقة واحدة"},
+{id:"1825",name:"325 شدة روبوت",cat:"بوبجي عالمي",price:4.971725,type:"باقة ثابتة",qty:"باقة واحدة"},
+{id:"429",name:"Prime ( من الشهور 1)",cat:"عضويات بوبجي",price:0.98736,type:"باقة ثابتة",qty:"باقة واحدة"},
+{id:"1842",name:"100 + 10 FreeFire By ID",cat:"فري فاير Free Fire ID",price:1.02212,type:"باقة ثابتة",qty:"باقة واحدة"},
+{id:"1846",name:"2200 + 220 FreeFire By ID",cat:"فري فاير Free Fire ID",price:20.775723,type:"باقة ثابتة",qty:"باقة واحدة"},
+{id:"93",name:"بطاقة غوغل 5$ امريكي",cat:"بطاقات قوقل امريكية",price:5.521497,type:"باقة ثابتة",qty:"باقة واحدة"},
+{id:"1688",name:"chatgpt plus",cat:"chatgpt",price:25.3,type:"باقة ثابتة",qty:"باقة واحدة"},
+{id:"254",name:"YAMI STAR",cat:"شحن التطبيقات",price:0.54,type:"كمية متغيرة · سعر محسوب للحد الأدنى",qty:"الكمية 2,000,000 إلى 500,000,000,000 · تكلفة الحد الأدنى 0.54 USD · يتطلب عرض سعر من الخادم"},
+{id:"1671",name:"FALLA",cat:"شحن التطبيقات",price:1.548,type:"باقة خيارات · أقل خيار",qty:"8 خيارات متاحة · أقل خيار 1,200,000 بسعر مورد 1.548 USD · UUID مطلوب"},
+{id:"1020",name:"إعجابات منشورات فيسبوك — حسابات مخفية",cat:"خدمات فيسبوك",price:0.000338,type:"كمية متغيرة · السعر لكل 1000",qty:"الحد 10–1,000,000 · رابط مطلوب · الحد الأدنى 0.00338 USD"}
+];
+const cats=["الكل",...new Set(items.map(x=>x.cat))];let active="الكل";
+const $=id=>document.getElementById(id);
+function fmt(n){return "$"+Number(n).toFixed(n<0.001?8:6).replace(/0+$/,"").replace(/\.$/,"")}
+function renderChips(){$("chips").innerHTML=cats.map(c=>'<button class="chip '+(active===c?'active':'')+'" data-cat="'+c.replace(/"/g,"&quot;")+'">'+c+'</button>').join("");$("chips").querySelectorAll("button").forEach(b=>b.onclick=()=>{active=b.dataset.cat;renderChips();render()})}
+function render(){let q=$("search").value.trim().toLowerCase();let a=items.filter(x=>(active==="الكل"||x.cat===active)&&[x.name,x.cat,x.id].join(" ").toLowerCase().includes(q));let sort=$("sort").value;if(sort==="low")a.sort((x,y)=>x.price-y.price);if(sort==="high")a.sort((x,y)=>y.price-x.price);if(sort==="name")a.sort((x,y)=>x.name.localeCompare(y.name,"ar"));$("products").innerHTML=a.length?a.map(x=>'<article class="card"><span class="tag">'+x.type+'</span><div class="name">'+x.name+'</div><div class="cat">'+x.cat+' · معرّف المورد '+x.id+'</div><div class="meta">'+x.qty+'</div><div class="pricebox"><div class="price-label">'+(x.type.includes("لكل 1000")?"تكلفة المورد لكل 1000 · USD":x.id==="254"?"تكلفة المورد عند الحد الأدنى · USD":x.id==="1671"?"تكلفة أقل خيار · USD":"تكلفة المورد · USD")+'</div><div class="price">'+fmt(x.price)+'</div><div class="retail">سعر البيع: قيد المراجعة</div></div><div class="disabled">معاينة فقط · الطلبات غير مفعّلة</div></article>').join(""):'<div class="meta">لا توجد نتائج مطابقة.</div>'}
+$("search").addEventListener("input",render);$("sort").addEventListener("change",render);renderChips();render();
+</script></body></html>
