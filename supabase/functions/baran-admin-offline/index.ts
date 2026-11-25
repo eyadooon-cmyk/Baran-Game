@@ -13,7 +13,7 @@ const countBy=(rows:any[],key:(r:any)=>string)=>{const out:Record<string,number>
 const fmt=(o:Record<string,number>)=>Object.entries(o).length?Object.entries(o).map(([k,v])=>k+": "+v).join("، "):"لا توجد سجلات";
 const has=(q:string,words:string[])=>words.some(w=>q.includes(w));
 function guestSupportDraft(ticket:any):string {
- const raw=String(ticket.initial_message||ticket.message||"").toLowerCase();
+ const raw=String((ticket.subject||"")+" "+(ticket.initial_message||ticket.message||"")).toLowerCase();
  const text=raw.replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي");
  if(/رصيد|محفظه|محفظة|شحن|حواله|حوالة|تحويل|دفع|دفعت|خصم|سحب|استرداد|استرجاع|فاتوره|فاتورة|شام ?كاش|sham ?cash|wallet|balance|payment|paid|refund|chargeback|top.?up|deposit|withdraw|transaction|invoice/.test(text))
   return "تصنيف مالي — يحتاج مراجعة بشرية قبل أي رد نهائي. لا تنفذ أو تعدّل رصيداً أو دفعة أو استرداداً أو طلب شحن. المسودة الآمنة: أهلاً فيك، وصلنا استفسارك المتعلق بالعملية المالية، وحوّلناه لمراجعة فريق الدعم المختص. لا ترسل كلمة المرور أو رمز التحقق أو بيانات البطاقة. سنراجع التفاصيل المتاحة في النظام ونتابع معك عبر التذكرة.";
