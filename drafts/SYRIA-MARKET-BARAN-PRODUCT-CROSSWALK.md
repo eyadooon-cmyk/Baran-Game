@@ -62,10 +62,10 @@ Status: read-only reconciliation worksheet; not an import plan or approval.
 - Gold Jawaker has two candidate IDs (55 and 1444); no canonical choice is made.
 
 ## C. Mapping counts (based on this exact snapshot)
-- Strong candidate matches: 13 Baran rows (including the two Google Play cards and ChatGPT product-level candidate).
+- Strong candidate matches: 14 Baran rows (including the two Google Play cards and ChatGPT product-level candidate).
 - Partial/conditional candidates: 3 Baran rows (PUBG 3850, PUBG 8100, Jawaker gold).
 - Related but not safely mapped: 3 Baran rows (Jawaker server 1, server 2, red booster).
-- No exact supplier item verified: 16 Baran rows.
+- No exact supplier item verified: 15 Baran rows.
 - These are review classifications, not import approvals.
 
 ## D. Price and activation gate
