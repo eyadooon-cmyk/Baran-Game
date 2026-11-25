@@ -41,6 +41,8 @@ test("routine guest issues receive safe automatic replies while other cases rema
   assert.match(api, /auto_replied: Boolean\(autoReply\)/);
   assert.match(api, /requires_human_review: !autoReply/);
   assert.match(api, /رصيد\|محفظه\|محفظة\|شحن/);
+  assert.match(api, /احتيال\|نصب\|سرقه\|اختراق/);
+  assert.match(adminUi, /تذكرة حساسة أمنياً أو متعلقة بالخصوصية/);
   assert.match(guestUi, /data\.auto_replied&&data\.auto_reply_message/);
   assert.match(guestUi, /تحتاج رسالتك إلى مراجعة فريق الدعم/);
 });
