@@ -8833,6 +8833,21 @@ html,body{width:100%;min-width:320px;margin:0!important;padding:0!important}
 }
 </style>
 
+<style id="baran-mobile-card-spacing-refine-20261125">
+/* Slightly reduce inner empty space in storefront cards on phones */
+@media(max-width:600px){
+  #appShell>main :is(.item,.product-card,.deposit-card,.finance-card,.ops-card,
+    .baran-service-product-polished,.baran-product-detail-panel,
+    .baran-package-button,.game-checkout){
+    padding:clamp(9px,2.5vw,12px)!important;
+    box-sizing:border-box!important;
+  }
+  #appShell>main :is(.baran-service-product-grid,.game-products-grid){
+    gap:9px!important;
+  }
+}
+</style>
+
 </body>
 </html>
 
