@@ -1697,6 +1697,12 @@ body:has(#authScreen:not(.hidden)){background:#08060d!important}
 .baran-service-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .baran-service-product{display:flex;flex-direction:column;gap:8px;min-width:0;padding:13px;border:1px solid #59416d;border-radius:15px;background:linear-gradient(145deg,#241a30,#15101c);color:#f4eafa}
 .baran-service-product-head{display:flex;align-items:center;gap:8px}
+.baran-service-brand-visual{display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;padding:11px;border:1px solid #ffffff24;border-radius:15px;background:var(--brand-bg,#30243a);box-shadow:0 5px 15px #0005}
+.baran-service-brand-visual img{display:block;width:100%;height:100%;max-width:30px;max-height:30px;object-fit:contain}
+.baran-service-brand-visual.is-fallback{color:#fff;font-size:17px;font-weight:900}
+.baran-service-product-head>strong{flex:1;min-width:0}
+@media(max-width:390px){.baran-service-brand-visual{flex-basis:45px;width:45px;height:45px;padding:9px;border-radius:13px}}
+
 .baran-service-product-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:#a56bd626;font-size:20px}
 .baran-service-product strong{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
 .baran-service-product p{margin:0;color:#bba9ca;font-size:10px;line-height:1.7;overflow-wrap:anywhere}
@@ -7836,6 +7842,32 @@ function baranShowServiceSelection(product,category,containerId){
   button.setAttribute("aria-pressed",String(selected));
  });
 }
+function baranServiceBrandVisual(product,category){
+ const text=[product?.product_code,product?.name,product?.description,product?.catalog_group,category].join(" ").toLowerCase();
+ const brands=[
+  {keys:["chatgpt","openai","gpt"],slug:"openai",label:"ChatGPT",bg:"#173b32"},
+  {keys:["netflix"],slug:"netflix",label:"Netflix",bg:"#42151c"},
+  {keys:["spotify"],slug:"spotify",label:"Spotify",bg:"#123b2a"},
+  {keys:["youtube"],slug:"youtube",label:"YouTube",bg:"#48191b"},
+  {keys:["google play","google_play","googleplay"],slug:"googleplay",label:"Google Play",bg:"#17334a"},
+  {keys:["expressvpn"],slug:"expressvpn",label:"ExpressVPN",bg:"#47241d"},
+  {keys:["nordvpn"],slug:"nordvpn",label:"NordVPN",bg:"#15354b"},
+  {keys:["protonvpn","proton vpn"],slug:"protonvpn",label:"Proton VPN",bg:"#43251c"},
+  {keys:["canva"],slug:"canva",label:"Canva",bg:"#183c49"},
+  {keys:["microsoft","office","365"],slug:"microsoft",label:"Microsoft",bg:"#243348"},
+  {keys:["adobe","acrobat","photoshop"],slug:"adobe",label:"Adobe",bg:"#4a171c"},
+  {keys:["discord"],slug:"discord",label:"Discord",bg:"#29264a"},
+  {keys:["steam"],slug:"steam",label:"Steam",bg:"#1d2b3d"},
+  {keys:["playstation","psn"],slug:"playstation",label:"PlayStation",bg:"#172b4b"},
+  {keys:["xbox"],slug:"xbox",label:"Xbox",bg:"#173b27"},
+  {keys:["crunchyroll"],slug:"crunchyroll",label:"Crunchyroll",bg:"#493015"},
+  {keys:["shahid"],slug:"shahid",label:"Shahid",bg:"#302044"},
+  {keys:["osn"],slug:"osn",label:"OSN",bg:"#252b4a"},
+  {keys:["apple","itunes","app store"],slug:"apple",label:"Apple",bg:"#34343a"}
+ ];
+ const found=brands.find(brand=>brand.keys.some(key=>text.includes(key)));
+ return found||null;
+}
 async function loadBaranServiceCatalog(category,containerId,title,icon){
  const container=document.getElementById(containerId);
  if(!container)return;
@@ -7882,9 +7914,17 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    const availability=document.createElement("span");availability.className="baran-service-product-kicker";
    availability.textContent=(Number(product.price_usd)>0||Number(product.price_syp)>0)?"السعر مسجل · الشراء غير مفعّل":"قيد التجهيز";
    const head=document.createElement("div");head.className="baran-service-product-head";
-   const symbol=document.createElement("span");symbol.className="baran-service-product-icon";symbol.textContent=icon;
+   const brand=baranServiceBrandVisual(product,category);
+   if(brand){
+    const visual=document.createElement("span");visual.className="baran-service-brand-visual";visual.style.setProperty("--brand-bg",brand.bg);
+    const image=document.createElement("img");image.src="https://cdn.simpleicons.org/"+brand.slug+"/FFFFFF";image.alt=brand.label;image.loading="lazy";image.decoding="async";
+    image.onerror=()=>{visual.classList.add("is-fallback");image.remove();visual.textContent=brand.label.slice(0,2).toUpperCase();};
+    visual.append(image);head.append(visual);
+   }else{
+    const symbol=document.createElement("span");symbol.className="baran-service-product-icon";symbol.textContent=icon;head.append(symbol);
+   }
    const name=document.createElement("strong");name.textContent=product.name||product.product_code||"منتج رقمي";
-   head.append(symbol,name);
+   head.append(name);
    const description=document.createElement("p");description.textContent=product.description||"خدمة رقمية من Baran Game.";
    const price=document.createElement("div");price.className="baran-service-product-price";price.textContent=baranServicePrice(product);
    card.append(availability,head,description,price);
