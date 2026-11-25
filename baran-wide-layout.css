@@ -1,0 +1,68 @@
+/* BARAN GAME — full-width responsive storefront, all customer sections */
+#appShell{width:100%;min-width:0}
+#appShell>main{
+  display:block;
+  width:100%;
+  max-width:1440px;
+  min-width:0;
+  margin-inline:auto;
+  padding:clamp(12px,2vw,24px);
+  padding-bottom:calc(30px + env(safe-area-inset-bottom));
+}
+#appShell>main>section{
+  box-sizing:border-box;
+  width:100%;
+  max-width:none;
+  min-width:0;
+}
+#appShell>main>section:not(#home){
+  margin-inline:0;
+}
+#appShell>main>#home{
+  padding:clamp(14px,2vw,24px);
+}
+#appShell>main .game-store-page,
+#appShell>main .baran-service-catalog,
+#appShell>main .baran-service-product-grid,
+#appShell>main .baran-auto-category-grid{
+  width:100%;
+  max-width:none;
+  min-width:0;
+}
+#appShell>main .baran-service-product-grid{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));
+}
+#appShell>main .baran-service-product{width:100%;min-width:0}
+#appShell>main .grid,
+#appShell>main .finance-grid,
+#appShell>main .ops-grid{width:100%;min-width:0}
+@media(min-width:900px){
+  #appShell>main{padding-inline:clamp(22px,3vw,42px)}
+  #appShell>main>section:not(#home){padding:clamp(20px,2vw,30px)}
+}
+@media(max-width:600px){
+  #appShell>main{
+    width:100%;
+    max-width:none;
+    padding:7px 5px calc(24px + env(safe-area-inset-bottom));
+  }
+  #appShell>main>section:not(#home){
+    width:100%;
+    margin:8px 0 13px;
+    padding:10px 9px;
+    border-radius:14px;
+  }
+  #appShell>main>#home{
+    width:100%;
+    margin:8px 0 13px;
+    padding:10px 9px;
+    border-radius:15px;
+  }
+  #appShell>main .baran-service-product-grid{grid-template-columns:minmax(0,1fr)}
+  #appShell>main .baran-service-product{padding:13px}
+}
+@media(max-width:360px){
+  #appShell>main{padding-inline:3px}
+  #appShell>main>section:not(#home),
+  #appShell>main>#home{padding-inline:8px}
+}
