@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
       path = "/profile.php";
     } else if (action === "product_pages") {
       const ids = Array.isArray(body.products_id) ? body.products_id.map((v: unknown) => String(v)) : [];
-      if (!ids.length || ids.length > 25 || ids.some((v: string) => !/^\\d{1,10}$/.test(v))) {
+      if (!ids.length || ids.length > 25 || ids.some((v: string) => !/^\d{1,10}$/.test(v))) {
         return json({ error: "product_pages requires 1–25 valid numeric product IDs" }, 400, origin);
       }
       const pages = await Promise.all(ids.map(async (id: string) => {
@@ -122,7 +122,7 @@ Deno.serve(async (req: Request) => {
         query.set("products_id", ids.join(","));
       }
     } else {
-      return json({ error: "Allowed actions: profile, products. Order creation is intentionally disabled." }, 400, origin);
+      return json({ error: "Allowed actions: profile, products, product_pages. Order creation is intentionally disabled." }, 400, origin);
     }
     if (query.size) path += "?" + query.toString();
 
