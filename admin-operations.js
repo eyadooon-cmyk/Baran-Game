@@ -1243,26 +1243,19 @@ function homscardRunAutomaticAudit(){
   }
 }
 function homscardEnsureAutoAuditUi(){
-  const toolsBox=document.getElementById("opsHomsCatalogTools");
-  if(!toolsBox)return;
+  const panel=document.getElementById("homscardProviderPanel");
+  if(!panel)return;
   let button=document.getElementById("opsHomsAutoAuditButton");
   let status=document.getElementById("opsHomsAutoAuditStatus");
   let output=document.getElementById("opsHomsAutoAuditResults");
-  if(!button){button=opsNode("button","secondary full","🧠 فحص وتصنيف كل المنتجات تلقائياً");button.id="opsHomsAutoAuditButton";}
+  if(!button){button=opsNode("button","secondary full","🧠 فحص وتصنيف كل المنتجات تلقائياً");button.id="opsHomsAutoAuditButton";panel.appendChild(button);}
   button.type="button";
   button.onclick=homscardRunAutomaticAudit;
-  if(!status){status=opsNode("div","ops-muted","حمّل الكتالوج ثم ابدأ الفحص التلقائي.");status.id="opsHomsAutoAuditStatus";}
+  if(!status){status=opsNode("div","ops-muted","حمّل الكتالوج ثم ابدأ الفحص التلقائي.");status.id="opsHomsAutoAuditStatus";panel.appendChild(status);}
   status.setAttribute("role","status");
   status.setAttribute("aria-live","polite");
-  if(!output){output=opsNode("div","ops-list");output.id="opsHomsAutoAuditResults";}
+  if(!output){output=opsNode("div","ops-list");output.id="opsHomsAutoAuditResults";panel.appendChild(output);}
   output.setAttribute("aria-live","polite");
-  const search=document.getElementById("opsHomsCatalogSearch");
-  [button,status,output].forEach(node=>{
-    if(node.parentNode!==toolsBox){
-      if(search&&search.parentNode===toolsBox)toolsBox.insertBefore(node,search);
-      else toolsBox.appendChild(node);
-    }
-  });
 }
 
 function initHomsCardCatalogFilters(products){
