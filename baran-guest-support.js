@@ -108,7 +108,7 @@ async function lookup(showError=true){
   const data=await callApi({action:"lookup",ticket_code:$("baranGuestTicketCode").value.trim(),tracking_secret:$("baranGuestTicketSecret").value.trim()});
   activeTicket=data.ticket;trackingSecret=$("baranGuestTicketSecret").value.trim();
   $("baranGuestSupportStart").classList.add("hidden");$("baranGuestSupportLookup").classList.add("hidden");$("baranGuestSupportThread").classList.remove("hidden");
-  $("baranGuestTicketMeta").textContent="التذكرة "+data.ticket.ticket_code+" — الحالة: "+({pending:"بانتظار الدعم",in_progress:"قيد المعالجة",answered:"تم الرد",closed:"مغلقة"})[data.ticket.status]||data.ticket.status;
+  $("baranGuestTicketMeta").textContent="التذكرة "+data.ticket.ticket_code+" — الحالة: "+(({pending:"بانتظار الدعم",in_progress:"قيد المعالجة",answered:"تم الرد",closed:"مغلقة"})[data.ticket.status]||data.ticket.status);
   renderMessages(data.messages);say("تم تحميل محادثة التذكرة.");
   await mountReplyCaptcha();
  }catch(e){if(showError)say(e.message,true);}
