@@ -3,6 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const ALLOWED_ORIGINS = new Set([
   "https://eyadooon-cmyk.github.io",
   "https://baran-game.pages.dev",
+  "https://d18f235b.baran-game.pages.dev",
+  "https://feature-homscard-auto-produc.baran-game.pages.dev",
 ]);
 function corsHeaders(origin = ""): Record<string, string> {
   const headers: Record<string, string> = {
