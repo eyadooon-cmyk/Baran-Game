@@ -87,7 +87,7 @@ Deno.serve(async (req: Request) => {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const headers: Record<string, string> = { "api-token": apiToken, "Accept": "application/json" };
     if (hmacSecret) {
-      const signature = await signHmac(hmacSecret, timestamp + "\nGET\n" + path + "\n");
+      const signature = await signHmac(hmacSecret, timestamp + "\nGET\n" + "/reseller" + path + "\n");
       headers["X-Timestamp"] = timestamp;
       headers["X-Signature"] = signature;
     }
