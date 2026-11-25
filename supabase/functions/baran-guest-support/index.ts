@@ -220,7 +220,12 @@ Deno.serve(async (req: Request) => {
         success: true,
         ticket_code: ticket.ticket_code,
         tracking_secret: trackingSecret,
-        message: "تم فتح تذكرة الدعم. احتفظ برقم التذكرة والرمز السري بمكان آمن.",
+        auto_replied: Boolean(autoReply),
+        requires_human_review: !autoReply,
+        auto_reply_message: autoReply?.reply || null,
+        message: autoReply
+          ? "تم فتح التذكرة وإرسال إرشادات أولية آمنة. احتفظ برقم التذكرة والرمز السري."
+          : "تم فتح التذكرة، وستراجعها إدارة الدعم. احتفظ برقم التذكرة والرمز السري.",
       }, 201, origin);
     }
 
