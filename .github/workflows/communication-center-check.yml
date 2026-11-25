@@ -70,6 +70,8 @@ jobs:
             ['unified center reuses existing live components', js.includes('move(auto,assistantPane.pane)') && js.includes('move(assistant,assistantPane.pane)') && js.includes('adminPanel.querySelector(\".announcement-panel\")')],
             ['broadcast is grouped inside a collapsed communication-center section', js.includes('bcc-announcements') && js.includes('notificationContent.appendChild(announcementDetails)')],
             ['support inbox has a helpful empty state', html.includes('support-empty-state') && html.includes('صندوق الدعم فارغ حالياً')],
+            ['guest and registered-customer tickets share one support workspace', html.includes('supportTabGuests') && html.includes('supportGuestView') && html.includes('id="baranGuestAdminMount"') && html.includes("switchSupportTab('guests')")],
+            ['guest inbox loads only when its unified support tab is selected', html.includes('selected==="guests"') && html.includes('loadBaranGuestSupportAdmin')],
             ['support priority filter has no visible escaped newline', !html.includes('</select>\\n                  <label for=\"adminFeedbackPriorityFilter\">')],
             ['embedded broadcast is excluded from duplicate section navigation', html.includes('announcement-panel')],
             ['communication report routes through read-only admin analysis', js.includes('أنشئ تقريراً إدارياً عن التواصل') && js.includes('ولا تنفذ أي إجراء أو تغيير')],
