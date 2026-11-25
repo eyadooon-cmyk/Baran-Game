@@ -1044,6 +1044,21 @@ function renderHomsCardCatalog(){
     info.appendChild(opsNode('div','homscard-product-name',opsText(p.name)));
     info.appendChild(opsNode('div','homscard-product-meta','التصنيف: '+opsText(p.category)+(p.code||p.product_code?' | الرمز: '+opsText(p.code||p.product_code):'')));
     info.appendChild(opsNode('div','homscard-product-state'+(p.available?'':' unavailable'),p.available?'متوفر':'غير متوفر'));
+    const metadata=opsNode('details','homscard-product-meta');
+    metadata.appendChild(opsNode('summary','','تفاصيل نوع المنتج والطلب'));
+    const formatCatalogValue=value=>{
+      if(value===null||value===undefined||value==='')return 'غير متوفر في بيانات المورد';
+      let formatted;
+      try{formatted=typeof value==='string'?value:JSON.stringify(value);}catch(_){formatted=String(value);}
+      return String(formatted).slice(0,1200);
+    };
+    metadata.append(
+      opsNode('div','homscard-product-meta','معرّف المورد: '+opsText(p.id)),
+      opsNode('div','homscard-product-meta','نوع المنتج: '+formatCatalogValue(p.product_type)),
+      opsNode('div','homscard-product-meta','خيارات الكمية qty_values: '+formatCatalogValue(p.qty_values)),
+      opsNode('div','homscard-product-meta','البيانات المطلوبة params: '+formatCatalogValue(p.params))
+    );
+    info.appendChild(metadata);
     row.append(info,opsNode('div','homscard-product-price',opsText(p.price)+' USD'));
     fragment.appendChild(row);
   });
