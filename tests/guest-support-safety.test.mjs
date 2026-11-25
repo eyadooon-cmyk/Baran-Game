@@ -80,7 +80,7 @@ test("financial guest tickets are explicitly escalated and never treated as an a
 
 test("guest and registered-customer tickets share one admin support workspace", () => {
   assert.match(app, /id="supportTabGuests"[\s\S]*?switchSupportTab\('guests'\)/);
-  assert.match(app, /baran-guest-support-admin\.js\?v=20261125-unified-support-1/);
+  assert.match(app, /baran-guest-support-admin\.js\?v=20261125-unified-support-2/);
   assert.match(app, /id="supportGuestView"[\s\S]*?id="baranGuestAdminMount"/);
   assert.match(app, /function switchSupportTab\(tab\)[\s\S]*?selected==="guests"[\s\S]*?loadBaranGuestSupportAdmin/);
   assert.match(app, /data-admin-panel="guest-support"[\s\S]*?showAdminPanel\('support'\)/);
@@ -92,7 +92,7 @@ test("guest and registered-customer tickets share one admin support workspace", 
 
 test("admin ticket center exposes conversation history, filters, priority, and all statuses", () => {
   assert.match(api, /action === "admin_thread"/);
-  assert.match(api, /notifyAdmins\(ticket\.id, ticket\.ticket_code/);
+  assert.match(api, /notifyAdmins\(\s*ticket\.id,\s*ticket\.ticket_code/);
   assert.match(api, /admin_read_at: null/);
   assert.match(api, /admin_is_user/);
   assert.match(api, /baran_guest_support_messages/);
