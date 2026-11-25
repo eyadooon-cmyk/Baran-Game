@@ -40,6 +40,31 @@ function safeEqual(a: string, b: string) {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
+
+function safeGuestAutoReply(subject: string, message: string): { reply: string; reason: string } | null {
+  const raw = (subject + " " + message).toLowerCase();
+  const text = raw.replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+  if (/رصيد|محفظه|محفظة|شحن|حواله|حوالة|تحويل|دفع|دفعت|خصم|سحب|استرداد|استرجاع|فاتوره|فاتورة|شام ?كاش|sham ?cash|wallet|balance|payment|paid|refund|chargeback|top.?up|deposit|withdraw|transaction|invoice/.test(text)) return null;
+  if ((/(نسيت|ناسي|ضاعت)/.test(text) && /(كلمه المرور|كلمة السر|باسورد|password)/.test(text)) || /تسجيل الدخول|ما عم اقدر فوت|ما بقدر سجل|login|password reset/.test(text)) {
+    return {
+      reason: "رد آلي آمن: إرشادات استعادة كلمة المرور دون طلب أي سر أو رمز.",
+      reply: "أهلاً فيك ❤️ إذا نسيت كلمة المرور، اضغط «استعادة كلمة المرور» من شاشة الدخول واكتب البريد المرتبط بحسابك، ثم افحص صندوق الوارد والرسائل غير المرغوب فيها. لا ترسل كلمة مرورك أو رمز التحقق لأي شخص. إذا لم يصلك الرابط، اكتب لنا رسالة الخطأ الظاهرة."
+    };
+  }
+  if (/ما بيفتح|ما عم يفتح|الموقع|الصفحه|التطبيق|loading|not loading/.test(text)) {
+    return {
+      reason: "رد آلي آمن: خطوات أولية لمشكلة فتح الموقع أو تحميله.",
+      reply: "أهلاً فيك 🌟 تأكد من اتصال الإنترنت، ثم حدّث الصفحة وأعد فتح Chrome. إذا استمرت المشكلة، جرّب نافذة خاصة وأرسل نوع جهازك ورسالة الخطأ الظاهرة، من دون مشاركة أي كلمة مرور."
+    };
+  }
+  if (/اشعار|اشعارات|تنبيه|notifications/.test(text)) {
+    return {
+      reason: "رد آلي آمن: إرشادات إذن الإشعارات على الهاتف والمتصفح.",
+      reply: "أهلاً فيك 🌟 تأكد من السماح بإشعارات BARAN GAME من إعدادات Chrome والهاتف، ثم افتح المتجر مجدداً. إذا استمرت المشكلة، أرسل نوع جهازك وإصدار Android."
+    };
+  }
+  return null;
+}
 function clean(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
@@ -172,7 +197,25 @@ Deno.serve(async (req: Request) => {
         await admin.from("baran_guest_support_tickets").delete().eq("id", ticket.id);
         throw new Error("تعذر حفظ رسالة التذكرة.");
       }
-      await notifyAdmins(ticket.id, ticket.ticket_code, "تذكرة دعم جديدة من زائر", "وصلت تذكرة جديدة وتحتاج إلى مراجعة الفريق.");
+      const autoReply = safeGuestAutoReply(subject, message);
+      if (autoReply) {
+        const { error: autoReplyError } = await admin.from("baran_guest_support_messages").insert({
+          ticket_id: ticket.id, sender_role: "assistant", message: autoReply.reply,
+        });
+        if (!autoReplyError) {
+          await admin.from("baran_guest_support_tickets").update({
+            status: "answered", assistant_reason: autoReply.reason, assistant_draft: autoReply.reply, updated_at: now.toISOString(),
+          }).eq("id", ticket.id);
+        } else {
+          console.error("guest support safe auto reply failed", autoReplyError);
+        }
+      }
+      await notifyAdmins(
+        ticket.id,
+        ticket.ticket_code,
+        autoReply ? "تذكرة زائر — رد آلي آمن أُرسل" : "تذكرة دعم جديدة من زائر",
+        autoReply ? "أرسل المساعد إرشادات أولية غير مالية؛ راجع التذكرة للمتابعة." : "التذكرة تحتاج إلى مراجعة الفريق، خصوصاً إذا كانت مالية أو غير مصنفة."
+      );
       return json({
         success: true,
         ticket_code: ticket.ticket_code,
