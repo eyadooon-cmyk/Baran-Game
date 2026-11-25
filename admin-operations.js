@@ -1016,6 +1016,7 @@ async function saveBaranCampaignDraft(){
 let homscardCatalogCache=[];
 let homscardLastAuditRows=[];
 let homscardRequestBusy=false;
+let homscardAuditRunId=null;
 function renderHomsCardCatalog(){
   const toolsBox=document.getElementById('opsHomsCatalogTools');
   const results=document.getElementById('opsHomsCatalogResults');
@@ -1225,19 +1226,45 @@ async function homscardInspectProductPages(){
       const byId=new Map(data.data.map(row=>[String(row.id),row]));
       for(const p of products.slice(i,i+25)){
         const row=byId.get(String(p.id));
-        if(row?.success){p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";inspected++;}
-        else failed++;
+        if(row?.success){p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";p.page_status="success";p.page_error="";inspected++;}
+        else {p.page_status="failed";p.page_error=row?.error||"تعذر فحص الصفحة";failed++;}
       }
+      await homscardPersistAuditRows(products.slice(i,i+25),products.slice(i,i+25).map(p=>homscardAutoAuditOne(p)));
       if(status)status.textContent="جارٍ فحص صفحات HomsCard العامة: "+Math.min(i+25,products.length)+" / "+products.length+" · نجح "+inspected+" · تعذر "+failed;
     }
-    homscardRunAutomaticAudit();
+    await homscardRunAutomaticAudit();
     if(status)status.textContent="اكتمل فحص صفحات المورد: نجح "+inspected+" من "+products.length+" صفحة، وتعذر "+failed+". أُعيد التصنيف باستخدام وصف صفحات المنتجات حيث توفر.";
   }catch(error){
     console.error("[HomsCard product page audit]",error);
     if(status)status.textContent="توقف فحص الصفحات: "+(error?.message||"خطأ غير معروف")+". لم يتم إنشاء أي طلب أو شحن.";
   }finally{if(button)button.disabled=false;}
 }
-function homscardRunAutomaticAudit(){
+async function homscardPersistAuditRows(products,auditRows){
+ if(!products?.length)return;
+ if(!homscardAuditRunId)homscardAuditRunId=crypto.randomUUID();
+ const byId=new Map((auditRows||[]).map(x=>[String(x.p?.id),x]));
+ for(let i=0;i<products.length;i+=50){
+  const rows=products.slice(i,i+50).map(p=>{const a=byId.get(String(p.id))||homscardAutoAuditOne(p);return {product_id:String(p.id),product_name:String(p.name||""),product_data:Object.fromEntries(Object.entries(p).filter(([k])=>!k.startsWith("page_"))),page_data:{title:p.page_title||"",description:p.page_description||"",text:p.page_text||""},page_status:p.page_status||(p.page_text?"success":"not_checked"),page_error:p.page_error||"",audit_data:{kind:a.kind,confidence:a.confidence,reason:a.reason,options:a.options,keys:a.keys,account:a.account,missing:a.missing}};});
+  const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"save_audit_batch",run_id:homscardAuditRunId,catalog_count:homscardCatalogCache.length,rows}});
+  if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر حفظ نتائج التدقيق");
+ }
+}
+async function homscardRestoreSavedAudit(){
+ const status=document.getElementById("opsHomsAutoAuditStatus");
+ if(status)status.textContent="جارٍ استرجاع آخر تدقيق محفوظ…";
+ try{
+  const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"get_latest_audit"}});
+  if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر الاسترجاع");
+  if(!data.run||!data.data?.length){if(status)status.textContent="لا يوجد تدقيق محفوظ بعد.";return;}
+  homscardAuditRunId=data.run.run_id;
+  homscardCatalogCache=data.data.map(x=>({...x.product_data,page_title:x.page_data?.title||"",page_description:x.page_data?.description||"",page_text:x.page_data?.text||"",page_status:x.page_status,page_error:x.page_error||""}));
+  initHomsCardCatalogFilters(homscardCatalogCache);
+  await homscardRunAutomaticAudit({persist:false});
+  if(status)status.textContent="تم استرجاع "+homscardCatalogCache.length+" منتجاً محفوظاً.";
+ }catch(e){if(status)status.textContent="تعذر الاسترجاع: "+(e?.message||"خطأ");}
+}
+
+async function homscardRunAutomaticAudit(options={}){
   const output=document.getElementById("opsHomsAutoAuditResults");
   const status=document.getElementById("opsHomsAutoAuditStatus");
   const button=document.getElementById("opsHomsAutoAuditButton");
@@ -1259,10 +1286,11 @@ function homscardRunAutomaticAudit(){
     if(!products.length)throw new Error("لم تصل بيانات منتجات قابلة للفحص من الكتالوج.");
     const rows=products.map(p=>homscardAutoAuditOne(p));
     homscardLastAuditRows=rows.slice();
+    if(options.persist!==false){status.textContent="جارٍ حفظ نتائج التدقيق…";await homscardPersistAuditRows(products,rows);}
     const labels=["كمية متغيرة محتملة","باقة ثابتة محتملة","اشتراك بمدة محتملة","غير محسوم"];
     const counts=Object.fromEntries(labels.map(label=>[label,rows.filter(r=>r.kind===label).length]));
     const tests=homscardAutoAuditSelfTests();
-    status.textContent="اكتمل فحص "+rows.length+" منتجاً: "+(rows.length-counts["غير محسوم"])+" تصنيفاً مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة. الاختبارات الداخلية: "+tests.passed+"/"+tests.total;
+    status.textContent="اكتمل فحص "+rows.length+" منتجاً وحُفظت النتائج: "+(rows.length-counts["غير محسوم"])+" تصنيفاً مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة. الاختبارات الداخلية: "+tests.passed+"/"+tests.total;
     const summary=opsNode("div","ops-stats-grid");
     labels.forEach(label=>{const card=opsNode("div","ops-card");card.append(opsNode("strong","",String(counts[label])),opsNode("div","ops-muted",label));summary.appendChild(card);});
     output.appendChild(summary);
@@ -1307,6 +1335,9 @@ function homscardEnsureAutoAuditUi(){
   if(!pageButton){pageButton=opsNode("button","secondary full","🔎 فحص صفحات HomsCard وتدقيق التفاصيل");pageButton.id="opsHomsPageAuditButton";panel.appendChild(pageButton);}
   pageButton.type="button";
   pageButton.onclick=homscardInspectProductPages;
+  let restoreButton=document.getElementById("opsHomsRestoreAuditButton");
+  if(!restoreButton){restoreButton=opsNode("button","secondary full","♻️ استرجاع آخر تدقيق محفوظ");restoreButton.id="opsHomsRestoreAuditButton";panel.appendChild(restoreButton);}
+  restoreButton.type="button";restoreButton.onclick=homscardRestoreSavedAudit;
   pageButton.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
   button.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
   if(!status){status=opsNode("div","ops-muted","حمّل الكتالوج ثم ابدأ الفحص التلقائي.");status.id="opsHomsAutoAuditStatus";panel.appendChild(status);}
@@ -1345,10 +1376,10 @@ function homscardExportAuditCsv(){
     return;
   }
   const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
-  const rows=[["معرّف المورد","اسم المنتج","التصنيف","نوع المورد","السعر كما ورد","التصنيف المبدئي","الثقة","سبب التصنيف","خيارات الكمية","حقول الطلب","حقول حساب محتملة","النواقص"]];
+  const rows=[["معرّف المورد","اسم المنتج","التصنيف","نوع المورد","السعر كما ورد","التصنيف المبدئي","الثقة","سبب التصنيف","خيارات الكمية","حقول الطلب","حقول حساب محتملة","النواقص","حالة الصفحة","عنوان الصفحة","وصف الصفحة","نص الصفحة","خطأ الصفحة"]];
   homscardLastAuditRows.forEach(r=>rows.push([
     r.p.id,r.p.name,r.p.category,r.p.product_type,r.p.price,r.kind,r.confidence,r.reason,
-    r.options.join("، "),r.keys.join("، "),r.account?"نعم":"لا",r.missing.join("؛ ")
+    r.options.join("، "),r.keys.join("، "),r.account?"نعم":"لا",r.missing.join("؛ "),r.p.page_status||"not_checked",r.p.page_title||"",r.p.page_description||"",r.p.page_text||"",r.p.page_error||""
   ]));
   const csv="\uFEFF"+rows.map(row=>row.map(quote).join(",")).join("\r\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
@@ -1376,6 +1407,7 @@ async function opsTestHomsCard(action){
       if(message)message.textContent='تم فحص الملف الشخصي بنجاح. لم يتم إنشاء أي طلب.';
     }else{
       homscardCatalogCache=Array.isArray(data.data)?data.data:[];
+      homscardAuditRunId=crypto.randomUUID();
       if(output)output.appendChild(opsNode('strong','','تم استرجاع '+homscardCatalogCache.length+' منتج من حمص كارد.'));
       initHomsCardCatalogFilters(homscardCatalogCache);
       if(message)message.textContent='تم جلب الكتالوج بنجاح. استخدم البحث والتصنيفات لمراجعة المنتجات؛ لم يتم استيراد أو تعديل أي منتج.';
