@@ -1146,7 +1146,9 @@ function homscardAutoAuditKeys(value){
 function homscardAutoAuditOne(p){
   const name=String(p.name||""),category=String(p.category||"");
   const type=homscardAutoAuditText(p.product_type||"");
-  const text=homscardAutoAuditText(name+" "+category);
+  const pageText=homscardAutoAuditText([p.page_title,p.page_description,p.page_text].filter(Boolean).join(" "));
+  const text=homscardAutoAuditText(name+" "+category+" "+pageText);
+  const unitPriceEvidence=/(للوحدة|سعر الوحدة|per unit|unit price)/i.test(pageText);
   const params=Array.isArray(p.params)?p.params:(p.params==null?[]:[p.params]);
   const keys=homscardAutoAuditKeys(params),paramText=homscardAutoAuditText(keys.join(" "));
   const options=homscardAutoAuditQuantities(p.qty_values);
@@ -1155,7 +1157,7 @@ function homscardAutoAuditOne(p){
   const typeSubscription=/^(subscription|membership|time|duration)$/i.test(type);
   const typeVariable=/^(quantity|variable|top.?up|recharge|amount|custom)$/i.test(type);
   const hasDuration=subscriptionWords.test(text)||typeSubscription;
-  const hasVariableEvidence=options.length>0||typeVariable;
+  const hasVariableEvidence=options.length>0||typeVariable||unitPriceEvidence;
   const hasPackEvidence=/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|credits|points)/i.test(text)&&/\d/.test(text);
   let kind="غير محسوم",confidence="منخفض",reason="المعلومات المتاحة لا تكفي لتحديد طريقة البيع دون تخمين.";
   // Trust the supplier's explicit quantity type before interpreting words in the
@@ -1172,10 +1174,10 @@ function homscardAutoAuditOne(p){
     kind="اشتراك بمدة محتملة";
     confidence="منخفض";
     reason="الاسم يتضمن إشارة زمنية؛ قد تكون وصفاً فقط وليست مدة اشتراك مؤكدة.";
-  }else if(options.length){
+  }else if(options.length||unitPriceEvidence){
     kind="كمية متغيرة محتملة";
     confidence="متوسط";
-    reason="توجد قيم كمية منظمة؛ هذا لا يثبت أن سعر المورد سعر وحدة.";
+    reason=options.length?"توجد قيم كمية منظمة؛ هذا لا يثبت أن سعر المورد سعر وحدة.":"صفحة المورد تصف السعر بأنه للوحدة؛ يلزم تأكيد مجال الكمية قبل اعتماد التسعير.";
   }else if(hasPackEvidence){
     kind="باقة ثابتة محتملة";
     confidence="منخفض";
@@ -1205,6 +1207,35 @@ function homscardAutoAuditSelfTests(){
   ];
   const failures=cases.filter(([input,expected])=>homscardAutoAuditOne(input).kind!==expected);
   return {total:cases.length,passed:cases.length-failures.length,failures:failures.map(([input,expected])=>({name:input.name,expected,actual:homscardAutoAuditOne(input).kind}))};
+}
+async function homscardInspectProductPages(){
+  const status=document.getElementById("opsHomsAutoAuditStatus");
+  const button=document.getElementById("opsHomsPageAuditButton");
+  if(!homscardCatalogCache.length){if(status)status.textContent="حمّل كتالوج HomsCard أولاً.";return;}
+  if(button)button.disabled=true;
+  let inspected=0,failed=0;
+  const products=homscardCatalogCache.filter(p=>p&&/^\\d{1,10}$/.test(String(p.id??"")));
+  try{
+    if(status)status.textContent="جارٍ فحص صفحات HomsCard العامة: 0 / "+products.length;
+    for(let i=0;i<products.length;i+=25){
+      const ids=products.slice(i,i+25).map(p=>String(p.id));
+      const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"product_pages",products_id:ids}});
+      if(error)throw new Error(error.message||"تعذر جلب صفحات المنتجات");
+      if(!data?.success||!Array.isArray(data.data))throw new Error(data?.error||"الموصل لا يدعم فحص صفحات المنتجات بعد.");
+      const byId=new Map(data.data.map(row=>[String(row.id),row]));
+      for(const p of products.slice(i,i+25)){
+        const row=byId.get(String(p.id));
+        if(row?.success){p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";inspected++;}
+        else failed++;
+      }
+      if(status)status.textContent="جارٍ فحص صفحات HomsCard العامة: "+Math.min(i+25,products.length)+" / "+products.length+" · نجح "+inspected+" · تعذر "+failed;
+    }
+    homscardRunAutomaticAudit();
+    if(status)status.textContent="اكتمل فحص صفحات المورد: نجح "+inspected+" من "+products.length+" صفحة، وتعذر "+failed+". أُعيد التصنيف باستخدام وصف صفحات المنتجات حيث توفر.";
+  }catch(error){
+    console.error("[HomsCard product page audit]",error);
+    if(status)status.textContent="توقف فحص الصفحات: "+(error?.message||"خطأ غير معروف")+". لم يتم إنشاء أي طلب أو شحن.";
+  }finally{if(button)button.disabled=false;}
 }
 function homscardRunAutomaticAudit(){
   const output=document.getElementById("opsHomsAutoAuditResults");
@@ -1271,6 +1302,11 @@ function homscardEnsureAutoAuditUi(){
   if(!button){button=opsNode("button","secondary full","🧠 فحص وتصنيف كل المنتجات تلقائياً");button.id="opsHomsAutoAuditButton";panel.appendChild(button);}
   button.type="button";
   button.onclick=homscardRunAutomaticAudit;
+  let pageButton=document.getElementById("opsHomsPageAuditButton");
+  if(!pageButton){pageButton=opsNode("button","secondary full","🔎 فحص صفحات HomsCard وتدقيق التفاصيل");pageButton.id="opsHomsPageAuditButton";panel.appendChild(pageButton);}
+  pageButton.type="button";
+  pageButton.onclick=homscardInspectProductPages;
+  pageButton.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
   button.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
   if(!status){status=opsNode("div","ops-muted","حمّل الكتالوج ثم ابدأ الفحص التلقائي.");status.id="opsHomsAutoAuditStatus";panel.appendChild(status);}
   status.setAttribute("role","status");
