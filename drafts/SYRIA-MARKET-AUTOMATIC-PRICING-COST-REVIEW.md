@@ -121,3 +121,34 @@ This review was read-only against the supplier cache. No Baran production produc
 - The public PR review document contains no supplier cost or wholesale-price table.
 - Read-only Supabase metadata inspection found `public.syrimarket_catalog_cache` has RLS enabled, no anon/authenticated grants, and no policies. This is consistent with keeping the cache inaccessible to normal client roles; continue to access it only through trusted server-side/service-role operations and never expose its cost fields in customer APIs.
 - Important limitation: earlier public Git commits may still be reachable through repository history even after the current branch/file was sanitized. The current branch and default-branch file are redacted, but this review does not claim that old Git objects have been purged from GitHub's historical storage. For full historical removal, repository-history rewriting or making the repository private would require a separate, carefully planned action because it can affect deployment and integrations.
+
+
+## 12. Per-record metadata completeness audit — 2026-11-25
+A fresh read-only aggregation was run against the latest `main` cache snapshot (796 products; fetched_at 2026-11-25 01:38:02 UTC). No supplier cost fields were selected or copied into this report.
+
+| Family / state | Products | Missing/empty params | Fulfillment metadata |
+|---|---:|---:|---|
+| app / ready / available | 552 | 160 | fulfillment_mode and delivery_source absent at family level |
+| app / maintenance / unavailable | 14 | 2 | fulfillment_mode and delivery_source absent |
+| app / disabled / unavailable | 1 | 0 | fulfillment_mode and delivery_source absent |
+| manual / ready / available | 39 | 22 | Mixed account, activation and manual modes; 4 inventory-sourced account entries need special review |
+| manual / paused / unavailable | 3 | 2 | activation + manual source |
+| smm / ready / available | 50 | 0 | SMM schema present; quantity and URL validation available |
+| smm / price_refreshing / unavailable | 4 | 0 | Keep held until refreshed |
+| sms / state missing / available flag true | 133 | 133 | No params, service_state, fulfillment_mode or delivery_source in the aggregate |
+| **Total** | **796** | **322** | Not launch-ready |
+
+### Findings requiring SKU-level mapping
+- **322 records have missing or empty `params`**. This includes 160 app-family records and all 133 SMS records. Do not publish an order form for these records until the required customer input contract is established.
+- **All 567 app-family records lack explicit `fulfillment_mode` and `delivery_source` in this cache shape**. The family label alone is not evidence of automatic fulfillment. Require SKU-level supplier documentation or a controlled test before labelling automatic.
+- **SMS 133/133** have no service state, no params and no fulfillment metadata despite the supplier availability flag being true. Keep all SMS products held.
+- **Manual family** has mixed fulfillment metadata: 4 account + inventory, 4 account + manual, 21 activation + manual, 10 manual + manual; 3 paused activation/manual. All remain MARKET. The 4 inventory-sourced account products must not be treated as automatic without explicit evidence.
+- The 9 app-family names containing manual wording remain unresolved/held as described above; name and metadata conflicts must be resolved per SKU.
+- SMM records have structured quantity and link fields; they still require separate per-1,000 calculation and supplier behavior checks. No SMM rates or supplier costs are published here.
+
+### Next operational classification sequence
+1. Map every SKU to its exact customer input fields and fulfillment evidence.
+2. Resolve the 160 app records with missing params, then the 133 SMS records (held).
+3. Validate the 4 inventory-sourced manual-family account records.
+4. Validate each SMM service's min/max/step, URL rules, cancel/refill behavior and unit semantics.
+5. Only after metadata completeness, prepare the private landed-cost worksheet and compare the previously requested 5%, 8%, and 10% gross-margin scenarios. No retail price is approved by this audit.
