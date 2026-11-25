@@ -245,9 +245,12 @@ Deno.serve(async (req: Request) => {
           .select("id,sender_role,message,created_at,read_at")
           .eq("ticket_id", ticketId).order("created_at", { ascending: true }).limit(200);
         if (threadMessagesError) throw new Error("تعذر تحميل محادثة التذكرة.");
-        await admin.from("baran_guest_support_tickets").update({ admin_read_at: now.toISOString() }).eq("id", ticketId);
-        await admin.from("baran_guest_support_messages").update({ read_at: now.toISOString() })
+        const { error: ticketReadError } = await admin.from("baran_guest_support_tickets")
+          .update({ admin_read_at: now.toISOString() }).eq("id", ticketId);
+        if (ticketReadError) throw new Error("تعذر تسجيل قراءة التذكرة.");
+        const { error: messagesReadError } = await admin.from("baran_guest_support_messages").update({ read_at: now.toISOString() })
           .eq("ticket_id", ticketId).eq("sender_role", "guest").is("read_at", null);
+        if (messagesReadError) throw new Error("تعذر تحديث حالة قراءة الرسائل.");
         return json({ success: true, ticket: threadTicket, messages: threadMessages || [] }, 200, origin);
       }
       if (!/^[0-9a-f-]{36}$/i.test(ticketId)) return json({ error: "معرّف التذكرة غير صحيح." }, 400, origin);
