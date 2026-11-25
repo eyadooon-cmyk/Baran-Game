@@ -1184,7 +1184,7 @@ function homscardAutoAuditOne(p){
     reason="الاسم يوحي بباقة ذات قيمة محددة؛ لم يتوفر دليل بنيوي يؤكد ثباتها.";
   }
   const price=homscardAutoAuditNumber(p.price);
-  const account=accountWords.test(paramText);
+  const account=accountWords.test(paramText+" "+pageText);
   const missing=[];
   if(!p.product_type||type==="package")missing.push("نوع المنتج قد يكون افتراضياً من الموصل");
   if(!p.qty_values)missing.push("لا توجد خيارات كمية مؤكدة");
@@ -1275,6 +1275,7 @@ function homscardRunAutomaticAudit(){
       d.appendChild(opsNode("summary","",opsText(r.p.name)+" — "+r.kind+" · ثقة "+r.confidence));
       d.append(opsNode("div","ops-muted","معرّف المورد: "+opsText(r.p.id)+" | التصنيف: "+opsText(r.p.category)),
         opsNode("div","ops-muted","السبب: "+r.reason),
+        opsNode("div","ops-muted","من صفحة المورد: "+opsText([r.p.page_title,r.p.page_description].filter(Boolean).join(" — ")||"لم تُفحص الصفحة بعد").slice(0,500)),
         opsNode("div","ops-muted","نوع المورد: "+opsText(r.p.product_type||"غير محدد")),
         opsNode("div","ops-muted","سعر المورد كما ورد: "+opsText(r.p.price??"غير متاح")+" USD — لم تُحسب تكلفة كمية"),
         opsNode("div","ops-muted","خيارات كمية رقمية مستخرجة: "+(r.options.length?r.options.join("، "):"غير ظاهرة")),
