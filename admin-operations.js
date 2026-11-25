@@ -1070,11 +1070,38 @@ function homscardAutoAuditParse(value){
   if(typeof value!=="string")return value;
   try{return JSON.parse(value);}catch(_){return value;}
 }
-function homscardAutoAuditKeys(value,prefix=""){
+function homscardAutoAuditKeys(value){
   const parsed=homscardAutoAuditParse(value);
-  if(Array.isArray(parsed))return parsed.flatMap((v,i)=>homscardAutoAuditKeys(v,prefix+"["+i+"]"));
-  if(parsed&&typeof parsed==="object")return Object.entries(parsed).flatMap(([k,v])=>[prefix?prefix+"."+k:k,...homscardAutoAuditKeys(v,prefix?prefix+"."+k:k)]);
-  return prefix?[prefix]:[];
+  const found=[];
+  const seen=new Set();
+  const add=(item)=>{
+    const text=String(item??"").trim();
+    if(!text||text.length>120||/^\\d+$/.test(text))return;
+    const key=text.toLocaleLowerCase();
+    if(!seen.has(key)){seen.add(key);found.push(text);}
+  };
+  const visit=(node,path="",depth=0)=>{
+    if(depth>8||node===null||node===undefined)return;
+    if(typeof node==="string"){
+      const text=node.trim();
+      if(!text)return;
+      if((text.startsWith("{")&&text.endsWith("}"))||(text.startsWith("[")&&text.endsWith("]"))){
+        try{const nested=JSON.parse(text);if(nested!==node){visit(nested,path,depth+1);return;}}catch(_){}
+      }
+      add(text);
+      return;
+    }
+    if(Array.isArray(node)){node.forEach((item)=>visit(item,path,depth+1));return;}
+    if(typeof node==="object"){
+      for(const [key,val] of Object.entries(node)){
+        if(!/^\\d+$/.test(key))add(key);
+        if(/^(name|label|title|field|key|param|parameter|slug|code|placeholder)$/i.test(key)&&typeof val==="string")add(val);
+        visit(val,path?path+"."+key:key,depth+1);
+      }
+    }
+  };
+  visit(parsed);
+  return found;
 }
 function homscardAutoAuditOne(p){
   const name=String(p.name||""),type=String(p.product_type||"").toLowerCase();
