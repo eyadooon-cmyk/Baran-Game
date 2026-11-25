@@ -26,6 +26,12 @@ function sensitiveReason(subject: string, message: string): string | null {
   return null;
 }
 
+function sensitivePriority(subject: string, message: string): "high" | "urgent" {
+  const text = normalizeSupportText(subject + " " + message);
+  if (/احتيال|نصب|سرقه|اختراق|تهديد|ابتزاز|محامي|قانوني|شكوي رسميه|خصوصيه|بياناتي|حذف الحساب|حذف البيانات|fraud|scam|hacked|stolen|legal|privacy|delete account|delete data|كلمه المرور|كلمه السر|password|passcode|رمز التحقق|كود التحقق|verification code|otp|pin|api key|access token|credit card|card number|بطاقه بنكيه/.test(text)) return "urgent";
+  return "high";
+}
+
 function normalizeSupportText(value: string): string {
   return String(value || "").toLowerCase()
     .replace(/[\u064B-\u065F\u0670]/g, "")
@@ -119,7 +125,12 @@ Deno.serve(async (req: Request) => {
       }
       const hardStop = sensitiveReason(ticket.subject ?? "", ticket.message ?? "");
       if (hardStop) {
+        const escalationPriority = sensitivePriority(ticket.subject ?? "", ticket.message ?? "");
         if (!dryRun) {
+          const { error: priorityError } = await admin.from("customer_feedback")
+            .update({ priority: escalationPriority })
+            .eq("id", ticket.id).eq("feedback_type", "support");
+          if (priorityError) console.error("baran-auto-support: escalation priority update failed", priorityError.message);
           await admin.from("baran_auto_support_queue").update({
             state: "needs_admin", reason: hardStop, updated_at: new Date().toISOString(), processed_at: new Date().toISOString()
           }).eq("id", job.id);
