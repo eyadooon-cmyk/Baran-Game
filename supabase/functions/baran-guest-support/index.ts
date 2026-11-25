@@ -255,10 +255,31 @@ Deno.serve(async (req: Request) => {
           ticket_id: ticket.id, sender_role: "guest", message,
         });
         if (insertError) throw new Error("تعذر إرسال الرسالة.");
-        await admin.from("baran_guest_support_tickets").update({
-          status: "pending", admin_read_at: null, last_customer_message_at: now.toISOString(), updated_at: now.toISOString(),
-        }).eq("id", ticket.id);
-        await notifyAdmins(ticket.id, ticket.ticket_code, "رسالة جديدة من زائر", "وصل رد جديد على تذكرة الدعم.");
+        const autoReply = safeGuestAutoReply(ticket.subject, message);
+        if (autoReply) {
+          const { error: autoReplyError } = await admin.from("baran_guest_support_messages").insert({
+            ticket_id: ticket.id, sender_role: "assistant", message: autoReply.reply,
+          });
+          if (autoReplyError) console.error("guest follow-up auto reply failed", autoReplyError);
+          await admin.from("baran_guest_support_tickets").update({
+            status: autoReplyError ? "pending" : "answered",
+            assistant_reason: autoReply.reason,
+            assistant_draft: autoReply.reply,
+            admin_read_at: null,
+            last_customer_message_at: now.toISOString(),
+            updated_at: now.toISOString(),
+          }).eq("id", ticket.id);
+        } else {
+          await admin.from("baran_guest_support_tickets").update({
+            status: "pending", admin_read_at: null, last_customer_message_at: now.toISOString(), updated_at: now.toISOString(),
+          }).eq("id", ticket.id);
+        }
+        await notifyAdmins(
+          ticket.id,
+          ticket.ticket_code,
+          autoReply ? "رسالة زائر — رد آلي آمن أُرسل" : "رسالة جديدة من زائر",
+          autoReply ? "أرسل المساعد إرشادات أولية غير مالية؛ راجع التذكرة للمتابعة." : "وصل رد جديد يحتاج إلى مراجعة الفريق."
+        );
       }
 
       const { data: messages, error: messagesError } = await admin.from("baran_guest_support_messages")
