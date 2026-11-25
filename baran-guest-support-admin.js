@@ -27,6 +27,24 @@ function buildGuestAnalysis(ticket){
  }
  return {reason:"لم تظهر فئة مشكلة محددة من نص التذكرة؛ لذلك اختر Baran رداً عاماً آمناً يثبت استلام البلاغ ويطلب تفاصيل إضافية غير حساسة.",draft:"أهلاً فيك، وصلتنا رسالتك ورح يراجع فريق BARAN GAME المشكلة ويتابع معك عبر رقم التذكرة. إذا في تفاصيل إضافية غير حساسة، أرسلها هون. لا ترسل كلمة المرور أو رموز التحقق."};
 }
+async function openGuestAdminThread(ticket){
+ const old=document.getElementById("baranGuestAdminThreadModal");if(old)old.remove();
+ const modal=el("div","");modal.id="baranGuestAdminThreadModal";
+ modal.style.cssText="position:fixed;inset:0;z-index:100050;background:#08060dcc;display:flex;align-items:center;justify-content:center;padding:12px";
+ const box=el("section","");box.style.cssText="width:min(100%,620px);max-height:88vh;overflow:auto;padding:16px;border:1px solid #80619a;border-radius:17px;background:#17121f;color:#f4eafa";
+ box.append(el("h3","","المحادثة الكاملة — "+ticket.ticket_code),el("p","small",ticket.email+" · "+ticket.subject));
+ const close=el("button","guest-admin-secondary","إغلاق النافذة");close.type="button";close.onclick=()=>modal.remove();box.append(close);
+ const messages=el("div","");messages.style.cssText="display:grid;gap:9px;margin:12px 0";box.append(messages);modal.append(box);document.body.append(modal);
+ try{
+  const data=await request({action:"admin_thread",ticket_id:ticket.id});
+  (data.messages||[]).forEach(m=>{
+   const bubble=el("article","");bubble.style.cssText="padding:11px;border:1px solid #59436d;border-radius:12px;background:"+(m.sender_role==="guest"?"#100d16":"#2a1d35");
+   bubble.append(el("strong","",m.sender_role==="guest"?"العميل":m.sender_role==="assistant"?"Baran Assistant":"فريق الدعم"));
+   const body=el("p","",m.message);body.style.cssText="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8";
+   bubble.append(body,el("small","small",new Date(m.created_at).toLocaleString("ar-SY")));messages.append(bubble);
+  });
+ }catch(error){messages.append(el("p","",error.message));}
+}
 function render(tickets){
  const root=$("baranGuestAdminTickets");root.innerHTML="";
  const openTickets=tickets.filter(t=>t.status!=="closed");
@@ -63,7 +81,8 @@ function render(tickets){
     analyze.textContent="إعادة التحليل";
    }finally{analyze.disabled=false;}
   };
-  actions.append(analyze,send,close);card.append(analysis,reply,actions);root.append(card);
+  const history=el("button","guest-admin-secondary","عرض سجل المحادثة");history.type="button";history.onclick=()=>openGuestAdminThread(t);
+  actions.append(history,analyze,send,close);card.append(analysis,reply,actions);root.append(card);
  });
 }
 async function load(successMessage){
