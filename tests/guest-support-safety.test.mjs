@@ -7,6 +7,7 @@ const api = readFileSync(new URL("../supabase/functions/baran-guest-support/inde
 const guestUi = readFileSync(new URL("../baran-guest-support.js", import.meta.url), "utf8");
 const adminUi = readFileSync(new URL("../baran-guest-support-admin.js", import.meta.url), "utf8");
 const assistant = readFileSync(new URL("../supabase/functions/baran-admin-offline/index.ts", import.meta.url), "utf8");
+const registeredAutoReply = readFileSync(new URL("../supabase/functions/baran-auto-support-reply/index.ts", import.meta.url), "utf8");
 const app = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 
 test("guest support tables are isolated behind RLS and service role", () => {
@@ -109,4 +110,16 @@ test("admin ticket center exposes conversation history, filters, priority, and a
   assert.match(adminUi, /prioritySelect/);
   assert.match(adminUi, /closed/);
   assert.match(adminUi, /await load\("تم إغلاق التذكرة بنجاح\."/);
+});
+
+test("registered-customer manual-review queue links directly to its support ticket", () => {
+  assert.match(registeredAutoReply, /function sensitiveReason/);
+  assert.match(registeredAutoReply, /state: "needs_admin"/);
+  assert.match(registeredAutoReply, /admin_update_customer_feedback/);
+  assert.match(registeredAutoReply, /لا توجد|needs_admin/);
+  assert.match(html, /فتح التذكرة في صندوق دعم العملاء/);
+  assert.match(html, /switchSupportTab\("tickets"\)/);
+  assert.match(html, /dataset\.feedbackId===String\(item\.feedback_id\|\|""\)/);
+  assert.match(html, /سبب التحويل\/المعالجة/);
+  assert.match(html, /لا يرسل المساعد رداً نهائياً/);
 });
