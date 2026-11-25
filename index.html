@@ -2161,6 +2161,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 </style>
 
 <link rel="stylesheet" href="./baran-wide-layout.css?v=20261125-wide-v2">
+<link rel="stylesheet" href="./automatic-topup-showcase.css?v=20261125-v1">
 </head>
 <body>
 
@@ -2416,7 +2417,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="games" class="hidden">
       <button class="secondary games-back-button baran-back-button" type="button" onclick="goBackSection()">← رجوع</button>
-      <div class="hero"><h2>الشحن الآلي</h2><p>اختر نوع المحتوى الذي تريد استعراضه. الألعاب والخدمات الرقمية ضمن أقسام منفصلة.</p></div>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">BARAN GAME · INSTANT DIGITAL STORE</span><h2>كل عالمك الرقمي بمكان واحد</h2><p>اختر لعبتك أو خدمتك، واستكشف الباقات المتاحة بسهولة.</p><span class="baran-auto-hero-orbit" aria-hidden="true"></span></div>
+      <label class="baran-auto-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="ابحث عن لعبة أو خدمة..." autocomplete="off" oninput="filterAutomaticCatalog(this, '#games .baran-auto-category-grid .item')"><kbd>بحث</kbd></label>
       <div class="grid baran-auto-category-grid">
         <button class="item" type="button" onclick="showSection('automaticGames',null)">
           <span class="baran-auto-category-art">🎮</span>
@@ -2443,7 +2445,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="automaticGames" class="hidden">
       <button class="secondary games-back-button baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى أقسام الشحن الآلي</button>
-      <div class="hero"><h2>الألعاب 🎮</h2><p>اختر اللعبة لفتح متجرها وباقاتها. كل لعبة ضمن صفحة مستقلة.</p></div>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">DISCOVER YOUR GAME</span><h2>اختر لعبتك وابدأ المغامرة</h2><p>متاجر مستقلة وتجربة أوضح لكل لعبة.</p><span class="baran-auto-hero-orbit" aria-hidden="true"></span></div>
+      <label class="baran-auto-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="ابحث عن لعبة..." autocomplete="off" oninput="filterAutomaticCatalog(this, '#automaticGames .baran-auto-games-grid .item')"><kbd>بحث</kbd></label>
       <div class="grid baran-auto-games-grid">
         <button class="item" type="button" onclick="showSection('pubgStore',null)">
           <img src="https://pbs.twimg.com/media/EZrVgJ_XkAQX9jX.jpg" alt="PUBG MOBILE" loading="lazy">
@@ -2538,8 +2541,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
     </section>
 
     <section id="services" class="hidden">
-      <h2>الخدمات الرقمية</h2>
-      <p class="small">اختر الخدمة لفتح صفحتها المستقلة ومنتجاتها فقط.</p>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">DIGITAL SERVICES</span><h2>خدماتك واشتراكاتك الرقمية</h2><p>اكتشف التطبيقات والبطاقات والاشتراكات من مكان واحد.</p><span class="baran-auto-hero-orbit" aria-hidden="true"></span></div>
+      <label class="baran-auto-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="ابحث عن خدمة..." autocomplete="off" oninput="filterAutomaticCatalog(this, '#services .grid .item')"><kbd>بحث</kbd></label>
       <div class="grid">
         <button class="item" type="button" onclick="showSection('chatgptStore',null)"><span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT وGemini وClaude وGrok وأدوات AI</span><span class="small">فتح القسم ←</span></span></button>
         <button class="item" type="button" onclick="showSection('vpnStore',null)"><span class="item-content"><strong>VPN</strong><span>اشتراكات VPN</span><span class="small">فتح القسم ←</span></span></button>
@@ -8936,6 +8939,15 @@ html,body{width:100%;min-width:320px;margin:0!important;padding:0!important}
 }
 </style>
 
+<script id="baran-auto-catalog-search">
+function filterAutomaticCatalog(input, selector){
+  const query=String(input.value||"").trim().toLocaleLowerCase();
+  document.querySelectorAll(selector).forEach(card=>{
+    const text=(card.innerText||card.textContent||"").toLocaleLowerCase();
+    card.hidden=!!query&&!text.includes(query);
+  });
+}
+</script>
 </body>
 </html>
 
