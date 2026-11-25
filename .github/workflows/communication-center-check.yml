@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'baran-guest-support*.js'
+      - 'tests/guest-support-safety.test.mjs'
       - 'communication-center.js'
       - 'community.js'
       - 'supabase/functions/**'
