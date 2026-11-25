@@ -45,3 +45,68 @@
 .baran-package-button .baran-package-art{z-index:1}
 .baran-package-button .baran-package-quantity,.baran-package-button strong,.baran-package-button small,.baran-package-button .game-package-price,.baran-package-button .baran-package-action{position:relative;z-index:1}
 @media(max-width:380px){.baran-auto-category-grid .item .baran-auto-category-art{min-height:125px!important}}
+
+
+/* Unified games hub: PUBG, Free Fire and Jawaker stay together as one catalog */
+#automaticGames .baran-auto-hero{min-height:205px!important}
+#automaticGames .baran-auto-games-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:16px!important;
+  align-items:stretch!important;
+  width:100%!important;
+}
+#automaticGames .baran-auto-games-grid>.item{
+  display:flex!important;
+  flex-direction:column!important;
+  min-width:0!important;
+  padding:0 0 15px!important;
+  overflow:hidden!important;
+  border:1px solid #654b7d!important;
+  border-radius:20px!important;
+  background:linear-gradient(155deg,#261a32 0%,#110d17 82%)!important;
+  box-shadow:0 12px 28px #0005,inset 0 1px #ffffff12!important;
+  text-align:right!important;
+}
+#automaticGames .baran-auto-games-grid>.item>img,
+#automaticGames .baran-auto-games-grid>.item>.baran-auto-game-art{
+  display:block!important;
+  width:100%!important;
+  height:clamp(132px,23vw,220px)!important;
+  min-height:0!important;
+  flex:0 0 auto!important;
+  object-fit:cover!important;
+  object-position:center 28%!important;
+  border:0!important;
+  border-radius:0!important;
+}
+#automaticGames .baran-auto-games-grid>.item>.baran-auto-game-art{display:grid!important}
+#automaticGames .baran-auto-games-grid>.item>.item-content{
+  display:grid!important;
+  gap:7px!important;
+  padding:13px 14px 0!important;
+}
+#automaticGames .baran-auto-games-grid>.item .item-content strong{
+  color:#fff!important;font-size:16px!important;font-weight:1000!important
+}
+#automaticGames .baran-auto-games-grid>.item .item-content>span:not(.small){
+  color:#cbbbd8!important;font-size:12px!important;line-height:1.7!important
+}
+#automaticGames .baran-auto-games-grid>.item .item-content .small{
+  display:block!important;margin-top:5px!important;padding:9px 11px!important;
+  border:1px solid #bd91dc!important;border-radius:11px!important;
+  background:linear-gradient(110deg,#c18be9,#8754b1)!important;
+  color:#170e20!important;font-size:12px!important;font-weight:1000!important;text-align:center!important
+}
+@media(min-width:760px){
+  #automaticGames .baran-auto-games-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:20px!important}
+  #automaticGames .baran-auto-games-grid>.item>img,
+  #automaticGames .baran-auto-games-grid>.item>.baran-auto-game-art{height:210px!important}
+}
+@media(max-width:380px){
+  #automaticGames .baran-auto-games-grid{gap:9px!important}
+  #automaticGames .baran-auto-games-grid>.item .item-content{padding:10px 9px 0!important}
+  #automaticGames .baran-auto-games-grid>.item .item-content strong{font-size:13px!important}
+  #automaticGames .baran-auto-games-grid>.item>img,
+  #automaticGames .baran-auto-games-grid>.item>.baran-auto-game-art{height:118px!important}
+}
