@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const source = await readFile(new URL("../supabase/functions/baran-homscard-connector/index.ts", import.meta.url), "utf8");
 const migration = await readFile(new URL("../supabase/migrations/20261125110000_add_homscard_supplier_api.sql", import.meta.url), "utf8");
 const adminUi = await readFile(new URL("../admin-operations.js", import.meta.url), "utf8");
+const auditMigration = await readFile(new URL("../supabase/migrations/20261126100000_add_homscard_audit_storage.sql", import.meta.url), "utf8");
 
 test("HomsCard connector is admin-authenticated and keeps credentials server-side", () => {
   assert.match(source, /admin_is_user/);
@@ -44,6 +45,20 @@ test("Admin catalog audit can enrich products from HomsCard public product pages
   assert.ok(adminUi.includes('action:"product_pages"'));
   assert.ok(adminUi.includes("p.page_text"));
   assert.ok(adminUi.includes("للوحدة"));
+});
+test("HomsCard audit results are persisted and restored through admin-gated server actions", () => {
+  assert.match(source, /action === "save_audit_batch"/);
+  assert.match(source, /action === "get_latest_audit"/);
+  assert.match(source, /baran_homscard_audit_items/);
+  assert.match(adminUi, /homscardPersistAuditRows/);
+  assert.match(adminUi, /homscardRestoreSavedAudit/);
+  assert.match(adminUi, /save_audit_batch/);
+});
+test("HomsCard audit tables deny direct client access and allow server role", () => {
+  assert.match(auditMigration, /enable row level security/i);
+  assert.match(auditMigration, /revoke all .* from anon, authenticated/i);
+  assert.match(auditMigration, /grant all .* to service_role/i);
+  assert.match(auditMigration, /primary key \(run_id, product_id\)/i);
 });
 test("HomsCard connector never returns the API token or raw upstream body", () => {
   assert.match(source, /profile\.email/);
