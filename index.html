@@ -31,6 +31,7 @@
 <link rel="stylesheet" href="./baran-close-identity.css?v=20261120-signature-close-1">
 <link rel="stylesheet" href="./finance-center-redesign.css?v=20261120-clean-v1">
 <link rel="stylesheet" href="./baran-ai-assistants-readable.css?v=20261121-v1">
+<link rel="stylesheet" href="./automatic-topup-premium.css?v=20261125-v1">
 <style>
 :root{--green:#8b6ba8;--bg:#09080d;--panel:#17131b;--line:#40334b;--muted:#b9a9c9}
 *{box-sizing:border-box}
@@ -2445,11 +2446,11 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <div class="hero"><h2>الألعاب 🎮</h2><p>اختر اللعبة لفتح متجرها وباقاتها. كل لعبة ضمن صفحة مستقلة.</p></div>
       <div class="grid baran-auto-games-grid">
         <button class="item" type="button" onclick="showSection('pubgStore',null)">
-          <img src="https://pbs.twimg.com/media/EZrVgJ_XkAQX9jX.jpg" alt="PUBG MOBILE" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1000&q=88&fit=crop" alt="PUBG MOBILE" loading="lazy">
           <span class="item-content"><strong>PUBG MOBILE</strong><span>شدات UC وباقات اللعبة</span><span class="small">فتح متجر PUBG ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('freeFireStore',null)">
-          <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1000&q=88&fit=crop" alt="FREE FIRE" loading="lazy">
           <span class="item-content"><strong>FREE FIRE</strong><span>جواهر وعضويات Free Fire</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('jawakerStore',null)">
@@ -7720,7 +7721,8 @@ async function loadBaranGameCatalog(game){
       const isPrimePlus=code.startsWith("PUBG_PRIME_PLUS_");
       const isGrowth=code.startsWith("PUBG_GROWTH_");
       const primeMonths=(code.match(/^PUBG_PRIME(?:_PLUS)?_(\d+)M$/i)||[])[1]||"1";
-      const art=document.createElement("span");art.className="baran-package-art";art.textContent=(isMembership||isPrime)?"👑":(isPubg?"UC":"💎");
+      const art=document.createElement("span");art.className="baran-package-art "+(isPubg?"baran-package-art-pubg":"baran-package-art-freefire");
+      const cover=document.createElement("img");cover.src=isPubg?"https://images.unsplash.com/photo-1542751371-adc38448a05e?w=720&q=82&fit=crop":"https://images.unsplash.com/photo-1511512578047-dfb367046420?w=720&q=82&fit=crop";cover.alt=isPubg?"PUBG MOBILE":"FREE FIRE";cover.loading="lazy";cover.decoding="async";cover.onerror=()=>{cover.remove();art.classList.add("baran-package-art-fallback");art.textContent=isMembership||isPrime?"★":isPubg?"UC":"💎";};art.append(cover);
       const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=isMembership?(code.endsWith("_WEEKLY")?"7 أيام":"30 يوم"):isPrimePlus?"Prime Plus "+primeMonths+" شهر":isPrime?"Prime "+primeMonths+" شهر":isGrowth?"حزمة خاصة":amount?(isPubg?amount+" UC":amount+" جوهرة"):(isPubg?"حزمة PUBG":"جواهر");
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
@@ -7770,7 +7772,7 @@ async function loadBaranJawakerCatalog(){
     packages.forEach(product=>{
       const card=document.createElement("div");card.className="baran-game-package-card";
       const content=document.createElement("div");content.className="game-package-option";content.style.cursor="default";
-      const art=document.createElement("span");art.className="baran-package-art";art.textContent=String(product.product_code||"").includes("BOOSTER")?"⚡":"🪙";
+      const art=document.createElement("span");art.className="baran-package-art baran-package-art-jawaker";art.textContent=String(product.product_code||"").includes("BOOSTER")?"⚡":"J";
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"منتج جواكر";
       const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
