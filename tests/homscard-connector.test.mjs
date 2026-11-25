@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../supabase/functions/baran-homscard-connector/index.ts", import.meta.url), "utf8");
+const migration = await readFile(new URL("../supabase/migrations/20261125110000_add_homscard_supplier_api.sql", import.meta.url), "utf8");
 
 test("HomsCard connector is admin-authenticated and keeps credentials server-side", () => {
   assert.match(source, /admin_is_user/);
@@ -28,4 +29,13 @@ test("HomsCard connector never returns the API token or raw upstream body", () =
   assert.match(source, /profile\.email/);
   assert.doesNotMatch(source, /return json\(\{[^}]*apiToken/s);
   assert.match(source, /Read-only catalog request/);
+});
+
+test("HomsCard migration registers the supplier but keeps integration and execution disabled", () => {
+  assert.match(migration, /'HomsCard'/);
+  assert.match(migration, /'homscard'/);
+  assert.match(migration, /'HOMSCARD_API_TOKEN'/);
+  assert.match(migration, /integration_enabled=false/);
+  assert.match(migration, /execution_enabled=false/);
+  assert.match(migration, /'pending_credentials'/);
 });
