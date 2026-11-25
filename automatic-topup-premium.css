@@ -139,3 +139,15 @@
  .baran-game-library-heading strong{font-size:13px}
  .baran-chat-brand-card img{width:58px;height:58px}
 }
+
+
+/* Dedicated social / live-streaming store page */
+#socialStore:not(.hidden){padding:clamp(13px,3vw,20px)!important;border:1px solid #493653!important;border-radius:19px!important;background:linear-gradient(155deg,#1d1627,#120f18 72%)!important}
+#socialStore .hero{position:relative;overflow:hidden;margin:0 0 14px;padding:17px 15px!important;border:1px solid #63477a!important;border-radius:16px!important;background:radial-gradient(circle at 100% 0%,#a56bd633,transparent 48%),linear-gradient(120deg,#2a1d37,#17111f 78%)!important}
+#socialStore .hero h2{margin:0 0 5px;color:#f7edff;font-size:20px}
+#socialStore .hero p{margin:0;color:#c5b3d2;font-size:11px;line-height:1.8}
+#socialStore>button:first-child{min-height:38px;margin:0 0 12px;padding:8px 12px;border:1px solid #604878;border-radius:10px;background:#241a30;color:#e8d7f4;font-size:11px;font-weight:800}
+#socialStore .baran-chat-library{margin-top:12px}
+#socialStore .baran-chat-brand-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:650px){#socialStore .baran-chat-brand-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:370px){#socialStore .baran-chat-brand-card{padding:9px 6px}}
