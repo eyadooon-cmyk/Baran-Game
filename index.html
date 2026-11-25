@@ -2162,6 +2162,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
 <link rel="stylesheet" href="./baran-wide-layout.css?v=20261125-wide-v2">
 <link rel="stylesheet" href="./automatic-topup-showcase.css?v=20261125-v1">
+<link rel="stylesheet" href="./automatic-topup-catalog-premium.css?v=20261125-v2">
 </head>
 <body>
 
@@ -7744,14 +7745,15 @@ async function loadBaranGameCatalog(game){
       const isPrimePlus=code.startsWith("PUBG_PRIME_PLUS_");
       const isGrowth=code.startsWith("PUBG_GROWTH_");
       const primeMonths=(code.match(/^PUBG_PRIME(?:_PLUS)?_(\d+)M$/i)||[])[1]||"1";
-      const art=document.createElement("span");art.className="baran-package-art";art.textContent=(isMembership||isPrime)?"👑":(isPubg?"UC":"💎");
+      const art=document.createElement("span");art.className="baran-package-art "+(isPubg?"is-pubg":"is-freefire");art.setAttribute("aria-hidden","true");
       const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=isMembership?(code.endsWith("_WEEKLY")?"7 أيام":"30 يوم"):isPrimePlus?"Prime Plus "+primeMonths+" شهر":isPrime?"Prime "+primeMonths+" شهر":isGrowth?"حزمة خاصة":amount?(isPubg?amount+" UC":amount+" جوهرة"):(isPubg?"حزمة PUBG":"جواهر");
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
       const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
       button.disabled=!baranHasApprovedGamePrice(product);
       if(button.disabled){button.setAttribute("aria-label",(product.name||product.product_code)+" — بانتظار اعتماد السعر");}
-      button.append(art,quantity,name,description,price);
+      const action=document.createElement("span");action.className="baran-package-action";action.textContent="اختيار الباقة";
+      button.append(art,quantity,name,description,price,action);
       if(button.disabled){const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير متاحة للاختيار حتى اعتماد السعر";button.append(pending);}
       button.addEventListener("click",()=>baranSelectGamePackage(game,product));
       packageCard.append(button);
