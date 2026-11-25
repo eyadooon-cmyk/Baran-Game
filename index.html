@@ -3189,10 +3189,29 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <div id="baranCatalogReportSummary"></div>
         <div id="baranCatalogReportList" style="display:grid;gap:10px;margin-top:12px"></div>
       </section>
+      <section class="deposit-card supplier-provider-panel" id="homscardProviderPanel" style="border:1px solid #b58bd4;background:linear-gradient(145deg,rgba(65,38,91,.48),rgba(16,13,24,.98));">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:28px">🏛️</span>
+          <div><h2 style="margin:0">حمص كارد (HomsCard)</h2><p class="small" style="margin:4px 0 0">المورد الأساسي — فحص الحساب ومعاينة المنتجات بشكل مستقل</p></div>
+          <span class="ops-pill">قراءة فقط · بلا شراء أو شحن</span>
+        </div>
+        <p class="small" style="margin:12px 0">مفاتيح الاتصال محفوظة في Supabase Secrets. هذا القسم لا ينشئ طلبات ولا يخصم رصيداً.</p>
+        <div class="ops-actions">
+          <button type="button" class="secondary" onclick="opsTestHomsCard('profile')">🔌 اختبار اتصال حمص كارد والحساب</button>
+          <button type="button" class="secondary" onclick="opsTestHomsCard('products')">📦 معاينة منتجات حمص كارد</button>
+        </div>
+        <div id="opsHomsCardResult" class="ops-list" aria-live="polite">بانتظار اختبار الاتصال.</div>
+      </section>
+      <section class="deposit-card supplier-comparison-panel" id="syriaMarketComparisonPanel" style="border:1px solid #80619a;background:linear-gradient(145deg,rgba(65,38,91,.22),rgba(16,13,24,.98));">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:28px">⚖️</span>
+          <div><h2 style="margin:0">Syria Market — قسم المقارنة فقط</h2><p class="small" style="margin:4px 0 0">مورد مؤقت لمقارنة المنتجات والأسعار مع حمص كارد، وليس مسار تنفيذ أو شحن</p></div>
+          <span class="ops-pill">مقارنة فقط · مؤقت</span>
+        </div>
       <section class="deposit-card" id="syriaMarketLegacyCatalogPanel" style="border:1px solid #9a70bb;background:linear-gradient(145deg,rgba(65,38,91,.42),rgba(16,13,24,.98));">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span style="font-size:28px">🇸🇾</span>
-          <div><h2 style="margin:0">Syria Market — استيراد الكتالوج</h2><p class="small" style="margin:4px 0 0">اتصال إداري محمي لقراءة بيانات المورد فقط. لا ينشئ طلبات ولا يخصم رصيداً.</p></div>
+          <div><h3 style="margin:0">بيانات المقارنة — اتصال وقراءة كتالوج</h3><p class="small" style="margin:4px 0 0">اقرأ بيانات المورد لمقارنتها مع أسعار حمص كارد؛ لا تُستورد تلقائياً إلى متجر الزبائن.</p></div>
         </div>
         <div class="small" style="margin:12px 0;padding:10px;border:1px solid #514064;border-radius:10px;background:#100b16">المفتاح محفوظ في Supabase Secrets ولا يظهر في المتصفح. كل العمليات أدناه قراءة فقط.</div>
         <button class="full secondary" type="button" id="syriaMarketFullAuditButton" onclick="startSyriaMarketFullAudit()">🧾 بدء تدقيق شامل جديد</button>
@@ -3297,7 +3316,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <div class="admin-workgroup-label"><span>06</span><div><strong>تكامل المورد والمتابعة</strong><small>جهّز إعدادات الاتصال، ثم راجع الحالة وسجل الأحداث والمحاولات</small></div></div>
       <section class="deposit-card" id="syriaMarketCatalogPanel" style="margin:14px 0;border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.25),rgba(16,13,24,.96));">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-          <div><h3 style="margin:0">كتالوج Syria Market</h3><p class="small" style="margin:5px 0 0">سحب خدمات المورد وتخزين نسخة قراءة فقط داخل BARAN GAME</p></div>
+          <div><h3 style="margin:0">كتالوج المقارنة — Syria Market</h3><p class="small" style="margin:5px 0 0">نسخة مرجعية لمقارنة المنتجات والأسعار فقط</p></div>
           <span class="ops-pill">قراءة فقط · بلا طلبات</span>
         </div>
         <div class="ops-actions" style="margin-top:12px">
@@ -3348,9 +3367,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <button class="full" type="button" onclick="opsSaveSupplierApiConfig()">حفظ إعدادات API</button>
         <button class="secondary full" type="button" onclick="opsSimulateSupplierApi()">فحص تجريبي محلي دون الاتصال بالمورد</button>
         <div id="opsApiMessage" class="ops-muted" role="status"></div>
-        <div class="ops-actions"><button type="button" class="secondary" onclick="opsTestHomsCard(&quot;profile&quot;)">فحص اتصال حمص كارد</button><button type="button" class="secondary" onclick="opsTestHomsCard(&quot;products&quot;)">معاينة كتالوج حمص كارد</button></div>
-        <div id="opsHomsCardResult" class="ops-list" aria-live="polite"></div>
-      </div>
+              </div>
       <div id="opsApiStatus" class="ops-list">لا توجد إعدادات API محفوظة.</div>
       <h4>سجل اتصال المورد ومحاولات الطلبات</h4>
       <div id="opsApiEvents" class="ops-list">لا توجد أحداث مسجلة.</div>
