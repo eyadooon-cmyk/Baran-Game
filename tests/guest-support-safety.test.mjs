@@ -67,6 +67,8 @@ test("guest support has a standalone admin destination separate from BARO financ
 
 test("admin ticket center exposes conversation history, filters, priority, and all statuses", () => {
   assert.match(api, /action === "admin_thread"/);
+  assert.match(api, /notifyAdmins\(ticket\.id, ticket\.ticket_code/);
+  assert.match(api, /admin_read_at: null/);
   assert.match(api, /admin_is_user/);
   assert.match(api, /baran_guest_support_messages/);
   assert.match(adminUi, /عرض سجل المحادثة/);
