@@ -3,6 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const ALLOWED_ORIGINS = new Set([
   "https://baran-game.pages.dev",
   "https://eyadooon-cmyk.github.io",
+  "https://64f38ad6.baran-game.pages.dev",
+  "https://feature-homscard-auto-produc.baran-game.pages.dev",
 ]);
 const json = (body: unknown, status = 200, origin = "https://baran-game.pages.dev") =>
   new Response(JSON.stringify(body), {
