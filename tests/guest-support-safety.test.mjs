@@ -54,6 +54,14 @@ test("Baran Assistant reads visitor tickets and proposes drafts without sending 
   assert.match(adminUi, /تحليل واقتراح رد/);
 });
 
+test("financial guest tickets are explicitly escalated and never treated as an automatic financial action", () => {
+  assert.match(assistant, /تصنيف مالي — يحتاج مراجعة بشرية/);
+  assert.match(assistant, /لا تنفذ أو تعدّل رصيداً أو دفعة أو استرداداً/);
+  assert.match(adminUi, /تذكرة مالية حساسة: يجب تحويلها لمراجعة بشرية/);
+  assert.match(adminUi, /لا ترسل كلمة المرور أو رمز التحقق أو بيانات البطاقة/);
+  assert.match(api, /action === "admin_reply"/);
+});
+
 
 test("guest and registered-customer tickets share one admin support workspace", () => {
   assert.match(app, /id="supportTabGuests"[\s\S]*?switchSupportTab\('guests'\)/);
