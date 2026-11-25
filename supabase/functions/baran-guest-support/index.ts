@@ -85,6 +85,26 @@ Deno.serve(async (req: Request) => {
       return data === true;
     }
 
+    async function notifyAdmins(ticketId: string, ticketCode: string, title: string, message: string) {
+      const { data: admins, error: adminsError } = await admin.from("admin_users").select("user_id");
+      if (adminsError) {
+        console.error("guest support admin notification recipients failed", adminsError.message);
+        return;
+      }
+      const recipients = (admins || []).filter((row) => typeof row.user_id === "string");
+      if (!recipients.length) return;
+      const { error: notificationError } = await admin.from("baran_notifications").insert(recipients.map((row) => ({
+        recipient_id: row.user_id,
+        audience: "admin",
+        kind: "support_new",
+        title,
+        body: ticketCode + " — " + message,
+        entity_type: "baran_guest_support_tickets",
+        entity_id: ticketId,
+      })));
+      if (notificationError) console.error("guest support admin notification insert failed", notificationError.message);
+    }
+
     async function verifyTurnstile(token: string) {
       if (!turnstileSecret || !token || token.length > 2048) return false;
       const form = new FormData();
@@ -152,6 +172,7 @@ Deno.serve(async (req: Request) => {
         await admin.from("baran_guest_support_tickets").delete().eq("id", ticket.id);
         throw new Error("تعذر حفظ رسالة التذكرة.");
       }
+      await notifyAdmins(ticket.id, ticket.ticket_code, "تذكرة دعم جديدة من زائر", "وصلت تذكرة جديدة وتحتاج إلى مراجعة الفريق.");
       return json({
         success: true,
         ticket_code: ticket.ticket_code,
@@ -189,6 +210,7 @@ Deno.serve(async (req: Request) => {
         await admin.from("baran_guest_support_tickets").update({
           status: "pending", admin_read_at: null, last_customer_message_at: now.toISOString(), updated_at: now.toISOString(),
         }).eq("id", ticket.id);
+        await notifyAdmins(ticket.id, ticket.ticket_code, "رسالة جديدة من زائر", "وصل رد جديد على تذكرة الدعم.");
       }
 
       const { data: messages, error: messagesError } = await admin.from("baran_guest_support_messages")
