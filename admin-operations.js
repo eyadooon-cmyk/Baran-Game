@@ -1302,7 +1302,7 @@ function homscardExportAuditCsv(){
     r.p.id,r.p.name,r.p.category,r.p.product_type,r.p.price,r.kind,r.confidence,r.reason,
     r.options.join("، "),r.keys.join("، "),r.account?"نعم":"لا",r.missing.join("؛ ")
   ]));
-  const csv="\\uFEFF"+rows.map(row=>row.map(quote).join(",")).join("\\r\\n");
+  const csv="\uFEFF"+rows.map(row=>row.map(quote).join(",")).join("\r\n");
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
   const url=URL.createObjectURL(blob);
   const link=document.createElement("a");
@@ -1314,7 +1314,6 @@ async function opsTestHomsCard(action){
   homscardRequestBusy=true;
   const message=document.getElementById('opsApiMessage');
   const output=document.getElementById('opsHomsCardResult');
-  const activeButton=document.getElementById(action==='profile'?'opsHomsProfileButton':'opsHomsProductsButton');
   ["opsHomsProfileButton","opsHomsProductsButton"].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=true;});
   if(message)message.textContent=action==='profile'?'جاري فحص اتصال حمص كارد وقراءة الحساب...':'جاري جلب كتالوج حمص كارد للمعاينة فقط...';
   if(output)output.replaceChildren(opsNode('div','ops-muted','جارٍ الاتصال بالمورد…'));
