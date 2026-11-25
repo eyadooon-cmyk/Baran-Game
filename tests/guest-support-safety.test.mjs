@@ -116,10 +116,12 @@ test("registered-customer manual-review queue links directly to its support tick
   assert.match(registeredAutoReply, /function sensitiveReason/);
   assert.match(registeredAutoReply, /state: "needs_admin"/);
   assert.match(registeredAutoReply, /admin_update_customer_feedback/);
-  assert.match(registeredAutoReply, /لا توجد|needs_admin/);
-  assert.match(html, /فتح التذكرة في صندوق دعم العملاء/);
-  assert.match(html, /switchSupportTab\("tickets"\)/);
-  assert.match(html, /dataset\.feedbackId===String\(item\.feedback_id\|\|""\)/);
-  assert.match(html, /سبب التحويل\/المعالجة/);
-  assert.match(html, /لا يرسل المساعد رداً نهائياً/);
+  assert.match(registeredAutoReply, /const hardStop = sensitiveReason\(ticket\.subject \?\? "", ticket\.message \?\? ""\)/);
+  assert.match(registeredAutoReply, /if \(hardStop\)/);
+  assert.match(registeredAutoReply, /decision !== "reply"/);
+  assert.match(app, //فتح التذكرة في صندوق دعم العملاء/);
+  assert.match(app, //switchSupportTab\("tickets"\)/);
+  assert.match(app, //dataset\.feedbackId===String\(item\.feedback_id\|\|""\)/);
+  assert.match(app, //سبب التحويل\/المعالجة/);
+  assert.match(app, //لا يرسل المساعد رداً نهائياً/);
 });
