@@ -56,13 +56,13 @@ test("Baran Assistant reads visitor tickets and proposes drafts without sending 
 
 
 test("guest and registered-customer tickets share one admin support workspace", () => {
-  assert.match(app, /id="supportTabGuests"[\\s\\S]*?switchSupportTab\\('guests'\\)/);
-  assert.match(app, /id="supportGuestView"[\\s\\S]*?id="baranGuestAdminMount"/);
-  assert.match(app, /function switchSupportTab\\(tab\\)[\\s\\S]*?selected==="guests"[\\s\\S]*?loadBaranGuestSupportAdmin/);
-  assert.match(app, /data-admin-panel="guest-support"[\\s\\S]*?showAdminPanel\\('support'\\)/);
-  assert.match(adminUi, /\\$\\("baranGuestAdminMount"\\)/);
-  assert.match(adminUi, /mount\\.appendChild\\(panel\\)/);
-  assert.doesNotMatch(adminUi, /admin\\.appendChild\\(panel\\)/);
+  assert.match(app, /id="supportTabGuests"[\s\S]*?switchSupportTab\('guests'\)/);
+  assert.match(app, /id="supportGuestView"[\s\S]*?id="baranGuestAdminMount"/);
+  assert.match(app, /function switchSupportTab\(tab\)[\s\S]*?selected==="guests"[\s\S]*?loadBaranGuestSupportAdmin/);
+  assert.match(app, /data-admin-panel="guest-support"[\s\S]*?showAdminPanel\('support'\)/);
+  assert.match(adminUi, /\$\("baranGuestAdminMount"\)/);
+  assert.match(adminUi, /mount\.appendChild\(panel\)/);
+  assert.doesNotMatch(adminUi, /admin\.appendChild\(panel\)/);
 });
 
 
