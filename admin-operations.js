@@ -1064,7 +1064,82 @@ function renderHomsCardCatalog(){
   });
   results.appendChild(fragment);
 }
+
+function homscardAutoAuditParse(value){
+  if(value===null||value===undefined||value==="")return null;
+  if(typeof value!=="string")return value;
+  try{return JSON.parse(value);}catch(_){return value;}
+}
+function homscardAutoAuditKeys(value,prefix=""){
+  const parsed=homscardAutoAuditParse(value);
+  if(Array.isArray(parsed))return parsed.flatMap((v,i)=>homscardAutoAuditKeys(v,prefix+"["+i+"]"));
+  if(parsed&&typeof parsed==="object")return Object.entries(parsed).flatMap(([k,v])=>[prefix?prefix+"."+k:k,...homscardAutoAuditKeys(v,prefix?prefix+"."+k:k)]);
+  return prefix?[prefix]:[];
+}
+function homscardAutoAuditOne(p){
+  const name=String(p.name||""),type=String(p.product_type||"").toLowerCase();
+  const text=(name+" "+String(p.category||"")+" "+type).toLowerCase();
+  const raw=homscardAutoAuditParse(p.qty_values);
+  const options=(Array.isArray(raw)?raw:raw&&typeof raw==="object"?Object.values(raw):typeof raw==="string"?raw.split(/[,;|]/):[])
+    .map(v=>Number(v&&typeof v==="object"?(v.value??v.quantity??v.qty??v.id):String(v).replace(/[^0-9.]/g,"")))
+    .filter(v=>Number.isFinite(v)&&v>0);
+  const keys=homscardAutoAuditKeys(p.params);
+  const paramText=keys.join(" ").toLowerCase();
+  const subscription=/(اشتراك|شهري|شهر|سنوي|سنة|أسبوع|يوم|subscription|monthly|annual|yearly|weekly|days?)/i.test(text);
+  const account=/(player.?id|user.?id|uid|account|server|zone|email|login|معرف|آيدي|سيرفر|حساب|بريد)/i.test(paramText);
+  let kind="غير محسوم",confidence="منخفض",reason="لا تكفي البيانات لتحديد طريقة بيع المنتج بأمان.";
+  if(subscription||/(subscription|membership)/i.test(type)){
+    kind="اشتراك بمدة محتملة";confidence="متوسط";reason="الاسم أو النوع يشير إلى اشتراك؛ يلزم تأكيد المدة وطريقة التفعيل.";
+  }else if(options.length||/(unit|quantity|qty|amount|per[_ -]?unit|topup|recharge)/i.test(type)){
+    kind="كمية متغيرة محتملة";confidence=options.length?"مرتفع":"متوسط";reason=options.length?"المورد أرسل خيارات كمية؛ يجب تأكيد أن السعر هو سعر الوحدة.":"النوع يشير إلى كمية لكن الخيارات غير ظاهرة.";
+  }else if(/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|pack|باقة|bundle)/i.test(text)&&/\d/.test(text)){
+    kind="باقة ثابتة محتملة";confidence="متوسط";reason="اسم المنتج يوحي بباقة ذات قيمة ثابتة؛ لم نعتمد قيمة package الافتراضية وحدها.";
+  }
+  const price=Number(p.price);
+  return {p,kind,confidence,reason,options,keys,account,
+    costs:kind==="كمية متغيرة محتملة"&&options.length&&Number.isFinite(price)&&price>=0?options.slice(0,8).map(q=>({q,cost:q*price})):[]};
+}
+function homscardRunAutomaticAudit(){
+  const output=document.getElementById("opsHomsAutoAuditResults"),status=document.getElementById("opsHomsAutoAuditStatus");
+  if(!output||!status)return;
+  if(!homscardCatalogCache.length){status.textContent="حمّل كتالوج حمص كارد أولاً.";return;}
+  const rows=homscardCatalogCache.map(homscardAutoAuditOne);
+  const labels=["كمية متغيرة محتملة","باقة ثابتة محتملة","اشتراك بمدة محتملة","غير محسوم"];
+  const counts=Object.fromEntries(labels.map(label=>[label,rows.filter(r=>r.kind===label).length]));
+  status.textContent="اكتمل فحص "+rows.length+" منتجاً: "+(rows.length-counts["غير محسوم"])+" مصنّف مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة.";
+  output.replaceChildren();
+  const summary=opsNode("div","ops-stats-grid");
+  labels.forEach(label=>{const card=opsNode("div","ops-card");card.append(opsNode("strong","",String(counts[label])),opsNode("div","ops-muted",label));summary.appendChild(card);});
+  output.appendChild(summary);
+  output.appendChild(opsNode("p","ops-muted","فحص محلي للقراءة فقط يعتمد على اسم المنتج وحقول المورد. لا يغيّر المتجر ولا ينفّذ شراء أو شحناً. نوع package قد يكون قيمة افتراضية من الموصل، لذلك لا يُستخدم وحده لإثبات أن المنتج باقة."));
+  const list=opsNode("div","ops-list");
+  rows.forEach(r=>{
+    const d=opsNode("details","ops-item");d.appendChild(opsNode("summary","",opsText(r.p.name)+" — "+r.kind+" · ثقة "+r.confidence));
+    d.append(opsNode("div","ops-muted","معرّف المورد: "+opsText(r.p.id)+" | التصنيف: "+opsText(r.p.category)),
+      opsNode("div","ops-muted","السبب: "+r.reason),
+      opsNode("div","ops-muted","نوع المورد: "+opsText(r.p.product_type)),
+      opsNode("div","ops-muted","خيارات الكمية: "+(r.options.length?r.options.join("، "):"غير ظاهرة")),
+      opsNode("div","ops-muted","حقول الطلب: "+(r.keys.length?r.keys.slice(0,20).join("، "):"غير ظاهرة")),
+      opsNode("div","ops-muted","بيانات حساب/لاعب محتملة: "+(r.account?"نعم، راجع أسماء الحقول":"غير ظاهرة")));
+    if(r.costs.length)d.appendChild(opsNode("div","ops-muted","تكلفة توضيحية إذا كان السعر سعر وحدة: "+r.costs.map(x=>x.q+" × "+r.p.price+" = "+x.cost.toFixed(8)+" USD").join(" | ")));
+    list.appendChild(d);
+  });
+  output.appendChild(list);
+}
+function homscardEnsureAutoAuditUi(){
+  const toolsBox=document.getElementById("opsHomsCatalogTools");
+  if(!toolsBox||document.getElementById("opsHomsAutoAuditButton"))return;
+  const button=opsNode("button","secondary","🧠 فحص وتصنيف كل المنتجات تلقائياً");
+  button.type="button";button.id="opsHomsAutoAuditButton";button.onclick=homscardRunAutomaticAudit;
+  const status=opsNode("div","ops-muted","حمّل الكتالوج ثم ابدأ الفحص التلقائي.");status.id="opsHomsAutoAuditStatus";
+  const output=opsNode("div","ops-list");output.id="opsHomsAutoAuditResults";
+  const search=document.getElementById("opsHomsCatalogSearch");
+  if(search&&search.parentNode===toolsBox){toolsBox.insertBefore(button,search);toolsBox.insertBefore(status,search);toolsBox.insertBefore(output,search);}
+  else toolsBox.prepend(output,status,button);
+}
+
 function initHomsCardCatalogFilters(products){
+  homscardEnsureAutoAuditUi();
   const category=document.getElementById('opsHomsCatalogCategory');
   const search=document.getElementById('opsHomsCatalogSearch');
   const availability=document.getElementById('opsHomsCatalogAvailability');
