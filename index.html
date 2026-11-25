@@ -7759,6 +7759,7 @@ async function loadBaranGameCatalog(game){
       grid.append(packageCard);
     });
     container.append(grid);
+    baranAttachCatalogSearch(container,".baran-game-package-card","ابحث عن باقة أو عدد شدات...");
     const note=document.createElement("p");note.className="small";
     note.textContent="الأسعار المعروضة مأخوذة من كتالوج المنتجات النشطة. اختيار الباقة لا ينشئ طلباً ولا يخصم رصيداً.";
     container.append(note);
@@ -7803,6 +7804,7 @@ async function loadBaranJawakerCatalog(){
       card.append(content);baranAddProductDetails(card,product,"جواكر");grid.append(card);
     });
     container.append(grid);
+    baranAttachCatalogSearch(container,".baran-game-package-card","ابحث عن باقة جواكر...");
     const note=document.createElement("p");note.className="small";
     note.textContent="الأسعار المعروضة من كتالوج المنتجات النشطة. عرض الباقات لا ينشئ طلباً ولا يخصم رصيداً.";
     container.append(note);
@@ -7962,6 +7964,7 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    });
    container.append(grid);
   }
+  baranAttachCatalogSearch(container,".baran-service-product","ابحث عن اسم المنتج أو الاشتراك...");
   const note=document.createElement("p");note.className="small";note.textContent="عرض المنتجات لا ينشئ طلباً ولا يخصم رصيداً. ستُتاح خطوات الشراء بعد تجهيز مسار الطلب والتحقق من توفر المورد.";
   container.append(note);
  }catch(error){
@@ -8946,6 +8949,37 @@ function filterAutomaticCatalog(input, selector){
     const text=(card.innerText||card.textContent||"").toLocaleLowerCase();
     card.hidden=!!query&&!text.includes(query);
   });
+}
+</script>
+<script id="baran-live-catalog-search">
+function baranAttachCatalogSearch(container,cardSelector,placeholder){
+  if(!container)return;
+  container.querySelector(".baran-live-catalog-search")?.remove();
+  const label=document.createElement("label");
+  label.className="baran-live-catalog-search";
+  label.innerHTML='<span aria-hidden="true">⌕</span><input type="search" autocomplete="off"><small>بحث</small>';
+  const input=label.querySelector("input");
+  input.placeholder=placeholder||"ابحث في المنتجات...";
+  input.setAttribute("aria-label",input.placeholder);
+  input.addEventListener("input",()=>{
+    const query=input.value.trim().toLocaleLowerCase();
+    container.querySelectorAll(cardSelector).forEach(card=>{
+      card.hidden=!!query&&!String(card.innerText||card.textContent||"").toLocaleLowerCase().includes(query);
+    });
+    container.querySelectorAll(".baran-service-group-heading").forEach(heading=>{
+      let next=heading.nextElementSibling;
+      while(next&&!next.classList.contains("baran-service-group-heading")){
+        if(next.classList.contains("baran-service-product-grid")){
+          heading.hidden=!!query&&!next.querySelector(cardSelector+":not([hidden])");
+          break;
+        }
+        next=next.nextElementSibling;
+      }
+    });
+  });
+  const firstGrid=container.querySelector(".game-package-grid,.baran-service-product-grid");
+  if(firstGrid)container.insertBefore(label,firstGrid);
+  else container.insertBefore(label,container.children[1]||null);
 }
 </script>
 </body>
