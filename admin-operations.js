@@ -1158,14 +1158,24 @@ function homscardAutoAuditOne(p){
   const hasVariableEvidence=options.length>0||typeVariable;
   const hasPackEvidence=/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|credits|points)/i.test(text)&&/\d/.test(text);
   let kind="غير محسوم",confidence="منخفض",reason="المعلومات المتاحة لا تكفي لتحديد طريقة البيع دون تخمين.";
-  if(hasDuration){
-    kind="اشتراك بمدة محتملة";
-    confidence=typeSubscription?"متوسط":"منخفض";
-    reason=typeSubscription?"نوع المورد يشير إلى اشتراك؛ يلزم تأكيد المدة والتفعيل.":"الاسم يتضمن إشارة زمنية؛ قد تكون وصفاً فقط وليست مدة اشتراك مؤكدة.";
-  }else if(hasVariableEvidence){
+  // Trust the supplier's explicit quantity type before interpreting words in the
+  // product name (e.g. "Yomee" must not be mistaken for Arabic "يومي").
+  if(typeVariable){
     kind="كمية متغيرة محتملة";
     confidence=options.length?"متوسط":"منخفض";
-    reason=options.length?"توجد قيم كمية منظمة؛ هذا لا يثبت أن سعر المورد سعر وحدة.":"نوع المورد يوحي بكمية متغيرة لكن خيارات الكمية غير متاحة.";
+    reason=options.length?"نوع المورد quantity وتوجد قيم كمية منظمة؛ هذا لا يثبت أن السعر سعر وحدة.":"نوع المورد quantity لكن خيارات الكمية غير متاحة.";
+  }else if(typeSubscription){
+    kind="اشتراك بمدة محتملة";
+    confidence="متوسط";
+    reason="نوع المورد يشير إلى اشتراك؛ يلزم تأكيد المدة والتفعيل.";
+  }else if(hasDuration){
+    kind="اشتراك بمدة محتملة";
+    confidence="منخفض";
+    reason="الاسم يتضمن إشارة زمنية؛ قد تكون وصفاً فقط وليست مدة اشتراك مؤكدة.";
+  }else if(options.length){
+    kind="كمية متغيرة محتملة";
+    confidence="متوسط";
+    reason="توجد قيم كمية منظمة؛ هذا لا يثبت أن سعر المورد سعر وحدة.";
   }else if(hasPackEvidence){
     kind="باقة ثابتة محتملة";
     confidence="منخفض";
@@ -1190,7 +1200,8 @@ function homscardAutoAuditSelfTests(){
     [{name:"VPN Premium 30 days",product_type:"package"}, "اشتراك بمدة محتملة"],
     [{name:"Game credits",product_type:"package"}, "غير محسوم"],
     [{name:"خدمة",product_type:"package",qty_values:"غير محدد"}, "غير محسوم"],
-    [{name:"منتج",product_type:"package",qty_values:[{"quantity":"1000"}]}, "كمية متغيرة محتملة"]
+    [{name:"منتج",product_type:"package",qty_values:[{"quantity":"1000"}]}, "كمية متغيرة محتملة"],
+    [{id:1427,name:"Yomee ID",product_type:"quantity",qty_values:{min:1,max:365},price:0.01}, "كمية متغيرة محتملة"]
   ];
   const failures=cases.filter(([input,expected])=>homscardAutoAuditOne(input).kind!==expected);
   return {total:cases.length,passed:cases.length-failures.length,failures:failures.map(([input,expected])=>({name:input.name,expected,actual:homscardAutoAuditOne(input).kind}))};
