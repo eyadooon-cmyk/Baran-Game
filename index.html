@@ -8808,6 +8808,31 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 
 
 
+
+<style id="baran-edge-to-edge-hard-fix-20261125">
+/* Final mobile edge-to-edge fix: remove outer page gutters and dark side rails */
+html,body{width:100%;min-width:320px;margin:0!important;padding:0!important}
+@media(max-width:600px){
+  html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important;background:#17121e!important}
+  body{background-image:none!important}
+  #appShell{display:block;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0!important;overflow-x:clip!important;background:#17121e!important}
+  #appShell>.store-toolbar{display:flex;width:100%!important;max-width:none!important;margin:0!important;border-radius:0!important}
+  #appShell>main{display:block;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:0 0 calc(18px + env(safe-area-inset-bottom))!important;box-sizing:border-box!important;background:#17121e!important}
+  #appShell>main>section,
+  #appShell>main>section:not(#home),
+  #appShell>main>#home{
+    display:block;width:100%!important;max-width:none!important;min-width:0!important;
+    margin:0 0 8px!important;padding:14px 12px!important;
+    border-left:0!important;border-right:0!important;border-radius:0!important;
+    box-sizing:border-box!important;
+  }
+  #appShell>main>section:not(#home){border-top:1px solid #493b55!important;border-bottom:1px solid #493b55!important}
+  #appShell>main .baran-home-v3,
+  #appShell>main .game-store-page,
+  #appShell>main .baran-service-catalog{width:100%!important;max-width:none!important;min-width:0!important}
+}
+</style>
+
 </body>
 </html>
 
