@@ -65,6 +65,18 @@ function safeGuestAutoReply(subject: string, message: string): { reply: string; 
   }
   return null;
 }
+function guestHumanReview(subject: string, message: string): { reason: string; priority: "normal" | "high" | "urgent" } {
+  const raw = (subject + " " + message).toLowerCase();
+  const text = raw.replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+  if (/رصيد|محفظه|محفظة|شحن|تسليم|تفعيل ?طلب|طلب ?شراء|حواله|حوالة|تحويل|دفع|دفعت|خصم|سحب|استرداد|استرجاع|فاتوره|فاتورة|شام ?كاش|sham ?cash|wallet|balance|payment|paid|refund|chargeback|top.?up|deposit|withdraw|transaction|invoice|order ?delivery|fulfillment/.test(text)) {
+    return { reason: "مراجعة مالية/تشغيلية بشرية مطلوبة: تحقق من الدفع أو الرصيد أو الشحن أو التسليم قبل أي رد نهائي.", priority: "high" };
+  }
+  if (/احتيال|نصب|سرقه|اختراق|تهديد|ابتزاز|محامي|قانوني|شكوي ?رسميه|خصوصيه|بياناتي|حذف ?(الحساب|البيانات)|fraud|scam|hacked|stolen|legal|privacy|delete ?(account|data)|رمز ?التحقق|كود ?التحقق|otp|pin|api[_ -]?key|access[_ -]?token|credit ?card|card ?number|بطاقه ?بنكيه/.test(text)) {
+    return { reason: "مراجعة أمنية/خصوصية عاجلة: لا تطلب بيانات اعتماد أو رموز تحقق أو بيانات بطاقة.", priority: "urgent" };
+  }
+  return { reason: "تحتاج التذكرة إلى مراجعة بشرية لأن المساعد لم يصنف المشكلة ضمن الإرشادات الآلية الآمنة.", priority: "normal" };
+}
+
 function clean(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
@@ -198,6 +210,7 @@ Deno.serve(async (req: Request) => {
         throw new Error("تعذر حفظ رسالة التذكرة.");
       }
       const autoReply = safeGuestAutoReply(subject, message);
+      const manualReview = autoReply ? null : guestHumanReview(subject, message);
       if (autoReply) {
         const { error: autoReplyError } = await admin.from("baran_guest_support_messages").insert({
           ticket_id: ticket.id, sender_role: "assistant", message: autoReply.reply,
@@ -208,7 +221,14 @@ Deno.serve(async (req: Request) => {
           }).eq("id", ticket.id);
         } else {
           console.error("guest support safe auto reply failed", autoReplyError);
+          await admin.from("baran_guest_support_tickets").update({
+            assistant_reason: "تعذر إرسال الرد الآلي؛ تحتاج التذكرة إلى مراجعة بشرية.", priority: "normal", updated_at: now.toISOString(),
+          }).eq("id", ticket.id);
         }
+      } else if (manualReview) {
+        await admin.from("baran_guest_support_tickets").update({
+          assistant_reason: manualReview.reason, priority: manualReview.priority, updated_at: now.toISOString(),
+        }).eq("id", ticket.id);
       }
       await notifyAdmins(
         ticket.id,
@@ -256,6 +276,7 @@ Deno.serve(async (req: Request) => {
         });
         if (insertError) throw new Error("تعذر إرسال الرسالة.");
         const autoReply = safeGuestAutoReply(ticket.subject, message);
+        const manualReview = autoReply ? null : guestHumanReview(ticket.subject, message);
         if (autoReply) {
           const { error: autoReplyError } = await admin.from("baran_guest_support_messages").insert({
             ticket_id: ticket.id, sender_role: "assistant", message: autoReply.reply,
@@ -271,7 +292,12 @@ Deno.serve(async (req: Request) => {
           }).eq("id", ticket.id);
         } else {
           await admin.from("baran_guest_support_tickets").update({
-            status: "pending", admin_read_at: null, last_customer_message_at: now.toISOString(), updated_at: now.toISOString(),
+            status: "pending",
+            assistant_reason: manualReview?.reason || "تحتاج التذكرة إلى مراجعة بشرية.",
+            priority: manualReview?.priority || "normal",
+            admin_read_at: null,
+            last_customer_message_at: now.toISOString(),
+            updated_at: now.toISOString(),
           }).eq("id", ticket.id);
         }
         await notifyAdmins(
