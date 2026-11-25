@@ -119,6 +119,11 @@ test("registered-customer manual-review queue links directly to its support tick
   assert.match(registeredAutoReply, /const hardStop = sensitiveReason\(ticket\.subject \?\? "", ticket\.message \?\? ""\)/);
   assert.match(registeredAutoReply, /if \(hardStop\)/);
   assert.match(registeredAutoReply, /decision !== "reply"/);
+  assert.match(registeredAutoReply, /function sensitivePriority/);
+  assert.match(registeredAutoReply, /return "urgent"/);
+  assert.match(registeredAutoReply, /return "high"/);
+  assert.match(registeredAutoReply, /update\(\{ priority: escalationPriority \}\)/);
+  assert.ok(api.indexOf("مراجعة أمنية/خصوصية عاجلة") < api.indexOf("مراجعة مالية/تشغيلية بشرية مطلوبة"));
   assert.ok(app.includes("فتح التذكرة في صندوق دعم العملاء"));
   assert.ok(app.includes('switchSupportTab("tickets")'));
   assert.ok(app.includes('node.dataset.feedbackId===String(item.feedback_id||"")'));
