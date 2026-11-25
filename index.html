@@ -7776,14 +7776,14 @@ async function loadBaranGameCatalog(game){
       const isGrowth=code.startsWith("PUBG_GROWTH_");
       const primeMonths=(code.match(/^PUBG_PRIME(?:_PLUS)?_(\d+)M$/i)||[])[1]||"1";
       const art=document.createElement("span");art.className="baran-package-art "+(isPubg?"baran-package-art-pubg":"baran-package-art-freefire");
-      const cover=document.createElement("img");cover.src=isPubg?"https://cdn.midasbuy.com/images/%5BPUBGMOBILE%5D-brandimage.c135e04c.png":"https://cdn.wildflamestudio.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg";cover.alt=isPubg?"PUBG MOBILE":"FREE FIRE";cover.loading="lazy";cover.decoding="async";cover.onerror=()=>{cover.remove();art.classList.add("baran-package-art-fallback");art.textContent=isMembership||isPrime?"★":isPubg?"UC":"💎";};art.append(cover);
+      const cover=document.createElement("img");cover.src=isPubg?"https://cdn.midasbuy.com/images/%5BPUBGMOBILE%5D-brandimage.c135e04c.png":"https://cdn.wildflamestudio.com/common/web_event/official2.ff.garena.all/202210/2d6e7a11b79218c9b29167f77a9b92eb.jpg";cover.alt=isPubg?"صورة باقات PUBG MOBILE":"صورة باقات Free Fire";cover.loading="lazy";cover.decoding="async";cover.referrerPolicy="no-referrer";cover.onerror=()=>{cover.remove();art.classList.add("baran-package-art-fallback");const fallback=document.createElement("span");fallback.className="baran-package-art-mark";fallback.textContent=isMembership?"★":isPrime||isPrimePlus?"P":isPubg?"UC":"💎";art.append(fallback);};art.append(cover);
       const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=isMembership?(code.endsWith("_WEEKLY")?"7 أيام":"30 يوم"):isPrimePlus?"Prime Plus "+primeMonths+" شهر":isPrime?"Prime "+primeMonths+" شهر":isGrowth?"حزمة خاصة":amount?(isPubg?amount+" UC":amount+" جوهرة"):(isPubg?"حزمة PUBG":"جواهر");
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
       const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
       button.disabled=!baranHasApprovedGamePrice(product);
       if(button.disabled){button.setAttribute("aria-label",(product.name||product.product_code)+" — بانتظار اعتماد السعر");}
-      button.append(art,quantity,name,description,price);
+      art.append(quantity);button.append(art,name,description,price);
       if(button.disabled){const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير متاحة للاختيار حتى اعتماد السعر";button.append(pending);}
       button.addEventListener("click",()=>baranSelectGamePackage(game,product));
       packageCard.append(button);
