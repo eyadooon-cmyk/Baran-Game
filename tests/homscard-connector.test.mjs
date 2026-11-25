@@ -39,3 +39,7 @@ test("HomsCard migration registers the supplier but keeps integration and execut
   assert.match(migration, /execution_enabled=false/);
   assert.match(migration, /'pending_credentials'/);
 });
+
+test("HomsCard HMAC signs the exact full upstream path including the reseller prefix", () => {
+  assert.match(source, /timestamp \+ "\\nGET\\n" \+ "\/reseller" \+ path \+ "\\n"/);
+});
