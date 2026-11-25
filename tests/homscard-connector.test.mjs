@@ -27,23 +27,23 @@ test("HomsCard connector supports the documented optional HMAC request signature
 });
 
 test("HomsCard connector preserves missing product_type as unknown instead of assuming package", () => {
-  assert.match(source, /product_type: p\\.product_type \\?\\? null/);
-  assert.doesNotMatch(source, /product_type: p\\.product_type \\?\\? "package"/);
+  assert.ok(source.includes("product_type: p.product_type ?? null"));
+  assert.ok(!source.includes('product_type: p.product_type ?? "package"'));
 });
 
 test("HomsCard product page audit is admin-gated, bounded, and read-only", () => {
-  assert.match(source, /action === "product_pages"/);
-  assert.match(source, /ids\\.length > 25/);
-  assert.match(source, /https:\\/\\/homscard\\.com\\/product\\.php\\?id=/);
-  assert.match(source, /Public product-page metadata only/);
-  assert.doesNotMatch(source, /\\/order\\.php/);
+  assert.ok(source.includes('action === "product_pages"'));
+  assert.ok(source.includes("ids.length > 25"));
+  assert.ok(source.includes("https://homscard.com/product.php?id="));
+  assert.ok(source.includes("Public product-page metadata only"));
+  assert.ok(!source.includes("/order.php"));
 });
 
 test("Admin catalog audit can enrich products from HomsCard public product pages", () => {
-  assert.match(adminUi, /homscardInspectProductPages/);
-  assert.match(adminUi, /action:"product_pages"/);
-  assert.match(adminUi, /p\\.page_text/);
-  assert.match(adminUi, /للوحدة/);
+  assert.ok(adminUi.includes("homscardInspectProductPages"));
+  assert.ok(adminUi.includes('action:"product_pages"'));
+  assert.ok(adminUi.includes("p.page_text"));
+  assert.ok(adminUi.includes("للوحدة"));
 });
 test("HomsCard connector never returns the API token or raw upstream body", () => {
   assert.match(source, /profile\.email/);
