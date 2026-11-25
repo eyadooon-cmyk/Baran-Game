@@ -513,12 +513,12 @@ Deno.serve(async (req: Request) => {
         verification_notes?: string;
         verified_facts?: string[];
         notification_id?: string;
+        recipient_id?: string;
         supplier_id?: string;
         supplier_name?: string;
         contact_name?: string;
         contact_phone?: string;
         contact_email?: string;
-        notes?: string;
         supplier_sku?: string;
         supplier_reference?: string;
         supplier_status?: string;
