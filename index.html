@@ -3199,13 +3199,16 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         </div>
         <p class="small" style="margin:12px 0">مفاتيح الاتصال محفوظة في Supabase Secrets. هذا القسم لا ينشئ طلبات ولا يخصم رصيداً.</p>
         <div class="ops-actions">
-          <button type="button" class="secondary" onclick="opsTestHomsCard('profile')">🔌 اختبار اتصال حمص كارد والحساب</button>
-          <button type="button" class="secondary" onclick="opsTestHomsCard('products')">📦 معاينة منتجات حمص كارد</button>
+          <button type="button" class="secondary" id="opsHomsProfileButton" onclick="opsTestHomsCard('profile')">🔌 اختبار اتصال حمص كارد والحساب</button>
+          <button type="button" class="secondary" id="opsHomsProductsButton" onclick="opsTestHomsCard('products')">📦 تحميل / تحديث الكتالوج</button>
         </div>
         <div id="opsHomsCardResult" class="ops-list" aria-live="polite">بانتظار اختبار الاتصال.</div>
         <div class="homscard-audit-launch" style="margin:12px 0;padding:12px;border:1px solid #80619a;border-radius:12px;background:rgba(65,38,91,.22)">
-          <button type="button" class="secondary full" id="opsHomsAutoAuditButton">🧠 فحص وتصنيف كل المنتجات تلقائياً</button>
-          <div id="opsHomsAutoAuditStatus" class="ops-muted" role="status" aria-live="polite" style="margin-top:8px">حمّل الكتالوج أولاً، ثم ابدأ الفحص التلقائي.</div>
+          <div class="ops-actions" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <button type="button" class="secondary full" id="opsHomsAutoAuditButton" onclick="homscardRunAutomaticAudit()">🧠 إعادة فحص وتصنيف كل المنتجات</button>
+            <button type="button" class="secondary full" id="opsHomsExportAuditButton" onclick="homscardExportAuditCsv()">⬇️ تصدير تقرير الفحص CSV</button>
+          </div>
+          <div id="opsHomsAutoAuditStatus" class="ops-muted" role="status" aria-live="polite" style="margin-top:8px">حمّل الكتالوج؛ سيبدأ الفحص تلقائياً بعد نجاح التحميل.</div>
           <div id="opsHomsAutoAuditResults" class="ops-list" aria-live="polite"></div>
         </div>
         <div id="opsHomsCatalogTools" class="homscard-catalog-tools hidden">
@@ -3214,6 +3217,14 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <div class="homscard-catalog-filters">
             <select id="opsHomsCatalogCategory" aria-label="تصفية حسب التصنيف"><option value="">كل التصنيفات</option></select>
             <select id="opsHomsCatalogAvailability" aria-label="تصفية حسب التوفر"><option value="">كل الحالات</option><option value="available">المتوفر فقط</option><option value="unavailable">غير المتوفر فقط</option></select>
+            <select id="opsHomsCatalogType" aria-label="تصفية حسب التصنيف المبدئي">
+              <option value="">كل أنواع المنتجات</option>
+              <option value="كمية متغيرة محتملة">كمية متغيرة محتملة</option>
+              <option value="باقة ثابتة محتملة">باقة ثابتة محتملة</option>
+              <option value="اشتراك بمدة محتملة">اشتراك بمدة محتملة</option>
+              <option value="غير محسوم">يحتاج مراجعة</option>
+            </select>
+            <button type="button" class="secondary" onclick="homscardResetCatalogFilters()">مسح الفلاتر</button>
           </div>
           <div id="opsHomsCatalogResults" class="homscard-catalog-results" aria-live="polite"></div>
           <p class="small">هذه النتائج للبحث والمراجعة فقط. لا يوجد استيراد أو شراء أو تنفيذ شحن من هنا.</p>
