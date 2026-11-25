@@ -66,3 +66,47 @@
   #appShell>main>section:not(#home),
   #appShell>main>#home{padding-inline:8px}
 }
+
+
+/* 2026-11-25 — remove the narrow framed look on customer storefront */
+#appShell,
+#appShell>main{
+  width:100%;
+  min-width:0;
+}
+#appShell>main{
+  max-width:1600px;
+  padding-inline:0;
+  overflow-x:clip;
+}
+#appShell>main>section{
+  width:100%;
+  max-width:none;
+  box-sizing:border-box;
+}
+@media(max-width:600px){
+  #appShell>main{
+    width:100%;
+    max-width:none;
+    margin:0;
+    padding:0 0 calc(20px + env(safe-area-inset-bottom));
+  }
+  #appShell>main>section:not(#home){
+    width:100%;
+    max-width:none;
+    margin:0 0 10px;
+    padding:14px 12px;
+    border-radius:0;
+  }
+  #appShell>main>#home{
+    width:100%;
+    max-width:none;
+    margin:0 0 10px;
+    padding:14px 12px;
+    border-radius:0;
+  }
+  #appShell>main .baran-service-product-grid{
+    width:100%;
+    grid-template-columns:minmax(0,1fr);
+  }
+}
