@@ -65,9 +65,15 @@ test("guest support has a standalone admin destination separate from BARO financ
 });
 
 
-test("closing a visitor ticket removes it from the open list and confirms success", () => {
-  assert.match(adminUi, /const openTickets=tickets\.filter\(t=>t\.status!==\"closed\"\)/);
-  assert.match(adminUi, /لا توجد تذاكر مفتوحة حالياً/);
-  assert.match(adminUi, /await load\(\"تم إغلاق التذكرة بنجاح\.\"\)/);
-  assert.match(adminUi, /successMessage\|\|/);
+test("admin ticket center exposes conversation history, filters, priority, and all statuses", () => {
+  assert.match(api, /action === "admin_thread"/);
+  assert.match(api, /admin_is_user/);
+  assert.match(api, /baran_guest_support_messages/);
+  assert.match(adminUi, /عرض سجل المحادثة/);
+  assert.match(adminUi, /admin_thread/);
+  assert.match(adminUi, /filterStatus/);
+  assert.match(adminUi, /searchText/);
+  assert.match(adminUi, /prioritySelect/);
+  assert.match(adminUi, /closed/);
+  assert.match(adminUi, /await load\("تم إغلاق التذكرة بنجاح\."/);
 });
