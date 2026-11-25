@@ -1693,6 +1693,7 @@ body:has(#authScreen:not(.hidden)){background:#08060d!important}
 /* Unified digital product cards */
 .baran-service-catalog{margin-top:14px}
 .baran-catalog-intro{margin:0 0 12px;color:#bba9ca;font-size:12px;line-height:1.8}
+.baran-service-group-heading{margin:18px 0 6px;padding:9px 12px;border-right:3px solid #b58bd5;border-radius:8px;background:#8d5eb51a;color:#ead9f8;font-size:13px;font-weight:900;line-height:1.6}
 .baran-service-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .baran-service-product{display:flex;flex-direction:column;gap:8px;min-width:0;padding:13px;border:1px solid #59416d;border-radius:15px;background:linear-gradient(145deg,#241a30,#15101c);color:#f4eafa}
 .baran-service-product-head{display:flex;align-items:center;gap:8px}
@@ -2532,37 +2533,44 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <h2>الخدمات الرقمية</h2>
       <p class="small">اختر الخدمة لفتح صفحتها المستقلة ومنتجاتها فقط.</p>
       <div class="grid">
-        <button class="item" type="button" onclick="showSection('chatgptStore',null)"><span class="item-content"><strong>ChatGPT Plus</strong><span>اشتراكات الذكاء الاصطناعي</span><span class="small">فتح القسم ←</span></span></button>
+        <button class="item" type="button" onclick="showSection('chatgptStore',null)"><span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT وGemini وClaude وGrok وأدوات AI</span><span class="small">فتح القسم ←</span></span></button>
         <button class="item" type="button" onclick="showSection('vpnStore',null)"><span class="item-content"><strong>VPN</strong><span>اشتراكات VPN</span><span class="small">فتح القسم ←</span></span></button>
         <button class="item" type="button" onclick="showSection('giftCardsStore',null)"><span class="item-content"><strong>Google Play</strong><span>بطاقات رقمية</span><span class="small">فتح القسم ←</span></span></button>
-        <button class="item" type="button" onclick="showSection('appsStore',null)"><span class="item-content"><strong>Apps</strong><span>تطبيقات مدفوعة</span><span class="small">فتح القسم ←</span></span></button>
+        <button class="item" type="button" onclick="showSection('appsStore',null)"><span class="item-content"><strong>التطبيقات والبرامج</strong><span>Canva وCapCut وFigma وغيرها</span><span class="small">فتح القسم ←</span></span></button>
+        <button class="item" type="button" onclick="showSection('subscriptionStore',null)"><span class="item-content"><strong>الاشتراكات والترفيه</strong><span>Netflix وShahid وAnghami وخدمات TV</span><span class="small">فتح القسم ←</span></span></button>
       </div>
     </section>
 
     <section id="chatgptStore" class="hidden">
       <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
-      <div class="hero"><h2>اشتراكات ChatGPT</h2><p>باقات الذكاء الاصطناعي وطلباتها ضمن هذا القسم فقط.</p></div>
-      <div id="chatgptProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>باقات ChatGPT</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
+      <div class="hero"><h2>الدردشة والذكاء الاصطناعي</h2><p>اشتراكات ChatGPT وGemini وClaude وGrok وأدوات الذكاء الاصطناعي.</p></div>
+      <div id="chatgptProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>اشتراكات الذكاء الاصطناعي</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="vpnStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الشحن الآلي</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
       <div class="hero"><h2>اشتراكات VPN</h2><p>كل مزودي وباقات ومدد VPN ضمن هذا القسم فقط.</p></div>
       <div id="vpnProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>باقات VPN</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="giftCardsStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الشحن الآلي</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
       <div class="hero"><h2>بطاقات الهدايا</h2><p>بطاقات Google Play وباقي البطاقات الرقمية ضمن هذا القسم فقط.</p></div>
       <div id="giftCardProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>بطاقات Google Play</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
     <section id="appsStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الشحن الآلي</button>
-      <div class="hero"><h2>التطبيقات المدفوعة</h2><p>التطبيقات والاشتراكات الخاصة بها ضمن هذا القسم فقط.</p></div>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
+      <div class="hero"><h2>التطبيقات والبرامج المدفوعة</h2><p>التطبيقات والاشتراكات الخاصة بها ضمن هذا القسم فقط.</p></div>
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
+
+    <section id="subscriptionStore" class="hidden">
+      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
+      <div class="hero"><h2>الاشتراكات والترفيه</h2><p>باقات المشاهدة والترفيه وIPTV حسب المدة والمنطقة المتاحة.</p></div>
+      <div id="subscriptionProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>اشتراكات الترفيه والمشاهدة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
+    </section>
 
     <section id="favorites" class="hidden baran-favorites-page">
       <div class="hero"><h2>المفضلة <span aria-hidden="true">♥</span></h2><p>كل المنتجات التي حفظتها بقلبك، لتصل إليها بسرعة في أي وقت.</p></div>
@@ -4257,6 +4265,7 @@ function baranSearchDestination(product){
   if(category==="vpn")return "vpnStore";
   if(category==="gift_card")return "giftCardsStore";
   if(category==="app")return "appsStore";
+  if(category==="subscription")return "subscriptionStore";
   return "home";
 }
 async function loadBaranStoreSearchProducts(){
@@ -4264,7 +4273,7 @@ async function loadBaranStoreSearchProducts(){
   if(baranStoreSearchLoad)return baranStoreSearchLoad;
   baranStoreSearchLoad=(async()=>{
     const {data,error}=await sb.from("products")
-      .select("id,product_code,name,description,category,price_usd,price_syp,is_active,sort_order")
+      .select("id,product_code,name,description,category,catalog_group,price_usd,price_syp,is_active,sort_order")
       .eq("is_active",true).order("sort_order",{ascending:true});
     if(error)throw error;
     baranStoreSearchProducts=Array.isArray(data)?data:[];
@@ -4294,7 +4303,8 @@ async function searchStore(value){
       ai:["ذكاء اصطناعي","ذكاء","شات جي بي تي","شات جي بيتي","شات gpt","chatgpt","chat gpt","chat gpt plus","gpt","openai","ai","artificial intelligence","اشتراك","subscription"],
       vpn:["في بي ان","في بي إن","vpn","virtual private network","شبكة خاصة","حماية","privacy"],
       gift_card:["بطاقات","بطاقة","بطاقات هدايا","كرت","كروت","غوغل بلاي","جوجل بلاي","google play","google play card","gift card","gift cards","giftcard","top up card"],
-      app:["تطبيقات","تطبيق","برامج","apps","app","application","paid apps"]
+      app:["تطبيقات","تطبيق","برامج","apps","app","application","paid apps"],
+      subscription:["اشتراكات","اشتراك","نتفلكس","شاهد","انغامي","iptv","اشتراك تلفزيون","streaming","entertainment","subscription"]
     };
     const matches=products.map(product=>{
       const category=String(product.category||"").toLowerCase();
@@ -4302,7 +4312,7 @@ async function searchStore(value){
       const extra=[...(aliases[category]||[])];
       if(code.startsWith("pubg"))extra.push("ببجي","شدات","uc");
       if(code.startsWith("freefire"))extra.push("فري فاير","جواهر");
-      const haystack=normalizeStoreSearch([product.name,product.product_code,product.description,category,...extra].filter(Boolean).join(" "));
+      const haystack=normalizeStoreSearch([product.name,product.product_code,product.description,product.catalog_group,category,...extra].filter(Boolean).join(" "));
       return {product,score:terms.filter(term=>haystack.includes(term)).length};
     }).filter(item=>item.score===terms.length);
     // أخفِ بطاقات التصنيف العامة عندما تكون الباقات التفصيلية موجودة،
@@ -4482,7 +4492,7 @@ function openBaroManualGame(category){
   showSection("baroManual",null);
 }
 function showSection(id,button,options){
-  const publicSections=new Set(["home","games","automaticGames","manualGames","pubgStore","freeFireStore","jawakerStore","baroManual","services","chatgptStore","vpnStore","giftCardsStore","appsStore","favorites"]);
+  const publicSections=new Set(["home","games","automaticGames","manualGames","pubgStore","freeFireStore","jawakerStore","baroManual","services","chatgptStore","vpnStore","giftCardsStore","appsStore","subscriptionStore","favorites"]);
   if(!currentUser&&!publicSections.has(id)){showGuestAccountPrompt("سجّل الدخول للوصول إلى هذه الخدمة وإكمال طلباتك بأمان.");return;}
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
   if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
@@ -4508,7 +4518,7 @@ function showSection(id,button,options){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الشحن الآلي",automaticGames:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات الرقمية",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",favorites:"المفضلة",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
+  const labels={home:"الرئيسية",games:"الشحن الآلي",automaticGames:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات الرقمية",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",subscriptionStore:"الاشتراكات والترفيه",favorites:"المفضلة",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
@@ -4518,7 +4528,8 @@ function showSection(id,button,options){
   if(id==="chatgptStore")loadBaranServiceCatalog("ai","chatgptProductCatalog","باقات ChatGPT","🤖");
   if(id==="vpnStore")loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️");
   if(id==="giftCardsStore")loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁");
-  if(id==="appsStore")loadBaranServiceCatalog("app","appsProductCatalog","التطبيقات المدفوعة","📱");
+  if(id==="appsStore")loadBaranServiceCatalog("app","appsProductCatalog","التطبيقات والبرامج المدفوعة","📱");
+  if(id==="subscriptionStore")loadBaranServiceCatalog("subscription","subscriptionProductCatalog","اشتراكات الترفيه والمشاهدة","📺");
   if(id==="baroManual"){const box=document.getElementById("baroCustomerCatalog"),orders=document.getElementById("baroCustomerOrders");if(typeof loadBaroCustomer!=="function"){const msg="تعذر تشغيل BARO: ملف baro.js لم يحمّل أو يحتوي خطأ JavaScript. أعد تحميل الصفحة، وإذا استمرت المشكلة أبلغ الدعم.";if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] loadBaroCustomer is unavailable");}else{try{const task=loadBaroCustomer();if(task&&typeof task.catch==="function")task.catch(error=>{const msg="تعذر تشغيل BARO: "+(error?.message||"خطأ غير معروف");if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] customer loader rejected",error);});}catch(error){const msg="تعذر تشغيل BARO: "+(error?.message||"خطأ غير معروف");if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] customer loader threw",error);}}}
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
   if(id==="staffTasks")loadStaffTasks();
@@ -7834,7 +7845,7 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
  container.append(heading,loading);
  try{
   const {data,error}=await sb.from("products")
-   .select("id,product_code,name,description,price_usd,price_syp,sort_order")
+   .select("id,product_code,name,description,catalog_group,price_usd,price_syp,sort_order")
    .eq("category",category).eq("is_active",true).order("sort_order",{ascending:true});
   if(error)throw error;
   container.replaceChildren(heading);
@@ -7852,9 +7863,20 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    container.append(empty);return;
   }
   const intro=document.createElement("p");intro.className="baran-catalog-intro";
-  intro.textContent="المنتجات المعروضة من كتالوج Baran Game النشط. راجع السعر والتفاصيل قبل طلب الخدمة.";
-  const grid=document.createElement("div");grid.className="baran-service-product-grid";
+  intro.textContent="تصفح المنتجات حسب الفئة أو المنطقة. الأسعار المعروضة بالدولار والليرة السورية الجديدة.";
+  container.append(intro);
+  const groupedProducts=new Map();
   products.forEach(product=>{
+   const groupName=String(product.catalog_group||"").trim()||"منتجات أخرى";
+   if(!groupedProducts.has(groupName))groupedProducts.set(groupName,[]);
+   groupedProducts.get(groupName).push(product);
+  });
+  for(const [groupName,groupItems] of groupedProducts){
+   if(groupedProducts.size>1||groupName!=="منتجات أخرى"){
+    const groupHeading=document.createElement("h3");groupHeading.className="baran-service-group-heading";groupHeading.textContent=groupName;container.append(groupHeading);
+   }
+   const grid=document.createElement("div");grid.className="baran-service-product-grid";
+   groupItems.forEach(product=>{
    const card=document.createElement("article");card.className="baran-service-product baran-service-product-polished";
    card.dataset.productCode=product.product_code||"";
    const availability=document.createElement("span");availability.className="baran-service-product-kicker";
@@ -7872,8 +7894,9 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    baranAddProductDetails(card,product,title);
    const choose=document.createElement("button");choose.type="button";choose.className="baran-service-select-button";choose.textContent="اختيار للمراجعة";choose.dataset.serviceProductId=String(product.id||"");choose.setAttribute("aria-pressed","false");choose.disabled=price.textContent==="السعر قيد التجهيز"||!product.id;choose.addEventListener("click",()=>baranShowServiceSelection(product,category,containerId));card.append(choose);
    grid.append(card);
-  });
-  container.append(intro,grid);
+   });
+   container.append(grid);
+  }
   const note=document.createElement("p");note.className="small";note.textContent="عرض المنتجات لا ينشئ طلباً ولا يخصم رصيداً. ستُتاح خطوات الشراء بعد تجهيز مسار الطلب والتحقق من توفر المورد.";
   container.append(note);
  }catch(error){
