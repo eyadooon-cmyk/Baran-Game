@@ -2,7 +2,7 @@
 "use strict";
 const ENDPOINT="https://yabpmdzsiuyxxkcqakfs.supabase.co/functions/v1/baran-guest-support";
 const $=id=>document.getElementById(id);
-let installed=false,busy=false;
+let installed=false,busy=false,filterStatus="all",searchText="";
 async function request(payload){
  const sb=window.baranSupabaseClient;if(!sb)throw new Error("تعذر الاتصال بقاعدة البيانات.");
  const {data,error}=await sb.auth.getSession();const session=data?.session;
@@ -47,12 +47,14 @@ async function openGuestAdminThread(ticket){
 }
 function render(tickets){
  const root=$("baranGuestAdminTickets");root.innerHTML="";
- const openTickets=tickets;
- if(!openTickets.length){root.append(el("p","small","لا توجد تذاكر حالياً."));return;}
- openTickets.forEach(t=>{
+ const filtered=tickets.filter(t=>(filterStatus==="all"||t.status===filterStatus)&&(!searchText||[t.ticket_code,t.email,t.subject,t.initial_message].join(" ").toLowerCase().includes(searchText)));
+ if(!filtered.length){root.append(el("p","small","لا توجد تذاكر مطابقة للبحث أو التصفية."));return;}
+ filtered.forEach(t=>{
   const card=el("article","baran-guest-admin-card");
   const head=el("div","baran-guest-admin-head");
-  head.append(el("strong","",t.ticket_code),el("span","",t.status==="pending"?"بانتظار الرد":t.status==="answered"?"تم الرد":t.status==="closed"?"مغلقة":"قيد المتابعة"));
+  head.append(el("strong","",t.ticket_code),el("span","",({pending:"بانتظار الدعم",in_progress:"قيد المعالجة",answered:"تم الرد",closed:"مغلقة"})[t.status]||"جديدة"));
+  if(t.admin_read_at===null)head.append(el("span","","جديدة"));
+  head.append(el("small","","الأولوية: "+({low:"منخفضة",normal:"عادية",high:"عالية",urgent:"عاجلة"})[t.priority||"normal"]));
   card.append(head,el("p","small","البريد: "+t.email),el("h4","",t.subject),el("p","",t.initial_message),el("small","small",new Date(t.created_at).toLocaleString("ar-SY")));
   const analysis=el("div","baran-guest-admin-analysis");analysis.hidden=true;
   const analysisTitle=el("strong","","تحليل Baran الداخلي");
@@ -112,6 +114,7 @@ function init(){
  .baran-guest-admin-card p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
  .baran-guest-admin-actions{display:flex;gap:8px;flex-wrap:wrap}
  .baran-guest-admin-actions button{flex:1;min-width:130px}
+ #baranGuestAdminPanel input,#baranGuestAdminPanel select{flex:1;min-width:130px;padding:10px;border:1px solid #665078;border-radius:10px;background:#100d16;color:#eee}
  .guest-admin-secondary{background:#30223b;color:#eee}
  `;
  document.head.appendChild(style);
@@ -119,8 +122,13 @@ function init(){
  const title=el("h3","","دعم الزوار — بدون تسجيل دخول");
  const status=el("p","small","اضغط تحديث لقراءة تذاكر الزوار.");status.id="baranGuestAdminStatus";
  const refresh=el("button","","تحديث التذاكر");refresh.type="button";refresh.onclick=load;
+ const toolbar=el("div","baran-guest-admin-actions");
+ const search=el("input","");search.type="search";search.placeholder="ابحث برقم التذكرة أو البريد أو العنوان";search.setAttribute("aria-label","البحث في التذاكر");search.oninput=()=>{searchText=search.value.trim().toLowerCase();load();};
+ const filter=el("select","");filter.setAttribute("aria-label","تصفية التذاكر حسب الحالة");
+ [["all","كل الحالات"],["pending","بانتظار الدعم"],["in_progress","قيد المعالجة"],["answered","تم الرد"],["closed","مغلقة"]].forEach(([v,l])=>{const o=el("option","",l);o.value=v;filter.append(o);});filter.onchange=()=>{filterStatus=filter.value;load();};
+ toolbar.append(search,filter);
  const list=el("div","");list.id="baranGuestAdminTickets";
- panel.append(title,status,refresh,list);mount.appendChild(panel);
+ panel.append(title,status,toolbar,refresh,list);mount.appendChild(panel);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 window.loadBaranGuestSupportAdmin=load;
