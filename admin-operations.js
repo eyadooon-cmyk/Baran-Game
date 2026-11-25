@@ -1188,36 +1188,59 @@ function homscardAutoAuditSelfTests(){
   return {total:cases.length,passed:cases.length-failures.length,failures:failures.map(([input,expected])=>({name:input.name,expected,actual:homscardAutoAuditOne(input).kind}))};
 }
 function homscardRunAutomaticAudit(){
-  const output=document.getElementById("opsHomsAutoAuditResults"),status=document.getElementById("opsHomsAutoAuditStatus");
-  if(!output||!status)return;
-  if(!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length){status.textContent="حمّل كتالوج حمص كارد أولاً.";return;}
-  const rows=homscardCatalogCache.map(homscardAutoAuditOne);
-  const labels=["كمية متغيرة محتملة","باقة ثابتة محتملة","اشتراك بمدة محتملة","غير محسوم"];
-  const counts=Object.fromEntries(labels.map(label=>[label,rows.filter(r=>r.kind===label).length]));
-  const tests=homscardAutoAuditSelfTests();
-  status.textContent="اكتمل فحص "+rows.length+" منتجاً: "+(rows.length-counts["غير محسوم"])+" تصنيفاً مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة. الاختبارات الداخلية: "+tests.passed+"/"+tests.total;
+  const output=document.getElementById("opsHomsAutoAuditResults");
+  const status=document.getElementById("opsHomsAutoAuditStatus");
+  const button=document.getElementById("opsHomsAutoAuditButton");
+  if(!output||!status){
+    console.error("[HomsCard audit] Missing result/status elements", {output:!!output,status:!!status});
+    if(status)status.textContent="تعذر بدء الفحص: عناصر عرض النتائج غير موجودة. حدّث الصفحة وأعد تحميل الكتالوج.";
+    return;
+  }
+  if(!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length){
+    status.textContent="حمّل كتالوج حمص كارد أولاً؛ لا توجد منتجات محفوظة للفحص.";
+    output.replaceChildren();
+    return;
+  }
+  if(button)button.disabled=true;
+  status.textContent="بدأ الفحص الآن… جارٍ تحليل بيانات المنتجات.";
   output.replaceChildren();
-  const summary=opsNode("div","ops-stats-grid");
-  labels.forEach(label=>{const card=opsNode("div","ops-card");card.append(opsNode("strong","",String(counts[label])),opsNode("div","ops-muted",label));summary.appendChild(card);});
-  output.appendChild(summary);
-  output.appendChild(opsNode("p","ops-muted","التصنيفات استدلالية وليست اعتماداً تجارياً. لا نعتبر package دليلاً لأن الموصل قد يضعها كقيمة افتراضية. لا نحسب تكلفة كمية ولا نفترض أن السعر سعر وحدة."));
-  const testBox=opsNode("div","ops-muted",tests.failures.length?"فشل اختبار داخلي: "+JSON.stringify(tests.failures):"اجتازت قواعد التصنيف الاختبارات الداخلية.");
-  output.appendChild(testBox);
-  const list=opsNode("div","ops-list");
-  rows.sort((a,b)=>labels.indexOf(b.kind)-labels.indexOf(a.kind));
-  rows.forEach(r=>{
-    const d=opsNode("details","ops-item");d.appendChild(opsNode("summary","",opsText(r.p.name)+" — "+r.kind+" · ثقة "+r.confidence));
-    d.append(opsNode("div","ops-muted","معرّف المورد: "+opsText(r.p.id)+" | التصنيف: "+opsText(r.p.category)),
-      opsNode("div","ops-muted","السبب: "+r.reason),
-      opsNode("div","ops-muted","نوع المورد: "+opsText(r.p.product_type||"غير محدد")),
-      opsNode("div","ops-muted","سعر المورد كما ورد: "+opsText(r.p.price??"غير متاح")+" USD — لم تُحسب تكلفة كمية"),
-      opsNode("div","ops-muted","خيارات كمية رقمية مستخرجة: "+(r.options.length?r.options.join("، "):"غير ظاهرة")),
-      opsNode("div","ops-muted","حقول الطلب: "+(r.keys.length?r.keys.slice(0,20).join("، "):"غير ظاهرة")),
-      opsNode("div","ops-muted","بيانات حساب/لاعب محتملة: "+(r.account?"نعم، راجع الحقول يدوياً":"غير ظاهرة")),
-      opsNode("div","ops-muted","نواقص/تحذيرات: "+(r.missing.length?r.missing.join("؛ "):"لا توجد نواقص شكلية ظاهرة")));
-    list.appendChild(d);
-  });
-  output.appendChild(list);
+  try{
+    const products=homscardCatalogCache.filter(p=>p&&typeof p==="object"&&!Array.isArray(p));
+    if(!products.length)throw new Error("لم تصل بيانات منتجات قابلة للفحص من الكتالوج.");
+    const rows=products.map(p=>homscardAutoAuditOne(p));
+    const labels=["كمية متغيرة محتملة","باقة ثابتة محتملة","اشتراك بمدة محتملة","غير محسوم"];
+    const counts=Object.fromEntries(labels.map(label=>[label,rows.filter(r=>r.kind===label).length]));
+    const tests=homscardAutoAuditSelfTests();
+    status.textContent="اكتمل فحص "+rows.length+" منتجاً: "+(rows.length-counts["غير محسوم"])+" تصنيفاً مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة. الاختبارات الداخلية: "+tests.passed+"/"+tests.total;
+    const summary=opsNode("div","ops-stats-grid");
+    labels.forEach(label=>{const card=opsNode("div","ops-card");card.append(opsNode("strong","",String(counts[label])),opsNode("div","ops-muted",label));summary.appendChild(card);});
+    output.appendChild(summary);
+    output.appendChild(opsNode("p","ops-muted","التصنيفات استدلالية وليست اعتماداً تجارياً. لا نعتبر package دليلاً لأن الموصل قد يضعها كقيمة افتراضية. لا نحسب تكلفة كمية ولا نفترض أن السعر سعر وحدة."));
+    output.appendChild(opsNode("div","ops-muted",tests.failures.length?"فشل اختبار داخلي: "+JSON.stringify(tests.failures):"اجتازت قواعد التصنيف الاختبارات الداخلية."));
+    const list=opsNode("div","ops-list");
+    rows.sort((a,b)=>labels.indexOf(b.kind)-labels.indexOf(a.kind));
+    rows.forEach(r=>{
+      const d=opsNode("details","ops-item");
+      d.appendChild(opsNode("summary","",opsText(r.p.name)+" — "+r.kind+" · ثقة "+r.confidence));
+      d.append(opsNode("div","ops-muted","معرّف المورد: "+opsText(r.p.id)+" | التصنيف: "+opsText(r.p.category)),
+        opsNode("div","ops-muted","السبب: "+r.reason),
+        opsNode("div","ops-muted","نوع المورد: "+opsText(r.p.product_type||"غير محدد")),
+        opsNode("div","ops-muted","سعر المورد كما ورد: "+opsText(r.p.price??"غير متاح")+" USD — لم تُحسب تكلفة كمية"),
+        opsNode("div","ops-muted","خيارات كمية رقمية مستخرجة: "+(r.options.length?r.options.join("، "):"غير ظاهرة")),
+        opsNode("div","ops-muted","حقول الطلب: "+(r.keys.length?r.keys.slice(0,20).join("، "):"غير ظاهرة")),
+        opsNode("div","ops-muted","بيانات حساب/لاعب محتملة: "+(r.account?"نعم، راجع الحقول يدوياً":"غير ظاهرة")),
+        opsNode("div","ops-muted","نواقص/تحذيرات: "+(r.missing.length?r.missing.join("؛ "):"لا توجد نواقص شكلية ظاهرة")));
+      list.appendChild(d);
+    });
+    output.appendChild(list);
+    output.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }catch(error){
+    console.error("[HomsCard audit] Failed",error);
+    status.textContent="تعذر إكمال الفحص: "+(error?.message||"خطأ غير معروف")+". جرّب إعادة تحميل الكتالوج.";
+    output.replaceChildren(opsNode("div","ops-item",status.textContent));
+  }finally{
+    if(button)button.disabled=false;
+  }
 }
 function homscardEnsureAutoAuditUi(){
   const toolsBox=document.getElementById("opsHomsCatalogTools");
