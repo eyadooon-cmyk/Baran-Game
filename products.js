@@ -18,7 +18,7 @@ function applyExchangeRate(rate){
 function productPriceText(product){
   const usd=Number(product.price_usd||0);
   if(usd<=0)return "السعر غير محدد";
-  return usd.toFixed(2)+" $  •  "+Math.round(usd*currentExchangeRate).toLocaleString("en-US")+" ل.س";
+  return usd.toFixed(2)+" $  •  "+Math.round(usd*currentExchangeRate).toLocaleString("en-US")+" ل.س جديدة";
 }
 
 function renderProducts(products){
