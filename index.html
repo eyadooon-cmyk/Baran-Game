@@ -3176,7 +3176,9 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <div id="baroFinanceStandaloneMount"></div>
       </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الموردون والأسعار</h2></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز الموردين والأسعار</h2></div>
+        <nav class="supplier-quick-nav" aria-label="التنقل بين أقسام الموردين"><a href="#homscardProviderPanel">حمص كارد</a><a href="#supplierDirectoryGroup">دليل الموردين</a><a href="#syriaMarketComparisonPanel">مقارنة الأسعار</a><a href="#supplierApiSettingsGroup">إعدادات API</a></nav>
+        <p class="small supplier-page-intro">كل مورد له مساحة مستقلة. ابدأ بحمص كارد، واستخدم سوريا ماركت للمقارنة المؤقتة فقط، ثم اربط المنتجات والأسعار من الدليل.</p>
         <div class="admin-workgroup-label"><span>01</span><div><strong>حالة التشغيل</strong><small>تحقق من وضع الشحن الآلي قبل إدارة الموردين</small></div></div>
         <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
@@ -3273,7 +3275,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       </section>
       <hr style="border-color:#40334b;margin:24px 0">
       <div class="admin-workgroup-label"><span>05</span><div><strong>دليل الموردين وربط المنتجات</strong><small>سجّل المورد أولاً، ثم اربط المنتجات وتكلفة الشراء وحقول العميل</small></div></div>
-      <h2>إدارة الموردين 🤝</h2>
+      <details class="supplier-fold" id="supplierDirectoryGroup"><summary>🤝 دليل الموردين وربط المنتجات <span>فتح / إغلاق</span></summary><h2>إدارة الموردين 🤝</h2>
       <div class="ops-form">
         <label for="opsSupplierName">اسم المورد</label>
         <input id="opsSupplierName" maxlength="120" placeholder="اسم المورد أو الشركة">
@@ -3312,10 +3314,10 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <button class="full" type="button" onclick="opsSaveSupplierProduct()">حفظ ربط المورد والحقول</button>
         <div id="opsSupplierProductMessage" class="ops-muted" role="status"></div>
       </div>
-      <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div>
+      <div id="opsSupplierProducts" class="ops-list">لا توجد أسعار موردين مسجلة.</div></details>
       <hr style="border-color:#40334b;margin:24px 0">
       <div class="admin-workgroup-label"><span>06</span><div><strong>تكامل المورد والمتابعة</strong><small>جهّز إعدادات الاتصال، ثم راجع الحالة وسجل الأحداث والمحاولات</small></div></div>
-      <section class="deposit-card" id="syriaMarketCatalogPanel" style="margin:14px 0;border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.25),rgba(16,13,24,.96));">
+      <details class="supplier-fold" id="syriaMarketCatalogFold"><summary>📊 كتالوج المقارنة المحفوظ — Syria Market <span>فتح / إغلاق</span></summary><section class="deposit-card" id="syriaMarketCatalogPanel" style="margin:14px 0;border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.25),rgba(16,13,24,.96));">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
           <div><h3 style="margin:0">كتالوج المقارنة — Syria Market</h3><p class="small" style="margin:5px 0 0">نسخة مرجعية لمقارنة المنتجات والأسعار فقط</p></div>
           <span class="ops-pill">قراءة فقط · بلا طلبات</span>
@@ -3330,7 +3332,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <div id="syriaMarketAuditLookupResults" class="ops-list" style="margin-bottom:12px"></div>
         <div id="syriaMarketV1CatalogList" class="ops-list">لا توجد بيانات كتالوج محفوظة.</div>
       </section>
-      <h3>إعداد ربط API المورد</h3>
+      </section><details class="supplier-fold" id="supplierApiSettingsGroup"><summary>⚙️ إعدادات API وسجلات الاتصال <span>فتح / إغلاق</span></summary><h3>إعداد ربط API المورد</h3>
       <p class="small">هذه إعدادات تحضيرية فقط. لا يتم الاتصال بالمورد أو إرسال طلبات حقيقية من هذه الصفحة. مفاتيح API تحفظ لاحقاً في Supabase Secrets، ولا تكتبها هنا.</p>
       <div class="ops-form">
         <label for="opsApiSupplierSelect">المورد</label>
@@ -3372,7 +3374,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <div id="opsApiStatus" class="ops-list">لا توجد إعدادات API محفوظة.</div>
       <h4>سجل اتصال المورد ومحاولات الطلبات</h4>
       <div id="opsApiEvents" class="ops-list">لا توجد أحداث مسجلة.</div>
-      <div id="opsApiAttempts" class="ops-list">لا توجد محاولات تنفيذ مسجلة.</div>
+      <div id="opsApiAttempts" class="ops-list">لا توجد محاولات تنفيذ مسجلة.</div></details>
       
       </div>
 
@@ -9005,6 +9007,9 @@ function baranAttachCatalogSearch(container,cardSelector,placeholder){
   else container.insertBefore(label,container.children[1]||null);
 }
 </script>
+<style id="baran-supplier-center-layout">
+.supplier-quick-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}.supplier-quick-nav a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:9px 12px;border:1px solid #7652a8;border-radius:12px;background:linear-gradient(135deg,rgba(91,55,122,.38),rgba(20,15,28,.96));color:#f2e8ff;text-decoration:none;font-weight:800;font-size:13px}.supplier-page-intro{padding:10px 12px;border-inline-start:3px solid #b58bd4;background:rgba(77,48,99,.16);border-radius:8px;line-height:1.7}.supplier-fold{display:block;margin:14px 0;padding:0 12px 12px;border:1px solid #5c466f;border-radius:15px;background:linear-gradient(145deg,rgba(38,27,49,.78),rgba(13,11,18,.96))}.supplier-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px;cursor:pointer;list-style:none;color:#f1e5ff;font-weight:850}.supplier-fold>summary::-webkit-details-marker{display:none}.supplier-fold>summary:after{content:"＋";font-size:20px;color:#c8a8e4}.supplier-fold[open]>summary:after{content:"−"}.supplier-fold>summary span{font-size:11px;color:#c8b5d8;font-weight:500}.supplier-fold[open]>summary{border-bottom:1px solid #49375a;margin-bottom:12px}@media(max-width:520px){.supplier-quick-nav{grid-template-columns:1fr 1fr}.supplier-quick-nav a{font-size:12px;padding:8px 6px}}
+</style>
 </body>
 </html>
 
