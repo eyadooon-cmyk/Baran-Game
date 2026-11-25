@@ -83,11 +83,36 @@ Deno.serve(async (req: Request) => {
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: isAdmin, error: adminError } = await admin.rpc("admin_is_user", { p_user_id: authData.user.id });
     if (adminError || isAdmin !== true) return json({ error: "Administrator access required" }, 403, origin);
-    if (!apiToken) return json({ error: "HOMSCARD_API_TOKEN is not configured in Supabase secrets" }, 503, origin);
-
     let body: any;
     try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400, origin); }
     const action = body?.action;
+    if (action === "save_audit_batch") {
+      const runId = String(body.run_id ?? "");
+      const rows = Array.isArray(body.rows) ? body.rows : [];
+      if (!/^[0-9a-f-]{36}$/i.test(runId) || !rows.length || rows.length > 50) return json({ error: "Invalid audit batch" }, 400, origin);
+      const now = new Date().toISOString();
+      const { error: runError } = await admin.from("baran_homscard_audit_runs").upsert({run_id:runId,created_by:authData.user.id,catalog_count:Number.isInteger(body.catalog_count)?Math.max(0,Math.min(body.catalog_count,10000)):rows.length,updated_at:now},{onConflict:"run_id"});
+      if (runError) { console.error("HOMSCARD_AUDIT_RUN_SAVE_FAILED",runError.message); return json({error:"تعذر حفظ سجل التدقيق في قاعدة البيانات."},500,origin); }
+      const records = [];
+      for (const row of rows) {
+        const id=String(row?.product_id??"");
+        if (!/^\d{1,10}$/.test(id) || !row?.product_data || typeof row.product_data!=="object") return json({error:"Invalid product record in audit batch"},400,origin);
+        const pageStatus=["not_checked","success","failed"].includes(row.page_status)?row.page_status:"not_checked";
+        records.push({run_id:runId,product_id:id,product_name:String(row.product_name??"").slice(0,500),product_data:row.product_data,page_data:row.page_data&&typeof row.page_data==="object"?row.page_data:{},page_status:pageStatus,page_error:String(row.page_error??"").slice(0,500)||null,audit_data:row.audit_data&&typeof row.audit_data==="object"?row.audit_data:{},updated_at:now});
+      }
+      const {error:itemError}=await admin.from("baran_homscard_audit_items").upsert(records,{onConflict:"run_id,product_id"});
+      if(itemError){console.error("HOMSCARD_AUDIT_ITEMS_SAVE_FAILED",itemError.message);return json({error:"تعذر حفظ تفاصيل منتجات التدقيق."},500,origin);}
+      return json({success:true,action,run_id:runId,saved:records.length,saved_at:now},200,origin);
+    }
+    if (action === "get_latest_audit") {
+      const {data:run,error:runError}=await admin.from("baran_homscard_audit_runs").select("run_id,catalog_count,created_at,updated_at").order("updated_at",{ascending:false}).limit(1).maybeSingle();
+      if(runError)return json({error:"تعذر قراءة سجل التدقيق المحفوظ."},500,origin);
+      if(!run)return json({success:true,action,run:null,data:[]},200,origin);
+      const {data:items,error:itemsError}=await admin.from("baran_homscard_audit_items").select("product_id,product_name,product_data,page_data,page_status,page_error,audit_data,updated_at").eq("run_id",run.run_id).order("product_id",{ascending:true});
+      if(itemsError)return json({error:"تعذر قراءة تفاصيل التدقيق المحفوظ."},500,origin);
+      return json({success:true,action,run,count:items?.length??0,data:items??[]},200,origin);
+    }
+    if (!apiToken) return json({ error: "HOMSCARD_API_TOKEN is not configured in Supabase secrets" }, 503, origin);
     const query = new URLSearchParams();
     let path = "";
     if (action === "profile") {
