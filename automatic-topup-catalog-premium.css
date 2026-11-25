@@ -1,0 +1,112 @@
+/* BARAN GAME — premium catalog cards v2 */
+#automaticGames .baran-auto-hero{min-height:220px!important;background:radial-gradient(ellipse at 82% 18%,#a875dc55,transparent 42%),linear-gradient(120deg,#24142f 0%,#120d19 55%,#09070d 100%)!important}
+#automaticGames .baran-auto-hero-orbit{width:94px;height:94px;right:7%;bottom:22px;border-radius:28px;box-shadow:0 0 42px #b77ae855,inset 0 0 24px #d7b5ff24}
+.baran-auto-category-art{min-height:145px!important;background-size:cover!important;background-position:center!important;position:relative;isolation:isolate}
+.baran-auto-category-grid .item .baran-auto-category-art:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#100b18bb,transparent 75%)}
+.baran-auto-category-grid .item:nth-child(2) .baran-auto-category-art{background-image:linear-gradient(135deg,#24112c66,#09070d99),url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=900&q=80&auto=format&fit=crop")!important}
+.baran-auto-category-grid .item:nth-child(3) .baran-auto-category-art{background-image:linear-gradient(135deg,#24112c55,#09070d99),url("https://www.omniteckno.com/static/img/ai_security_blog.png")!important}
+.baran-auto-category-grid .item:nth-child(4) .baran-auto-category-art{background-image:linear-gradient(135deg,#24112c66,#09070d99),url("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=900&q=80&auto=format&fit=crop")!important}
+.baran-auto-category-grid .item:nth-child(5) .baran-auto-category-art{background-image:linear-gradient(135deg,#24112c55,#09070d99),url("https://storage.googleapis.com/assets.coingate.com/images/gift-cards/categories/giftcards_all.jpg")!important}
+.game-package-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:13px!important}
+.baran-package-button{position:relative;overflow:hidden;min-height:300px!important;padding:0 12px 13px!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important;text-align:right!important;border:1px solid #654b7d!important;border-radius:19px!important;background:linear-gradient(160deg,#21172c,#100c16 78%)!important;box-shadow:0 12px 27px #0005,inset 0 1px #ffffff12!important}
+.baran-package-button:before{content:"";position:absolute;inset:0 0 auto;height:125px;background:linear-gradient(0deg,#17101f 0%,#17101f00 72%);pointer-events:none;z-index:0}
+.baran-package-button .baran-package-art{position:relative;display:block!important;flex:0 0 132px!important;width:calc(100% + 24px)!important;height:132px!important;margin:0 -12px 3px!important;border:0!important;border-radius:18px 18px 0 0!important;background-color:#24172f!important;background-position:center 34%!important;background-size:cover!important;box-shadow:none!important}
+.baran-package-button .baran-package-art.is-pubg{background-image:linear-gradient(0deg,#160e1de8 0%,#160e1d00 70%),url("https://shfliapiproject.s3.eu-central-1.amazonaws.com/prod/clients_files/images/v2/2025/12/21/09_46_23_1766310383039.webp")!important}
+.baran-package-button .baran-package-art.is-freefire{background-image:linear-gradient(0deg,#160e1de8 0%,#160e1d00 70%),url("https://staticg.sportskeeda.com/editor/2022/02/fcc09-16441468734743-1920.jpg")!important}
+.baran-package-button .baran-package-quantity{display:inline-flex;align-self:flex-start;max-width:100%;padding:5px 10px;border:1px solid #a77bc966;border-radius:999px;background:#38234bdc;color:#f1dcff;font-size:12px;font-weight:900}
+.baran-package-button strong{font-size:14px!important;color:#fff!important;line-height:1.55!important}
+.baran-package-button small{font-size:11px!important;color:#bcaecb!important;line-height:1.65!important}
+.baran-package-button .game-package-price{display:block;margin-top:3px;padding:10px 11px;border:1px solid #684b80;border-radius:12px;background:linear-gradient(100deg,#2c1b3b,#1a1322);color:#f1d7ff!important;font-size:16px!important;font-weight:1000!important}
+.baran-package-action{display:block;margin-top:2px;padding:10px 12px;border:1px solid #c39be4;border-radius:12px;background:linear-gradient(110deg,#c18be9,#8754b1);color:#170e20;font-size:12px;font-weight:1000;text-align:center;box-shadow:0 5px 14px #9b65c333}
+.baran-package-button:disabled .baran-package-action{filter:grayscale(.7);opacity:.6}
+.baran-service-product-polished{position:relative;min-height:270px!important;padding:14px!important;border-color:#59416f!important;background:radial-gradient(ellipse at 100% 0,#a879c933,transparent 50%),linear-gradient(155deg,#251a31,#110d17 80%)!important;box-shadow:0 12px 26px #0004,inset 0 1px #ffffff10!important}
+.baran-service-product-polished .baran-service-product-head{align-items:center;gap:12px}
+.baran-service-product-polished .baran-service-brand-visual,.baran-service-product-polished .baran-service-product-icon{flex-basis:64px;width:64px;height:64px;border-radius:18px}
+.baran-service-product-polished .baran-service-brand-visual img{width:40px;height:40px}
+.baran-service-product-polished .baran-service-product-price{margin-top:auto;padding:11px 12px;border-color:#684b80;background:linear-gradient(100deg,#2c1b3b,#17111f);font-size:15px}
+.baran-service-product-polished .baran-service-select-button{min-height:46px;border:1px solid #c39be4;border-radius:12px;background:linear-gradient(110deg,#c18be9,#8754b1);color:#170e20;font-weight:1000}
+.baran-auto-category-grid .item,.baran-auto-games-grid .item,.baran-service-product-polished,.baran-package-button{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+@media(hover:hover){.baran-auto-category-grid .item:hover,.baran-auto-games-grid .item:hover,.baran-service-product-polished:hover,.baran-package-button:hover{transform:translateY(-3px);border-color:#b98be8!important;box-shadow:0 16px 32px #0006!important}}
+@media(min-width:620px){.game-package-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.baran-package-button .baran-package-art{height:150px!important;flex-basis:150px!important}}
+@media(min-width:980px){.game-package-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:380px){.baran-package-button{min-height:276px!important}.baran-package-button .baran-package-art{height:112px!important;flex-basis:112px!important}.baran-package-button .game-package-price{font-size:14px!important}}
+@media(prefers-reduced-motion:reduce){.baran-auto-category-grid .item,.baran-auto-games-grid .item,.baran-service-product-polished,.baran-package-button{transition:none!important}}
+
+/* Actual category artwork targets the live markup's .baran-auto-category-art spans */
+.baran-auto-category-grid .item .baran-auto-category-art{display:flex!important;align-items:flex-end!important;justify-content:flex-start!important;box-sizing:border-box;min-height:156px!important;padding:13px!important;background-size:cover!important;background-position:center!important;border:1px solid #9c72b855!important;border-radius:15px!important;color:#fff!important;text-shadow:0 2px 8px #000!important;font-size:0!important;overflow:hidden}
+.baran-auto-category-grid .item:first-child .baran-auto-category-art{background-image:linear-gradient(0deg,#100b18d9,#100b1800 75%),url("https://shfliapiproject.s3.eu-central-1.amazonaws.com/prod/clients_files/images/v2/2025/12/21/09_46_23_1766310383039.webp")!important}
+.baran-auto-category-grid .item:nth-child(2) .baran-auto-category-art{background-image:linear-gradient(0deg,#100b18d9,#100b1800 75%),url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=900&q=80&auto=format&fit=crop")!important}
+.baran-auto-category-grid .item:nth-child(3) .baran-auto-category-art{background-image:linear-gradient(0deg,#100b18d9,#100b1800 75%),url("https://www.omniteckno.com/static/img/ai_security_blog.png")!important}
+.baran-auto-category-grid .item:nth-child(4) .baran-auto-category-art{background-image:linear-gradient(0deg,#100b18d9,#100b1800 75%),url("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=900&q=80&auto=format&fit=crop")!important}
+.baran-auto-category-grid .item:nth-child(5) .baran-auto-category-art{background-image:linear-gradient(0deg,#100b18d9,#100b1800 75%),url("https://storage.googleapis.com/assets.coingate.com/images/gift-cards/categories/giftcards_all.jpg")!important}
+.baran-auto-category-grid .item .item-content{padding:12px 4px 5px}
+.baran-auto-category-grid .item .item-content strong{font-size:16px!important}
+.baran-auto-category-grid .item .item-content span{font-size:12px;line-height:1.7}
+.baran-package-button .baran-package-art{z-index:1}
+.baran-package-button .baran-package-quantity,.baran-package-button strong,.baran-package-button small,.baran-package-button .game-package-price,.baran-package-button .baran-package-action{position:relative;z-index:1}
+@media(max-width:380px){.baran-auto-category-grid .item .baran-auto-category-art{min-height:125px!important}}
+
+
+/* Unified games hub: PUBG, Free Fire and Jawaker stay together as one catalog */
+#automaticGames .baran-auto-hero{min-height:205px!important}
+#automaticGames .baran-auto-games-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:16px!important;
+  align-items:stretch!important;
+  width:100%!important;
+}
+#automaticGames .baran-auto-games-grid>.item{
+  display:flex!important;
+  flex-direction:column!important;
+  min-width:0!important;
+  padding:0 0 15px!important;
+  overflow:hidden!important;
+  border:1px solid #654b7d!important;
+  border-radius:20px!important;
+  background:linear-gradient(155deg,#261a32 0%,#110d17 82%)!important;
+  box-shadow:0 12px 28px #0005,inset 0 1px #ffffff12!important;
+  text-align:right!important;
+}
+#automaticGames .baran-auto-games-grid>.item>img,
+#automaticGames .baran-auto-games-grid>.item>.baran-auto-game-art{
+  display:block!important;
+  width:100%!important;
+  height:clamp(132px,23vw,220px)!important;
+  min-height:0!important;
+  flex:0 0 auto!important;
+  object-fit:cover!important;
+  object-position:center 28%!important;
+  border:0!important;
+  border-radius:0!important;
+}
+#automaticGames .baran-auto-games-grid>.item>.baran-auto-game-art{display:grid!important}
+#automaticGames .baran-auto-games-grid>.item>.item-content{
+  display:grid!important;
+  gap:7px!important;
+  padding:13px 14px 0!important;
+}
+#automaticGames .baran-auto-games-grid>.item .item-content strong{
+  color:#fff!important;font-size:16px!important;font-weight:1000!important
+}
+#automaticGames .baran-auto-games-grid>.item .item-content>span:not(.small){
+  color:#cbbbd8!important;font-size:12px!important;line-height:1.7!important
+}
+#automaticGames .baran-auto-games-grid>.item .item-content .small{
+  display:block!important;margin-top:5px!important;padding:9px 11px!important;
+  border:1px solid #bd91dc!important;border-radius:11px!important;
+  background:linear-gradient(110deg,#c18be9,#8754b1)!important;
+  color:#170e20!important;font-size:12px!important;font-weight:1000!important;text-align:center!important
+}
+@media(min-width:760px){
+  #automaticGames .baran-auto-games-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:20px!important}
+  #automaticGames .baran-auto-games-grid>.item>img,
+  #automaticGames .baran-auto-games-grid>.item>.baran-auto-game-art{height:210px!important}
+}
+@media(max-width:380px){
+  #automaticGames .baran-auto-games-grid{gap:9px!important}
+  #automaticGames .baran-auto-games-grid>.item .item-content{padding:10px 9px 0!important}
+  #automaticGames .baran-auto-games-grid>.item .item-content strong{font-size:13px!important}
+  #automaticGames .baran-auto-games-grid>.item>img,
+  #automaticGames .baran-auto-games-grid>.item>.baran-auto-game-art{height:118px!important}
+}

@@ -1740,7 +1740,7 @@ body:has(#authScreen:not(.hidden)){background:#08060d!important}
 html{scroll-behavior:smooth;scroll-padding-top:88px}
 body{min-width:320px;overflow-x:hidden;background:radial-gradient(ellipse at 50% -18%,#24172f 0,transparent 43%),#09080d;line-height:1.65}
 #appShell{min-width:0;overflow-x:clip}
-main{width:min(100%,1080px);min-width:0;padding:clamp(10px,2.5vw,18px);padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+main{width:min(100%,1280px);min-width:0;padding:clamp(10px,2.5vw,22px);padding-bottom:calc(28px + env(safe-area-inset-bottom))}
 main>section:not(#home){min-width:0;max-width:100%;margin:12px 0 20px;padding:clamp(13px,2.8vw,20px);border:1px solid #493b55;border-radius:17px;background:linear-gradient(155deg,#17121e 0%,#110e16 100%);box-shadow:0 8px 24px #0003;overflow-wrap:anywhere}
 main>section:not(#home)>h2:first-child{margin:0 0 8px;padding-bottom:10px;border-bottom:1px solid #40334b;color:#e4d5ef;font-size:clamp(19px,4vw,24px);line-height:1.5}
 main>section:not(#home)>h3{margin:20px 0 10px;color:#d9c5e8;font-size:16px;line-height:1.6}
@@ -2161,6 +2161,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 </style>
 
 <link rel="stylesheet" href="./baran-wide-layout.css?v=20261125-wide-v2">
+<link rel="stylesheet" href="./automatic-topup-showcase.css?v=20261125-v1">
+<link rel="stylesheet" href="./automatic-topup-catalog-premium.css?v=20261125-v2">
 </head>
 <body>
 
@@ -2416,7 +2418,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="games" class="hidden">
       <button class="secondary games-back-button baran-back-button" type="button" onclick="goBackSection()">← رجوع</button>
-      <div class="hero"><h2>الشحن الآلي</h2><p>اختر نوع المحتوى الذي تريد استعراضه. الألعاب والخدمات الرقمية ضمن أقسام منفصلة.</p></div>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">BARAN GAME · INSTANT DIGITAL STORE</span><h2>كل عالمك الرقمي بمكان واحد</h2><p>اختر لعبتك أو خدمتك، واستكشف الباقات المتاحة بسهولة.</p><span class="baran-auto-hero-orbit" aria-hidden="true"></span></div>
+      <label class="baran-auto-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="ابحث عن لعبة أو خدمة..." autocomplete="off" oninput="filterAutomaticCatalog(this, '#games .baran-auto-category-grid .item')"><kbd>بحث</kbd></label>
       <div class="grid baran-auto-category-grid">
         <button class="item" type="button" onclick="showSection('automaticGames',null)">
           <span class="baran-auto-category-art">🎮</span>
@@ -2443,14 +2446,15 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="automaticGames" class="hidden">
       <button class="secondary games-back-button baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى أقسام الشحن الآلي</button>
-      <div class="hero"><h2>الألعاب 🎮</h2><p>اختر اللعبة لفتح متجرها وباقاتها. كل لعبة ضمن صفحة مستقلة.</p></div>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">DISCOVER YOUR GAME</span><h2>اختر لعبتك وابدأ المغامرة</h2><p>متاجر مستقلة وتجربة أوضح لكل لعبة.</p><span class="baran-auto-hero-orbit" aria-hidden="true"></span></div>
+      <label class="baran-auto-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="ابحث عن لعبة..." autocomplete="off" oninput="filterAutomaticCatalog(this, '#automaticGames .baran-auto-games-grid .item')"><kbd>بحث</kbd></label>
       <div class="grid baran-auto-games-grid">
         <button class="item" type="button" onclick="showSection('pubgStore',null)">
-          <img src="https://pbs.twimg.com/media/EZrVgJ_XkAQX9jX.jpg" alt="PUBG MOBILE" loading="lazy">
+          <img src="https://api.thinkview.vn/uploads/editor/eu1qwl6waaactxb.jpg" alt="PUBG MOBILE" loading="lazy">
           <span class="item-content"><strong>PUBG MOBILE</strong><span>شدات UC وباقات اللعبة</span><span class="small">فتح متجر PUBG ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('freeFireStore',null)">
-          <img src="https://prod.assets.earlygamecdn.com/images/Free-Fire-Codes_2025-11-20-093139_akqi.jpg?transform=Banner+Webp" alt="FREE FIRE" loading="lazy">
+          <img src="https://dl.dir.freefiremobile.com/common/web_event/official2.ff.garena.all/202210/12bd8e3061aa30c9136889ddaa911392.jpg" alt="FREE FIRE" loading="lazy">
           <span class="item-content"><strong>FREE FIRE</strong><span>جواهر وعضويات Free Fire</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('jawakerStore',null)">
@@ -2538,8 +2542,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
     </section>
 
     <section id="services" class="hidden">
-      <h2>الخدمات الرقمية</h2>
-      <p class="small">اختر الخدمة لفتح صفحتها المستقلة ومنتجاتها فقط.</p>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">DIGITAL SERVICES</span><h2>خدماتك واشتراكاتك الرقمية</h2><p>اكتشف التطبيقات والبطاقات والاشتراكات من مكان واحد.</p><span class="baran-auto-hero-orbit" aria-hidden="true"></span></div>
+      <label class="baran-auto-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="ابحث عن خدمة..." autocomplete="off" oninput="filterAutomaticCatalog(this, '#services .grid .item')"><kbd>بحث</kbd></label>
       <div class="grid">
         <button class="item" type="button" onclick="showSection('chatgptStore',null)"><span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT وGemini وClaude وGrok وأدوات AI</span><span class="small">فتح القسم ←</span></span></button>
         <button class="item" type="button" onclick="showSection('vpnStore',null)"><span class="item-content"><strong>VPN</strong><span>اشتراكات VPN</span><span class="small">فتح القسم ←</span></span></button>
@@ -7741,14 +7745,15 @@ async function loadBaranGameCatalog(game){
       const isPrimePlus=code.startsWith("PUBG_PRIME_PLUS_");
       const isGrowth=code.startsWith("PUBG_GROWTH_");
       const primeMonths=(code.match(/^PUBG_PRIME(?:_PLUS)?_(\d+)M$/i)||[])[1]||"1";
-      const art=document.createElement("span");art.className="baran-package-art";art.textContent=(isMembership||isPrime)?"👑":(isPubg?"UC":"💎");
+      const art=document.createElement("span");art.className="baran-package-art "+(isPubg?"is-pubg":"is-freefire");art.setAttribute("aria-hidden","true");
       const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=isMembership?(code.endsWith("_WEEKLY")?"7 أيام":"30 يوم"):isPrimePlus?"Prime Plus "+primeMonths+" شهر":isPrime?"Prime "+primeMonths+" شهر":isGrowth?"حزمة خاصة":amount?(isPubg?amount+" UC":amount+" جوهرة"):(isPubg?"حزمة PUBG":"جواهر");
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
       const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
       button.disabled=!baranHasApprovedGamePrice(product);
       if(button.disabled){button.setAttribute("aria-label",(product.name||product.product_code)+" — بانتظار اعتماد السعر");}
-      button.append(art,quantity,name,description,price);
+      const action=document.createElement("span");action.className="baran-package-action";action.textContent="اختيار الباقة";
+      button.append(art,quantity,name,description,price,action);
       if(button.disabled){const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير متاحة للاختيار حتى اعتماد السعر";button.append(pending);}
       button.addEventListener("click",()=>baranSelectGamePackage(game,product));
       packageCard.append(button);
@@ -7756,6 +7761,7 @@ async function loadBaranGameCatalog(game){
       grid.append(packageCard);
     });
     container.append(grid);
+    baranAttachCatalogSearch(container,".baran-game-package-card","ابحث عن باقة أو عدد شدات...");
     const note=document.createElement("p");note.className="small";
     note.textContent="الأسعار المعروضة مأخوذة من كتالوج المنتجات النشطة. اختيار الباقة لا ينشئ طلباً ولا يخصم رصيداً.";
     container.append(note);
@@ -7800,6 +7806,7 @@ async function loadBaranJawakerCatalog(){
       card.append(content);baranAddProductDetails(card,product,"جواكر");grid.append(card);
     });
     container.append(grid);
+    baranAttachCatalogSearch(container,".baran-game-package-card","ابحث عن باقة جواكر...");
     const note=document.createElement("p");note.className="small";
     note.textContent="الأسعار المعروضة من كتالوج المنتجات النشطة. عرض الباقات لا ينشئ طلباً ولا يخصم رصيداً.";
     container.append(note);
@@ -7959,6 +7966,7 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    });
    container.append(grid);
   }
+  baranAttachCatalogSearch(container,".baran-service-product","ابحث عن اسم المنتج أو الاشتراك...");
   const note=document.createElement("p");note.className="small";note.textContent="عرض المنتجات لا ينشئ طلباً ولا يخصم رصيداً. ستُتاح خطوات الشراء بعد تجهيز مسار الطلب والتحقق من توفر المورد.";
   container.append(note);
  }catch(error){
@@ -8936,6 +8944,46 @@ html,body{width:100%;min-width:320px;margin:0!important;padding:0!important}
 }
 </style>
 
+<script id="baran-auto-catalog-search">
+function filterAutomaticCatalog(input, selector){
+  const query=String(input.value||"").trim().toLocaleLowerCase();
+  document.querySelectorAll(selector).forEach(card=>{
+    const text=(card.innerText||card.textContent||"").toLocaleLowerCase();
+    card.hidden=!!query&&!text.includes(query);
+  });
+}
+</script>
+<script id="baran-live-catalog-search">
+function baranAttachCatalogSearch(container,cardSelector,placeholder){
+  if(!container)return;
+  container.querySelector(".baran-live-catalog-search")?.remove();
+  const label=document.createElement("label");
+  label.className="baran-live-catalog-search";
+  label.innerHTML='<span aria-hidden="true">⌕</span><input type="search" autocomplete="off"><small>بحث</small>';
+  const input=label.querySelector("input");
+  input.placeholder=placeholder||"ابحث في المنتجات...";
+  input.setAttribute("aria-label",input.placeholder);
+  input.addEventListener("input",()=>{
+    const query=input.value.trim().toLocaleLowerCase();
+    container.querySelectorAll(cardSelector).forEach(card=>{
+      card.hidden=!!query&&!String(card.innerText||card.textContent||"").toLocaleLowerCase().includes(query);
+    });
+    container.querySelectorAll(".baran-service-group-heading").forEach(heading=>{
+      let next=heading.nextElementSibling;
+      while(next&&!next.classList.contains("baran-service-group-heading")){
+        if(next.classList.contains("baran-service-product-grid")){
+          heading.hidden=!!query&&!next.querySelector(cardSelector+":not([hidden])");
+          break;
+        }
+        next=next.nextElementSibling;
+      }
+    });
+  });
+  const firstGrid=container.querySelector(".game-package-grid,.baran-service-product-grid");
+  if(firstGrid)container.insertBefore(label,firstGrid);
+  else container.insertBefore(label,container.children[1]||null);
+}
+</script>
 </body>
 </html>
 
@@ -8960,5 +9008,221 @@ html,body{width:100%;min-width:320px;margin:0!important;padding:0!important}
  #currentSectionLabel{max-width:26%;font-size:10px!important}
  #sectionBackButton.baran-back-button{flex-basis:32px;width:32px;min-width:32px;height:32px;min-height:32px}
  #notificationBell{flex-basis:36px;width:36px;min-width:36px;height:36px}
+}
+</style>
+
+
+<style id="baran-home-premium-wide-20261125">
+/* BARAN GAME — wider premium homepage refinement */
+#appShell>main>#home.baran-home-v3{
+  width:100%;max-width:none;min-width:0;margin:0 auto;
+  padding:clamp(18px,3vw,34px);
+  border:1px solid #493653;border-radius:24px;
+  background:
+    radial-gradient(ellipse at 12% 0%,#8b5bb522,transparent 34%),
+    radial-gradient(ellipse at 95% 35%,#6d438c18,transparent 32%),
+    linear-gradient(155deg,#17121e 0%,#100c16 100%);
+  box-shadow:0 18px 42px #0005,inset 0 1px #ffffff0b;
+  overflow:hidden;
+}
+#home .baran-home-topline{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:max-content;max-width:100%;margin:0 auto 23px;padding:8px 17px;
+  border:1px solid #76558d;border-radius:999px;
+  background:linear-gradient(100deg,#2a1c37,#1b1424);
+  color:#e6d3f5;font-size:12px;font-weight:900;letter-spacing:.4px;
+  box-shadow:0 5px 16px #0003;
+}
+#home .baran-live-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#9de3b7;box-shadow:0 0 0 4px #9de3b722,0 0 12px #9de3b7}
+#home .baran-home-section-intro{display:flex;align-items:center;gap:13px;margin:0 0 13px}
+#home .baran-section-index{
+  display:grid;place-items:center;flex:0 0 49px;width:49px;height:43px;
+  border:1px solid #76558e;border-radius:13px;
+  background:linear-gradient(145deg,#392649,#21172d);
+  color:#d9b9f1;font-size:9px;font-weight:1000;letter-spacing:.6px;
+  box-shadow:inset 0 1px #ffffff15;
+}
+#home .baran-home-section-intro h2{margin:0;color:#f5eafb;font-size:clamp(17px,2.2vw,22px);font-weight:900;line-height:1.5}
+#home .baran-home-section-intro p{margin:3px 0 0;color:#bbaacb;font-size:12px;line-height:1.7}
+#home .baran-home-search-wrap{margin:0 0 26px;padding:18px;border:1px solid #493653;border-radius:19px;background:linear-gradient(145deg,#21182b,#15101c);box-shadow:0 10px 24px #0003}
+#home .baran-home-search{margin:0}
+#home .baran-home-search .store-search-row{
+  min-height:58px;padding:6px 9px 6px 13px;border:1px solid #75558e;border-radius:15px;
+  background:linear-gradient(110deg,#100c16,#21172b);box-shadow:inset 0 1px #ffffff0b;
+}
+#home .baran-home-search .store-search-row>span{color:#d8b5f1;font-size:27px}
+#home .baran-home-search .store-search-row input{min-width:0;height:46px;margin:0;border:0!important;background:transparent!important;box-shadow:none!important;font-size:14px!important}
+#home .baran-home-search .store-search-row button{min-height:39px;padding:8px 14px;border:1px solid #75558e;border-radius:10px;background:#33223f;color:#eadcf5}
+#home .baran-shipping-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:0 0 27px}
+#home .baran-shipping-choices>.baran-home-section-intro{grid-column:1/-1;margin-bottom:0}
+#home .baran-shipping-card{
+  position:relative;display:flex;align-items:flex-end;isolation:isolate;
+  width:100%;min-width:0;min-height:310px;padding:22px!important;
+  overflow:hidden;border:1px solid #76558f!important;border-radius:21px!important;
+  background:#21172c!important;color:#fff!important;text-align:right!important;
+  box-shadow:0 13px 30px #0005,inset 0 1px #ffffff16!important;
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+#home .baran-shipping-card>img{
+  position:absolute;z-index:-2;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 42%;opacity:.72;
+  transition:transform .45s ease,opacity .25s ease;
+}
+#home .baran-shipping-card .baran-shipping-shade{
+  position:absolute;z-index:-1;inset:0;
+  background:linear-gradient(0deg,#0c0812 0%,#100b18e8 32%,#100b1840 78%,#100b1822 100%),
+             linear-gradient(110deg,#28173766,transparent 70%);
+}
+#home .baran-shipping-content{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:9px;width:100%;max-width:540px}
+#home .baran-shipping-content>small{
+  padding:6px 10px;border:1px solid #c19be077;border-radius:999px;
+  background:#160f20b8;color:#e4c8f7;font-size:10px;font-weight:1000;letter-spacing:1.2px;
+}
+#home .baran-shipping-content>strong{color:#fff;font-size:clamp(23px,3vw,31px);font-weight:1000;line-height:1.35;text-shadow:0 2px 14px #000}
+#home .baran-shipping-content>em{max-width:420px;color:#e0d3e9;font-size:13px;font-style:normal;line-height:1.9}
+#home .baran-shipping-content>b{
+  display:inline-flex;align-items:center;gap:12px;margin-top:5px;padding:11px 16px;
+  border:1px solid #d1a9ed;border-radius:12px;
+  background:linear-gradient(110deg,#c18be9,#8754b1);color:#190f22;
+  font-size:12px;font-weight:1000;box-shadow:0 7px 18px #0004;
+}
+#home .baran-shipping-content>b i{font-size:17px;font-style:normal}
+#home .baran-shipping-number{
+  position:absolute;top:17px;left:18px;color:#fff9;font:900 30px Orbitron,Arial,sans-serif;
+  text-shadow:0 2px 12px #000;
+}
+#home .baran-baro-status{
+  position:absolute;top:18px;right:18px;padding:6px 10px;border:1px solid #ffffff44;
+  border-radius:999px;background:#100b18bb;color:#f4eafa;font-size:10px;font-weight:800;
+}
+#home .baran-home-account{margin:0 0 23px;padding:19px;border:1px solid #493653;border-radius:19px;background:linear-gradient(145deg,#20172a,#15101c)}
+#home .baran-home-account-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#home .baran-home-account-grid>button{
+  display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0;min-height:112px;
+  padding:16px!important;border:1px solid #59416e!important;border-radius:15px!important;
+  background:linear-gradient(145deg,#2a1d36,#17121e)!important;color:#f5eafb!important;text-align:right!important;
+  box-shadow:0 7px 17px #0003,inset 0 1px #ffffff0c!important;
+}
+#home .baran-home-account-grid>button>span{
+  display:grid;place-items:center;width:39px;height:39px;border:1px solid #9d75ba66;
+  border-radius:12px;background:#a879c92b;color:#e4c9f7;font-size:22px;
+}
+#home .baran-home-account-grid>button>strong{font-size:14px;font-weight:900}
+#home .baran-home-account-grid>button>small{color:#bcaec9;font-size:11px;line-height:1.6}
+#home .baran-home-promise{
+  display:flex;align-items:center;gap:14px;margin:0;padding:16px 18px;
+  border:1px solid #72538a;border-radius:16px;
+  background:linear-gradient(110deg,#2a1b37,#17121e);box-shadow:0 8px 20px #0003;
+}
+#home .baran-home-promise>span{
+  display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;
+  border:1px solid #b58bd066;border-radius:13px;background:#a879c92b;color:#e7cbf8;font-size:24px;
+}
+#home .baran-home-promise p{margin:0;color:#c8b9d4;font-size:12px;line-height:1.9}
+#home .baran-home-promise strong{color:#f2e4fb;font-size:13px}
+@media(hover:hover){
+ #home .baran-shipping-card:hover{transform:translateY(-4px);border-color:#c39be4!important;box-shadow:0 19px 38px #0007!important}
+ #home .baran-shipping-card:hover>img{transform:scale(1.045);opacity:.88}
+ #home .baran-home-account-grid>button:hover{transform:translateY(-3px);border-color:#b98be8!important}
+}
+@media(max-width:700px){
+ #appShell>main>#home.baran-home-v3{padding:16px 12px;border-radius:0;border-left:0;border-right:0}
+ #home .baran-home-topline{margin-bottom:17px}
+ #home .baran-home-search-wrap,#home .baran-home-account{padding:13px;border-radius:15px}
+ #home .baran-shipping-choices{grid-template-columns:minmax(0,1fr);gap:11px}
+ #home .baran-shipping-card{min-height:235px;padding:17px!important;border-radius:16px!important}
+ #home .baran-shipping-content>strong{font-size:24px}
+ #home .baran-shipping-content>em{font-size:12px}
+ #home .baran-home-account-grid{gap:8px}
+ #home .baran-home-account-grid>button{min-height:105px;padding:11px 9px!important}
+ #home .baran-home-account-grid>button>strong{font-size:12px}
+ #home .baran-home-account-grid>button>small{font-size:10px}
+}
+@media(max-width:370px){
+ #home .baran-home-section-intro{gap:9px}
+ #home .baran-section-index{flex-basis:42px;width:42px;height:39px;font-size:8px}
+ #home .baran-home-section-intro h2{font-size:16px}
+ #home .baran-home-section-intro p{font-size:11px}
+ #home .baran-home-search .store-search-row{gap:5px;padding-inline:7px}
+ #home .baran-home-search .store-search-row button{padding:7px 9px}
+ #home .baran-home-account-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ #home .baran-home-account-grid>button{padding:9px 7px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #home .baran-shipping-card,#home .baran-shipping-card>img,#home .baran-home-account-grid>button{transition:none!important}
+}
+</style>
+
+
+<style id="baran-catalog-wide-refine-20261125">
+/* BARAN GAME — consistent wide catalog layout, mobile-first */
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore){
+  width:100%!important;max-width:none!important;min-width:0!important;
+  box-sizing:border-box!important;
+}
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore)>.hero{
+  width:100%!important;max-width:none!important;box-sizing:border-box!important;
+  border:1px solid #5d456f!important;
+  background:
+    radial-gradient(ellipse at 88% 0%,#a879c933,transparent 45%),
+    linear-gradient(145deg,#241a30,#110d17 78%)!important;
+  box-shadow:0 12px 28px #0004,inset 0 1px #ffffff12!important;
+}
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .grid,
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-auto-category-grid,
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-auto-games-grid{
+  width:100%!important;max-width:none!important;min-width:0!important;
+  box-sizing:border-box!important;
+}
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-live-catalog-search{
+  display:flex!important;align-items:center!important;gap:10px!important;
+  width:100%!important;max-width:none!important;margin:14px 0 18px!important;
+  padding:8px 13px!important;border:1px solid #76558f!important;border-radius:14px!important;
+  background:linear-gradient(110deg,#100c16,#21172b)!important;
+  box-shadow:inset 0 1px #ffffff0b,0 7px 18px #0003!important;
+  box-sizing:border-box!important;
+}
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-live-catalog-search input{
+  flex:1 1 auto!important;min-width:0!important;height:43px!important;
+  border:0!important;outline:0!important;background:transparent!important;
+  color:#fff!important;font-size:14px!important;box-shadow:none!important;
+}
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-live-catalog-search>span{
+  color:#d9b8f0!important;font-size:25px!important;
+}
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore) .game-package-grid{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  align-items:stretch!important;gap:15px!important;width:100%!important;
+}
+#appShell>main>section:is(#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-service-product-grid{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  align-items:stretch!important;gap:15px!important;width:100%!important;
+}
+#appShell>main>section:is(#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-service-product,
+#appShell>main>section:is(#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-service-product-polished{
+  height:100%!important;min-width:0!important;box-sizing:border-box!important;
+}
+#appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore) .game-package-grid>.baran-package-button{
+  min-width:0!important;height:100%!important;box-sizing:border-box!important;
+}
+@media(max-width:900px){
+  #appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore) .game-package-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;
+  }
+}
+@media(max-width:620px){
+  #appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore) .game-package-grid,
+  #appShell>main>section:is(#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-service-product-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;
+  }
+}
+@media(max-width:380px){
+  #appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore) .game-package-grid,
+  #appShell>main>section:is(#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) .baran-service-product-grid{
+    grid-template-columns:minmax(0,1fr)!important;gap:10px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) *{scroll-behavior:auto!important}
 }
 </style>

@@ -1,0 +1,67 @@
+/* BARAN GAME — automatic top-up showcase, mobile-first and lightweight */
+:root{--auto-violet:#b98be8;--auto-violet-2:#8050ad;--auto-ink:#0c0912;--auto-panel:#191321;--auto-line:#49365b}
+#games,#automaticGames,#services{width:100%;max-width:100%;min-width:0}
+#games .baran-auto-hero,#automaticGames .baran-auto-hero,#services .baran-auto-hero{position:relative;isolation:isolate;overflow:hidden;min-height:168px;padding:22px 19px 20px;border:1px solid #765496;border-radius:22px;background:radial-gradient(ellipse at 86% 4%,#b47be74a 0,transparent 44%),linear-gradient(128deg,#38234d 0%,#21172e 48%,#120e19 100%);box-shadow:0 13px 32px #0005,inset 0 1px #ffffff18}
+.baran-auto-hero:before{content:"";position:absolute;z-index:-1;width:190px;height:190px;right:-70px;top:-105px;border-radius:50%;border:1px solid #d6b5ff38;box-shadow:0 0 0 18px #c69af00a,0 0 0 38px #c69af008;animation:baranAutoDrift 12s ease-in-out infinite alternate}
+.baran-auto-hero:after{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(112deg,transparent 20%,#ffffff08 48%,transparent 68%);transform:translateX(-110%);animation:baranAutoSheen 9s ease-in-out infinite}
+.baran-auto-eyebrow{display:block;margin-bottom:9px;color:#d7b9f7;font-size:9px;font-weight:900;letter-spacing:1.8px}
+#games .baran-auto-hero h2,#automaticGames .baran-auto-hero h2,#services .baran-auto-hero h2{max-width:82%;margin:0 0 7px;color:#fff;font-size:clamp(21px,5.5vw,29px);font-weight:900;line-height:1.35}
+#games .baran-auto-hero p,#automaticGames .baran-auto-hero p,#services .baran-auto-hero p{max-width:82%;margin:0;color:#d4c5e3;font-size:12px;line-height:1.9}
+.baran-auto-hero-orbit{position:absolute;right:24px;bottom:21px;width:58px;height:58px;border:1px solid #d7b7fa7a;border-radius:19px;transform:rotate(28deg);box-shadow:0 0 28px #b47be72b,inset 0 0 20px #b47be71a}
+.baran-auto-hero-orbit:before,.baran-auto-hero-orbit:after{content:"";position:absolute;border:1px solid #d7b7fa55;border-radius:50%}
+.baran-auto-hero-orbit:before{inset:10px}.baran-auto-hero-orbit:after{inset:20px;background:#c99bf21a}
+.baran-auto-search{display:flex;align-items:center;gap:10px;width:100%;min-height:49px;margin:13px 0 17px;padding:0 13px;border:1px solid #57416c;border-radius:15px;background:linear-gradient(110deg,#21192b,#17121e);box-shadow:0 7px 18px #0003;color:#d8c2ef}
+.baran-auto-search>span{font-size:25px;line-height:1}.baran-auto-search input{flex:1;min-width:0;height:45px;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:#fff!important;font-size:13px!important}.baran-auto-search input::placeholder{color:#a99ab7}.baran-auto-search kbd{padding:4px 8px;border:1px solid #554064;border-radius:8px;color:#cbb0e5;font-size:10px;background:#30223d}
+.baran-auto-category-grid,.baran-auto-games-grid,#services .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+.baran-auto-category-grid .item,.baran-auto-games-grid .item,#services .grid .item{position:relative;display:flex;flex-direction:column;align-items:stretch;min-width:0;overflow:hidden;padding:0!important;border:1px solid #44334f!important;border-radius:18px!important;background:linear-gradient(155deg,#21192b,#15111b 76%)!important;color:#f7efff!important;box-shadow:0 8px 20px #0003,inset 0 1px #ffffff0b;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.baran-auto-category-grid .item:active,.baran-auto-games-grid .item:active,#services .grid .item:active{transform:scale(.975);border-color:#a77acb!important}
+.baran-auto-category-grid .item .baran-auto-category-art{display:grid;place-items:center;width:100%;min-height:116px;margin:0!important;border-radius:0!important;background:radial-gradient(ellipse at 50% 0,#9e70c54a,transparent 70%),linear-gradient(145deg,#39264b,#1a1422);font-size:43px}
+.baran-auto-games-grid .item>img{display:block;width:100%;height:118px;object-fit:cover;object-position:center 35%;background:#21172c}
+.baran-auto-games-grid .item .baran-auto-game-art{display:grid;place-items:center;width:100%;height:118px;margin:0!important;background:radial-gradient(circle at 50% 40%,#8156a8,#21152e 72%)}
+.baran-auto-category-grid .item .item-content,.baran-auto-games-grid .item .item-content,#services .grid .item .item-content{display:flex;flex:1;flex-direction:column;gap:6px;min-width:0;padding:13px!important;text-align:right}
+.baran-auto-category-grid .item .item-content strong,.baran-auto-games-grid .item .item-content strong,#services .grid .item .item-content strong{color:#fff;font-size:14px;font-weight:900;line-height:1.5}
+.baran-auto-category-grid .item .item-content>span:not(.small),.baran-auto-games-grid .item .item-content>span:not(.small),#services .grid .item .item-content>span:not(.small){color:#bcaec9;font-size:10px;line-height:1.7}
+.baran-auto-category-grid .item .item-content .small,.baran-auto-games-grid .item .item-content .small,#services .grid .item .item-content .small{margin-top:auto;padding-top:5px;color:#d6b4f5;font-size:10px;font-weight:800}
+#services .grid .item{min-height:125px}
+#games .baran-auto-category-grid .item[hidden],#automaticGames .baran-auto-games-grid .item[hidden],#services .grid .item[hidden]{display:none!important}
+@keyframes baranAutoDrift{from{transform:translate3d(0,0,0) rotate(0)}to{transform:translate3d(-10px,9px,0) rotate(12deg)}}
+@keyframes baranAutoSheen{0%,65%{transform:translateX(-110%)}85%,100%{transform:translateX(110%)}}
+@media(min-width:620px){.baran-auto-category-grid,.baran-auto-games-grid,#services .grid{grid-template-columns:repeat(3,minmax(0,1fr))}.baran-auto-hero{min-height:190px!important;padding:27px!important}.baran-auto-category-grid .item .baran-auto-category-art,.baran-auto-games-grid .item>img{height:145px}}
+@media(max-width:360px){.baran-auto-category-grid,.baran-auto-games-grid,#services .grid{gap:8px}.baran-auto-category-grid .item .item-content,.baran-auto-games-grid .item .item-content,#services .grid .item .item-content{padding:10px!important}.baran-auto-category-grid .item .baran-auto-category-art,.baran-auto-games-grid .item>img{height:98px;min-height:98px}}
+@media(prefers-reduced-motion:reduce){.baran-auto-hero:before,.baran-auto-hero:after{animation:none!important}.baran-auto-category-grid .item,.baran-auto-games-grid .item,#services .grid .item{transition:none!important}}
+
+/* Real catalog components: game package cards and service product cards */
+.baran-auto-search input,.baran-live-catalog-search input{font-family:inherit}
+.baran-live-catalog-search{display:flex;align-items:center;gap:10px;width:100%;min-height:47px;margin:12px 0 15px;padding:0 12px;border:1px solid #57416c;border-radius:14px;background:linear-gradient(110deg,#21192b,#17121e);color:#d8c2ef}
+.baran-live-catalog-search>span{font-size:24px;line-height:1}
+.baran-live-catalog-search input{flex:1;min-width:0;height:43px;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:#fff!important;font-size:13px!important}
+.baran-live-catalog-search input::placeholder{color:#a99ab7}
+.baran-live-catalog-search small{padding:4px 8px;border:1px solid #554064;border-radius:8px;background:#30223d;color:#cbb0e5;font-size:10px}
+.baran-live-catalog-search input:focus-visible{outline:2px solid #c99bf2!important;outline-offset:2px}
+.baran-service-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%;margin:10px 0 17px}
+.baran-service-product-polished{display:flex;flex-direction:column;align-items:stretch;gap:10px;min-width:0;min-height:228px;padding:13px!important;border:1px solid #57416c!important;border-radius:18px!important;background:radial-gradient(ellipse at 90% 0,#a879c922,transparent 48%),linear-gradient(155deg,#241a30,#15111b 78%)!important;color:#f6effb!important;box-shadow:0 9px 23px #0004,inset 0 1px #ffffff0b}
+.baran-service-product-polished .baran-service-product-head{display:flex;align-items:center;gap:10px;min-width:0}
+.baran-service-product-polished .baran-service-product-head strong{min-width:0;color:#fff;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+.baran-service-product-polished .baran-service-brand-visual,.baran-service-product-polished .baran-service-product-icon{display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;overflow:hidden;border:1px solid #c69ce955;border-radius:15px;background:radial-gradient(circle at 35% 20%,#ffffff22,transparent 65%),var(--brand-bg,#3a2a4b);box-shadow:0 5px 14px #0004}
+.baran-service-product-polished .baran-service-brand-visual img{display:block;width:30px;height:30px;object-fit:contain}
+.baran-service-product-polished .baran-service-brand-visual.is-fallback{color:#fff;font-size:16px;font-weight:1000}
+.baran-service-product-polished>p{flex:1;margin:0;color:#bfb0ca;font-size:11px;line-height:1.8}
+.baran-service-product-polished .baran-service-product-price{padding-top:8px;border-top:1px solid #ffffff18;color:#e6d1f8;font-size:13px;font-weight:900}
+.baran-service-product-polished .baran-service-product-kicker{align-self:flex-start;max-width:100%;overflow-wrap:anywhere}
+.baran-service-product-polished .baran-service-select-button{margin-top:auto}
+.baran-service-product[hidden],.baran-game-package-card[hidden],.baran-auto-category-grid .item[hidden],.baran-auto-games-grid .item[hidden]{display:none!important}
+.game-package-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;width:100%}
+.baran-game-package-card{min-width:0}
+.baran-package-button{width:100%;min-width:0;min-height:205px;padding:13px!important;border:1px solid #57416c!important;border-radius:17px!important;background:radial-gradient(ellipse at 85% 0,#a879c933,transparent 50%),linear-gradient(155deg,#241a30,#141019 80%)!important;color:#fff!important;box-shadow:0 8px 21px #0004}
+.baran-package-button .baran-package-art{width:52px;height:52px;border-radius:15px;background:linear-gradient(145deg,#9b70bc55,#38254b);box-shadow:0 6px 15px #0003}
+.baran-package-button .baran-package-quantity{max-width:100%;white-space:normal;line-height:1.5}
+.baran-package-button strong{font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+.baran-package-button small{font-size:10px;line-height:1.65;color:#bfb0ca}
+.baran-package-button .game-package-price{color:#e7d4f8}
+.baran-service-group-heading{margin:18px 0 8px;color:#e8d7f5;font-size:14px;font-weight:900}
+.baran-auto-category-grid .item,.baran-auto-games-grid .item{cursor:pointer;text-align:right}
+.baran-auto-games-grid .item>img{object-fit:cover;object-position:center}
+@media(min-width:620px){.baran-service-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.game-package-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:980px){.baran-service-product-grid,.game-package-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:380px){.baran-service-product-grid,.game-package-grid{gap:8px}.baran-service-product-polished{padding:10px!important;min-height:215px}.baran-service-product-polished .baran-service-brand-visual,.baran-service-product-polished .baran-service-product-icon{flex-basis:44px;width:44px;height:44px}.baran-package-button{padding:10px!important;min-height:192px}}
+@media(prefers-reduced-motion:reduce){.baran-service-product-polished,.baran-package-button{transition:none!important}}
