@@ -202,7 +202,7 @@ Deno.serve(async (req: Request) => {
       }, 200, origin);
     }
 
-    if (action === "admin_list" || action === "admin_reply" || action === "admin_update") {
+    if (action === "admin_list" || action === "admin_thread" || action === "admin_reply" || action === "admin_update") {
       const user = await adminUser();
       if (!user) return json({ error: "غير مصرح." }, 401, origin);
       if (action === "admin_list") {
@@ -213,6 +213,21 @@ Deno.serve(async (req: Request) => {
         return json({ success: true, tickets: data || [] }, 200, origin);
       }
       const ticketId = clean(body.ticket_id, 64);
+      if (action === "admin_thread") {
+        if (!/^[0-9a-f-]{36}$/i.test(ticketId)) return json({ error: "معرّف التذكرة غير صحيح." }, 400, origin);
+        const { data: threadTicket, error: threadError } = await admin.from("baran_guest_support_tickets")
+          .select("id,ticket_code,email,subject,initial_message,status,priority,assistant_reason,assistant_draft,created_at,updated_at,last_customer_message_at,last_admin_message_at")
+          .eq("id", ticketId).maybeSingle();
+        if (threadError || !threadTicket) return json({ error: "التذكرة غير موجودة." }, 404, origin);
+        const { data: threadMessages, error: threadMessagesError } = await admin.from("baran_guest_support_messages")
+          .select("id,sender_role,message,created_at,read_at")
+          .eq("ticket_id", ticketId).order("created_at", { ascending: true }).limit(200);
+        if (threadMessagesError) throw new Error("تعذر تحميل محادثة التذكرة.");
+        await admin.from("baran_guest_support_tickets").update({ admin_read_at: now.toISOString() }).eq("id", ticketId);
+        await admin.from("baran_guest_support_messages").update({ read_at: now.toISOString() })
+          .eq("ticket_id", ticketId).eq("sender_role", "guest").is("read_at", null);
+        return json({ success: true, ticket: threadTicket, messages: threadMessages || [] }, 200, origin);
+      }
       if (!/^[0-9a-f-]{36}$/i.test(ticketId)) return json({ error: "معرّف التذكرة غير صحيح." }, 400, origin);
       const { data: ticket, error: ticketError } = await admin.from("baran_guest_support_tickets")
         .select("id,status").eq("id", ticketId).maybeSingle();
