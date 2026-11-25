@@ -1321,6 +1321,7 @@ async function opsTestHomsCard(action){
     const {data,error}=await sb.functions.invoke('baran-homscard-connector',{body:{action}});
     if(error)throw new Error(error.message||'تعذر الاتصال بالدالة.');
     if(!data?.success)throw new Error(data?.error||'لم ينجح فحص المورد.');
+    if(output)output.replaceChildren();
     if(action==='profile'){
       const p=data.data||{};
       if(output)output.append(opsNode('strong','','اتصال حمص كارد ناجح'),opsNode('div','ops-muted','الرصيد: '+opsText(p.balance)+' '+opsText(p.currency)),opsNode('div','ops-muted','خصم الحساب: '+opsText(p.discount)+'%'),opsNode('div','ops-muted','الحساب: '+opsText(p.name)));
