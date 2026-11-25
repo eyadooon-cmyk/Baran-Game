@@ -154,3 +154,24 @@
 
 
 .baran-game-status.is-supplier-ready{border-color:#735a91;background:#21172b;color:#e0c8f0}
+
+
+/* Package cards — compact storefront layout for phone screens */
+.game-package-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:10px}
+.baran-game-package-card{min-width:0;padding:7px;border-radius:15px}
+.baran-game-package-card .game-package-option{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:7px;width:100%;min-width:0;height:100%;padding:0 0 8px;text-align:center;overflow:hidden}
+.baran-game-package-card .baran-package-art{position:relative;display:block;width:100%;height:auto;min-height:0;flex:0 0 auto;aspect-ratio:4/3;border-radius:10px;background:radial-gradient(circle at 50% 30%,#554064,#17111f 75%);overflow:hidden}
+.baran-game-package-card .baran-package-art img{display:block;width:100%;height:100%;max-height:none;object-fit:cover;object-position:center 35%;padding:0;box-sizing:border-box}
+.baran-game-package-card .baran-package-art:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#09070dcc,transparent 72%);pointer-events:none}
+.baran-game-package-card .baran-package-art-fallback{display:grid;place-items:center;min-height:100%;color:#f8eaff;font-size:38px;font-weight:1000;background:radial-gradient(circle at 50% 35%,#76518e,#24172f 72%)}
+.baran-package-art-mark{position:relative;z-index:1;display:grid;place-items:center;width:100%;height:100%;min-height:88px;color:#f8eaff;font-size:38px;font-weight:1000}
+.baran-game-package-card .baran-package-quantity{position:absolute;z-index:3;top:auto;right:8px;bottom:8px;left:8px;width:max-content;max-width:calc(100% - 16px);margin:auto;padding:5px 9px;border:1px solid #ffffff55;border-radius:999px;background:#100b18e8;color:#fff;font-size:10px;font-weight:900;line-height:1.35;white-space:normal;text-align:center;backdrop-filter:blur(8px)}
+.baran-game-package-card .game-package-option>strong{display:-webkit-box;min-width:0;padding:0 5px;color:#f8efff;font-size:12px;line-height:1.5;text-align:center;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.baran-game-package-card .game-package-option>small{display:-webkit-box;min-width:0;padding:0 5px;color:#c5b4d1;font-size:10px;line-height:1.5;text-align:center;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.baran-game-package-card .game-package-price{width:calc(100% - 12px);box-sizing:border-box;margin:auto 6px 0;padding:7px 5px;border:1px solid #694d80;border-radius:9px;background:linear-gradient(120deg,#21152c,#120d19);color:#f0d7ff;font-size:12px;line-height:1.5;text-align:center;overflow-wrap:anywhere}
+.baran-game-package-card .game-package-pending{padding:0 5px;text-align:center;line-height:1.5}
+.baran-game-package-card .baran-package-art-jawaker{display:grid;place-items:center;aspect-ratio:4/3;height:auto;min-height:0;flex:0 0 auto;border-radius:10px;font-size:38px}
+.baran-game-package-card .baran-package-art-jawaker:after{content:none}
+@media(min-width:650px){.game-package-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}}
+@media(min-width:980px){.game-package-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}}
+@media(max-width:370px){.game-package-grid{gap:7px}.baran-game-package-card{padding:5px}.baran-game-package-card .game-package-option>strong{font-size:11px}.baran-game-package-card .game-package-price{font-size:11px}}
