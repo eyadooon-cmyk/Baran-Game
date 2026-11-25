@@ -3509,16 +3509,17 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       </div>
 
       <div class="admin-subpanel hidden" data-admin-panel="guest-support">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز دعم الزوار 🌐</h2></div>
-        <p class="small">تذاكر الزوار الذين لا يستطيعون تسجيل الدخول. التحليل يقترح مسودة فقط؛ الإرسال والإغلاق يحتاجان إجراءً يدوياً من الإدارة.</p>
-        <div id="baranGuestAdminMount"></div>
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز الدعم الموحد</h2></div>
+        <p class="small">تم جمع تذاكر الزوار والعملاء المسجلين داخل مركز الدعم الرئيسي لتجنب تكرار صناديق الرسائل.</p>
+        <button type="button" class="full" onclick="showAdminPanel('support').then(()=>switchSupportTab('guests'))">فتح تذاكر الزوار في مركز الدعم الموحد</button>
       </div>
       <div class="admin-subpanel hidden" data-admin-panel="support">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>الدعم والردود الآلية</h2></div>
         <div class="support-workspace">
           <div class="support-tabs" role="tablist" aria-label="أقسام الدعم">
             <button type="button" class="support-tab active" id="supportTabAuto" role="tab" aria-selected="true" onclick="switchSupportTab('auto')">🤖 الردود الآلية</button>
-            <button type="button" class="support-tab" id="supportTabTickets" role="tab" aria-selected="false" onclick="switchSupportTab('tickets')">💬 رسائل الزبائن والتذاكر</button>
+            <button type="button" class="support-tab" id="supportTabTickets" role="tab" aria-selected="false" onclick="switchSupportTab('tickets')">💬 تذاكر العملاء</button>
+            <button type="button" class="support-tab" id="supportTabGuests" role="tab" aria-selected="false" onclick="switchSupportTab('guests')">🌐 تذاكر الزوار</button>
           </div>
           <div id="supportAutoView" class="support-view">
             <section id="baranAutoSupportPanel" class="deposit-card support-section" aria-label="متابعة الردود الآلية">
@@ -3548,6 +3549,12 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
                 <form class="support-conversation-compose" onsubmit="sendSupportConversationMessage(event,'admin')"><textarea id="adminSupportConversationInput" rows="2" maxlength="2000" placeholder="اكتب ردك للزبون..."></textarea><button id="adminSupportConversationSend" type="submit">إرسال الرد</button></form>
                 <p class="support-conversation-safety">الرد يُسجّل ضمن سجل التذكرة ويصل للزبون بإشعار. لا تتضمن هذه الواجهة أي إجراء مالي.</p>
               </section>
+            </section>
+          </div>
+          <div id="supportGuestView" class="support-view hidden">
+            <section class="deposit-card support-section" aria-label="تذاكر الزوار">
+              <div class="support-section-head"><div><h2>🌐 تذاكر الزوار</h2><p class="small">تذاكر من لم يسجلوا الدخول، مع سجل محادثة مستقل وحماية برقم متابعة سري.</p></div><button class="secondary support-refresh" type="button" onclick="loadBaranGuestSupportAdmin()">🔄 تحديث</button></div>
+              <div id="baranGuestAdminMount"></div>
             </section>
           </div>
         </div>
@@ -6064,18 +6071,13 @@ function renderBaranFinancialSupportQueue(rows,feedbackRows){
 }
 
 function switchSupportTab(tab){
-  const auto=tab!=="tickets";
-  const autoView=document.getElementById("supportAutoView");
-  const ticketsView=document.getElementById("supportTicketsView");
-  const autoButton=document.getElementById("supportTabAuto");
-  const ticketsButton=document.getElementById("supportTabTickets");
-  if(!autoView||!ticketsView||!autoButton||!ticketsButton)return;
-  autoView.classList.toggle("hidden",!auto);
-  ticketsView.classList.toggle("hidden",auto);
-  autoButton.classList.toggle("active",auto);
-  ticketsButton.classList.toggle("active",!auto);
-  autoButton.setAttribute("aria-selected",String(auto));
-  ticketsButton.setAttribute("aria-selected",String(!auto));
+  const selected=["auto","tickets","guests"].includes(tab)?tab:"auto";
+  const views={auto:document.getElementById("supportAutoView"),tickets:document.getElementById("supportTicketsView"),guests:document.getElementById("supportGuestView")};
+  const buttons={auto:document.getElementById("supportTabAuto"),tickets:document.getElementById("supportTabTickets"),guests:document.getElementById("supportTabGuests")};
+  if(Object.values(views).some(node=>!node)||Object.values(buttons).some(node=>!node))return;
+  Object.entries(views).forEach(([key,node])=>node.classList.toggle("hidden",key!==selected));
+  Object.entries(buttons).forEach(([key,node])=>{node.classList.toggle("active",key===selected);node.setAttribute("aria-selected",String(key===selected));});
+  if(selected==="guests"&&typeof window.loadBaranGuestSupportAdmin==="function")window.loadBaranGuestSupportAdmin();
 }
 
 let baranAdminFeedbackRows=[];
