@@ -4272,7 +4272,7 @@ async function loadBaranStoreSearchProducts(){
   if(baranStoreSearchLoad)return baranStoreSearchLoad;
   baranStoreSearchLoad=(async()=>{
     const {data,error}=await sb.from("products")
-      .select("id,product_code,name,description,category,price_usd,price_syp,is_active,sort_order")
+      .select("id,product_code,name,description,category,catalog_group,price_usd,price_syp,is_active,sort_order")
       .eq("is_active",true).order("sort_order",{ascending:true});
     if(error)throw error;
     baranStoreSearchProducts=Array.isArray(data)?data:[];
@@ -4311,7 +4311,7 @@ async function searchStore(value){
       const extra=[...(aliases[category]||[])];
       if(code.startsWith("pubg"))extra.push("ببجي","شدات","uc");
       if(code.startsWith("freefire"))extra.push("فري فاير","جواهر");
-      const haystack=normalizeStoreSearch([product.name,product.product_code,product.description,category,...extra].filter(Boolean).join(" "));
+      const haystack=normalizeStoreSearch([product.name,product.product_code,product.description,product.catalog_group,category,...extra].filter(Boolean).join(" "));
       return {product,score:terms.filter(term=>haystack.includes(term)).length};
     }).filter(item=>item.score===terms.length);
     // أخفِ بطاقات التصنيف العامة عندما تكون الباقات التفصيلية موجودة،
@@ -7844,7 +7844,7 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
  container.append(heading,loading);
  try{
   const {data,error}=await sb.from("products")
-   .select("id,product_code,name,description,price_usd,price_syp,sort_order")
+   .select("id,product_code,name,description,catalog_group,price_usd,price_syp,sort_order")
    .eq("category",category).eq("is_active",true).order("sort_order",{ascending:true});
   if(error)throw error;
   container.replaceChildren(heading);
@@ -7862,9 +7862,20 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    container.append(empty);return;
   }
   const intro=document.createElement("p");intro.className="baran-catalog-intro";
-  intro.textContent="المنتجات المعروضة من كتالوج Baran Game النشط. راجع السعر والتفاصيل قبل طلب الخدمة.";
-  const grid=document.createElement("div");grid.className="baran-service-product-grid";
+  intro.textContent="تصفح المنتجات حسب الفئة أو المنطقة. الأسعار المعروضة بالدولار والليرة السورية الجديدة.";
+  container.append(intro);
+  const groupedProducts=new Map();
   products.forEach(product=>{
+   const groupName=String(product.catalog_group||"").trim()||"منتجات أخرى";
+   if(!groupedProducts.has(groupName))groupedProducts.set(groupName,[]);
+   groupedProducts.get(groupName).push(product);
+  });
+  for(const [groupName,groupItems] of groupedProducts){
+   if(groupedProducts.size>1||groupName!=="منتجات أخرى"){
+    const groupHeading=document.createElement("h3");groupHeading.className="baran-service-group-heading";groupHeading.textContent=groupName;container.append(groupHeading);
+   }
+   const grid=document.createElement("div");grid.className="baran-service-product-grid";
+   groupItems.forEach(product=>{
    const card=document.createElement("article");card.className="baran-service-product baran-service-product-polished";
    card.dataset.productCode=product.product_code||"";
    const availability=document.createElement("span");availability.className="baran-service-product-kicker";
@@ -7882,8 +7893,9 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    baranAddProductDetails(card,product,title);
    const choose=document.createElement("button");choose.type="button";choose.className="baran-service-select-button";choose.textContent="اختيار للمراجعة";choose.dataset.serviceProductId=String(product.id||"");choose.setAttribute("aria-pressed","false");choose.disabled=price.textContent==="السعر قيد التجهيز"||!product.id;choose.addEventListener("click",()=>baranShowServiceSelection(product,category,containerId));card.append(choose);
    grid.append(card);
-  });
-  container.append(intro,grid);
+   });
+   container.append(grid);
+  }
   const note=document.createElement("p");note.className="small";note.textContent="عرض المنتجات لا ينشئ طلباً ولا يخصم رصيداً. ستُتاح خطوات الشراء بعد تجهيز مسار الطلب والتحقق من توفر المورد.";
   container.append(note);
  }catch(error){
