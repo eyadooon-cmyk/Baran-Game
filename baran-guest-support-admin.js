@@ -16,6 +16,9 @@ function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className
 function buildGuestAnalysis(ticket){
  const raw=String(ticket.initial_message||"").toLowerCase();
  const normalized=raw.replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي");
+ if(/رصيد|محفظه|محفظة|شحن|حواله|حوالة|تحويل|دفع|دفعت|خصم|سحب|استرداد|استرجاع|فاتوره|فاتورة|شام ?كاش|sham ?cash|wallet|balance|payment|paid|refund|chargeback|top.?up|deposit|withdraw|transaction|invoice/.test(normalized)){
+  return {reason:"⚠️ تذكرة مالية حساسة: يجب تحويلها لمراجعة بشرية. يمنع على المساعد تأكيد الدفع أو تعديل الرصيد أو تنفيذ استرداد أو تغيير الطلب.",draft:"أهلاً فيك، وصلنا استفسارك المتعلق بالعملية المالية، وحوّلناه لمراجعة فريق الدعم المختص. لا ترسل كلمة المرور أو رمز التحقق أو بيانات البطاقة. سنراجع التفاصيل المتاحة في النظام ونتابع معك عبر التذكرة."};
+ }
  if((/(نسيت|ناسي|ضاعت)/.test(normalized)&&/(كلمه المرور|كلمة السر|باسورد|password)/.test(normalized))||/(تسجيل الدخول|ما عم اقدر فوت|ما بقدر سجل|login|password reset)/.test(normalized)){
   return {reason:"المشكلة تبدو مرتبطة بتسجيل الدخول أو استعادة كلمة المرور. يجب توجيه الزائر لمسار الاستعادة وعدم طلب كلمة المرور أو رمز التحقق.",draft:"أهلاً فيك ❤️ إذا نسيت كلمة المرور، اضغط «استعادة كلمة المرور» من شاشة الدخول، واكتب البريد المرتبط بحسابك، ثم افحص صندوق الوارد والرسائل غير المرغوب فيها. لا ترسل كلمة مرورك أو رمز التحقق لأي شخص. إذا لم يصلك الرابط، أخبرنا بالرسالة التي تظهر لك."};
  }
