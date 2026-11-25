@@ -38,11 +38,14 @@ jobs:
           node --check customer-center.js
           node --check baro.js
           node --check customer-experience-suite.js
+      - name: Run guest support safety tests
+        run: node --test tests/guest-support-safety.test.mjs
       - name: Check support Edge Function syntax
         run: |
           deno check supabase/functions/baran-baro-manual/index.ts
           deno check supabase/functions/baran-support-center/index.ts
           deno check supabase/functions/baran-push-dispatch/index.ts
+          deno check supabase/functions/baran-admin-offline/index.ts
           deno check supabase/functions/baran-admin/index.ts
           deno check supabase/functions/baran-customer-center/index.ts
           deno check supabase/functions/baran-order-gateway/index.ts
