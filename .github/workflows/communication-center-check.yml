@@ -5,13 +5,15 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'baran-guest-support*.js'
+      - 'tests/guest-support-safety.test.mjs'
       - 'communication-center.js'
       - 'community.js'
       - 'supabase/functions/**'
       - 'supabase/migrations/**'
       - '.github/workflows/communication-center-check.yml'
   push:
-    branches: [feature/communication-center-premium]
+    branches: [feature/communication-center-premium, feature/pro-support-ticket-center-20261125]
     paths:
       - 'index.html'
       - 'communication-center.js'
@@ -38,12 +40,19 @@ jobs:
           node --check customer-center.js
           node --check baro.js
           node --check customer-experience-suite.js
+          node --check baran-guest-support.js
+          node --check baran-guest-support-admin.js
+      - name: Run guest support safety tests
+        run: node --test tests/guest-support-safety.test.mjs
       - name: Check support Edge Function syntax
         run: |
           deno check supabase/functions/baran-baro-manual/index.ts
           deno check supabase/functions/baran-support-center/index.ts
           deno check supabase/functions/baran-push-dispatch/index.ts
+          deno check supabase/functions/baran-admin-offline/index.ts
           deno check supabase/functions/baran-admin/index.ts
+          deno check supabase/functions/baran-guest-support/index.ts
+          deno check supabase/functions/baran-auto-support-reply/index.ts
           deno check supabase/functions/baran-customer-center/index.ts
           deno check supabase/functions/baran-order-gateway/index.ts
           deno check supabase/functions/baran-shamcash-verify/index.ts
@@ -70,6 +79,8 @@ jobs:
             ['unified center reuses existing live components', js.includes('move(auto,assistantPane.pane)') && js.includes('move(assistant,assistantPane.pane)') && js.includes('adminPanel.querySelector(\".announcement-panel\")')],
             ['broadcast is grouped inside a collapsed communication-center section', js.includes('bcc-announcements') && js.includes('notificationContent.appendChild(announcementDetails)')],
             ['support inbox has a helpful empty state', html.includes('support-empty-state') && html.includes('صندوق الدعم فارغ حالياً')],
+            ['guest and registered-customer tickets share one support workspace', html.includes('supportTabGuests') && html.includes('supportGuestView') && html.includes('id="baranGuestAdminMount"') && html.includes("switchSupportTab('guests')")],
+            ['guest inbox loads only when its unified support tab is selected', html.includes('selected==="guests"') && html.includes('loadBaranGuestSupportAdmin')],
             ['support priority filter has no visible escaped newline', !html.includes('</select>\\n                  <label for=\"adminFeedbackPriorityFilter\">')],
             ['embedded broadcast is excluded from duplicate section navigation', html.includes('announcement-panel')],
             ['communication report routes through read-only admin analysis', js.includes('أنشئ تقريراً إدارياً عن التواصل') && js.includes('ولا تنفذ أي إجراء أو تغيير')],

@@ -40,6 +40,43 @@ function safeEqual(a: string, b: string) {
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
+
+function safeGuestAutoReply(subject: string, message: string): { reply: string; reason: string } | null {
+  const raw = (subject + " " + message).toLowerCase();
+  const text = raw.replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+  if (/رصيد|محفظه|محفظة|شحن|تسليم|تفعيل ?طلب|طلب ?شراء|حواله|حوالة|تحويل|دفع|دفعت|خصم|سحب|استرداد|استرجاع|فاتوره|فاتورة|شام ?كاش|sham ?cash|wallet|balance|payment|paid|refund|chargeback|top.?up|deposit|withdraw|transaction|invoice|order ?delivery|fulfillment|احتيال|نصب|سرقه|اختراق|تهديد|ابتزاز|محامي|قانوني|شكوي ?رسميه|خصوصيه|بياناتي|حذف ?(الحساب|البيانات)|fraud|scam|hacked|stolen|legal|privacy|delete ?(account|data)|(?:كلمه ?المرور|كلمه ?السر|password|passcode|رمز ?التحقق|كود ?التحقق|verification ?code|otp|pin|api[_ -]?key|access[_ -]?token).{0,45}(?:[:=]|ارسل|ابعث|اعطني|اعطيني|مشاركه|send|share|give)|(?:send|share|give).{0,30}(?:password|otp|verification ?code|pin)|(?:password|passcode|otp|pin) ?[:=] ?\S+|\b(?:\d[ -]*?){13,19}\b|رقم ?البطاقه|بطاقه ?بنكيه|credit ?card|card ?number/.test(text)) return null;
+  if ((/(نسيت|ناسي|ضاعت)/.test(text) && /(كلمه المرور|كلمة السر|باسورد|password)/.test(text)) || /تسجيل الدخول|ما عم اقدر فوت|ما بقدر سجل|login|password reset/.test(text)) {
+    return {
+      reason: "رد آلي آمن: إرشادات استعادة كلمة المرور دون طلب أي سر أو رمز.",
+      reply: "أهلاً فيك ❤️ إذا نسيت كلمة المرور، اضغط «استعادة كلمة المرور» من شاشة الدخول واكتب البريد المرتبط بحسابك، ثم افحص صندوق الوارد والرسائل غير المرغوب فيها. لا ترسل كلمة مرورك أو رمز التحقق لأي شخص. إذا لم يصلك الرابط، اكتب لنا رسالة الخطأ الظاهرة."
+    };
+  }
+  if (/ما بيفتح|ما عم يفتح|الموقع|الصفحه|التطبيق|loading|not loading/.test(text)) {
+    return {
+      reason: "رد آلي آمن: خطوات أولية لمشكلة فتح الموقع أو تحميله.",
+      reply: "أهلاً فيك 🌟 تأكد من اتصال الإنترنت، ثم حدّث الصفحة وأعد فتح Chrome. إذا استمرت المشكلة، جرّب نافذة خاصة وأرسل نوع جهازك ورسالة الخطأ الظاهرة، من دون مشاركة أي كلمة مرور."
+    };
+  }
+  if (/اشعار|اشعارات|تنبيه|notifications/.test(text)) {
+    return {
+      reason: "رد آلي آمن: إرشادات إذن الإشعارات على الهاتف والمتصفح.",
+      reply: "أهلاً فيك 🌟 تأكد من السماح بإشعارات BARAN GAME من إعدادات Chrome والهاتف، ثم افتح المتجر مجدداً. إذا استمرت المشكلة، أرسل نوع جهازك وإصدار Android."
+    };
+  }
+  return null;
+}
+function guestHumanReview(subject: string, message: string): { reason: string; priority: "normal" | "high" | "urgent" } {
+  const raw = (subject + " " + message).toLowerCase();
+  const text = raw.replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+  if (/احتيال|نصب|سرقه|اختراق|تهديد|ابتزاز|محامي|قانوني|شكوي ?رسميه|خصوصيه|بياناتي|حذف ?(الحساب|البيانات)|fraud|scam|hacked|stolen|legal|privacy|delete ?(account|data)|رمز ?التحقق|كود ?التحقق|otp|pin|api[_ -]?key|access[_ -]?token|credit ?card|card ?number|بطاقه ?بنكيه|كلمه ?المرور|كلمه ?السر|password|passcode|verification ?code/.test(text)) {
+    return { reason: "مراجعة أمنية/خصوصية عاجلة: لا تطلب بيانات اعتماد أو رموز تحقق أو بيانات بطاقة.", priority: "urgent" };
+  }
+  if (/رصيد|محفظه|محفظة|شحن|تسليم|تفعيل ?طلب|طلب ?شراء|حواله|حوالة|تحويل|دفع|دفعت|خصم|سحب|استرداد|استرجاع|فاتوره|فاتورة|شام ?كاش|sham ?cash|wallet|balance|payment|paid|refund|chargeback|top.?up|deposit|withdraw|transaction|invoice|order ?delivery|fulfillment/.test(text)) {
+    return { reason: "مراجعة مالية/تشغيلية بشرية مطلوبة: تحقق من الدفع أو الرصيد أو الشحن أو التسليم قبل أي رد نهائي.", priority: "high" };
+  }
+  return { reason: "تحتاج التذكرة إلى مراجعة بشرية لأن المساعد لم يصنف المشكلة ضمن الإرشادات الآلية الآمنة.", priority: "normal" };
+}
+
 function clean(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
@@ -83,6 +120,26 @@ Deno.serve(async (req: Request) => {
       });
       if (error) throw new Error("تعذر التحقق من حد الطلبات.");
       return data === true;
+    }
+
+    async function notifyAdmins(ticketId: string, ticketCode: string, title: string, message: string) {
+      const { data: admins, error: adminsError } = await admin.from("admin_users").select("user_id");
+      if (adminsError) {
+        console.error("guest support admin notification recipients failed", adminsError.message);
+        return;
+      }
+      const recipients = (admins || []).filter((row) => typeof row.user_id === "string");
+      if (!recipients.length) return;
+      const { error: notificationError } = await admin.from("baran_notifications").insert(recipients.map((row) => ({
+        recipient_id: row.user_id,
+        audience: "admin",
+        kind: "support_new",
+        title,
+        body: ticketCode + " — " + message,
+        entity_type: "baran_guest_support_tickets",
+        entity_id: ticketId,
+      })));
+      if (notificationError) console.error("guest support admin notification insert failed", notificationError.message);
     }
 
     async function verifyTurnstile(token: string) {
@@ -152,11 +209,43 @@ Deno.serve(async (req: Request) => {
         await admin.from("baran_guest_support_tickets").delete().eq("id", ticket.id);
         throw new Error("تعذر حفظ رسالة التذكرة.");
       }
+      const autoReply = safeGuestAutoReply(subject, message);
+      const manualReview = autoReply ? null : guestHumanReview(subject, message);
+      if (autoReply) {
+        const { error: autoReplyError } = await admin.from("baran_guest_support_messages").insert({
+          ticket_id: ticket.id, sender_role: "assistant", message: autoReply.reply,
+        });
+        if (!autoReplyError) {
+          await admin.from("baran_guest_support_tickets").update({
+            status: "answered", assistant_reason: autoReply.reason, assistant_draft: autoReply.reply, updated_at: now.toISOString(),
+          }).eq("id", ticket.id);
+        } else {
+          console.error("guest support safe auto reply failed", autoReplyError);
+          await admin.from("baran_guest_support_tickets").update({
+            assistant_reason: "تعذر إرسال الرد الآلي؛ تحتاج التذكرة إلى مراجعة بشرية.", priority: "normal", updated_at: now.toISOString(),
+          }).eq("id", ticket.id);
+        }
+      } else if (manualReview) {
+        await admin.from("baran_guest_support_tickets").update({
+          assistant_reason: manualReview.reason, priority: manualReview.priority, updated_at: now.toISOString(),
+        }).eq("id", ticket.id);
+      }
+      await notifyAdmins(
+        ticket.id,
+        ticket.ticket_code,
+        autoReply ? "تذكرة زائر — رد آلي آمن أُرسل" : "تذكرة دعم جديدة من زائر",
+        autoReply ? "أرسل المساعد إرشادات أولية غير مالية؛ راجع التذكرة للمتابعة." : "التذكرة تحتاج إلى مراجعة الفريق، خصوصاً إذا كانت مالية أو غير مصنفة."
+      );
       return json({
         success: true,
         ticket_code: ticket.ticket_code,
         tracking_secret: trackingSecret,
-        message: "تم فتح تذكرة الدعم. احتفظ برقم التذكرة والرمز السري بمكان آمن.",
+        auto_replied: Boolean(autoReply),
+        requires_human_review: !autoReply,
+        auto_reply_message: autoReply?.reply || null,
+        message: autoReply
+          ? "تم فتح التذكرة وإرسال إرشادات أولية آمنة. احتفظ برقم التذكرة والرمز السري."
+          : "تم فتح التذكرة، وستراجعها إدارة الدعم. احتفظ برقم التذكرة والرمز السري.",
       }, 201, origin);
     }
 
@@ -173,6 +262,7 @@ Deno.serve(async (req: Request) => {
         .select("id,ticket_code,subject,status,created_at,updated_at,secret_hash")
         .eq("ticket_code", ticketCode).maybeSingle();
       if (error || !ticket) return json({ error: "التذكرة غير موجودة أو بيانات المتابعة غير صحيحة." }, 404, origin);
+      let resultingStatus = ticket.status;
       const suppliedHash = await sha256(pepper + ":ticket:" + trackingSecret);
       if (!safeEqual(suppliedHash, ticket.secret_hash)) return json({ error: "التذكرة غير موجودة أو بيانات المتابعة غير صحيحة." }, 404, origin);
 
@@ -186,9 +276,39 @@ Deno.serve(async (req: Request) => {
           ticket_id: ticket.id, sender_role: "guest", message,
         });
         if (insertError) throw new Error("تعذر إرسال الرسالة.");
-        await admin.from("baran_guest_support_tickets").update({
-          status: "pending", last_customer_message_at: now.toISOString(), updated_at: now.toISOString(),
-        }).eq("id", ticket.id);
+        const autoReply = safeGuestAutoReply(ticket.subject, message);
+        const manualReview = autoReply ? null : guestHumanReview(ticket.subject, message);
+        if (autoReply) {
+          const { error: autoReplyError } = await admin.from("baran_guest_support_messages").insert({
+            ticket_id: ticket.id, sender_role: "assistant", message: autoReply.reply,
+          });
+          if (autoReplyError) console.error("guest follow-up auto reply failed", autoReplyError);
+          resultingStatus = autoReplyError ? "pending" : "answered";
+          await admin.from("baran_guest_support_tickets").update({
+            status: resultingStatus,
+            assistant_reason: autoReplyError ? "تعذر إرسال الرد الآلي؛ تحتاج التذكرة إلى مراجعة بشرية." : autoReply.reason,
+            assistant_draft: autoReply.reply,
+            admin_read_at: null,
+            last_customer_message_at: now.toISOString(),
+            updated_at: now.toISOString(),
+          }).eq("id", ticket.id);
+        } else {
+          resultingStatus = "pending";
+          await admin.from("baran_guest_support_tickets").update({
+            status: resultingStatus,
+            assistant_reason: manualReview?.reason || "تحتاج التذكرة إلى مراجعة بشرية.",
+            priority: manualReview?.priority || "normal",
+            admin_read_at: null,
+            last_customer_message_at: now.toISOString(),
+            updated_at: now.toISOString(),
+          }).eq("id", ticket.id);
+        }
+        await notifyAdmins(
+          ticket.id,
+          ticket.ticket_code,
+          autoReply ? "رسالة زائر — رد آلي آمن أُرسل" : "رسالة جديدة من زائر",
+          autoReply ? "أرسل المساعد إرشادات أولية غير مالية؛ راجع التذكرة للمتابعة." : "وصل رد جديد يحتاج إلى مراجعة الفريق."
+        );
       }
 
       const { data: messages, error: messagesError } = await admin.from("baran_guest_support_messages")
@@ -197,22 +317,40 @@ Deno.serve(async (req: Request) => {
       if (messagesError) throw new Error("تعذر تحميل المحادثة.");
       return json({
         success: true,
-        ticket: { ticket_code: ticket.ticket_code, subject: ticket.subject, status: action === "guest_reply" ? "pending" : ticket.status, created_at: ticket.created_at },
+        ticket: { ticket_code: ticket.ticket_code, subject: ticket.subject, status: resultingStatus, created_at: ticket.created_at },
         messages: messages || [],
       }, 200, origin);
     }
 
-    if (action === "admin_list" || action === "admin_reply" || action === "admin_update") {
+    if (action === "admin_list" || action === "admin_thread" || action === "admin_reply" || action === "admin_update") {
       const user = await adminUser();
       if (!user) return json({ error: "غير مصرح." }, 401, origin);
       if (action === "admin_list") {
         const { data, error } = await admin.from("baran_guest_support_tickets")
           .select("id,ticket_code,email,subject,initial_message,status,priority,assistant_reason,assistant_draft,admin_read_at,created_at,updated_at,last_customer_message_at,last_admin_message_at")
-          .order("created_at", { ascending: false }).limit(100);
+          .order("updated_at", { ascending: false }).limit(100);
         if (error) throw new Error("تعذر تحميل تذاكر الزوار.");
         return json({ success: true, tickets: data || [] }, 200, origin);
       }
       const ticketId = clean(body.ticket_id, 64);
+      if (action === "admin_thread") {
+        if (!/^[0-9a-f-]{36}$/i.test(ticketId)) return json({ error: "معرّف التذكرة غير صحيح." }, 400, origin);
+        const { data: threadTicket, error: threadError } = await admin.from("baran_guest_support_tickets")
+          .select("id,ticket_code,email,subject,initial_message,status,priority,assistant_reason,assistant_draft,created_at,updated_at,last_customer_message_at,last_admin_message_at")
+          .eq("id", ticketId).maybeSingle();
+        if (threadError || !threadTicket) return json({ error: "التذكرة غير موجودة." }, 404, origin);
+        const { data: threadMessages, error: threadMessagesError } = await admin.from("baran_guest_support_messages")
+          .select("id,sender_role,message,created_at,read_at")
+          .eq("ticket_id", ticketId).order("created_at", { ascending: true }).limit(200);
+        if (threadMessagesError) throw new Error("تعذر تحميل محادثة التذكرة.");
+        const { error: ticketReadError } = await admin.from("baran_guest_support_tickets")
+          .update({ admin_read_at: now.toISOString() }).eq("id", ticketId);
+        if (ticketReadError) throw new Error("تعذر تسجيل قراءة التذكرة.");
+        const { error: messagesReadError } = await admin.from("baran_guest_support_messages").update({ read_at: now.toISOString() })
+          .eq("ticket_id", ticketId).eq("sender_role", "guest").is("read_at", null);
+        if (messagesReadError) throw new Error("تعذر تحديث حالة قراءة الرسائل.");
+        return json({ success: true, ticket: threadTicket, messages: threadMessages || [] }, 200, origin);
+      }
       if (!/^[0-9a-f-]{36}$/i.test(ticketId)) return json({ error: "معرّف التذكرة غير صحيح." }, 400, origin);
       const { data: ticket, error: ticketError } = await admin.from("baran_guest_support_tickets")
         .select("id,status").eq("id", ticketId).maybeSingle();
