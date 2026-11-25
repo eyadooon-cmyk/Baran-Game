@@ -1214,7 +1214,7 @@ async function homscardInspectProductPages(){
   if(!homscardCatalogCache.length){if(status)status.textContent="حمّل كتالوج HomsCard أولاً.";return;}
   if(button)button.disabled=true;
   let inspected=0,failed=0;
-  const products=homscardCatalogCache.filter(p=>p&&/^\\d{1,10}$/.test(String(p.id??"")));
+  const products=homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??"")));
   try{
     if(status)status.textContent="جارٍ فحص صفحات HomsCard العامة: 0 / "+products.length;
     for(let i=0;i<products.length;i+=25){
