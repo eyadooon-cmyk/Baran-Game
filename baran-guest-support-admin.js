@@ -47,8 +47,8 @@ async function openGuestAdminThread(ticket){
 }
 function render(tickets){
  const root=$("baranGuestAdminTickets");root.innerHTML="";
- const openTickets=tickets.filter(t=>t.status!=="closed");
- if(!openTickets.length){root.append(el("p","small","لا توجد تذاكر مفتوحة حالياً."));return;}
+ const openTickets=tickets;
+ if(!openTickets.length){root.append(el("p","small","لا توجد تذاكر حالياً."));return;}
  openTickets.forEach(t=>{
   const card=el("article","baran-guest-admin-card");
   const head=el("div","baran-guest-admin-head");
@@ -62,6 +62,14 @@ function render(tickets){
    analysis.hidden=false;
    analysisText.textContent=t.assistant_reason||"اقتراح محفوظ سابقاً.";
   }
+  const controls=el("div","baran-guest-admin-actions");
+  const statusSelect=el("select","");statusSelect.setAttribute("aria-label","حالة التذكرة");
+  [["pending","بانتظار الدعم"],["in_progress","قيد المعالجة"],["answered","تم الرد"],["closed","مغلقة"]].forEach(([v,l])=>{const o=el("option","",l);o.value=v;statusSelect.append(o);});statusSelect.value=t.status;
+  const prioritySelect=el("select","");prioritySelect.setAttribute("aria-label","أولوية التذكرة");
+  [["low","أولوية منخفضة"],["normal","أولوية عادية"],["high","أولوية عالية"],["urgent","عاجلة"]].forEach(([v,l])=>{const o=el("option","",l);o.value=v;prioritySelect.append(o);});prioritySelect.value=t.priority||"normal";
+  const saveMeta=el("button","guest-admin-secondary","حفظ الحالة والأولوية");saveMeta.type="button";
+  saveMeta.onclick=async()=>{saveMeta.disabled=true;try{await request({action:"admin_update",ticket_id:t.id,status:statusSelect.value,priority:prioritySelect.value});await load("تم تحديث حالة وأولوية التذكرة.");}catch(e){alert(e.message);}finally{saveMeta.disabled=false;}};
+  controls.append(statusSelect,prioritySelect,saveMeta);
   const reply=el("textarea","");reply.rows=4;reply.maxLength=5000;reply.placeholder="اكتب رد الإدارة للزبون أو عدّل المسودة المقترحة...";
   if(t.assistant_draft)reply.value=t.assistant_draft;
   const actions=el("div","baran-guest-admin-actions");
@@ -82,7 +90,7 @@ function render(tickets){
    }finally{analyze.disabled=false;}
   };
   const history=el("button","guest-admin-secondary","عرض سجل المحادثة");history.type="button";history.onclick=()=>openGuestAdminThread(t);
-  actions.append(history,analyze,send,close);card.append(analysis,reply,actions);root.append(card);
+  actions.append(history,analyze,send,close);card.append(controls,analysis,reply,actions);root.append(card);
  });
 }
 async function load(successMessage){
