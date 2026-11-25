@@ -119,9 +119,9 @@ test("registered-customer manual-review queue links directly to its support tick
   assert.match(registeredAutoReply, /const hardStop = sensitiveReason\(ticket\.subject \?\? "", ticket\.message \?\? ""\)/);
   assert.match(registeredAutoReply, /if \(hardStop\)/);
   assert.match(registeredAutoReply, /decision !== "reply"/);
-  assert.match(app, //فتح التذكرة في صندوق دعم العملاء/);
-  assert.match(app, //switchSupportTab\("tickets"\)/);
-  assert.match(app, //dataset\.feedbackId===String\(item\.feedback_id\|\|""\)/);
-  assert.match(app, //سبب التحويل\/المعالجة/);
-  assert.match(app, //لا يرسل المساعد رداً نهائياً/);
+  assert.ok(app.includes("فتح التذكرة في صندوق دعم العملاء"));
+  assert.ok(app.includes('switchSupportTab("tickets")'));
+  assert.ok(app.includes('node.dataset.feedbackId===String(item.feedback_id||"")'));
+  assert.ok(app.includes("سبب التحويل/المعالجة"));
+  assert.ok(app.includes("لم يرسل المساعد رداً نهائياً"));
 });
