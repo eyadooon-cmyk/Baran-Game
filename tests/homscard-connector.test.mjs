@@ -25,7 +25,7 @@ test("HomsCard connector supports the documented optional HMAC request signature
   assert.match(source, /HMAC/);
 });
 
-test("HomsCard connector never returns the API token or raw upstream body", () => {
+test("HomsCard connector preserves missing product_type as unknown instead of assuming package", () => {\n  assert.match(source, /product_type: p\\.product_type \\?\\? null/);\n  assert.doesNotMatch(source, /product_type: p\\.product_type \\?\\? "package"/);\n});\n\ntest("HomsCard connector never returns the API token or raw upstream body", () => {
   assert.match(source, /profile\.email/);
   assert.doesNotMatch(source, /return json\(\{[^}]*apiToken/s);
   assert.match(source, /Read-only catalog request/);
