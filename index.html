@@ -6245,6 +6245,24 @@ function renderBaranAutoSupportQueue(rows,feedbackRows){
       const notice=document.createElement("p");notice.className="ops-muted";
       notice.textContent="⚠️ لم يرسل المساعد رداً نهائياً؛ راجع التذكرة بنفسك من قسم آراء العملاء والدعم.";
       card.appendChild(notice);
+      const openTicket=document.createElement("button");
+      openTicket.type="button";
+      openTicket.className="full";
+      openTicket.textContent="فتح التذكرة في صندوق دعم العملاء";
+      openTicket.onclick=()=>{
+        if(typeof switchSupportTab==="function")switchSupportTab("tickets");
+        const target=[...document.querySelectorAll("#adminFeedback [data-feedback-id]")].find(node=>node.dataset.feedbackId===String(item.feedback_id||""));
+        if(target){
+          target.scrollIntoView({behavior:"smooth",block:"center"});
+          target.style.outline="2px solid #a56bd6";
+          target.style.outlineOffset="3px";
+          target.setAttribute("aria-label","التذكرة المحددة للمراجعة البشرية");
+        }else{
+          const search=document.getElementById("adminFeedbackSearch");
+          if(search){search.value=item.ticket_code||ticket.ticket_code||"";filterAdminFeedback();}
+        }
+      };
+      card.appendChild(openTicket);
     }
     if(item.generated_reply&&item.state==="sent"){
       const reply=document.createElement("p");reply.textContent="الرد المرسل: "+item.generated_reply;card.appendChild(reply);
