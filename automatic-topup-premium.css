@@ -151,3 +151,6 @@
 /* Ensure category tiles never fall back to generic stock-photo backgrounds */
 .baran-auto-category-grid .item .baran-auto-category-art{background-image:none!important}
 .baran-auto-category-grid .item .baran-auto-category-art img{background-color:#17111f}
+
+
+.baran-game-status.is-supplier-ready{border-color:#735a91;background:#21172b;color:#e0c8f0}
