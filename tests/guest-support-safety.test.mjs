@@ -32,13 +32,16 @@ test("public ticket creation and follow-up require server-verified Turnstile", (
   assert.match(api, /action === \"guest_reply\"/);
 });
 
-test("routine guest issues receive only safe rule-based automatic replies", () => {
+test("routine guest issues receive safe automatic replies while other cases remain with humans", () => {
   assert.match(api, /function safeGuestAutoReply/);
-  assert.match(api, /sender_role: \"assistant\"/);
-  assert.match(api, /status: \"answered\"/);
+  assert.match(api, /sender_role: "assistant"/);
+  assert.match(api, /status: "answered"/);
   assert.match(api, /const autoReply = safeGuestAutoReply\(subject, message\)/);
-  assert.match(api, /if \(autoReply\) \{/);
-  assert.match(api, /if \(\/رصيد\|محفظه\|محفظة\|شحن/);
+  assert.match(api, /auto_replied: Boolean\(autoReply\)/);
+  assert.match(api, /requires_human_review: !autoReply/);
+  assert.match(api, /رصيد\|محفظه\|محفظة\|شحن/);
+  assert.match(guestUi, /data\.auto_replied&&data\.auto_reply_message/);
+  assert.match(guestUi, /تحتاج رسالتك إلى مراجعة فريق الدعم/);
 });
 
 test("admin ticket access is authenticated and checked against admin membership", () => {
