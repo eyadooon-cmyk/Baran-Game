@@ -24,3 +24,5 @@ alter table public.baran_homscard_audit_runs enable row level security;
 alter table public.baran_homscard_audit_items enable row level security;
 revoke all on public.baran_homscard_audit_runs from anon, authenticated;
 revoke all on public.baran_homscard_audit_items from anon, authenticated;
+grant all on public.baran_homscard_audit_runs to service_role;
+grant all on public.baran_homscard_audit_items to service_role;
