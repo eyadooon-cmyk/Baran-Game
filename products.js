@@ -2,16 +2,16 @@ function productCategoryLabel(category){
   return ({game:"الألعاب",ai:"الذكاء الاصطناعي",vpn:"VPN",gift_card:"البطاقات الرقمية",app:"التطبيقات المدفوعة"}[category]||category);
 }
 
-let currentExchangeRate=14400;
+let currentExchangeRate=144;
 
 function applyExchangeRate(rate){
   const parsed=Number(rate);
   if(!Number.isFinite(parsed)||parsed<=0)return;
-  currentExchangeRate=parsed;
+  currentExchangeRate=parsed/100;
   const input=document.getElementById("exchangeRateInput");
-  if(input)input.value=String(parsed);
+  if(input)input.value=String(currentExchangeRate);
   const display=document.getElementById("currentExchangeRate");
-  if(display)display.textContent="1 $ = "+parsed.toLocaleString("en-US")+" ل.س";
+  if(display)display.textContent="1 $ = "+currentExchangeRate.toLocaleString("en-US",{maximumFractionDigits:2})+" ل.س جديدة";
   updateProductPricePreview();
 }
 
@@ -167,15 +167,16 @@ async function saveExchangeRate(){
   const message=document.getElementById("exchangeRateMessage");
   const button=document.getElementById("saveExchangeRateButton");
   const rate=Number(input?.value);
-  if(!Number.isFinite(rate)||rate<=0||rate>100000000){
+  if(!Number.isFinite(rate)||rate<=0||rate>1000000){
     if(message)message.textContent="أدخل سعر صرف صحيحاً أكبر من صفر.";
     return;
   }
-  if(!confirm("تأكيد اعتماد سعر الصرف الجديد: 1 دولار = "+rate.toLocaleString("en-US")+" ل.س؟ ستتحدث أسعار الليرة لكل المنتجات."))return;
+  const storedRate=rate*100;
+  if(!confirm("تأكيد اعتماد سعر الصرف الجديد: 1 دولار = "+rate.toLocaleString("en-US",{maximumFractionDigits:2})+" ل.س جديدة؟ ستتحدث أسعار الليرة لكل المنتجات."))return;
   if(button)button.disabled=true;
   if(message)message.textContent="جاري تحديث سعر الصرف والأسعار...";
   try{
-    const result=await callAdminApi("POST",{action:"exchange_rate_update",exchange_rate:rate});
+    const result=await callAdminApi("POST",{action:"exchange_rate_update",exchange_rate:storedRate});
     applyExchangeRate(result.exchange_rate);
     if(typeof loadAdminPanel==="function")await loadAdminPanel();
     if(typeof loadCatalog==="function")await loadCatalog();
@@ -189,7 +190,7 @@ function updateProductPricePreview(){
   const preview=document.getElementById("productPricePreview");
   if(!preview)return;
   const usd=Number(document.getElementById("productPriceUsd")?.value||0);
-  preview.textContent=usd>0?"السعر بالليرة: "+Math.round(usd*currentExchangeRate).toLocaleString("en-US")+" ل.س":"اترك السعر فارغاً إذا لم يُحدد بعد؛ سيظهر للزبائن: السعر غير محدد.";
+  preview.textContent=usd>0?"السعر بالليرة الجديدة: "+Math.round(usd*currentExchangeRate).toLocaleString("en-US")+" ل.س جديدة":"اترك السعر فارغاً إذا لم يُحدد بعد؛ سيظهر للزبائن: السعر غير محدد.";
 }
 
 // Load the Free Fire ID checker without exposing provider credentials.
