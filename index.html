@@ -2416,47 +2416,67 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="games" class="hidden">
       <button class="secondary games-back-button baran-back-button" type="button" onclick="goBackSection()">← رجوع</button>
-      <div class="hero"><h2>الشحن الآلي</h2><p>اختر نوع المحتوى الذي تريد استعراضه. الألعاب والخدمات الرقمية ضمن أقسام منفصلة.</p></div>
+      <div class="hero"><h2>الشحن الآلي</h2><p>كل قسم ببطاقته وصورته، ادخل إلى اللعبة أو الخدمة التي تريدها.</p></div>
       <div class="grid baran-auto-category-grid">
         <button class="item" type="button" onclick="showSection('automaticGames',null)">
-          <span class="baran-auto-category-art">🎮</span>
-          <span class="item-content"><strong>الألعاب</strong><span>PUBG MOBILE وFree Fire وجواكر وألعاب أخرى</span><span class="small">استعراض الألعاب ←</span></span>
+          <span class="baran-auto-category-art"><img src="https://play-lh.googleusercontent.com/Se7jR6A5R0Mk9ClaIguf46yi2K3k32JsqKb3gAtrktIh3JwnFfxrQRmG9GLvdMpbxbMrReUOxzDkStxGxNo-5Q=w240-h480" alt="الألعاب" loading="lazy"></span>
+          <span class="item-content"><strong>الألعاب والشحن</strong><span>PUBG وFree Fire وJawaker وألعاب إضافية</span><span class="small">استعراض الألعاب ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('appsStore',null)">
-          <span class="baran-auto-category-art baran-auto-apps-art">📱</span>
-          <span class="item-content"><strong>البرامج والتطبيقات</strong><span>تطبيقات مدفوعة وخدمات رقمية</span><span class="small">استعراض البرامج ←</span></span>
+          <span class="baran-auto-category-art baran-auto-apps-art"><img src="https://cdn.simpleicons.org/canva/FFFFFF" alt="التطبيقات" loading="lazy"></span>
+          <span class="item-content"><strong>البرامج والتطبيقات</strong><span>Canva وCapCut وFigma وغيرها</span><span class="small">استعراض البرامج ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('chatgptStore',null)">
-          <span class="baran-auto-category-art baran-auto-chat-art">💬</span>
-          <span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT واشتراكات وخدمات المحادثة</span><span class="small">استعراض خدمات الدردشة ←</span></span>
+          <span class="baran-auto-category-art baran-auto-chat-art"><img src="https://cdn.simpleicons.org/openai/FFFFFF" alt="الدردشة والذكاء الاصطناعي" loading="lazy"></span>
+          <span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT وBigo وتطبيقات التواصل وأدوات AI</span><span class="small">استعراض الدردشة ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('vpnStore',null)">
-          <span class="baran-auto-category-art baran-auto-vpn-art">🛡️</span>
-          <span class="item-content"><strong>اشتراكات VPN</strong><span>خدمات الشبكات الخاصة والاتصال</span><span class="small">استعراض اشتراكات VPN ←</span></span>
+          <span class="baran-auto-category-art baran-auto-vpn-art"><img src="https://cdn.simpleicons.org/protonvpn/FFFFFF" alt="VPN" loading="lazy"></span>
+          <span class="item-content"><strong>اشتراكات VPN</strong><span>اشتراكات الشبكات الخاصة والاتصال</span><span class="small">استعراض VPN ←</span></span>
+        </button>
+        <button class="item" type="button" onclick="showSection('subscriptionStore',null)">
+          <span class="baran-auto-category-art baran-auto-subscriptions-art"><img src="https://play-lh.googleusercontent.com/fXVS45nukV1x9PYVSKHkCQK0QGCOishIvAOxIZS3sgRem8HS7l9l94_Ggj-WZPrTLePRdNYN4pp4SPAQL7oS0PU=w240-h480" alt="Netflix" loading="lazy"></span>
+          <span class="item-content"><strong>الاشتراكات والترفيه</strong><span>Netflix وShahid وAnghami وخدمات TV</span><span class="small">استعراض الاشتراكات ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('giftCardsStore',null)">
-          <span class="baran-auto-category-art baran-auto-gifts-art">🎁</span>
-          <span class="item-content"><strong>البطاقات الرقمية</strong><span>Google Play وبطاقات رقمية أخرى</span><span class="small">استعراض البطاقات ←</span></span>
+          <span class="baran-auto-category-art baran-auto-gifts-art"><img src="https://cdn.simpleicons.org/googleplay/FFFFFF" alt="بطاقات الهدايا" loading="lazy"></span>
+          <span class="item-content"><strong>البطاقات الرقمية</strong><span>Google Play وiTunes وPlayStation وRazer</span><span class="small">استعراض البطاقات ←</span></span>
         </button>
       </div>
     </section>
 
     <section id="automaticGames" class="hidden">
       <button class="secondary games-back-button baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى أقسام الشحن الآلي</button>
-      <div class="hero"><h2>الألعاب 🎮</h2><p>اختر اللعبة لفتح متجرها وباقاتها. كل لعبة ضمن صفحة مستقلة.</p></div>
+      <div class="hero"><h2>الألعاب والشحن</h2><p>اختر اللعبة. الألعاب التي لا تظهر لها باقات معتمدة حالياً تبقى للعرض حتى يكتمل ربط كتالوج الشحن.</p></div>
+      <div class="baran-game-library-heading"><strong>الألعاب المتاحة حالياً في المتجر</strong><span>يمكن استعراض باقاتها</span></div>
       <div class="grid baran-auto-games-grid">
-        <button class="item" type="button" onclick="showSection('pubgStore',null)">
-          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1000&q=88&fit=crop" alt="PUBG MOBILE" loading="lazy">
-          <span class="item-content"><strong>PUBG MOBILE</strong><span>شدات UC وباقات اللعبة</span><span class="small">فتح متجر PUBG ←</span></span>
+        <button class="item baran-game-live" type="button" onclick="showSection('pubgStore',null)">
+          <img src="https://play-lh.googleusercontent.com/Se7jR6A5R0Mk9ClaIguf46yi2K3k32JsqKb3gAtrktIh3JwnFfxrQRmG9GLvdMpbxbMrReUOxzDkStxGxNo-5Q=w240-h480" alt="PUBG MOBILE" loading="lazy">
+          <span class="item-content"><strong>PUBG MOBILE</strong><span>شدات UC · Prime · الباقات</span><span class="baran-game-status is-live">افتح متجر PUBG ←</span></span>
         </button>
-        <button class="item" type="button" onclick="showSection('freeFireStore',null)">
-          <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1000&q=88&fit=crop" alt="FREE FIRE" loading="lazy">
-          <span class="item-content"><strong>FREE FIRE</strong><span>جواهر وعضويات Free Fire</span><span class="small">فتح متجر Free Fire ←</span></span>
+        <button class="item baran-game-live" type="button" onclick="showSection('freeFireStore',null)">
+          <img src="https://play-lh.googleusercontent.com/hnnIRd5AAf7T2gWzwki00aA9aWMX9JUbr8N42WjGqSVEq36Ey5_T0GCvyekeBkn_rSknR3vXvF4zTkZh4j-KRw=w240-h480" alt="FREE FIRE" loading="lazy">
+          <span class="item-content"><strong>FREE FIRE</strong><span>جواهر وعضويات Free Fire</span><span class="baran-game-status is-live">افتح متجر Free Fire ←</span></span>
         </button>
-        <button class="item" type="button" onclick="showSection('jawakerStore',null)">
+        <button class="item baran-game-live" type="button" onclick="showSection('jawakerStore',null)">
           <span class="baran-auto-game-art baran-jawaker-art"><span>J</span><small>JAWAKER</small></span>
-          <span class="item-content"><strong>جواكر · JAWAKER</strong><span>توكنز السيرفرات ومسرّعات جواكر</span><span class="small">فتح متجر جواكر ←</span></span>
+          <span class="item-content"><strong>جواكر · JAWAKER</strong><span>توكنز السيرفرات ومسرّعات جواكر</span><span class="baran-game-status is-live">افتح متجر جواكر ←</span></span>
         </button>
+      </div>
+      <div class="baran-game-library-heading"><strong>مكتبة ألعاب باران</strong><span>صور وهوية كل لعبة — ربط الباقات جارٍ</span></div>
+      <div class="grid baran-auto-games-grid baran-game-coming-grid">
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/7k3okyUB23lq2SxeonOmMhrVZqV6oTdCIvY3xNVNoEAeUn7GfCB7Wd9yFNdi3xXL0Op_Hg1GF6K0lUf0-cUm=w240-h480" alt="Delta Force" loading="lazy"><span class="item-content"><strong>Delta Force</strong><span>شحن اللعبة</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/YQqyKaXX-63krqsfIzUEJWUWLINxcb5tbS6QVySdxbS7eZV7YB2dUjUvX27xA0TIGtfxQ5v-tQjwlT5tTB-O=w240-h480" alt="Genshin Impact" loading="lazy"><span class="item-content"><strong>Genshin Impact</strong><span>Genesis Crystals</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/vL-xYJhmXTiaQewThy9DMHkk_zdtSHqKcRDp8iYip6C-OB764enYRA1CrmHSRoW1rsAEkyJT5a8By3ADMbd5=w240-h480" alt="Arena Breakout" loading="lazy"><span class="item-content"><strong>Arena Breakout</strong><span>شحن اللعبة</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/2073620/header.jpg" alt="Arena Breakout Infinite" loading="lazy"><span class="item-content"><strong>Arena Breakout: Infinite</strong><span>نسخة الكمبيوتر</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/E_x2GPSJakCdUYfECBptVyFoVnC4BxIPy3K4OdbwNyEtEJkRAY_J-Lo_Ltiybq6LiJ_aZCIzvqLv5h4Fbk91=w240-h480" alt="Steam" loading="lazy"><span class="item-content"><strong>Steam Wallet</strong><span>بطاقات ومحفظة Steam</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/Op7v9XdsyxjrKImMD5RLyiLRCAHs3DMQFANwfsuMTw1hq0lH4j8tOqD3Fd7zyr4ixmC0xoqqRkQDBjAd46NsFQ=w240-h480" alt="Mobile Legends" loading="lazy"><span class="item-content"><strong>Mobile Legends</strong><span>Diamonds</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/QqZj22aXblAyYDxLQw-Gg0ycW0QkKhrDnwqgERZU9BMRXZnMlgXfq-94sikG5mEpt_I0lzZxcUzfLblmQgwYzUE=w240-h480" alt="Roblox" loading="lazy"><span class="item-content"><strong>Roblox</strong><span>Robux</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/ZkqAnO0IfcLGSln-tZfFXSrnUPs9aOrjBokhHB6BIEv6_UCfdQISbGnQztK80ceCZ915U3Pkj-ZeLH9xTVUzFw=w240-h480" alt="Standoff 2" loading="lazy"><span class="item-content"><strong>Standoff 2</strong><span>Gold</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/aWrGocSA7hEuk1qAPe7L4T57LvLKrwwH26cK2_LOqxRQMQX7j3uHYojC-EKWwYEV2PdrmE0ahqvvhLhXrAGk6Q=w240-h480" alt="Honkai Star Rail" loading="lazy"><span class="item-content"><strong>Honkai: Star Rail</strong><span>Oneiric Shards</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/7-kbcpgrCOE1mleJ9g0d61sJeoqKcQRIj4iFvJ8DjPlRIfocOWfOQsXzKWw2I5oHySVdbjR2fvzfCCz1FYQ-RQ=w240-h480" alt="League of Legends Wild Rift" loading="lazy"><span class="item-content"><strong>Wild Rift</strong><span>Wild Cores</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/ygA2LzU_NHx7KVaoE90rB6axlfFX7R01y3n3z5KPrKhshMcLvWw69ZAnnbVVrMvg056rLFP5EChWb8Mdyp62=w240-h480" alt="Kuroko Basketball SR" loading="lazy"><span class="item-content"><strong>Kuroko's Basketball SR</strong><span>شحن اللعبة</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
+        <article class="item baran-game-coming"><img src="https://play-lh.googleusercontent.com/FsrJ4G5spS_npOfZQK6Y-lggN4mxUVpSgqZt15v3Cb4MHukPsQes4e75ruMrIbldET-J4tHJqTmjdSmOl3ldQQ=w240-h480" alt="Age of Empires Mobile" loading="lazy"><span class="item-content"><strong>Age of Empires Mobile</strong><span>شحن اللعبة</span><span class="baran-game-status">قيد ربط الباقات</span></span></article>
       </div>
     </section>
 
@@ -2551,7 +2571,18 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="chatgptStore" class="hidden">
       <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
-      <div class="hero"><h2>الدردشة والذكاء الاصطناعي</h2><p>اشتراكات ChatGPT وGemini وClaude وGrok وأدوات الذكاء الاصطناعي.</p></div>
+      <div class="hero"><h2>الدردشة والذكاء الاصطناعي</h2><p>تطبيقات الدردشة والبث المباشر، إضافة إلى اشتراكات الذكاء الاصطناعي.</p></div>
+      <div class="baran-chat-library">
+        <div class="baran-game-library-heading"><strong>تطبيقات الدردشة والتواصل</strong><span>بطاقة مستقلة لكل تطبيق</span></div>
+        <div class="baran-chat-brand-grid">
+          <article class="baran-chat-brand-card"><img src="https://play-lh.googleusercontent.com/8nDM585uK3X3AXiDQJC4lEARF_VLFrgdma-1YkdFMAwKi1LSrg4bMnWMGq7GqsviTKyL_LUfYayflZgs0SqCqQ=w240-h480" alt="Bigo Live" loading="lazy"><strong>BIGO LIVE</strong><span>بث مباشر · دردشة · هدايا</span><small>باقات Bigo قيد التجهيز</small></article>
+          <article class="baran-chat-brand-card"><img src="https://cdn.simpleicons.org/discord/FFFFFF" alt="Discord" loading="lazy"><strong>Discord</strong><span>مجتمعات · Nitro</span><small>قيد تجهيز الباقات</small></article>
+          <article class="baran-chat-brand-card"><img src="https://play-lh.googleusercontent.com/PyZ3akMGXPV0tKKirKNwfO--PSQW3FHR6rD_H9mAaukZ8LiHyYFuBLeU8UZ2ok6r5SP79-3prkfybWKh98AZAD0=w240-h480" alt="Telegram" loading="lazy"><strong>Telegram</strong><span>Premium · Stars</span><small>قيد تجهيز الباقات</small></article>
+          <article class="baran-chat-brand-card"><img src="https://play-lh.googleusercontent.com/tiKyH1CeGfFp08Ka83S9jb1Zp5SaCZdo-xP2B95UyB_KfytMGP1aS0mguBpSp911PBZFq8_vBwnBB-m0pO8pxg=w240-h480" alt="imo" loading="lazy"><strong>imo</strong><span>مكالمات · دردشة</span><small>قيد تجهيز الباقات</small></article>
+          <article class="baran-chat-brand-card"><img src="https://play-lh.googleusercontent.com/k6V5cY_DXMddL4WWW1ALy7az5HTkQhUyLOU1f_RqmUvX1w0_cUOalECMrB4a4UgBkiNJ96JJ-pQpKBxApLF6pg=w240-h480" alt="BOTIM" loading="lazy"><strong>BOTIM</strong><span>مكالمات · تواصل</span><small>قيد تجهيز الباقات</small></article>
+        </div>
+      </div>
+      <div class="baran-game-library-heading"><strong>اشتراكات الذكاء الاصطناعي</strong><span>ChatGPT وأدوات AI الأخرى</span></div>
       <div id="chatgptProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>اشتراكات الذكاء الاصطناعي</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
@@ -2576,7 +2607,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="subscriptionStore" class="hidden">
       <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
-      <div class="hero"><h2>الاشتراكات والترفيه</h2><p>باقات المشاهدة والترفيه وIPTV حسب المدة والمنطقة المتاحة.</p></div>
+      <div class="hero"><h2>الاشتراكات والترفيه</h2><p>Netflix وShahid وAnghami وخدمات المشاهدة، كل خدمة بصورتها وباقاتها.</p></div>
+      <div class="baran-subscription-feature"><img src="https://play-lh.googleusercontent.com/fXVS45nukV1x9PYVSKHkCQK0QGCOishIvAOxIZS3sgRem8HS7l9l94_Ggj-WZPrTLePRdNYN4pp4SPAQL7oS0PU=w240-h480" alt="Netflix" loading="lazy"><div><strong>NETFLIX</strong><span>اشتراكات المشاهدة بجودة 4K</span><small>اختر المدة من الباقات أدناه</small></div></div>
       <div id="subscriptionProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>اشتراكات الترفيه والمشاهدة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
@@ -7849,7 +7881,19 @@ function baranServiceBrandVisual(product,category){
  const text=[product?.product_code,product?.name,product?.description,product?.catalog_group,category].join(" ").toLowerCase();
  const brands=[
   {keys:["chatgpt","openai","gpt"],slug:"openai",label:"ChatGPT",bg:"#173b32"},
-  {keys:["netflix"],slug:"netflix",label:"Netflix",bg:"#42151c"},
+  {keys:["claude"],slug:"claude",label:"Claude",bg:"#493327"},
+  {keys:["gemini"],slug:"googlegemini",label:"Gemini",bg:"#243a68"},
+  {keys:["grok"],slug:"x",label:"Grok",bg:"#171717"},
+  {keys:["bolt"],slug:"bolt",label:"Bolt",bg:"#283b66"},
+  {keys:["cursor"],slug:"cursor",label:"Cursor",bg:"#22252b"},
+  {keys:["elevenlabs"],slug:"elevenlabs",label:"ElevenLabs",bg:"#282828"},
+  {keys:["framer"],slug:"framer",label:"Framer",bg:"#302b69"},
+  {keys:["kling"],slug:"klingai",label:"Kling AI",bg:"#202b4b"},
+  {keys:["lovable"],slug:"lovable",label:"Lovable",bg:"#5b2349"},
+  {keys:["n8n"],slug:"n8n",label:"n8n",bg:"#553044"},
+  {keys:["replit"],slug:"replit",label:"Replit",bg:"#4a3525"},
+  {keys:["runway"],slug:"runway",label:"Runway",bg:"#252525"},
+  {keys:["netflix"],label:"Netflix",bg:"#171014",image:"https://play-lh.googleusercontent.com/fXVS45nukV1x9PYVSKHkCQK0QGCOishIvAOxIZS3sgRem8HS7l9l94_Ggj-WZPrTLePRdNYN4pp4SPAQL7oS0PU=w240-h480"},
   {keys:["spotify"],slug:"spotify",label:"Spotify",bg:"#123b2a"},
   {keys:["youtube"],slug:"youtube",label:"YouTube",bg:"#48191b"},
   {keys:["google play","google_play","googleplay"],slug:"googleplay",label:"Google Play",bg:"#17334a"},
@@ -7857,6 +7901,10 @@ function baranServiceBrandVisual(product,category){
   {keys:["nordvpn"],slug:"nordvpn",label:"NordVPN",bg:"#15354b"},
   {keys:["protonvpn","proton vpn"],slug:"protonvpn",label:"Proton VPN",bg:"#43251c"},
   {keys:["canva"],slug:"canva",label:"Canva",bg:"#183c49"},
+  {keys:["capcut"],slug:"capcut",label:"CapCut",bg:"#22252a"},
+  {keys:["coursera"],slug:"coursera",label:"Coursera",bg:"#153b68"},
+  {keys:["figma"],slug:"figma",label:"Figma",bg:"#302344"},
+  {keys:["notion"],slug:"notion",label:"Notion",bg:"#272727"},
   {keys:["microsoft","office","365"],slug:"microsoft",label:"Microsoft",bg:"#243348"},
   {keys:["adobe","acrobat","photoshop"],slug:"adobe",label:"Adobe",bg:"#4a171c"},
   {keys:["discord"],slug:"discord",label:"Discord",bg:"#29264a"},
@@ -7866,10 +7914,10 @@ function baranServiceBrandVisual(product,category){
   {keys:["crunchyroll"],slug:"crunchyroll",label:"Crunchyroll",bg:"#493015"},
   {keys:["shahid"],slug:"shahid",label:"Shahid",bg:"#302044"},
   {keys:["osn"],slug:"osn",label:"OSN",bg:"#252b4a"},
+  {keys:["anghami"],slug:"anghami",label:"Anghami",bg:"#34204b"},
   {keys:["apple","itunes","app store"],slug:"apple",label:"Apple",bg:"#34343a"}
  ];
- const found=brands.find(brand=>brand.keys.some(key=>text.includes(key)));
- return found||null;
+ return brands.find(brand=>brand.keys.some(key=>text.includes(key)))||null;
 }
 async function loadBaranServiceCatalog(category,containerId,title,icon){
  const container=document.getElementById(containerId);
@@ -7920,8 +7968,8 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    const brand=baranServiceBrandVisual(product,category);
    if(brand){
     const visual=document.createElement("span");visual.className="baran-service-brand-visual";visual.style.setProperty("--brand-bg",brand.bg);
-    const image=document.createElement("img");image.src="https://cdn.simpleicons.org/"+brand.slug+"/FFFFFF";image.alt=brand.label;image.loading="lazy";image.decoding="async";
-    image.onerror=()=>{visual.classList.add("is-fallback");image.remove();visual.textContent=brand.label.slice(0,2).toUpperCase();};
+    const image=document.createElement("img");image.src=brand.image||("https://cdn.simpleicons.org/"+brand.slug+"/FFFFFF");image.alt=brand.label;image.loading="lazy";image.decoding="async";
+    image.onerror=()=>{if(brand.image&&brand.slug&&!image.dataset.fallback){image.dataset.fallback="1";image.src="https://cdn.simpleicons.org/"+brand.slug+"/FFFFFF";return;}visual.classList.add("is-fallback");image.remove();visual.textContent=brand.label.slice(0,2).toUpperCase();};
     visual.append(image);head.append(visual);
    }else{
     const symbol=document.createElement("span");symbol.className="baran-service-product-icon";symbol.textContent=icon;head.append(symbol);
