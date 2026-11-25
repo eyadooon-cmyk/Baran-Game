@@ -38,6 +38,8 @@ jobs:
           node --check customer-center.js
           node --check baro.js
           node --check customer-experience-suite.js
+          node --check baran-guest-support.js
+          node --check baran-guest-support-admin.js
       - name: Run guest support safety tests
         run: node --test tests/guest-support-safety.test.mjs
       - name: Check support Edge Function syntax
