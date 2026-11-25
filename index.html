@@ -7677,7 +7677,7 @@ async function loadBaranGameCatalog(game){
     // استخدم نسخة الكتالوج النشط المشتركة التي يعتمد عليها بحث المتجر أيضاً،
     // لتجنب تكرار استعلام مختلف قد يفشل في صفحة الألعاب.
     const catalog=await loadBaranStoreSearchProducts();
-    const pattern=isPubg?/^PUBG_MOBILE_\d+_UC$/:/^(?:FREEFIRE_\d+|FREEFIRE_MEMBERSHIP_(?:WEEKLY|MONTHLY))$/;
+    const pattern=isPubg?/^(?:PUBG_MOBILE_\d+_UC|PUBG_PRIME_\d+M)$/:/^(?:FREEFIRE_(?:ROBOT_)?\d+|FREEFIRE_MEMBERSHIP_(?:WEEKLY|MONTHLY))$/;
     const packages=(catalog||[])
       .filter(p=>p.category==="game"&&pattern.test(p.product_code||""))
       .sort((a,b)=>(Number(a.sort_order)||0)-(Number(b.sort_order)||0));
@@ -7698,8 +7698,10 @@ async function loadBaranGameCatalog(game){
       const code=String(product.product_code||"");
       const amount=(code.match(isPubg?/_(\d+)_UC$/i:/_(\d+)$/i)||[])[1]||"";
       const isMembership=code==="FREEFIRE_MEMBERSHIP_WEEKLY"||code==="FREEFIRE_MEMBERSHIP_MONTHLY";
-      const art=document.createElement("span");art.className="baran-package-art";art.textContent=isPubg?"UC":(isMembership?"👑":"💎");
-      const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=isMembership?(code.endsWith("_WEEKLY")?"7 أيام":"30 يوم"):amount?(isPubg?amount+" UC":amount+" جوهرة"):(isPubg?"شدات UC":"جواهر");
+      const isPrime=code.startsWith("PUBG_PRIME_");
+      const primeMonths=(code.match(/^PUBG_PRIME_(\d+)M$/i)||[])[1]||"1";
+      const art=document.createElement("span");art.className="baran-package-art";art.textContent=(isMembership||isPrime)?"👑":(isPubg?"UC":"💎");
+      const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=isMembership?(code.endsWith("_WEEKLY")?"7 أيام":"30 يوم"):isPrime?"Prime "+primeMonths+" شهر":amount?(isPubg?amount+" UC":amount+" جوهرة"):(isPubg?"شدات UC":"جواهر");
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"باقة شحن رقمية";
       const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
