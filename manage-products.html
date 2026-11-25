@@ -34,12 +34,12 @@ a{color:#c5b4d6}
 <section id="manager" class="panel hidden">
   <div class="panel" style="margin:0 0 18px">
     <h2>سعر صرف الدولار 💱</h2>
-    <p id="currentExchangeRate" class="small">1 $ = 14,400 ل.س</p>
-    <label for="exchangeRateInput">سعر الدولار مقابل الليرة السورية</label>
-    <input id="exchangeRateInput" type="number" min="1" step="1" value="14400" inputmode="numeric">
+    <p id="currentExchangeRate" class="small">1 $ = 144 ل.س جديدة</p>
+    <label for="exchangeRateInput">سعر الدولار مقابل الليرة السورية الجديدة</label>
+    <input id="exchangeRateInput" type="number" min="1" step="0.01" value="144" inputmode="numeric">
     <button id="saveExchangeRateButton" type="button" onclick="saveExchangeRate()">حفظ سعر الصرف وتحديث الأسعار</button>
     <p id="exchangeRateMessage" class="small" role="status"></p>
-    <p class="small">عند تغيير السعر، تتحدث أسعار الليرة لكل المنتجات تلقائياً. الطلبات السابقة تحتفظ بسعر الصرف وقت إنشائها.</p>
+    <p class="small">أدخل السعر بالليرة السورية الجديدة. تُحفظ القيمة داخلياً بوحدة الليرة القديمة للتوافق، وتُعرض أسعار المتجر بالليرة الجديدة. الطلبات السابقة تحتفظ بسعر الصرف وقت إنشائها.</p>
   </div>
   <h2>إضافة منتج أو تعديله</h2>
   <p class="small">يمكن حفظ المنتج دون سعر الآن. اترك حقل السعر فارغاً حتى يتوفر سعر معتمد؛ ولن يصبح المنتج قابلاً للطلب قبل تفعيل الشراء لاحقاً.</p>
