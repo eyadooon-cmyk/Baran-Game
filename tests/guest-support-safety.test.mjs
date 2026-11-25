@@ -37,6 +37,7 @@ test("routine guest issues receive safe automatic replies while other cases rema
   assert.match(api, /sender_role: "assistant"/);
   assert.match(api, /status: "answered"/);
   assert.match(api, /const autoReply = safeGuestAutoReply\(subject, message\)/);
+  assert.match(api, /const autoReply = safeGuestAutoReply\(ticket\.subject, message\)/);
   assert.match(api, /auto_replied: Boolean\(autoReply\)/);
   assert.match(api, /requires_human_review: !autoReply/);
   assert.match(api, /رصيد\|محفظه\|محفظة\|شحن/);
