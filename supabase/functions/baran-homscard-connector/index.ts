@@ -27,6 +27,27 @@ async function signHmac(secret: string, message: string): Promise<string> {
   return toHex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message)));
 }
 
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
+    .replace(/&#(\\d+);/g, (_m, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([\\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)));
+}
+function extractProductPage(html: string) {
+  const title = decodeHtml((html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1] ?? "").replace(/<[^>]+>/g, " ").trim());
+  const descriptionTag = html.match(/<meta[^>]+(?:name|property)=["'](?:description|og:description)["'][^>]+content=["']([^"']*)["'][^>]*>/i)
+    ?? html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+(?:name|property)=["'](?:description|og:description)["'][^>]*>/i);
+  const description = decodeHtml(descriptionTag?.[1] ?? "");
+  const body = html.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i)?.[1] ?? html;
+  const text = decodeHtml(body
+    .replace(/<(script|style|noscript|svg|iframe)[^>]*>[\\s\\S]*?<\\/\\1>/gi, " ")
+    .replace(/<(br|\\/p|\\/div|\\/li|\\/h[1-6])[^>]*>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\\s+/g, " ").trim()).slice(0, 5000);
+  return { title, description, text };
+}
+
 Deno.serve(async (req: Request) => {
   const originHeader = req.headers.get("Origin") ?? "";
   const origin = ALLOWED_ORIGINS.has(originHeader) ? originHeader : "https://baran-game.pages.dev";
@@ -69,6 +90,27 @@ Deno.serve(async (req: Request) => {
     let path = "";
     if (action === "profile") {
       path = "/profile.php";
+    } else if (action === "product_pages") {
+      const ids = Array.isArray(body.products_id) ? body.products_id.map((v: unknown) => String(v)) : [];
+      if (!ids.length || ids.length > 25 || ids.some((v: string) => !/^\\d{1,10}$/.test(v))) {
+        return json({ error: "product_pages requires 1–25 valid numeric product IDs" }, 400, origin);
+      }
+      const pages = await Promise.all(ids.map(async (id: string) => {
+        try {
+          const pageResponse = await fetch("https://homscard.com/product.php?id=" + encodeURIComponent(id), {
+            headers: { "Accept": "text/html", "User-Agent": "Mozilla/5.0 (compatible; BaranCatalogAudit/1.0)" },
+            signal: AbortSignal.timeout(12000),
+          });
+          if (!pageResponse.ok) return { id, success: false, error: "HTTP " + pageResponse.status };
+          const html = await pageResponse.text();
+          if (!html || html.length > 2_000_000) return { id, success: false, error: "Invalid or oversized product page" };
+          return { id, success: true, ...extractProductPage(html) };
+        } catch {
+          return { id, success: false, error: "تعذر جلب صفحة المنتج" };
+        }
+      }));
+      return json({ success: true, provider: "HomsCard", action, count: pages.length, data: pages,
+        note: "Public product-page metadata only. Read-only; no order or payment action." }, 200, origin);
     } else if (action === "products") {
       path = "/products.php";
       if (body.available_only !== false) query.set("available", "1");
