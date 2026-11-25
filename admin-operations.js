@@ -1309,7 +1309,6 @@ function homscardExportAuditCsv(){
   link.href=url;link.download="BARAN-HomsCard-Audit-"+new Date().toISOString().slice(0,10)+".csv";
   document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
 }
-}
 async function opsTestHomsCard(action){
   if(homscardRequestBusy)return;
   homscardRequestBusy=true;
