@@ -4341,7 +4341,7 @@ async function searchStore(value){
       const small=document.createElement("small");
       const prices=[];
       if(Number(product.price_usd)>0)prices.push(Number(product.price_usd).toFixed(2)+" $");
-      if(Number(product.price_syp)>0)prices.push(Number(product.price_syp).toLocaleString("en-US")+" ل.س");
+      if(Number(product.price_syp)>0)prices.push(Math.round(Number(product.price_syp)/100).toLocaleString("en-US")+" ل.س جديدة");
       small.textContent=(product.description||"منتج من كتالوج Baran Game")+" · "+(prices.length?prices.join(" / "):"السعر قيد التجهيز");
       info.append(strong,small);
       const action=document.createElement("span");
@@ -7544,7 +7544,7 @@ function baranMoneyText(product){
   const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
   const parts=[];
   if(Number.isFinite(usd)&&usd>0)parts.push(usd.toFixed(2)+" $");
-  if(Number.isFinite(syp)&&syp>0)parts.push(syp.toLocaleString("en-US")+" ل.س");
+  if(Number.isFinite(syp)&&syp>0)parts.push(Math.round(syp/100).toLocaleString("en-US")+" ل.س جديدة");
   return parts.length?parts.join(" · "):"السعر قيد التجهيز";
 }
 function baranSelectGamePackage(game,product){
@@ -7633,7 +7633,7 @@ function renderBaranFavorites(){
   const price=document.createElement("span");
   const prices=[];
   if(item.price_usd>0)prices.push(item.price_usd.toFixed(2)+" $");
-  if(item.price_syp>0)prices.push(item.price_syp.toLocaleString("en-US")+" ل.س");
+  if(item.price_syp>0)prices.push(Math.round(item.price_syp/100).toLocaleString("en-US")+" ل.س جديدة");
   price.textContent=prices.length?prices.join(" · "):"السعر قيد التجهيز";
   info.append(category,name,price);
   const actions=document.createElement("div");actions.className="baran-favorite-actions";
@@ -7805,7 +7805,7 @@ function baranServicePrice(product){
  const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
  const values=[];
  if(Number.isFinite(usd)&&usd>0)values.push(usd.toFixed(2)+" $");
- if(Number.isFinite(syp)&&syp>0)values.push(syp.toLocaleString("en-US")+" ل.س");
+ if(Number.isFinite(syp)&&syp>0)values.push(Math.round(syp/100).toLocaleString("en-US")+" ل.س جديدة");
  return values.length?values.join(" · "):"السعر قيد التجهيز";
 }
 const baranServiceSelection={product:null,category:null,containerId:null};
