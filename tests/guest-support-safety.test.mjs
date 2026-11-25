@@ -40,6 +40,10 @@ test("routine guest issues receive safe automatic replies while other cases rema
   assert.match(api, /const autoReply = safeGuestAutoReply\(ticket\.subject, message\)/);
   assert.match(api, /auto_replied: Boolean\(autoReply\)/);
   assert.match(api, /requires_human_review: !autoReply/);
+  assert.match(api, /function guestHumanReview/);
+  assert.match(api, /priority: "high"/);
+  assert.match(api, /priority: "urgent"/);
+  assert.match(api, /assistant_reason: manualReview\.reason/);
   assert.match(api, /رصيد\|محفظه\|محفظة\|شحن/);
   assert.match(api, /احتيال\|نصب\|سرقه\|اختراق/);
   assert.match(adminUi, /تذكرة حساسة أمنياً أو متعلقة بالخصوصية/);
