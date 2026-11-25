@@ -1070,85 +1070,151 @@ function homscardAutoAuditParse(value){
   if(typeof value!=="string")return value;
   try{return JSON.parse(value);}catch(_){return value;}
 }
-function homscardAutoAuditKeys(value){
-  const parsed=homscardAutoAuditParse(value);
-  const found=[];
+function homscardAutoAuditText(value){
+  return String(value??"").normalize("NFKC").toLocaleLowerCase().replace(/[ـًٌٍَُِّْ]/g," ").replace(/\s+/g," ").trim();
+}
+function homscardAutoAuditNumber(value){
+  if(typeof value==="number")return Number.isFinite(value)&&value>0?value:null;
+  if(typeof value!=="string")return null;
+  const s=value.trim().replace(/,/g,".");
+  if(!/^\d+(?:\.\d+)?$/.test(s))return null;
+  const n=Number(s);
+  return Number.isFinite(n)&&n>0?n:null;
+}
+function homscardAutoAuditQuantities(value){
+  const root=homscardAutoAuditParse(value),found=[];
   const seen=new Set();
-  const add=(item)=>{
-    const text=String(item??"").trim();
-    if(!text||text.length>120||/^\\d+$/.test(text))return;
-    const key=text.toLocaleLowerCase();
-    if(!seen.has(key)){seen.add(key);found.push(text);}
-  };
-  const visit=(node,path="",depth=0)=>{
-    if(depth>8||node===null||node===undefined)return;
-    if(typeof node==="string"){
-      const text=node.trim();
-      if(!text)return;
-      if((text.startsWith("{")&&text.endsWith("}"))||(text.startsWith("[")&&text.endsWith("]"))){
-        try{const nested=JSON.parse(text);if(nested!==node){visit(nested,path,depth+1);return;}}catch(_){}
+  const add=(v)=>{const n=homscardAutoAuditNumber(v);if(n!==null&&!seen.has(n)){seen.add(n);found.push(n);}};
+  const visit=(node,depth=0)=>{
+    if(depth>7||node===null||node===undefined)return;
+    if(typeof node==="number"||typeof node==="string"){add(node);return;}
+    if(Array.isArray(node)){node.forEach(v=>visit(v,depth+1));return;}
+    if(typeof node==="object"){
+      const keys=["value","quantity","qty","amount","count","units","min","max"];
+      let used=false;
+      for(const key of keys)if(Object.prototype.hasOwnProperty.call(node,key)){add(node[key]);used=true;}
+      if(!used){
+        for(const [key,val] of Object.entries(node)){
+          if(/^\d+(?:\.\d+)?$/.test(key)&&(val===true||val===1||val==="1"))add(key);
+          else if(typeof val==="object"||Array.isArray(val))visit(val,depth+1);
+          else if(typeof val==="string"&&/^\d+(?:\.\d+)?$/.test(val))add(val);
+        }
       }
-      add(text);
-      return;
     }
-    if(Array.isArray(node)){node.forEach((item)=>visit(item,path,depth+1));return;}
+  };
+  visit(root);
+  return found.sort((a,b)=>a-b);
+}
+function homscardAutoAuditKeys(value){
+  const root=homscardAutoAuditParse(value),found=[],seen=new Set();
+  const add=(v)=>{
+    if(typeof v!=="string")return;
+    const s=v.trim();
+    if(!s||s.length>120||/^\d+$/.test(s))return;
+    const k=s.toLocaleLowerCase();
+    if(!seen.has(k)){seen.add(k);found.push(s);}
+  };
+  const visit=(node,depth=0)=>{
+    if(depth>7||node===null||node===undefined)return;
+    if(typeof node==="string"){
+      const s=node.trim();
+      if((s.startsWith("{")&&s.endsWith("}"))||(s.startsWith("[")&&s.endsWith("]"))){
+        try{visit(JSON.parse(s),depth+1);return;}catch(_){}
+      }
+      add(s);return;
+    }
+    if(Array.isArray(node)){node.forEach(v=>visit(v,depth+1));return;}
     if(typeof node==="object"){
       for(const [key,val] of Object.entries(node)){
-        if(!/^\\d+$/.test(key))add(key);
-        if(/^(name|label|title|field|key|param|parameter|slug|code|placeholder)$/i.test(key)&&typeof val==="string")add(val);
-        visit(val,path?path+"."+key:key,depth+1);
+        if(!/^\d+$/.test(key))add(key);
+        if(typeof val==="string")add(val);
+        else if(val&&typeof val==="object")visit(val,depth+1);
       }
     }
   };
-  visit(parsed);
+  visit(root);
   return found;
 }
 function homscardAutoAuditOne(p){
-  const name=String(p.name||""),type=String(p.product_type||"").toLowerCase();
-  const text=(name+" "+String(p.category||"")+" "+type).toLowerCase();
-  const raw=homscardAutoAuditParse(p.qty_values);
-  const options=(Array.isArray(raw)?raw:raw&&typeof raw==="object"?Object.values(raw):typeof raw==="string"?raw.split(/[,;|]/):[])
-    .map(v=>Number(v&&typeof v==="object"?(v.value??v.quantity??v.qty??v.id):String(v).replace(/[^0-9.]/g,"")))
-    .filter(v=>Number.isFinite(v)&&v>0);
-  const keys=homscardAutoAuditKeys(p.params);
-  const paramText=keys.join(" ").toLowerCase();
-  const subscription=/(اشتراك|شهري|شهر|سنوي|سنة|أسبوع|يوم|subscription|monthly|annual|yearly|weekly|days?)/i.test(text);
-  const account=/(player.?id|user.?id|uid|account|server|zone|email|login|معرف|آيدي|سيرفر|حساب|بريد)/i.test(paramText);
-  let kind="غير محسوم",confidence="منخفض",reason="لا تكفي البيانات لتحديد طريقة بيع المنتج بأمان.";
-  if(subscription||/(subscription|membership)/i.test(type)){
-    kind="اشتراك بمدة محتملة";confidence="متوسط";reason="الاسم أو النوع يشير إلى اشتراك؛ يلزم تأكيد المدة وطريقة التفعيل.";
-  }else if(options.length||/(unit|quantity|qty|amount|per[_ -]?unit|topup|recharge)/i.test(type)){
-    kind="كمية متغيرة محتملة";confidence=options.length?"مرتفع":"متوسط";reason=options.length?"المورد أرسل خيارات كمية؛ يجب تأكيد أن السعر هو سعر الوحدة.":"النوع يشير إلى كمية لكن الخيارات غير ظاهرة.";
-  }else if(/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|pack|باقة|bundle)/i.test(text)&&/\d/.test(text)){
-    kind="باقة ثابتة محتملة";confidence="متوسط";reason="اسم المنتج يوحي بباقة ذات قيمة ثابتة؛ لم نعتمد قيمة package الافتراضية وحدها.";
+  const name=String(p.name||""),category=String(p.category||"");
+  const type=homscardAutoAuditText(p.product_type||"");
+  const text=homscardAutoAuditText(name+" "+category);
+  const params=Array.isArray(p.params)?p.params:(p.params==null?[]:[p.params]);
+  const keys=homscardAutoAuditKeys(params),paramText=homscardAutoAuditText(keys.join(" "));
+  const options=homscardAutoAuditQuantities(p.qty_values);
+  const subscriptionWords=/(اشتراك|شهري|شهر|سنوي|سنة|أسبوع|يوم|subscription|monthly|month|annual|yearly|weekly|duration|days?)/i;
+  const accountWords=/(player.?id|user.?id|uid|account|server|zone|email|login|معرف|آيدي|سيرفر|حساب|بريد|رقم اللاعب)/i;
+  const typeSubscription=/^(subscription|membership|time|duration)$/i.test(type);
+  const typeVariable=/^(quantity|variable|top.?up|recharge|amount|custom)$/i.test(type);
+  const hasDuration=subscriptionWords.test(text)||typeSubscription;
+  const hasVariableEvidence=options.length>0||typeVariable;
+  const hasPackEvidence=/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|credits|points)/i.test(text)&&/\d/.test(text);
+  let kind="غير محسوم",confidence="منخفض",reason="المعلومات المتاحة لا تكفي لتحديد طريقة البيع دون تخمين.";
+  if(hasDuration){
+    kind="اشتراك بمدة محتملة";
+    confidence=typeSubscription?"متوسط":"منخفض";
+    reason=typeSubscription?"نوع المورد يشير إلى اشتراك؛ يلزم تأكيد المدة والتفعيل.":"الاسم يتضمن إشارة زمنية؛ قد تكون وصفاً فقط وليست مدة اشتراك مؤكدة.";
+  }else if(hasVariableEvidence){
+    kind="كمية متغيرة محتملة";
+    confidence=options.length?"متوسط":"منخفض";
+    reason=options.length?"توجد قيم كمية منظمة؛ هذا لا يثبت أن سعر المورد سعر وحدة.":"نوع المورد يوحي بكمية متغيرة لكن خيارات الكمية غير متاحة.";
+  }else if(hasPackEvidence){
+    kind="باقة ثابتة محتملة";
+    confidence="منخفض";
+    reason="الاسم يوحي بباقة ذات قيمة محددة؛ لم يتوفر دليل بنيوي يؤكد ثباتها.";
   }
-  const price=Number(p.price);
-  return {p,kind,confidence,reason,options,keys,account,
-    costs:kind==="كمية متغيرة محتملة"&&options.length&&Number.isFinite(price)&&price>=0?options.slice(0,8).map(q=>({q,cost:q*price})):[]};
+  const price=homscardAutoAuditNumber(p.price);
+  const account=accountWords.test(paramText);
+  const missing=[];
+  if(!p.product_type||type==="package")missing.push("نوع المنتج قد يكون افتراضياً من الموصل");
+  if(!p.qty_values)missing.push("لا توجد خيارات كمية مؤكدة");
+  if(!params.length)missing.push("لا توجد حقول إدخال ظاهرة");
+  if(price===null)missing.push("السعر غير رقمي أو غير صالح");
+  return {p,kind,confidence,reason,options,keys,account,price,missing,hasDuration,hasVariableEvidence,hasPackEvidence};
+}
+function homscardAutoAuditSelfTests(){
+  const cases=[
+    [{name:"PUBG 60 UC",product_type:"package",price:"1.2"}, "باقة ثابتة محتملة"],
+    [{name:"Free Fire",product_type:"package",price:1}, "غير محسوم"],
+    [{name:"شحن حسب الكمية",product_type:"quantity",qty_values:[100,500],price:0.2}, "كمية متغيرة محتملة"],
+    [{name:"شحن",qty_values:100,price:0.2}, "كمية متغيرة محتملة"],
+    [{name:"اشتراك شهري",product_type:"package"}, "اشتراك بمدة محتملة"],
+    [{name:"VPN Premium 30 days",product_type:"package"}, "اشتراك بمدة محتملة"],
+    [{name:"Game credits",product_type:"package"}, "غير محسوم"],
+    [{name:"خدمة",product_type:"package",qty_values:"غير محدد"}, "غير محسوم"],
+    [{name:"منتج",product_type:"package",qty_values:[{"quantity":"1000"}]}, "كمية متغيرة محتملة"]
+  ];
+  const failures=cases.filter(([input,expected])=>homscardAutoAuditOne(input).kind!==expected);
+  return {total:cases.length,passed:cases.length-failures.length,failures:failures.map(([input,expected])=>({name:input.name,expected,actual:homscardAutoAuditOne(input).kind}))};
 }
 function homscardRunAutomaticAudit(){
   const output=document.getElementById("opsHomsAutoAuditResults"),status=document.getElementById("opsHomsAutoAuditStatus");
   if(!output||!status)return;
-  if(!homscardCatalogCache.length){status.textContent="حمّل كتالوج حمص كارد أولاً.";return;}
+  if(!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length){status.textContent="حمّل كتالوج حمص كارد أولاً.";return;}
   const rows=homscardCatalogCache.map(homscardAutoAuditOne);
   const labels=["كمية متغيرة محتملة","باقة ثابتة محتملة","اشتراك بمدة محتملة","غير محسوم"];
   const counts=Object.fromEntries(labels.map(label=>[label,rows.filter(r=>r.kind===label).length]));
-  status.textContent="اكتمل فحص "+rows.length+" منتجاً: "+(rows.length-counts["غير محسوم"])+" مصنّف مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة.";
+  const tests=homscardAutoAuditSelfTests();
+  status.textContent="اكتمل فحص "+rows.length+" منتجاً: "+(rows.length-counts["غير محسوم"])+" تصنيفاً مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة. الاختبارات الداخلية: "+tests.passed+"/"+tests.total;
   output.replaceChildren();
   const summary=opsNode("div","ops-stats-grid");
   labels.forEach(label=>{const card=opsNode("div","ops-card");card.append(opsNode("strong","",String(counts[label])),opsNode("div","ops-muted",label));summary.appendChild(card);});
   output.appendChild(summary);
-  output.appendChild(opsNode("p","ops-muted","فحص محلي للقراءة فقط يعتمد على اسم المنتج وحقول المورد. لا يغيّر المتجر ولا ينفّذ شراء أو شحناً. نوع package قد يكون قيمة افتراضية من الموصل، لذلك لا يُستخدم وحده لإثبات أن المنتج باقة."));
+  output.appendChild(opsNode("p","ops-muted","التصنيفات استدلالية وليست اعتماداً تجارياً. لا نعتبر package دليلاً لأن الموصل قد يضعها كقيمة افتراضية. لا نحسب تكلفة كمية ولا نفترض أن السعر سعر وحدة."));
+  const testBox=opsNode("div","ops-muted",tests.failures.length?"فشل اختبار داخلي: "+JSON.stringify(tests.failures):"اجتازت قواعد التصنيف الاختبارات الداخلية.");
+  output.appendChild(testBox);
   const list=opsNode("div","ops-list");
+  rows.sort((a,b)=>labels.indexOf(b.kind)-labels.indexOf(a.kind));
   rows.forEach(r=>{
     const d=opsNode("details","ops-item");d.appendChild(opsNode("summary","",opsText(r.p.name)+" — "+r.kind+" · ثقة "+r.confidence));
     d.append(opsNode("div","ops-muted","معرّف المورد: "+opsText(r.p.id)+" | التصنيف: "+opsText(r.p.category)),
       opsNode("div","ops-muted","السبب: "+r.reason),
-      opsNode("div","ops-muted","نوع المورد: "+opsText(r.p.product_type)),
-      opsNode("div","ops-muted","خيارات الكمية: "+(r.options.length?r.options.join("، "):"غير ظاهرة")),
+      opsNode("div","ops-muted","نوع المورد: "+opsText(r.p.product_type||"غير محدد")),
+      opsNode("div","ops-muted","سعر المورد كما ورد: "+opsText(r.p.price??"غير متاح")+" USD — لم تُحسب تكلفة كمية"),
+      opsNode("div","ops-muted","خيارات كمية رقمية مستخرجة: "+(r.options.length?r.options.join("، "):"غير ظاهرة")),
       opsNode("div","ops-muted","حقول الطلب: "+(r.keys.length?r.keys.slice(0,20).join("، "):"غير ظاهرة")),
-      opsNode("div","ops-muted","بيانات حساب/لاعب محتملة: "+(r.account?"نعم، راجع أسماء الحقول":"غير ظاهرة")));
-    if(r.costs.length)d.appendChild(opsNode("div","ops-muted","تكلفة توضيحية إذا كان السعر سعر وحدة: "+r.costs.map(x=>x.q+" × "+r.p.price+" = "+x.cost.toFixed(8)+" USD").join(" | ")));
+      opsNode("div","ops-muted","بيانات حساب/لاعب محتملة: "+(r.account?"نعم، راجع الحقول يدوياً":"غير ظاهرة")),
+      opsNode("div","ops-muted","نواقص/تحذيرات: "+(r.missing.length?r.missing.join("؛ "):"لا توجد نواقص شكلية ظاهرة")));
     list.appendChild(d);
   });
   output.appendChild(list);
