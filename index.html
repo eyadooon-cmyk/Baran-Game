@@ -2066,7 +2066,7 @@ body.baran-notifications-open{overflow:hidden!important;overscroll-behavior:none
 html[data-baran-theme="day"]{color-scheme:light;--bg:#f3eff8;--panel:#ffffff;--line:#dfd3e9;--muted:#756781;--green:#76509a}
 html[data-baran-theme="day"] body{background:#f3eff8!important;color:#28212f!important}
 html[data-baran-theme="day"] main{color:#28212f}
-html[data-baran-theme="day"] header{background:linear-gradient(110deg,rgba(245,239,250,.94),rgba(232,220,244,.82) 52%,rgba(245,239,250,.92)),url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=85") center 42%/cover no-repeat!important;box-shadow:0 10px 28px #4a31501a!important}
+html[data-baran-theme="day"] header{background:radial-gradient(ellipse at 82% 12%,rgba(155,104,199,.16),transparent 42%),linear-gradient(115deg,#f5effa,#e8dcf4 55%,#f5effa)!important;box-shadow:0 10px 28px #4a31501a!important}
 html[data-baran-theme="day"] header .logo,html[data-baran-theme="day"] header p{color:#352342!important;text-shadow:none!important}
 html[data-baran-theme="day"] header .logo-mark{background:linear-gradient(145deg,#fff,#eee5f5)!important;color:#76509a!important;border-color:#bda5d0!important}
 html[data-baran-theme="day"] header .header-tag{background:#ffffffd9!important;color:#76509a!important}
@@ -2141,21 +2141,11 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
   border:1px solid #8d69aa;box-shadow:inset 0 0 35px #130b20aa,0 7px 18px #0005;
   font-size:0;color:transparent;text-shadow:none;
 }
-.baran-auto-category-grid .baran-auto-category-art:not(.baran-auto-apps-art):not(.baran-auto-chat-art):not(.baran-auto-vpn-art):not(.baran-auto-gifts-art){
-  background-image:linear-gradient(180deg,#170d2440,#170d24a8),url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1000&q=85");
-}
-.baran-auto-category-grid .baran-auto-apps-art{
-  background-image:linear-gradient(180deg,#170d2440,#170d24a8),url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1000&q=85");
-}
-.baran-auto-category-grid .baran-auto-chat-art{
-  background-image:linear-gradient(180deg,#170d2433,#170d24b8),url("https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1000&q=85");
-}
-.baran-auto-category-grid .baran-auto-vpn-art{
-  background-image:linear-gradient(180deg,#170d2433,#170d24b8),url("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1000&q=85");
-}
-.baran-auto-category-grid .baran-auto-gifts-art{
-  background-image:linear-gradient(180deg,#170d2433,#170d24b8),url("https://images.unsplash.com/photo-1513883049090-d0b7439799bf?w=1000&q=85");
-}
+.baran-auto-category-grid .baran-auto-category-grid .baran-auto-category-art{background-image:none;background-color:#17111f}
+.baran-auto-category-grid .baran-auto-apps-art{background-color:#183c49}
+.baran-auto-category-grid .baran-auto-chat-art{background-color:#173b43}
+.baran-auto-category-grid .baran-auto-vpn-art{background-color:#43251c}
+.baran-auto-category-grid .baran-auto-gifts-art{background-color:#17334a}
 html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
   border-color:#b99bcf;box-shadow:inset 0 0 30px #21112b55,0 5px 14px #39244818;
 }
