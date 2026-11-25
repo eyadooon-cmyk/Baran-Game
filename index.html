@@ -3314,6 +3314,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <select id="opsApiAdapter">
           <option value="pending">بانتظار تحديد المورد</option>
           <option value="rtc_market">RTC MARKET</option>
+          <option value="homscard">HomsCard — حمص كارد</option>
           <option value="flow1st">Flow1st</option>
           <option value="generic_rest">REST عام (بعد مراجعة وثائق المورد)</option>
           <option value="custom">موصل مخصص</option>
@@ -3342,6 +3343,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <button class="full" type="button" onclick="opsSaveSupplierApiConfig()">حفظ إعدادات API</button>
         <button class="secondary full" type="button" onclick="opsSimulateSupplierApi()">فحص تجريبي محلي دون الاتصال بالمورد</button>
         <div id="opsApiMessage" class="ops-muted" role="status"></div>
+        <div class="ops-actions"><button type="button" class="secondary" onclick="opsTestHomsCard(&quot;profile&quot;)">فحص اتصال حمص كارد</button><button type="button" class="secondary" onclick="opsTestHomsCard(&quot;products&quot;)">معاينة كتالوج حمص كارد</button></div>
+        <div id="opsHomsCardResult" class="ops-list" aria-live="polite"></div>
       </div>
       <div id="opsApiStatus" class="ops-list">لا توجد إعدادات API محفوظة.</div>
       <h4>سجل اتصال المورد ومحاولات الطلبات</h4>
