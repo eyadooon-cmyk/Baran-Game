@@ -142,6 +142,10 @@ async function init(){
    $("baranGuestSupportStart").classList.add("hidden");
    const result=$("baranGuestSupportResult");result.textContent="";result.style.color="#eee";
    const heading=document.createElement("strong");heading.textContent="تم فتح تذكرتك بنجاح";result.appendChild(heading);
+   const responseNote=document.createElement("p");
+   responseNote.textContent=data.auto_replied&&data.auto_reply_message?"أرسل Baran Assistant إرشادات أولية آمنة، ويمكنك متابعة المحادثة باستخدام رقم التذكرة والرمز.": "تحتاج رسالتك إلى مراجعة فريق الدعم، وسيظهر الرد داخل المحادثة عند المتابعة.";
+   responseNote.style.cssText="margin:8px 0;line-height:1.7;color:#e8d8f5";result.appendChild(responseNote);
+   if(data.auto_replied&&data.auto_reply_message){const autoReply=document.createElement("div");autoReply.textContent=data.auto_reply_message;autoReply.style.cssText="padding:10px;margin:8px 0;background:#21172b;border:1px solid #70528a;border-radius:10px;line-height:1.8";result.appendChild(autoReply);}
    const ticketLine=document.createElement("div");ticketLine.textContent="رقم التذكرة: "+data.ticket_code;result.appendChild(ticketLine);
    const warning=document.createElement("p");warning.textContent="احفظ رمز المتابعة الآن؛ ستحتاجه مع رقم التذكرة لفتح المحادثة لاحقاً. لن نتمكن من إظهاره لك مرة ثانية.";warning.style.cssText="margin:10px 0;color:#f2d7ff;font-weight:700";result.appendChild(warning);
    const secret=document.createElement("code");secret.textContent=data.tracking_secret;secret.dir="ltr";secret.style.cssText="display:block;padding:12px;margin:8px 0;background:#09070d;border:1px solid #8b6ba8;border-radius:9px;font-size:16px;letter-spacing:1px;user-select:all";result.appendChild(secret);
