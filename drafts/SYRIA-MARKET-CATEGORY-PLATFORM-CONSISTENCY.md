@@ -35,6 +35,8 @@ These are supplier metadata/category conflicts, not proof that either field is w
 |---|---:|
 | Category rows in cache | 106 |
 | Duplicate category names | 0 |
+| Product rows / distinct product IDs | 796 / 796 |
+| Duplicate or missing product IDs | 0 / 0 |
 | Category rows with a populated `id` field | 0 |
 | Products with blank category name | 3 |
 | Products whose category name is absent from the category list | 3 |
