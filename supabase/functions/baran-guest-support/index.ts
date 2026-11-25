@@ -68,11 +68,11 @@ function safeGuestAutoReply(subject: string, message: string): { reply: string; 
 function guestHumanReview(subject: string, message: string): { reason: string; priority: "normal" | "high" | "urgent" } {
   const raw = (subject + " " + message).toLowerCase();
   const text = raw.replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+  if (/احتيال|نصب|سرقه|اختراق|تهديد|ابتزاز|محامي|قانوني|شكوي ?رسميه|خصوصيه|بياناتي|حذف ?(الحساب|البيانات)|fraud|scam|hacked|stolen|legal|privacy|delete ?(account|data)|رمز ?التحقق|كود ?التحقق|otp|pin|api[_ -]?key|access[_ -]?token|credit ?card|card ?number|بطاقه ?بنكيه|كلمه ?المرور|كلمه ?السر|password|passcode|verification ?code/.test(text)) {
+    return { reason: "مراجعة أمنية/خصوصية عاجلة: لا تطلب بيانات اعتماد أو رموز تحقق أو بيانات بطاقة.", priority: "urgent" };
+  }
   if (/رصيد|محفظه|محفظة|شحن|تسليم|تفعيل ?طلب|طلب ?شراء|حواله|حوالة|تحويل|دفع|دفعت|خصم|سحب|استرداد|استرجاع|فاتوره|فاتورة|شام ?كاش|sham ?cash|wallet|balance|payment|paid|refund|chargeback|top.?up|deposit|withdraw|transaction|invoice|order ?delivery|fulfillment/.test(text)) {
     return { reason: "مراجعة مالية/تشغيلية بشرية مطلوبة: تحقق من الدفع أو الرصيد أو الشحن أو التسليم قبل أي رد نهائي.", priority: "high" };
-  }
-  if (/احتيال|نصب|سرقه|اختراق|تهديد|ابتزاز|محامي|قانوني|شكوي ?رسميه|خصوصيه|بياناتي|حذف ?(الحساب|البيانات)|fraud|scam|hacked|stolen|legal|privacy|delete ?(account|data)|رمز ?التحقق|كود ?التحقق|otp|pin|api[_ -]?key|access[_ -]?token|credit ?card|card ?number|بطاقه ?بنكيه/.test(text)) {
-    return { reason: "مراجعة أمنية/خصوصية عاجلة: لا تطلب بيانات اعتماد أو رموز تحقق أو بيانات بطاقة.", priority: "urgent" };
   }
   return { reason: "تحتاج التذكرة إلى مراجعة بشرية لأن المساعد لم يصنف المشكلة ضمن الإرشادات الآلية الآمنة.", priority: "normal" };
 }
