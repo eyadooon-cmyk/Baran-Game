@@ -22,7 +22,7 @@
 <body><main class="wrap">
 <header class="top"><div class="brand">BARAN <span>GAME</span></div><span class="draft">مسودة داخلية · غير منشورة</span></header>
 <section class="hero"><div class="eyebrow">SYRIA MARKET · CATALOG PREVIEW</div><h1>معاينة المنتجات والأسعار</h1><p>تصميم تجريبي لعرض منتجات المورد بعد تصنيفها. السعر الظاهر هو تكلفة المورد بالدولار فقط، وليس سعر بيع للعميل.</p></section>
-<section class="stats"><div class="stat"><b>796</b><small>منتج في الكتالوج</small></div><div class="stat"><b>106</b><small>تصنيف محفوظ</small></div><div class="stat"><b>8</b><small>نماذج فعلية للعرض</small></div></section>
+<section class="stats"><div class="stat"><b>796</b><small>منتج في الكتالوج</small></div><div class="stat"><b>106</b><small>تصنيف محفوظ</small></div><div class="stat"><b>10</b><small>نماذج فعلية للعرض</small></div></section>
 <div class="toolbar"><input id="search" class="search" placeholder="ابحث عن منتج أو تصنيف…" aria-label="بحث"><select id="sort" class="select" aria-label="ترتيب"><option value="default">الترتيب الافتراضي</option><option value="low">تكلفة المورد: الأقل أولاً</option><option value="high">تكلفة المورد: الأعلى أولاً</option><option value="name">الاسم أبجدياً</option></select></div>
 <nav class="chips" id="chips" aria-label="تصنيفات المنتجات"></nav>
 <section class="grid" id="products"></section>
@@ -38,12 +38,12 @@ const items=[
 {id:"1846",name:"2200 + 220 FreeFire By ID",cat:"فري فاير Free Fire ID",price:20.775723,type:"باقة ثابتة",qty:"باقة واحدة"},
 {id:"93",name:"بطاقة غوغل 5$ امريكي",cat:"بطاقات قوقل امريكية",price:5.521497,type:"باقة ثابتة",qty:"باقة واحدة"},
 {id:"1688",name:"chatgpt plus",cat:"chatgpt",price:25.3,type:"باقة ثابتة",qty:"باقة واحدة"},
-{id:"254",name:"YAMI STAR",cat:"شحن التطبيقات",price:0.00000027,type:"سعر وحدة · كمية متغيرة",qty:"الحد الأدنى 2,000,000"}
+{id:"254",name:"YAMI STAR",cat:"شحن التطبيقات",price:0.54,type:"كمية متغيرة · سعر محسوب للحد الأدنى",qty:"الكمية 2,000,000 إلى 500,000,000,000 · تكلفة الحد الأدنى 0.54 USD · يتطلب عرض سعر من الخادم"}
 ];
 const cats=["الكل",...new Set(items.map(x=>x.cat))];let active="الكل";
 const $=id=>document.getElementById(id);
 function fmt(n){return "$"+Number(n).toFixed(n<0.001?8:6).replace(/0+$/,"").replace(/\.$/,"")}
 function renderChips(){$("chips").innerHTML=cats.map(c=>'<button class="chip '+(active===c?'active':'')+'" data-cat="'+c.replace(/"/g,"&quot;")+'">'+c+'</button>').join("");$("chips").querySelectorAll("button").forEach(b=>b.onclick=()=>{active=b.dataset.cat;renderChips();render()})}
-function render(){let q=$("search").value.trim().toLowerCase();let a=items.filter(x=>(active==="الكل"||x.cat===active)&&[x.name,x.cat,x.id].join(" ").toLowerCase().includes(q));let sort=$("sort").value;if(sort==="low")a.sort((x,y)=>x.price-y.price);if(sort==="high")a.sort((x,y)=>y.price-x.price);if(sort==="name")a.sort((x,y)=>x.name.localeCompare(y.name,"ar"));$("products").innerHTML=a.length?a.map(x=>'<article class="card"><span class="tag">'+x.type+'</span><div class="name">'+x.name+'</div><div class="cat">'+x.cat+' · معرّف المورد '+x.id+'</div><div class="meta">'+x.qty+'</div><div class="pricebox"><div class="price-label">تكلفة المورد · USD</div><div class="price">'+fmt(x.price)+'</div><div class="retail">سعر البيع: قيد المراجعة</div></div><div class="disabled">معاينة فقط · الطلبات غير مفعّلة</div></article>').join(""):'<div class="meta">لا توجد نتائج مطابقة.</div>'}
+function render(){let q=$("search").value.trim().toLowerCase();let a=items.filter(x=>(active==="الكل"||x.cat===active)&&[x.name,x.cat,x.id].join(" ").toLowerCase().includes(q));let sort=$("sort").value;if(sort==="low")a.sort((x,y)=>x.price-y.price);if(sort==="high")a.sort((x,y)=>y.price-x.price);if(sort==="name")a.sort((x,y)=>x.name.localeCompare(y.name,"ar"));$("products").innerHTML=a.length?a.map(x=>'<article class="card"><span class="tag">'+x.type+'</span><div class="name">'+x.name+'</div><div class="cat">'+x.cat+' · معرّف المورد '+x.id+'</div><div class="meta">'+x.qty+'</div><div class="pricebox"><div class="price-label">'+(x.type.includes("لكل 1000")?"تكلفة المورد لكل 1000 · USD":x.id==="254"?"تكلفة المورد عند الحد الأدنى · USD":x.id==="1671"?"تكلفة أقل خيار · USD":"تكلفة المورد · USD")+'</div><div class="price">'+fmt(x.price)+'</div><div class="retail">سعر البيع: قيد المراجعة</div></div><div class="disabled">معاينة فقط · الطلبات غير مفعّلة</div></article>').join(""):'<div class="meta">لا توجد نتائج مطابقة.</div>'}
 $("search").addEventListener("input",render);$("sort").addEventListener("change",render);renderChips();render();
 </script></body></html>
