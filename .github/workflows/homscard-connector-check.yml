@@ -1,0 +1,34 @@
+name: HomsCard connector checks
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/baran-homscard-connector/**"
+      - "supabase/migrations/*homscard*"
+      - "tests/homscard-connector.test.mjs"
+      - ".github/workflows/homscard-connector-check.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/baran-homscard-connector/**"
+      - "supabase/migrations/*homscard*"
+      - "tests/homscard-connector.test.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run HomsCard safety tests
+        run: node --test tests/homscard-connector.test.mjs
+      - uses: denoland/setup-deno@v2
+      - name: Type-check HomsCard Edge Function
+        run: deno check supabase/functions/baran-homscard-connector/index.ts
+      - name: Check admin UI JavaScript syntax
+        run: node --check admin-operations.js

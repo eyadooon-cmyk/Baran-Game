@@ -1011,3 +1011,25 @@ async function saveBaranCampaignDraft(){
     await loadBaranPromotionsManager();
   }catch(error){promoMessage(message,error.message||"تعذر حفظ العرض.",true);}
 }
+
+
+async function opsTestHomsCard(action){
+  const message=document.getElementById('opsApiMessage');
+  const output=document.getElementById('opsHomsCardResult');
+  if(message)message.textContent=action==='profile'?'جاري فحص اتصال حمص كارد وقراءة الحساب...':'جاري جلب كتالوج حمص كارد للمعاينة فقط...';
+  if(output)output.replaceChildren();
+  try{
+    const {data,error}=await sb.functions.invoke('baran-homscard-connector',{body:{action}});
+    if(error)throw new Error(error.message||'تعذر الاتصال بالدالة.');
+    if(!data?.success)throw new Error(data?.error||'لم ينجح فحص المورد.');
+    if(action==='profile'){
+      const p=data.data||{};
+      if(output)output.append(opsNode('strong','','اتصال حمص كارد ناجح'),opsNode('div','ops-muted','الرصيد: '+opsText(p.balance)+' '+opsText(p.currency)),opsNode('div','ops-muted','خصم الحساب: '+opsText(p.discount)+'%'),opsNode('div','ops-muted','الحساب: '+opsText(p.name)));
+      if(message)message.textContent='تم فحص الملف الشخصي بنجاح. لم يتم إنشاء أي طلب.';
+    }else{
+      const products=Array.isArray(data.data)?data.data:[];
+      if(output){output.append(opsNode('strong','','الكتالوج المسترجع: '+products.length+' منتج'));products.slice(0,12).forEach(p=>output.appendChild(opsNode('div','ops-item',opsText(p.name)+' | '+opsText(p.price)+' USD | '+opsText(p.category)+' | '+(p.available?'متوفر':'غير متوفر'))));if(products.length>12)output.appendChild(opsNode('div','ops-muted','تم عرض أول 12 منتجاً للمعاينة فقط.'));}
+      if(message)message.textContent='تم جلب الكتالوج بنجاح. هذه معاينة فقط ولم يتم استيراد أو تعديل أي منتج.';
+    }
+  }catch(error){if(message)message.textContent='تعذر فحص حمص كارد: '+(error?.message||'خطأ غير معروف');}
+}
