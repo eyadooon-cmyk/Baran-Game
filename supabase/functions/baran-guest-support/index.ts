@@ -262,6 +262,7 @@ Deno.serve(async (req: Request) => {
         .select("id,ticket_code,subject,status,created_at,updated_at,secret_hash")
         .eq("ticket_code", ticketCode).maybeSingle();
       if (error || !ticket) return json({ error: "التذكرة غير موجودة أو بيانات المتابعة غير صحيحة." }, 404, origin);
+      let resultingStatus = ticket.status;
       const suppliedHash = await sha256(pepper + ":ticket:" + trackingSecret);
       if (!safeEqual(suppliedHash, ticket.secret_hash)) return json({ error: "التذكرة غير موجودة أو بيانات المتابعة غير صحيحة." }, 404, origin);
 
@@ -282,17 +283,19 @@ Deno.serve(async (req: Request) => {
             ticket_id: ticket.id, sender_role: "assistant", message: autoReply.reply,
           });
           if (autoReplyError) console.error("guest follow-up auto reply failed", autoReplyError);
+          resultingStatus = autoReplyError ? "pending" : "answered";
           await admin.from("baran_guest_support_tickets").update({
-            status: autoReplyError ? "pending" : "answered",
-            assistant_reason: autoReply.reason,
+            status: resultingStatus,
+            assistant_reason: autoReplyError ? "تعذر إرسال الرد الآلي؛ تحتاج التذكرة إلى مراجعة بشرية." : autoReply.reason,
             assistant_draft: autoReply.reply,
             admin_read_at: null,
             last_customer_message_at: now.toISOString(),
             updated_at: now.toISOString(),
           }).eq("id", ticket.id);
         } else {
+          resultingStatus = "pending";
           await admin.from("baran_guest_support_tickets").update({
-            status: "pending",
+            status: resultingStatus,
             assistant_reason: manualReview?.reason || "تحتاج التذكرة إلى مراجعة بشرية.",
             priority: manualReview?.priority || "normal",
             admin_read_at: null,
@@ -314,7 +317,7 @@ Deno.serve(async (req: Request) => {
       if (messagesError) throw new Error("تعذر تحميل المحادثة.");
       return json({
         success: true,
-        ticket: { ticket_code: ticket.ticket_code, subject: ticket.subject, status: action === "guest_reply" ? "pending" : ticket.status, created_at: ticket.created_at },
+        ticket: { ticket_code: ticket.ticket_code, subject: ticket.subject, status: resultingStatus, created_at: ticket.created_at },
         messages: messages || [],
       }, 200, origin);
     }
