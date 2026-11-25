@@ -106,6 +106,25 @@ Deno.serve(async (req: Request) => {
     }
     if (action === "profile") {
       const profile = data.data ?? {};
+      const balance = Number(profile.balance);
+      if (Number.isFinite(balance) && balance >= 0) {
+        const { data: supplier } = await admin.from("suppliers").select("id")
+          .eq("name", "HomsCard").maybeSingle();
+        if (supplier?.id) {
+          const [{ error: healthError }, { error: balanceError }] = await Promise.all([
+            admin.rpc("baran_supplier_record_health_check", {
+              p_supplier_id: supplier.id, p_is_healthy: true, p_http_status: response.status,
+              p_error_message: null,
+            }),
+            admin.rpc("baran_supplier_record_balance", {
+              p_supplier_id: supplier.id, p_balance: balance, p_currency: "USD",
+              p_details: { source: "homscard_api_profile", discount: profile.discount ?? null },
+            }),
+          ]);
+          if (healthError) console.error("HOMSCARD_HEALTH_RECORD_FAILED", healthError.message);
+          if (balanceError) console.error("HOMSCARD_BALANCE_RECORD_FAILED", balanceError.message);
+        }
+      }
       return json({ success: true, provider: "HomsCard", action, data: {
         name: profile.name ?? null, email: profile.email ?? null, balance: profile.balance ?? null,
         currency: profile.currency ?? "USD", discount: profile.discount ?? null,
