@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const source = await readFile(new URL("../supabase/functions/baran-homscard-connector/index.ts", import.meta.url), "utf8");
 const migration = await readFile(new URL("../supabase/migrations/20261125110000_add_homscard_supplier_api.sql", import.meta.url), "utf8");
+const adminUi = await readFile(new URL("../admin-operations.js", import.meta.url), "utf8");
 
 test("HomsCard connector is admin-authenticated and keeps credentials server-side", () => {
   assert.match(source, /admin_is_user/);
@@ -25,7 +26,22 @@ test("HomsCard connector supports the documented optional HMAC request signature
   assert.match(source, /HMAC/);
 });
 
-test("HomsCard connector preserves missing product_type as unknown instead of assuming package", () => {\n  assert.match(source, /product_type: p\\.product_type \\?\\? null/);\n  assert.doesNotMatch(source, /product_type: p\\.product_type \\?\\? "package"/);\n});\n\ntest("HomsCard connector never returns the API token or raw upstream body", () => {
+test("HomsCard connector preserves missing product_type as unknown instead of assuming package", () => {\n  assert.match(source, /product_type: p\\.product_type \\?\\? null/);\n  assert.doesNotMatch(source, /product_type: p\\.product_type \\?\\? "package"/);\n});\n\ntest("HomsCard product page audit is admin-gated, bounded, and read-only", () => {
+  assert.match(source, /action === "product_pages"/);
+  assert.match(source, /ids\.length > 25/);
+  assert.match(source, /https:\/\/homscard\.com\/product\.php\?id=/);
+  assert.match(source, /Public product-page metadata only/);
+  assert.doesNotMatch(source, /\/order\.php/);
+});
+
+test("Admin catalog audit can enrich products from HomsCard public product pages", () => {
+  assert.match(adminUi, /homscardInspectProductPages/);
+  assert.match(adminUi, /action:"product_pages"/);
+  assert.match(adminUi, /p\.page_text/);
+  assert.match(adminUi, /للوحدة/);
+});
+
+test("HomsCard connector never returns the API token or raw upstream body", () => {
   assert.match(source, /profile\.email/);
   assert.doesNotMatch(source, /return json\(\{[^}]*apiToken/s);
   assert.match(source, /Read-only catalog request/);
