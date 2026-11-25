@@ -65,6 +65,7 @@ test("financial guest tickets are explicitly escalated and never treated as an a
 
 test("guest and registered-customer tickets share one admin support workspace", () => {
   assert.match(app, /id="supportTabGuests"[\s\S]*?switchSupportTab\('guests'\)/);
+  assert.match(app, /baran-guest-support-admin\.js\?v=20261125-unified-support-1/);
   assert.match(app, /id="supportGuestView"[\s\S]*?id="baranGuestAdminMount"/);
   assert.match(app, /function switchSupportTab\(tab\)[\s\S]*?selected==="guests"[\s\S]*?loadBaranGuestSupportAdmin/);
   assert.match(app, /data-admin-panel="guest-support"[\s\S]*?showAdminPanel\('support'\)/);
