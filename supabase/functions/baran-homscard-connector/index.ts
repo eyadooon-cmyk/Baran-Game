@@ -95,7 +95,9 @@ Deno.serve(async (req: Request) => {
       if (!ids.length || ids.length > 25 || ids.some((v: string) => !/^\d{1,10}$/.test(v))) {
         return json({ error: "product_pages requires 1–25 valid numeric product IDs" }, 400, origin);
       }
-      const pages = await Promise.all(ids.map(async (id: string) => {
+      const pages: Array<Record<string, unknown>> = [];
+      for (let offset = 0; offset < ids.length; offset += 5) {
+        const batch = await Promise.all(ids.slice(offset, offset + 5).map(async (id: string) => {
         try {
           const pageResponse = await fetch("https://homscard.com/product.php?id=" + encodeURIComponent(id), {
             headers: { "Accept": "text/html", "User-Agent": "Mozilla/5.0 (compatible; BaranCatalogAudit/1.0)" },
@@ -108,7 +110,9 @@ Deno.serve(async (req: Request) => {
         } catch {
           return { id, success: false, error: "تعذر جلب صفحة المنتج" };
         }
-      }));
+        }));
+        pages.push(...batch);
+      }
       return json({ success: true, provider: "HomsCard", action, count: pages.length, data: pages,
         note: "Public product-page metadata only. Read-only; no order or payment action." }, 200, origin);
     } else if (action === "products") {
