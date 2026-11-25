@@ -1014,6 +1014,8 @@ async function saveBaranCampaignDraft(){
 
 
 let homscardCatalogCache=[];
+let homscardLastAuditRows=[];
+let homscardRequestBusy=false;
 function renderHomsCardCatalog(){
   const toolsBox=document.getElementById('opsHomsCatalogTools');
   const results=document.getElementById('opsHomsCatalogResults');
@@ -1021,20 +1023,26 @@ function renderHomsCardCatalog(){
   const search=document.getElementById('opsHomsCatalogSearch');
   const category=document.getElementById('opsHomsCatalogCategory');
   const availability=document.getElementById('opsHomsCatalogAvailability');
+  const typeFilter=document.getElementById('opsHomsCatalogType');
   if(!toolsBox||!results||!count||!search||!category||!availability)return;
   toolsBox.classList.remove('hidden');
   const term=String(search.value||'').trim().toLocaleLowerCase();
   const selectedCategory=category.value;
   const selectedAvailability=availability.value;
+  const selectedType=typeFilter?.value||"";
   const filtered=homscardCatalogCache.filter(p=>{
     const haystack=[p.name,p.category,p.code,p.product_code,p.id].map(v=>String(v??'')).join(' ').toLocaleLowerCase();
     if(term&&!haystack.includes(term))return false;
     if(selectedCategory&&String(p.category??'')!==selectedCategory)return false;
     if(selectedAvailability==='available'&&!p.available)return false;
     if(selectedAvailability==='unavailable'&&p.available)return false;
+    if(selectedType){
+      const audit=homscardAutoAuditOne(p);
+      if(audit.kind!==selectedType)return false;
+    }
     return true;
   });
-  count.textContent='عرض '+filtered.length+' من أصل '+homscardCatalogCache.length+' منتج';
+  count.textContent='عرض '+filtered.length+' من أصل '+homscardCatalogCache.length+' منتج'+(selectedType?' · حسب التصنيف المبدئي':'');
   results.replaceChildren();
   if(!filtered.length){results.appendChild(opsNode('div','homscard-empty','ما لقينا منتجات مطابقة. جرّب كلمة بحث أو تصنيفاً آخر.'));return;}
   const fragment=document.createDocumentFragment();
@@ -1208,6 +1216,7 @@ function homscardRunAutomaticAudit(){
     const products=homscardCatalogCache.filter(p=>p&&typeof p==="object"&&!Array.isArray(p));
     if(!products.length)throw new Error("لم تصل بيانات منتجات قابلة للفحص من الكتالوج.");
     const rows=products.map(p=>homscardAutoAuditOne(p));
+    homscardLastAuditRows=rows.slice();
     const labels=["كمية متغيرة محتملة","باقة ثابتة محتملة","اشتراك بمدة محتملة","غير محسوم"];
     const counts=Object.fromEntries(labels.map(label=>[label,rows.filter(r=>r.kind===label).length]));
     const tests=homscardAutoAuditSelfTests();
@@ -1251,6 +1260,7 @@ function homscardEnsureAutoAuditUi(){
   if(!button){button=opsNode("button","secondary full","🧠 فحص وتصنيف كل المنتجات تلقائياً");button.id="opsHomsAutoAuditButton";panel.appendChild(button);}
   button.type="button";
   button.onclick=homscardRunAutomaticAudit;
+  button.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
   if(!status){status=opsNode("div","ops-muted","حمّل الكتالوج ثم ابدأ الفحص التلقائي.");status.id="opsHomsAutoAuditStatus";panel.appendChild(status);}
   status.setAttribute("role","status");
   status.setAttribute("aria-live","polite");
@@ -1263,6 +1273,7 @@ function initHomsCardCatalogFilters(products){
   const category=document.getElementById('opsHomsCatalogCategory');
   const search=document.getElementById('opsHomsCatalogSearch');
   const availability=document.getElementById('opsHomsCatalogAvailability');
+  const typeFilter=document.getElementById('opsHomsCatalogType');
   if(category){
     category.replaceChildren(new Option('كل التصنيفات',''));
     [...new Set(products.map(p=>String(p.category??'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar')).forEach(value=>category.appendChild(new Option(value,value)));
@@ -1270,13 +1281,44 @@ function initHomsCardCatalogFilters(products){
   if(search&&!search.dataset.bound){search.addEventListener('input',renderHomsCardCatalog);search.dataset.bound='1';}
   if(category&&!category.dataset.bound){category.addEventListener('change',renderHomsCardCatalog);category.dataset.bound='1';}
   if(availability&&!availability.dataset.bound){availability.addEventListener('change',renderHomsCardCatalog);availability.dataset.bound='1';}
+  if(typeFilter&&!typeFilter.dataset.bound){typeFilter.addEventListener('change',renderHomsCardCatalog);typeFilter.dataset.bound='1';}
   renderHomsCardCatalog();
 }
+function homscardResetCatalogFilters(){
+  ["opsHomsCatalogSearch","opsHomsCatalogCategory","opsHomsCatalogAvailability","opsHomsCatalogType"].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value="";
+  });
+  renderHomsCardCatalog();
+}
+function homscardExportAuditCsv(){
+  if(!Array.isArray(homscardLastAuditRows)||!homscardLastAuditRows.length){
+    const status=document.getElementById("opsHomsAutoAuditStatus");
+    if(status)status.textContent="لا يوجد تقرير للتصدير؛ حمّل الكتالوج وشغّل الفحص أولاً.";
+    return;
+  }
+  const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+  const rows=[["معرّف المورد","اسم المنتج","التصنيف","نوع المورد","السعر كما ورد","التصنيف المبدئي","الثقة","سبب التصنيف","خيارات الكمية","حقول الطلب","حقول حساب محتملة","النواقص"]];
+  homscardLastAuditRows.forEach(r=>rows.push([
+    r.p.id,r.p.name,r.p.category,r.p.product_type,r.p.price,r.kind,r.confidence,r.reason,
+    r.options.join("، "),r.keys.join("، "),r.account?"نعم":"لا",r.missing.join("؛ ")
+  ]));
+  const csv="\\uFEFF"+rows.map(row=>row.map(quote).join(",")).join("\\r\\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;link.download="BARAN-HomsCard-Audit-"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
+}
+}
 async function opsTestHomsCard(action){
+  if(homscardRequestBusy)return;
+  homscardRequestBusy=true;
   const message=document.getElementById('opsApiMessage');
   const output=document.getElementById('opsHomsCardResult');
+  const activeButton=document.getElementById(action==='profile'?'opsHomsProfileButton':'opsHomsProductsButton');
+  ["opsHomsProfileButton","opsHomsProductsButton"].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=true;});
   if(message)message.textContent=action==='profile'?'جاري فحص اتصال حمص كارد وقراءة الحساب...':'جاري جلب كتالوج حمص كارد للمعاينة فقط...';
-  if(output)output.replaceChildren();
+  if(output)output.replaceChildren(opsNode('div','ops-muted','جارٍ الاتصال بالمورد…'));
   try{
     const {data,error}=await sb.functions.invoke('baran-homscard-connector',{body:{action}});
     if(error)throw new Error(error.message||'تعذر الاتصال بالدالة.');
@@ -1290,6 +1332,18 @@ async function opsTestHomsCard(action){
       if(output)output.appendChild(opsNode('strong','','تم استرجاع '+homscardCatalogCache.length+' منتج من حمص كارد.'));
       initHomsCardCatalogFilters(homscardCatalogCache);
       if(message)message.textContent='تم جلب الكتالوج بنجاح. استخدم البحث والتصنيفات لمراجعة المنتجات؛ لم يتم استيراد أو تعديل أي منتج.';
+      if(homscardCatalogCache.length)homscardRunAutomaticAudit();
+      else{
+        const status=document.getElementById("opsHomsAutoAuditStatus");
+        if(status)status.textContent="نجح الاتصال لكن المورد لم يُرجع منتجات في هذه المرة.";
+      }
     }
-  }catch(error){if(message)message.textContent='تعذر فحص حمص كارد: '+(error?.message||'خطأ غير معروف');}
+  }catch(error){
+    const errorText='تعذر فحص حمص كارد: '+(error?.message||'خطأ غير معروف');
+    if(message)message.textContent=errorText;
+    if(output)output.appendChild(opsNode('div','ops-item',errorText));
+  }finally{
+    homscardRequestBusy=false;
+    ["opsHomsProfileButton","opsHomsProductsButton"].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=false;});
+  }
 }
