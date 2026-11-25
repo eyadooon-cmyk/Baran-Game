@@ -114,3 +114,10 @@ Age Of Empires Mobile; Black Clover m Black Crystals; Blood Strike (MENA) الع
 
 ## 10. Production safety statement
 This review was read-only against the supplier cache. No Baran production products, retail prices, supplier mappings, exchange-rate settings, payment settings, order routes, fulfillment flags, supplier activation or order execution were changed.
+
+
+## 11. Confidentiality check — public repository and Supabase cache
+- The GitHub repository is public. The public catalog preview was updated on 2026-11-25 to remove numeric supplier costs, cost-based sorting, and cost-bearing text; it now shows supplier cost as not displayed and retail price as under review.
+- The public PR review document contains no supplier cost or wholesale-price table.
+- Read-only Supabase metadata inspection found `public.syrimarket_catalog_cache` has RLS enabled, no anon/authenticated grants, and no policies. This is consistent with keeping the cache inaccessible to normal client roles; continue to access it only through trusted server-side/service-role operations and never expose its cost fields in customer APIs.
+- Important limitation: earlier public Git commits may still be reachable through repository history even after the current branch/file was sanitized. The current branch and default-branch file are redacted, but this review does not claim that old Git objects have been purged from GitHub's historical storage. For full historical removal, repository-history rewriting or making the repository private would require a separate, carefully planned action because it can affect deployment and integrations.
