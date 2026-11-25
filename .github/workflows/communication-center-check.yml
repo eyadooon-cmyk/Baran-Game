@@ -13,7 +13,7 @@ on:
       - 'supabase/migrations/**'
       - '.github/workflows/communication-center-check.yml'
   push:
-    branches: [feature/communication-center-premium]
+    branches: [feature/communication-center-premium, feature/pro-support-ticket-center-20261125]
     paths:
       - 'index.html'
       - 'communication-center.js'
@@ -51,6 +51,8 @@ jobs:
           deno check supabase/functions/baran-push-dispatch/index.ts
           deno check supabase/functions/baran-admin-offline/index.ts
           deno check supabase/functions/baran-admin/index.ts
+          deno check supabase/functions/baran-guest-support/index.ts
+          deno check supabase/functions/baran-auto-support-reply/index.ts
           deno check supabase/functions/baran-customer-center/index.ts
           deno check supabase/functions/baran-order-gateway/index.ts
           deno check supabase/functions/baran-shamcash-verify/index.ts
