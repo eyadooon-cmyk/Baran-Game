@@ -1691,26 +1691,27 @@ body:has(#authScreen:not(.hidden)){background:#08060d!important}
 @media(max-width:390px){.baran-home-v2 .home-quick-actions{gap:6px}.baran-home-v2 .home-quick-actions button{padding:10px 7px}.baran-home-v2 .home-quick-actions strong{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.baran-home-v2 .baran-promo-slide.is-active{animation:none}}
 /* Unified digital product cards */
-.baran-service-catalog{margin-top:14px}
-.baran-catalog-intro{margin:0 0 12px;color:#bba9ca;font-size:12px;line-height:1.8}
-.baran-service-group-heading{margin:18px 0 6px;padding:9px 12px;border-right:3px solid #b58bd5;border-radius:8px;background:#8d5eb51a;color:#ead9f8;font-size:13px;font-weight:900;line-height:1.6}
-.baran-service-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
-.baran-service-product{display:flex;flex-direction:column;gap:8px;min-width:0;padding:13px;border:1px solid #59416d;border-radius:15px;background:linear-gradient(145deg,#241a30,#15101c);color:#f4eafa}
-.baran-service-product-head{display:flex;align-items:center;gap:8px}
-.baran-service-brand-visual{display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;padding:11px;border:1px solid #ffffff24;border-radius:15px;background:var(--brand-bg,#30243a);box-shadow:0 5px 15px #0005}
-.baran-service-brand-visual img{display:block;width:100%;height:100%;max-width:30px;max-height:30px;object-fit:contain}
-.baran-service-brand-visual.is-fallback{color:#fff;font-size:17px;font-weight:900}
-.baran-service-product-head>strong{flex:1;min-width:0}
-@media(max-width:390px){.baran-service-brand-visual{flex-basis:45px;width:45px;height:45px;padding:9px;border-radius:13px}}
-
-.baran-service-product-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:#a56bd626;font-size:20px}
-.baran-service-product strong{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
-.baran-service-product p{margin:0;color:#bba9ca;font-size:10px;line-height:1.7;overflow-wrap:anywhere}
-.baran-service-product-price{margin-top:auto;padding-top:8px;border-top:1px solid #493653;color:#e0b9f6;font-size:12px;font-weight:900;line-height:1.8}
-.baran-service-product-status{display:inline-flex;align-self:flex-start;padding:4px 8px;border-radius:8px;background:#4b351d;color:#f2d09c;font-size:9px;font-weight:800}
-.baran-catalog-empty{padding:14px;border:1px dashed #76518f;border-radius:13px;color:#c8b6d5;font-size:12px;line-height:1.8}
-@media(min-width:560px){.baran-service-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:360px){.baran-service-product{padding:10px}.baran-service-product strong{font-size:12px}}
+/* Digital service catalog: one clear, full-width product card per item */
+.baran-service-catalog{display:block;min-width:0;margin-top:14px}
+.baran-catalog-intro{margin:0 0 14px;padding:10px 12px;border:1px solid #493653;border-radius:11px;background:#17111f;color:#cbb9d8;font-size:12px;line-height:1.9}
+.baran-service-group-heading{display:flex;align-items:center;gap:9px;margin:22px 0 10px;padding:12px 14px;border:1px solid #604777;border-right:4px solid #c18bed;border-radius:12px;background:linear-gradient(100deg,#30203e,#191320);color:#f0defb;font-size:14px;font-weight:900;line-height:1.7}
+.baran-service-product-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:10px 0 18px}
+.baran-service-product{box-sizing:border-box;display:flex;flex-direction:column;gap:11px;width:100%;min-width:0;padding:15px;border:1px solid #59416d;border-radius:17px;background:linear-gradient(125deg,#251a31 0%,#17121e 72%);color:#f4eafa;box-shadow:0 7px 18px #0003;overflow:hidden}
+.baran-service-product-kicker{display:inline-flex;align-items:center;align-self:flex-start;max-width:100%;padding:5px 9px;border:1px solid #72548a;border-radius:999px;background:#21172b;color:#d8c2e8;font-size:10px;font-weight:800;line-height:1.5}
+.baran-service-product-head{display:flex;align-items:center;gap:12px;min-width:0;padding:2px 0}
+.baran-service-brand-visual{display:grid;place-items:center;flex:0 0 60px;width:60px;height:60px;box-sizing:border-box;padding:12px;border:1px solid #ffffff26;border-radius:17px;background:var(--brand-bg,#30243a);box-shadow:0 5px 15px #0005}
+.baran-service-brand-visual img{display:block;width:100%;height:100%;max-width:36px;max-height:36px;object-fit:contain}
+.baran-service-brand-visual.is-fallback{color:#fff;font-size:19px;font-weight:900}
+.baran-service-product-icon{display:grid;place-items:center;flex:0 0 58px;width:58px;height:58px;border:1px solid #ffffff1c;border-radius:16px;background:#a56bd626;font-size:25px}
+.baran-service-product strong{display:block;flex:1;min-width:0;color:#f7edff;font-size:15px;line-height:1.8;overflow-wrap:anywhere}
+.baran-service-product p{margin:0;color:#c7b7d2;font-size:12px;line-height:1.9;overflow-wrap:anywhere}
+.baran-service-product-price{display:block;width:100%;box-sizing:border-box;margin-top:2px;padding:10px 12px;border:1px solid #493653;border-radius:11px;background:#110d17;color:#edcffd;font-size:14px;font-weight:900;line-height:2;overflow-wrap:anywhere}
+.baran-service-product-status{display:inline-flex;align-self:flex-start;padding:6px 10px;border:1px solid #72552f;border-radius:9px;background:#392918;color:#f5d6a2;font-size:11px;font-weight:800;line-height:1.6}
+.baran-service-select-button{width:100%;min-height:46px;margin:2px 0 0;padding:12px 14px;border:1px solid #bd8cde;border-radius:12px;background:linear-gradient(110deg,#b780dc,#8855ad);color:#190f22;font-size:13px;font-weight:900;line-height:1.5;cursor:pointer}
+.baran-service-select-button:disabled{opacity:.55;cursor:not-allowed}
+.baran-catalog-empty{padding:16px;border:1px dashed #76518f;border-radius:13px;color:#c8b6d5;font-size:13px;line-height:1.9}
+@media(min-width:760px){.baran-service-product-grid{max-width:820px}}
+@media(max-width:380px){.baran-service-product{padding:12px}.baran-service-product-head{gap:10px}.baran-service-brand-visual,.baran-service-product-icon{flex-basis:52px;width:52px;height:52px}}
 </style>
 <style id="baran-service-selection-preview-style">
 .baran-service-select-button{width:100%;margin-top:10px;padding:11px 13px;border:1px solid #a879c9;border-radius:11px;background:linear-gradient(120deg,#a56bd6,#75439b);color:#160d20;font-weight:900;cursor:pointer}
