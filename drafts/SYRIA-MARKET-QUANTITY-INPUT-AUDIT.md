@@ -35,6 +35,7 @@ Total: **796** products.
 - Render a numeric quantity control using source `min`, `max`, and `step`; validate bounds on the server too.
 - For ordinary app/manual amount products, use `params` as labels only until the authoritative input schema is confirmed.
 - For SMM, prefer the structured `smm.fields[]` metadata: field id, Arabic/English label, type, required flag, and validation metadata. Example: URL field with `url_or_username` format and a maximum length.
+- **Platform/category mismatch flag:** 31 of the 54 SMM products have a `smm.platform` value that does not match the apparent platform in `category_name` (27 WhatsApp-category records say `instagram`, 3 TikTok-category records say `instagram`, and 1 Telegram-category record says `instagram`). Do not silently rewrite the category or platform; hold these for supplier/data review before final display.
 - SMM pricing uses `pricing.unit` such as `per_1000`. Show the unit clearly (e.g. “السعر لكل 1000”) and calculate a preview only from a server quote; never present `price`/unit price as the full order total.
 
 ### C. Option packages (3 app / specificPackage)
