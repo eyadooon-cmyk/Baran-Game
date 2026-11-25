@@ -187,7 +187,7 @@ Deno.serve(async (req: Request) => {
         });
         if (insertError) throw new Error("تعذر إرسال الرسالة.");
         await admin.from("baran_guest_support_tickets").update({
-          status: "pending", last_customer_message_at: now.toISOString(), updated_at: now.toISOString(),
+          status: "pending", admin_read_at: null, last_customer_message_at: now.toISOString(), updated_at: now.toISOString(),
         }).eq("id", ticket.id);
       }
 
@@ -208,7 +208,7 @@ Deno.serve(async (req: Request) => {
       if (action === "admin_list") {
         const { data, error } = await admin.from("baran_guest_support_tickets")
           .select("id,ticket_code,email,subject,initial_message,status,priority,assistant_reason,assistant_draft,admin_read_at,created_at,updated_at,last_customer_message_at,last_admin_message_at")
-          .order("created_at", { ascending: false }).limit(100);
+          .order("updated_at", { ascending: false }).limit(100);
         if (error) throw new Error("تعذر تحميل تذاكر الزوار.");
         return json({ success: true, tickets: data || [] }, 200, origin);
       }
