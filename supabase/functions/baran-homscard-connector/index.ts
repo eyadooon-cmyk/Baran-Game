@@ -175,6 +175,17 @@ Deno.serve(async (req: Request) => {
       }).sort((a,b)=>String(a.product_id).localeCompare(String(b.product_id),undefined,{numeric:true}));
       return json({success:true,action,run,count:merged.length,data:merged},200,origin);
     }
+    if (action === "get_audit_history") {
+      const agreedIds = ["18","3","280","8","910","37","43","1","893","25","49","45","283","282","458"];
+      const {data:runs,error:runError}=await admin.from("baran_homscard_audit_runs").select("run_id,catalog_count,created_at,updated_at").eq("created_by",authData.user.id).order("updated_at",{ascending:false}).limit(8);
+      if(runError)return json({error:"تعذر قراءة تاريخ تدقيق المورد."},500,origin);
+      if(!runs?.length)return json({success:true,action,runs:[]},200,origin);
+      const runIds=runs.map((item: {run_id:string})=>item.run_id);
+      const {data:items,error:itemError}=await admin.from("baran_homscard_audit_items").select("run_id,product_id,product_name,product_data,page_status,page_error,updated_at").in("run_id",runIds).in("product_id",agreedIds).order("updated_at",{ascending:false});
+      if(itemError)return json({error:"تعذر قراءة تفاصيل تاريخ المورد."},500,origin);
+      const history=runs.map((run: {run_id:string;catalog_count:number;created_at:string;updated_at:string})=>({run_id:run.run_id,catalog_count:run.catalog_count,created_at:run.created_at,updated_at:run.updated_at,items:(items??[]).filter((item: {run_id:string})=>item.run_id===run.run_id).map((item:any)=>({product_id:String(item.product_id),product_name:item.product_name,product_data:item.product_data||{},page_status:item.page_status,page_error:item.page_error||null}))}));
+      return json({success:true,action,runs:history},200,origin);
+    }
     if (!apiToken) return json({ error: "HOMSCARD_API_TOKEN is not configured in Supabase secrets" }, 503, origin);
     const query = new URLSearchParams();
     let path = "";
