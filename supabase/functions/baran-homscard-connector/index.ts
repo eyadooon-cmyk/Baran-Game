@@ -270,9 +270,9 @@ Deno.serve(async (req: Request) => {
     return json({ success: true, provider: "HomsCard", action, count: products.length,
       data: products.map((p: any) => ({
         id: p.id, name: p.name, price: p.price, category: p.category,
-        available: p.available === true, availability: p.available === true ? "available" : "unavailable",
+        available: typeof p.available === "boolean" ? p.available : null, availability: typeof p.available === "boolean" ? (p.available ? "available" : "unavailable") : "unknown",
         product_type: p.product_type ?? null,
-        qty_values: p.qty_values ?? null, params: Array.isArray(p.params) ? p.params : [],
+        qty_values: p.qty_values ?? null, params: p.params ?? [],
         image: typeof p.image === "string" && /^https:\\/\\//i.test(p.image) ? p.image : null,
         description: p.description ?? null,
       })), fetched_at: new Date().toISOString(),
