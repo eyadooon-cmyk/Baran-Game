@@ -53,6 +53,8 @@ test("HomsCard audit results are persisted and restored through admin-gated serv
   assert.match(adminUi, /homscardPersistAuditRows/);
   assert.match(adminUi, /homscardRestoreSavedAudit/);
   assert.match(adminUi, /save_audit_batch/);
+  assert.match(adminUi, /p\.page_status!=="success"/);
+  assert.match(adminUi, /await homscardInspectProductPages\(\)/);
 });
 test("HomsCard audit tables deny direct client access and allow server role", () => {
   assert.match(auditMigration, /enable row level security/i);
