@@ -1,6 +1,7 @@
 (function () {
 "use strict";
 const PANEL="homscardProviderPanel", ROOT="homscardIntelligenceCenter", SIZE=30;
+const auditEngine=window.BaranHomsCardAuditEngine;
 let rows=[], filtered=[], page=0, busy=false, runId=null, catalogCount=0;
 const $=id=>document.getElementById(id);
 const node=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=String(txt);return n;};
@@ -44,7 +45,7 @@ function assessment(r){
  const pageMentionsId=/أدخل\s+(?:Player ID|User ID|UID|ID)/i.test(t);
  const unmatched=p.filter(x=>!norm(t).includes(norm(x)));
  let gap=null;
- if(!isUserConfirmedFixedPackage(r)&&pp!==null&&Number.isFinite(api)&&api>0)gap=Math.abs(pp-api)/api*100;
+ if(!isUserConfirmedFixedPackage(r)&&pp!==null&&Number.isFinite(api)&&api>0){const comparison=auditEngine?.priceComparison(api,pp);gap=comparison?.comparable?comparison.absolutePct:Math.abs(pp-api)/api*100;}
  if(isUserConfirmedFixedPackage(r)&&pp!==null&&/للوحدة/.test(t))issues.push("صفحة المورد تعرض السعر للوحدة بينما API يصنف المنتج package؛ لا نقارن السعرين قبل تأكيد المورد أن سعر الصفحة هو سعر الباقة.");
  if(!pageOk)issues.push("صفحة التفاصيل غير قابلة للاعتماد حالياً");
  if(d.available===false)issues.push("المنتج غير متاح حسب API");
@@ -70,7 +71,7 @@ function pageSignals(r){
 }
 function savedMissingItems(r){return arr(r.audit_data?.missing);}
 function legacyPackageWarnings(r){if(!isUserConfirmedFixedPackage(r))return [];const old=["نوع المنتج قد يكون افتراضياً من الموصل","لا توجد خيارات كمية مؤكدة"];return savedMissingItems(r).filter(x=>old.includes(x));}
-function productImage(r){const d=data(r),candidates=[d.image,...arr(r.page_data?.images)];return candidates.find(v=>/^https:\/\//i.test(String(v||"")))||"";}
+function productImage(r){const d=data(r);return auditEngine?.imageUrl(r)||(/^https:\/\//i.test(String(d.image||""))?d.image:"");}
 function missing(r){const d=data(r),m=[];if(!d.name)m.push("اسم المنتج");if(d.price==null)m.push("سعر API");if(!d.category)m.push("التصنيف");if(!d.product_type)m.push("نوع المورد");if(!Array.isArray(d.params))m.push("حقل params غير موجود");else if(!d.params.length)m.push("لا توجد حقول إدخال مسجلة في API");if(!productImage(r))m.push("الصورة غير متوفرة في API وصفحة المورد");if(r.page_status!=="success")m.push("فشل جلب صفحة التفاصيل");else if(pageHealth(r)!=="تفاصيل المنتج موجودة")m.push(pageHealth(r));if(confidence(r)==="منخفض")m.push("ثقة التدقيق منخفضة — مراجعة بشرية");return m;}
 function card(r){const d=data(r),c=node("details","hci-card"),s=node("summary","hci-summary"),url=productImage(r);if(/^https?:\/\//i.test(url)){const im=node("img","hci-img");im.src=url;im.alt="";im.loading="lazy";im.referrerPolicy="no-referrer";s.appendChild(im);}else s.appendChild(node("span","hci-img","؟"));const title=node("div","hci-title");title.append(node("b","",d.name||r.product_name||"منتج بلا اسم"),node("small","","ID "+(d.id??r.product_id)+" · "+(d.category||"بلا تصنيف")),node("em","",kind(r)+" · ثقة: "+confidence(r)));s.append(title,node("strong","hci-price",money(d.price)));c.appendChild(s);
 const body=node("div","hci-body"),grid=node("div","hci-grid"),q=d.qty_values,pp=pageUnitPrice(r),fields=[["نوع المورد من API",d.product_type],["التوفر حسب API",d.available===true?"متوفر":d.available===false?"غير متوفر":"غير محدد"],["سعر API المسجل",money(d.price)],["السعر المعروض بصفحة المورد",pp===null?"غير مستخرج":money(pp)],["حقول الإدخال المسجلة حرفياً",arr(d.params).join("، ")||"لا توجد حقول مسجلة"],["الحد الأدنى",q?.min??"غير مسجل"],["الحد الأعلى",q?.max??"غير مسجل"],["حالة صفحة المنتج",pageHealth(r)+" (HTTP: "+r.page_status+")"],["طريقة التسليم المذكورة بالصفحة",fulfillment(r).join(" + ")],["مصدر تصنيف النوع",confidence(r)],["خطأ جلب الصفحة",r.page_error||"لا يوجد"]];fields.forEach(([k,v])=>{const x=node("div","hci-cell");x.append(node("small","",k),node("b","",v==null||v===""?"غير متوفر":v));grid.appendChild(x);});body.appendChild(grid);
@@ -84,6 +85,7 @@ function filter(){const q=norm($("hciSearch")?.value),cat=$("hciCategory")?.valu
 function render(){const box=$("hciResults");if(!box)return;box.replaceChildren();$("hciCount").textContent="النتائج: "+filtered.length+" من "+rows.length;filtered.slice(page*SIZE,(page+1)*SIZE).forEach(r=>box.appendChild(card(r)));if(!filtered.length)box.appendChild(node("div","hci-empty","لا توجد نتائج مطابقة."));const nav=node("div","hci-nav"),prev=node("button","secondary","السابق"),next=node("button","secondary","التالي");prev.type=next.type="button";prev.disabled=page===0;next.disabled=(page+1)*SIZE>=filtered.length;prev.onclick=()=>{page--;render();};next.onclick=()=>{page++;render();};nav.append(prev,node("span","","صفحة "+(page+1)+" / "+Math.max(1,Math.ceil(filtered.length/SIZE))),next);box.appendChild(nav);}
 function stats(){
  const box=$("hciStats");box.replaceChildren();
+ const auditSummary=auditEngine?.summarize(rows)||{};
  const q=rows.filter(r=>String(data(r).product_type).toLowerCase()==="quantity").length;
  const packages=rows.filter(r=>String(data(r).product_type).toLowerCase()==="package").length;
  const unresolved=rows.filter(r=>!isUserConfirmedFixedPackage(r)&&(/غير محسوم|غير محدد|unresolved/i.test(norm(r.audit_data?.kind||""))||!["quantity","package"].includes(String(data(r).product_type||"").toLowerCase()))).length;
@@ -98,7 +100,7 @@ function stats(){
  const savedMissing=rows.filter(r=>savedMissingItems(r).length>0).length;
  const legacyWarnings=rows.reduce((n,r)=>n+legacyPackageWarnings(r).length,0);
  const needsReview=rows.filter(r=>assessment(r).level==="review"||assessment(r).level==="critical"||missing(r).length>0).length;
- const stats=[[rows.length,"إجمالي المنتجات"],[q,"كمية متغيرة"],[packages,"باقات"],[unresolved,"نوع غير محسوم فعلياً"],[ok,"تفاصيل صفحة موجودة"],[pageErr,"صفحات تحتاج مراجعة"],[params,"بلا حقول API"],[needsReview,"منتجات تحتاج مراجعة"],[rowsWithMissing,"منتجات لديها نواقص"],[savedMissing,"منتجات لديها ملاحظات محفوظة خام"],[legacyWarnings,"تحذيرات قديمة مستبعدة بعد تأكيد الباقة"],[pageImages,"صفحات فيها صور مستخرجة"],[rows.filter(r=>assessment(r).gap!==null&&assessment(r).gap>0.5).length,"فروق سعر تتجاوز 0.5%"],[playerMatched+" / "+playerPages.length,"مطابقة Player ID"],[accountData,"صفحات تسليم بيانات حساب"],[otp,"صفحات تذكر رمز تحقق"],[noimg,"بلا صور"],[manual,"تذكر تنفيذ يدوي"],[codes,"تذكر كود جاهز"]];
+ const stats=[[rows.length,"إجمالي المنتجات"],[q,"كمية متغيرة"],[packages,"باقات"],[unresolved,"نوع غير محسوم فعلياً"],[ok,"تفاصيل صفحة موجودة"],[pageErr,"صفحات تحتاج مراجعة"],[params,"بلا حقول API"],[needsReview,"منتجات تحتاج مراجعة"],[rowsWithMissing,"منتجات لديها نواقص"],[savedMissing,"منتجات لديها ملاحظات محفوظة خام"],[legacyWarnings,"تحذيرات قديمة مستبعدة بعد تأكيد الباقة"],[pageImages,"صفحات فيها صور مستخرجة"],[auditSummary.anyImages??(rows.length-noimg),"منتجات لديها صورة قابلة للعرض"],[rows.filter(r=>assessment(r).gap!==null&&assessment(r).gap>0.5).length,"فروق سعر تتجاوز 0.5%"],[playerMatched+" / "+playerPages.length,"مطابقة Player ID"],[accountData,"صفحات تسليم بيانات حساب"],[otp,"صفحات تذكر رمز تحقق"],[noimg,"بلا صور"],[manual,"تذكر تنفيذ يدوي"],[codes,"تذكر كود جاهز"]];
  stats.forEach(([n,l])=>{const x=node("div","hci-stat");x.append(node("b","",n),node("small","",l));box.appendChild(x);});
 }
 function csvCell(v){
