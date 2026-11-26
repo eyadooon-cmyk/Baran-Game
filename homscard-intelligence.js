@@ -98,11 +98,11 @@ function render(){
  const box=$("hciResults"),reviewBox=$("hciReviewResults"),priceBox=$("hciPriceResults");
  const current=filtered.slice(page*SIZE,(page+1)*SIZE);
  const fill=(target,items)=>{if(!target)return;target.replaceChildren();items.forEach(r=>target.appendChild(card(r)));if(!items.length)target.appendChild(node("div","hci-empty","لا توجد نتائج في هذا القسم حالياً."));};
- fill(box,activeView==="products"?current:[]);
  const reviewRows=rows.filter(r=>assessment(r).level!=="ok"||missing(r).length>0);
  const priceRows=rows.filter(r=>assessment(r).gap!==null);
- fill(reviewBox,reviewRows);
- fill(priceBox,priceRows);
+ fill(box,activeView==="products"?current:[]);
+ fill(reviewBox,activeView==="review"?current:[]);
+ fill(priceBox,activeView==="prices"?current:[]);
  if($("hciCount"))$("hciCount").textContent="النتائج: "+filtered.length+" من "+rows.length;
  if($("hciReviewCount"))$("hciReviewCount").textContent="منتجات تتطلب مراجعة: "+reviewRows.length;
  if($("hciPriceCount"))$("hciPriceCount").textContent="منتجات لها سعر صفحة قابل للمقارنة: "+priceRows.length;
@@ -344,9 +344,7 @@ function mount(){
  const av=node("select");av.id="hciAvailability";[["","كل حالات التوفر"],["yes","متوفر"],["no","غير متوفر"],["unknown","غير محدد"]].forEach(([v,l])=>{const o=node("option","",l);o.value=v;av.append(o);});
  const risk=node("select");risk.id="hciRisk";[["","كل مستويات المراجعة"],["critical","مشاكل أساسية"],["review","تحتاج مراجعة"],["ok","لا توجد إشارات خطر"]].forEach(([v,l])=>{const o=node("option","",l);o.value=v;risk.append(o);});
  controls.append(search,cat,typ,av,risk);
- [productsView,reviewView,pricesView].forEach(v=>v.append(controls.cloneNode(true)));
- // Keep one live set of controls; cloned controls are decorative labels only, so replace clones with shared originals.
- productsView.querySelector(".hci-controls").replaceWith(controls);
+ productsView.append(controls);
  const count=node("div","hci-count");count.id="hciCount";
  const results=node("div","hci-results");results.id="hciResults";
  productsView.append(count,results);
