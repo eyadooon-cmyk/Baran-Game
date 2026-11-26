@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const source = await readFile(new URL("../supabase/functions/baran-homscard-connector/index.ts", import.meta.url), "utf8");
 const migration = await readFile(new URL("../supabase/migrations/20261125110000_add_homscard_supplier_api.sql", import.meta.url), "utf8");
 const adminUi = await readFile(new URL("../admin-operations.js", import.meta.url), "utf8");
+const indexHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const intelligenceUi = await readFile(new URL("../homscard-intelligence.js", import.meta.url), "utf8");
 const auditMigration = await readFile(new URL("../supabase/migrations/20261126100000_add_homscard_audit_storage.sql", import.meta.url), "utf8");
 
@@ -168,4 +169,26 @@ test("HomsCard intelligence reads, exports, and rechecks only the 15 agreed prod
   assert.match(intelligenceUi, /const missing=\[\.\.\.agreedIds\]/);
   assert.match(intelligenceUi, /rows=matched/);
   assert.match(intelligenceUi, /const targets=rows\.filter/);
+});
+
+test("HomsCard intelligence separates confirmed fixed WePlay packages from unresolved audit labels and counts missing rows", () => {
+  assert.match(intelligenceUi, /USER_CONFIRMED_FIXED_PACKAGE_IDS=new Set\(\["283","282","458"\]\)/);
+  assert.match(intelligenceUi, /باقة ثابتة \(تأكيد المستخدم\)/);
+  assert.match(intelligenceUi, /rowsWithMissing=rows\.filter\(r=>missing\(r\)\.length>0\)\.length/);
+  assert.match(intelligenceUi, /savedMissing=rows\.filter\(r=>Array\.isArray\(r\.audit_data\?\.missing\)/);
+});
+test("Supplier directory supports search, supplier editing, and reversible activation without deleting links", () => {
+  assert.match(adminUi, /function opsResetSupplierForm\(\)/);
+  assert.match(adminUi, /async function opsToggleSupplierStatus\(supplier\)/);
+  assert.match(adminUi, /supplier_id:supplierId\|\|undefined/);
+  assert.match(adminUi, /window\.__baranSuppliersCache=suppliers/);
+  assert.match(adminUi, /المنتجات المرتبطة:/);
+  assert.match(adminUi, /لم تُحذف روابط المنتجات أو الأسعار/);
+});
+
+test("Supplier directory search does not rebuild or clear the product-link form", () => {
+  assert.match(adminUi, /function renderOpsSuppliers\(suppliers,links,products,searchOnly=false\)/);
+  assert.match(adminUi, /if\(searchOnly\)return;\s*const supplierSelect=document\.getElementById\("opsSupplierSelect"\)/);
+  assert.match(adminUi, /روابط المورد المفضل/);
+  assert.match(indexHtml, /renderOpsSuppliers\(window\.__baranSuppliersCache\|\|\[\],window\.__baranSupplierLinksCache\|\|\[\],window\.__baranProductsCache\|\|\[\],true\)/);
 });

@@ -291,18 +291,44 @@ function renderOpsOrders(orders){
     box.appendChild(card);
   });
 }
-function renderOpsSuppliers(suppliers,links,products){
+function renderOpsSuppliers(suppliers,links,products,searchOnly=false){
+  window.__baranSuppliersCache=suppliers;window.__baranSupplierLinksCache=links;window.__baranProductsCache=products;
   const box=document.getElementById("opsSuppliers");if(box){
+    const query=(document.getElementById("opsSupplierSearch")?.value||"").trim().toLocaleLowerCase();
+    const filteredSuppliers=suppliers.filter(s=>!query||[s.name,s.contact_name,s.contact_phone,s.contact_email,s.notes].some(v=>String(v||"").toLocaleLowerCase().includes(query)));
+    const statsBox=document.getElementById("opsSupplierStats");
+    if(statsBox){
+      statsBox.replaceChildren();
+      const active=suppliers.filter(s=>s.is_active).length;
+      const preferred=links.filter(link=>link.is_preferred).length;
+      [["إجمالي الموردين",suppliers.length],["موردون فعّالون",active],["روابط المنتجات",links.length],["روابط المورد المفضل",preferred]].forEach(([label,value])=>{
+        const item=opsNode("div","ops-card");item.append(opsNode("div","ops-muted",label),opsNode("div","ops-value",String(value)));statsBox.appendChild(item);
+      });
+    }
     box.replaceChildren();
-    if(!suppliers.length)box.textContent="لم تتم إضافة موردين بعد.";
-    suppliers.forEach(s=>{
+    if(!filteredSuppliers.length)box.textContent=suppliers.length?"لا توجد نتائج مطابقة للبحث.":"لم تتم إضافة موردين بعد.";
+    filteredSuppliers.forEach(s=>{
+      const supplierLinks=links.filter(link=>link.supplier_id===s.id);
       const card=opsNode("div","ops-item");
       card.append(opsNode("strong","",s.name),opsNode("div","ops-muted","التواصل: "+opsText(s.contact_name)+" | "+opsText(s.contact_phone)),
-        opsNode("div","ops-muted",opsText(s.contact_email)),opsNode("div","ops-muted",s.is_active?"مورد فعّال":"مورد متوقف"));
+        opsNode("div","ops-muted",opsText(s.contact_email)),opsNode("div","ops-muted",s.is_active?"مورد فعّال":"مورد متوقف"),
+        opsNode("div","ops-muted","المنتجات المرتبطة: "+supplierLinks.length));
       if(s.notes)card.append(opsNode("div","ops-muted",s.notes));
-      box.appendChild(card);
+      const edit=opsNode("button","secondary","تعديل بيانات المورد");edit.type="button";
+      edit.onclick=()=>{
+        const set=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value??"";};
+        set("opsSupplierId",s.id);set("opsSupplierName",s.name);set("opsSupplierContact",s.contact_name);
+        set("opsSupplierPhone",s.contact_phone);set("opsSupplierEmail",s.contact_email);set("opsSupplierNotes",s.notes);
+        const activeBox=document.getElementById("opsSupplierIsActive");if(activeBox)activeBox.checked=s.is_active===true;
+        document.getElementById("opsSupplierMessage").textContent="تعديل بيانات المورد: "+s.name;
+        document.getElementById("opsSupplierName")?.scrollIntoView({behavior:"smooth",block:"center"});
+      };
+      const toggle=opsNode("button","secondary",s.is_active?"إيقاف المورد":"إعادة تفعيل المورد");toggle.type="button";
+      toggle.onclick=()=>opsToggleSupplierStatus(s);
+      card.append(edit,toggle);box.appendChild(card);
     });
   }
+  if(searchOnly)return;
   const supplierSelect=document.getElementById("opsSupplierSelect");
   const productSelect=document.getElementById("opsProductSelect");
   if(supplierSelect){supplierSelect.replaceChildren();opsOption(supplierSelect,"","اختر المورد");suppliers.filter(s=>s.is_active).forEach(s=>opsOption(supplierSelect,s.id,s.name));}
@@ -628,17 +654,37 @@ function renderOpsLoyalty(customers,loyaltyRows){
 async function opsSaveSupplier(){
   const message=document.getElementById("opsSupplierMessage");
   const name=document.getElementById("opsSupplierName").value.trim();
+  const supplierId=document.getElementById("opsSupplierId")?.value||"";
   if(name.length<2){message.textContent="اكتب اسم المورد بشكل صحيح.";return;}
   try{
-    await callAdminApi("POST",{action:"supplier_save",supplier_name:name,
+    await callAdminApi("POST",{action:"supplier_save",supplier_id:supplierId||undefined,supplier_name:name,
       contact_name:document.getElementById("opsSupplierContact").value,
       contact_phone:document.getElementById("opsSupplierPhone").value,
       contact_email:document.getElementById("opsSupplierEmail").value,
-      notes:document.getElementById("opsSupplierNotes").value});
-    ["opsSupplierName","opsSupplierContact","opsSupplierPhone","opsSupplierEmail","opsSupplierNotes"].forEach(id=>document.getElementById(id).value="");
-    message.textContent="تم حفظ المورد.";
+      notes:document.getElementById("opsSupplierNotes").value,
+      is_active:document.getElementById("opsSupplierIsActive")?.checked!==false});
+    opsResetSupplierForm();
+    message.textContent=supplierId?"تم تحديث بيانات المورد.":"تم حفظ المورد.";
     await loadAdminPanel();
   }catch(error){message.textContent="تعذر حفظ المورد: "+error.message;}
+}
+function opsResetSupplierForm(){
+  ["opsSupplierId","opsSupplierName","opsSupplierContact","opsSupplierPhone","opsSupplierEmail","opsSupplierNotes"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  const active=document.getElementById("opsSupplierIsActive");if(active)active.checked=true;
+  const message=document.getElementById("opsSupplierMessage");if(message)message.textContent="نموذج مورد جديد.";
+}
+async function opsToggleSupplierStatus(supplier){
+  const next=supplier.is_active!==true;
+  if(!window.confirm((next?"إعادة تفعيل":"إيقاف")+" المورد "+supplier.name+"؟"))return;
+  const message=document.getElementById("opsSupplierMessage");
+  message.textContent="جارٍ تحديث حالة المورد...";
+  try{
+    await callAdminApi("POST",{action:"supplier_save",supplier_id:supplier.id,supplier_name:supplier.name,
+      contact_name:supplier.contact_name||"",contact_phone:supplier.contact_phone||"",
+      contact_email:supplier.contact_email||"",notes:supplier.notes||"",is_active:next});
+    message.textContent=next?"تمت إعادة تفعيل المورد.":"تم إيقاف المورد. لم تُحذف روابط المنتجات أو الأسعار.";
+    await loadAdminPanel();
+  }catch(error){message.textContent="تعذر تحديث حالة المورد: "+error.message;}
 }
 async function opsSaveSupplierProduct(){
   const message=document.getElementById("opsSupplierProductMessage");
