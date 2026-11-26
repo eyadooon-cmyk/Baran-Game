@@ -3306,7 +3306,11 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <hr style="border-color:#40334b;margin:24px 0">
       <div class="admin-workgroup-label"><span>05</span><div><strong>دليل الموردين وربط المنتجات</strong><small>سجّل المورد أولاً، ثم اربط المنتجات وتكلفة الشراء وحقول العميل</small></div></div>
       <details class="supplier-fold" id="supplierDirectoryGroup"><summary>🤝 دليل الموردين وربط المنتجات <span>فتح / إغلاق</span></summary><h2>إدارة الموردين 🤝</h2>
+      <div id="opsSupplierStats" class="ops-stats-grid" aria-live="polite" style="margin:12px 0"></div>
+      <label for="opsSupplierSearch">بحث في دليل الموردين</label>
+      <input id="opsSupplierSearch" type="search" placeholder="ابحث باسم المورد أو جهة التواصل..." oninput="renderOpsSuppliers(window.__baranSuppliersCache||[],window.__baranSupplierLinksCache||[],window.__baranProductsCache||[])">
       <div class="ops-form">
+        <input id="opsSupplierId" type="hidden">
         <label for="opsSupplierName">اسم المورد</label>
         <input id="opsSupplierName" maxlength="120" placeholder="اسم المورد أو الشركة">
         <label for="opsSupplierContact">اسم جهة التواصل</label>
@@ -3317,7 +3321,8 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <input id="opsSupplierEmail" type="email" maxlength="254" placeholder="supplier@example.com">
         <label for="opsSupplierNotes">ملاحظات</label>
         <textarea id="opsSupplierNotes" rows="2" maxlength="2000" placeholder="ملاحظات عن المورد وشروط التعامل"></textarea>
-        <button class="full" type="button" onclick="opsSaveSupplier()">حفظ المورد</button>
+        <label><input id="opsSupplierIsActive" type="checkbox" checked> المورد فعّال</label>
+        <div class="ops-actions"><button class="full" type="button" onclick="opsSaveSupplier()">حفظ المورد</button><button class="secondary" type="button" onclick="opsResetSupplierForm()">مسح النموذج</button></div>
         <div id="opsSupplierMessage" class="ops-muted" role="status"></div>
       </div>
       <div id="opsSuppliers" class="ops-list">لا يوجد موردون مسجلون.</div>
