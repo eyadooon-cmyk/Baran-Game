@@ -364,6 +364,8 @@ function mount(){
  const priceResults=node("div","hci-results");priceResults.id="hciPriceResults";pricesView.append(priceCount,priceResults);
  search.oninput=filter;cat.onchange=filter;typ.onchange=filter;av.onchange=filter;risk.onchange=filter;
  const report=$("baranCatalogReadinessReport");
+ const anchor=report||panel,host=anchor.parentElement;
+ host.insertBefore(root,anchor);
  const legacy=node("details","hci-legacy-tools");
  const legacySummary=node("summary","","🔌 أدوات الاتصال والكتالوج المباشر");
  legacy.append(legacySummary);
@@ -372,8 +374,6 @@ function mount(){
  legacy.append(panel);
  wrap.append(legacy);
  root.append(hero,wrap);
- const anchor=report||panel;
- anchor.parentElement.insertBefore(root,anchor);
  styles();
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
