@@ -1228,15 +1228,37 @@ function homscardAutoAuditSelfTests(){
   const failures=cases.filter(([input,expected])=>homscardAutoAuditOne(input).kind!==expected);
   return {total:cases.length,passed:cases.length-failures.length,failures:failures.map(([input,expected])=>({name:input.name,expected,actual:homscardAutoAuditOne(input).kind}))};
 }
+async function homscardMergeSavedSuccessfulPages(){
+  const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"get_latest_audit"}});
+  if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر استرجاع الصفحات الناجحة السابقة");
+  const saved=new Map((data.data||[]).filter(row=>row.page_status==="success"&&row.page_data?.extraction_status==="extracted").map(row=>[String(row.product_id),row.page_data]));
+  let restored=0;
+  for(const product of homscardCatalogCache){
+    const page=saved.get(String(product.id));
+    if(!page)continue;
+    // Preserve current API catalog fields; only restore verified public-page data.
+    product.page_title=page.title||"";
+    product.page_description=page.description||"";
+    product.page_text=page.text||"";
+    product.page_images=Array.isArray(page.images)?page.images:[];
+    product.page_availability=page.availability||"unknown";
+    product.page_extraction_status="extracted";
+    product.page_status="success";
+    product.page_error="";
+    restored++;
+  }
+  return restored;
+}
 async function homscardInspectProductPages(){
   const status=document.getElementById("opsHomsAutoAuditStatus");
   const button=document.getElementById("opsHomsPageAuditButton");
   if(!homscardCatalogCache.length){if(status)status.textContent="حمّل كتالوج HomsCard أولاً.";return;}
   if(button)button.disabled=true;
   let inspected=0,failed=0;
-  const products=homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??""))&&(p.page_status!=="success"||p.page_extraction_status!=="extracted"));
   try{
-    if(status)status.textContent="جارٍ استكمال الصفحات غير الناجحة أو غير المفحوصة فقط: 0 / "+products.length;
+    const restored=await homscardMergeSavedSuccessfulPages();
+    const products=homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??""))&&(p.page_status!=="success"||p.page_extraction_status!=="extracted"));
+    if(status)status.textContent="تم الحفاظ على "+restored+" صفحة ناجحة محفوظة. جارٍ فحص الصفحات غير المحسومة: 0 / "+products.length;
     for(let i=0;i<products.length;i+=25){
       const ids=products.slice(i,i+25).map(p=>String(p.id));
       const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"product_pages",products_id:ids}});
@@ -1252,7 +1274,7 @@ async function homscardInspectProductPages(){
       if(status)status.textContent="جارٍ فحص صفحات HomsCard العامة: "+Math.min(i+25,products.length)+" / "+products.length+" · نجح "+inspected+" · تعذر "+failed;
     }
     await homscardRunAutomaticAudit();
-    if(status)status.textContent="اكتمل استكمال الصفحات: نجح "+inspected+" صفحة جديدة، وتعذر "+failed+". الصفحات الناجحة سابقاً لم تُفحص مجدداً.";
+    if(status)status.textContent="اكتمل التدقيق: حُفظت "+restored+" صفحة ناجحة سابقة، وفُحصت "+inspected+" صفحة جديدة بنجاح، وتعذر "+failed+". لم تُستبدل أي صفحة ناجحة بخطأ مؤقت.";
   }catch(error){
     console.error("[HomsCard product page audit]",error);
     if(status)status.textContent="توقف فحص الصفحات: "+(error?.message||"خطأ غير معروف")+". لم يتم إنشاء أي طلب أو شحن.";
