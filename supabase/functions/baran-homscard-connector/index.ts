@@ -38,7 +38,7 @@ function decodeHtml(value: string): string {
 }
 function htmlAttr(tag: string, name: string): string {
   const match = tag.match(new RegExp("\\b" + name + "\\s*=\\s*(['\"])(.*?)\\1", "i"));
-  return decodeHtml(match?.[1] ?? match?.[2] ?? match?.[3] ?? "");
+  return decodeHtml(match?.[2] ?? "");
 }
 function extractProductPage(html: string) {
   const title = decodeHtml((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").replace(/<[^>]+>/g, " ").trim());
