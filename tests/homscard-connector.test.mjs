@@ -87,5 +87,5 @@ test("HomsCard product page validation rejects upstream error pages and empty me
   assert.match(adminUi, /function homscardPageHasErrorContent/);
   assert.match(adminUi, /function homscardPageIsUsable/);
   assert.match(adminUi, /function homscardPageNeedsRecheck/);
-  assert.match(adminUi, /!homscardPageIsUsable\(row\)/);
+  assert.match(adminUi, /row\?\.success&&homscardPageIsUsable\(row\)/);
 });
