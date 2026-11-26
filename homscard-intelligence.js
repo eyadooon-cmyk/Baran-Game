@@ -312,7 +312,7 @@ function mount(){
  hero.append(meta);
  const wrap=node("div","hci-body-wrap");
  const actions=node("div","hci-actions");
- const smart=node("button","hci-primary","🚀 تشغيل الفحص الشامل وتحديث التقرير");
+ const smart=node("button","hci-primary","🚀 تشغيل الفحص الشامل والإصلاح الآمن");
  smart.type="button";smart.id="hciSmartRun";smart.onclick=smartRun;
  const reload=node("button","","📂 قراءة آخر تدقيق محفوظ");reload.type="button";reload.id="hciReload";reload.onclick=load;
  const exp=node("button","","⬇️ تصدير تقرير HomsCard CSV");exp.type="button";exp.id="hciExport";exp.onclick=exportReport;
