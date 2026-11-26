@@ -1114,7 +1114,8 @@ function renderHomsCardCatalog(){
       const media=opsNode("div","homscard-product-media");
       const fallback=opsNode("div","homscard-product-image-fallback","BARAN");
       media.appendChild(fallback);
-      const imageUrl=homscardSafeImageUrl(p.image);
+      const pageImage=Array.isArray(p.page_images)?p.page_images.find(url=>homscardSafeImageUrl(url)&&! /homscard_logo/i.test(String(url))):"";
+      const imageUrl=homscardSafeImageUrl(p.image)||homscardSafeImageUrl(pageImage);
       if(imageUrl){
         const image=opsNode("img","homscard-product-image");
         image.src=imageUrl;image.alt=String(p.name||"صورة المنتج");image.loading="lazy";image.decoding="async";image.referrerPolicy="no-referrer";
@@ -1302,7 +1303,7 @@ async function homscardInspectProductPages(){
       const byId=new Map(data.data.map(row=>[String(row.id),row]));
       for(const p of products.slice(i,i+25)){
         const row=byId.get(String(p.id));
-        if(row?.success){p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";p.page_status="success";p.page_error="";inspected++;}
+        if(row?.success){p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";p.page_images=Array.isArray(row.images)?row.images:[];p.page_status="success";p.page_error="";inspected++;}
         else {p.page_status="failed";p.page_error=row?.error||"تعذر فحص الصفحة";failed++;}
       }
       await homscardPersistAuditRows(products.slice(i,i+25),products.slice(i,i+25).map(p=>homscardAutoAuditOne(p)));
@@ -1320,7 +1321,7 @@ async function homscardPersistAuditRows(products,auditRows){
  if(!homscardAuditRunId)homscardAuditRunId=crypto.randomUUID();
  const byId=new Map((auditRows||[]).map(x=>[String(x.p?.id),x]));
  for(let i=0;i<products.length;i+=50){
-  const rows=products.slice(i,i+50).map(p=>{const a=byId.get(String(p.id))||homscardAutoAuditOne(p);return {product_id:String(p.id),product_name:String(p.name||""),product_data:Object.fromEntries(Object.entries(p).filter(([k])=>!k.startsWith("page_"))),page_data:{title:p.page_title||"",description:p.page_description||"",text:p.page_text||""},page_status:p.page_status||(p.page_text?"success":"not_checked"),page_error:p.page_error||"",audit_data:{kind:a.kind,confidence:a.confidence,reason:a.reason,options:a.options,keys:a.keys,account:a.account,missing:a.missing}};});
+  const rows=products.slice(i,i+50).map(p=>{const a=byId.get(String(p.id))||homscardAutoAuditOne(p);return {product_id:String(p.id),product_name:String(p.name||""),product_data:Object.fromEntries(Object.entries(p).filter(([k])=>!k.startsWith("page_"))),page_data:{title:p.page_title||"",description:p.page_description||"",text:p.page_text||"",images:Array.isArray(p.page_images)?p.page_images.filter(url=>homscardSafeImageUrl(url)).slice(0,12):[]},page_status:p.page_status||(p.page_text?"success":"not_checked"),page_error:p.page_error||"",audit_data:{kind:a.kind,confidence:a.confidence,reason:a.reason,options:a.options,keys:a.keys,account:a.account,missing:a.missing}};});
   const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"save_audit_batch",run_id:homscardAuditRunId,catalog_count:homscardCatalogCache.length,rows}});
   if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر حفظ نتائج التدقيق");
  }
@@ -1333,7 +1334,7 @@ async function homscardRestoreSavedAudit(){
   if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر الاسترجاع");
   if(!data.run||!data.data?.length){if(status)status.textContent="لا يوجد تدقيق محفوظ بعد.";return;}
   homscardAuditRunId=data.run.run_id;
-  homscardCatalogCache=data.data.map(x=>({...x.product_data,page_title:x.page_data?.title||"",page_description:x.page_data?.description||"",page_text:x.page_data?.text||"",page_status:x.page_status,page_error:x.page_error||""}));
+  homscardCatalogCache=data.data.map(x=>({...x.product_data,page_title:x.page_data?.title||"",page_description:x.page_data?.description||"",page_text:x.page_data?.text||"",page_images:Array.isArray(x.page_data?.images)?x.page_data.images:[],page_status:x.page_status,page_error:x.page_error||""}));
   initHomsCardCatalogFilters(homscardCatalogCache);
   await homscardRunAutomaticAudit({persist:false});
   if(status)status.textContent="تم استرجاع "+homscardCatalogCache.length+" منتجاً. جارٍ استكمال الصفحات غير المفحوصة أو الفاشلة فقط…";
