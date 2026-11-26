@@ -18,6 +18,22 @@ function pageHealth(r){const t=text(r);if(!t.trim())return"نص الصفحة ف�
 function apiFields(r){const d=data(r),p=arr(d.params),q=d.qty_values,out=[];if(p.length)p.forEach(x=>out.push(x));else out.push("لا توجد حقول إدخال مسجلة في API");if(q&&(q.min!==undefined||q.max!==undefined))out.push("حدود الكمية المسجلة: "+(q.min??"غير محدد")+" إلى "+(q.max??"غير محدد"));else if(String(d.product_type)==="package")out.push("نوع المورد package؛ لا توجد حدود كمية مسجلة");return out;}
 function snippets(r){return pageDetails(r);}
 
+
+function pageUnderstanding(r){
+ const t=pageDetails(r),n=String(data(r).name||r.product_name||""),out=[];
+ if(/email\s*password/i.test(t)||/بيانات تسجيل الدخول/.test(t))out.push("بيانات email/password مذكورة كمخرجات تُسلّم للمشتري، وليست حقول إدخال للعميل.");
+ if(/كود تحقق|رمز تحقق|رمز التحقق|كود التأكيد/i.test(t))out.push("قد يحتاج المشتري إلى متابعة دعم للحصول على رمز تحقق بعد التسليم.");
+ if(/الدولة حسب اختيارك|اختر الدولة|الدولة المحددة/.test(t))out.push("يوجد اختيار دولة/منطقة مذكور في الوصف؛ لم يظهر كحقل API مستقل.");
+ if(/بعد شراء هذه الخدمة|بعد الشراء ستحصل|بعد إتمام الشراء/.test(t)&&/حساب|بيانات|تسجيل الدخول/.test(t))out.push("الوصف يشرح بيانات أو حساباً يُسلّم بعد الشراء.");
+ if(/أدخل\s+(?:Player ID|User ID|UID|ID)/i.test(t))out.push("الصفحة تطلب معرف لاعب/مستخدم كمدخل من العميل.");
+ if(/كود جاهز/.test(t))out.push("الصفحة تصف المنتج بأنه كود جاهز يُسلّم للمشتري.");
+ if(/تنفيذ يدوي/.test(t))out.push("الصفحة تصف التنفيذ بأنه يدوي؛ لا نفترض أنه شحن آلي.");
+ if(/تسليم تلقائي فوري|الطلب يُنفَّذ تلقائياً/.test(t))out.push("الصفحة تدّعي التسليم التلقائي الفوري؛ هذا وصف المورد وليس اختبار تنفيذ فعلي.");
+ const duration=n.match(/(?:\b\d+\s*(?:days?|months?|years?)\b|\d+\s*(?:أيام|يوم|شهر|اشهر|أشهر|سنة|سنوات))/i);
+ if(duration)out.push("الاسم يتضمن مدة محتملة ("+duration[0]+")؛ لم نثبتها كمدة اشتراك من API.");
+ return out;
+}
+
 function assessment(r){
  const d=data(r),t=pageDetails(r),p=arr(d.params),pp=pageUnitPrice(r),api=Number(d.price),issues=[];
  const pageOk=pageHealth(r)==="تفاصيل المنتج موجودة";
@@ -53,6 +69,7 @@ function card(r){const d=data(r),c=node("details","hci-card"),s=node("summary","
 const body=node("div","hci-body"),grid=node("div","hci-grid"),q=d.qty_values,pp=pageUnitPrice(r),fields=[["نوع المورد من API",d.product_type],["التوفر حسب API",d.available===true?"متوفر":d.available===false?"غير متوفر":"غير محدد"],["سعر API المسجل",money(d.price)],["السعر المعروض بصفحة المورد",pp===null?"غير مستخرج":money(pp)],["حقول الإدخال المسجلة حرفياً",arr(d.params).join("، ")||"لا توجد حقول مسجلة"],["الحد الأدنى",q?.min??"غير مسجل"],["الحد الأعلى",q?.max??"غير مسجل"],["حالة صفحة المنتج",pageHealth(r)+" (HTTP: "+r.page_status+")"],["طريقة التسليم المذكورة بالصفحة",fulfillment(r).join(" + ")],["ثقة التدقيق",confidence(r)],["خطأ جلب الصفحة",r.page_error||"لا يوجد"]];fields.forEach(([k,v])=>{const x=node("div","hci-cell");x.append(node("small","",k),node("b","",v==null||v===""?"غير متوفر":v));grid.appendChild(x);});body.appendChild(grid);
 const assess=assessment(r),intel=node("section","hci-section");intel.appendChild(node("b","","خلاصة فهم المنتج ومطابقة البيانات"));intel.appendChild(node("p","hci-muted","الحالة: "+(assess.level==="critical"?"مشكلة أساسية":assess.level==="review"?"يحتاج مراجعة":"لا توجد إشارة خطر واضحة")+" · التسليم المذكور: "+assess.delivery));if(assess.gap!==null)intel.appendChild(node("p","hci-muted","فرق سعر العرض عن API: "+assess.gap.toFixed(2)+"% — غالباً يعكس اختلاف سعر صفحة المورد عن سعر API؛ نعرضه للمقارنة ولا نعدّه خطأ أو نعتمد أحد السعرين تلقائياً."));if(assess.issues.length){const il=node("ul","");assess.issues.forEach(v=>il.appendChild(node("li","",v)));intel.appendChild(il);}else intel.appendChild(node("p","hci-muted","لم تظهر تعارضات آلية ضمن الحقول المقروءة؛ هذا ليس اعتماداً للشحن."));body.appendChild(intel);
 const h=node("section","hci-section");h.appendChild(node("b","","متطلبات الشحن المسجلة في API (بدون تخمين)"));const ul=node("ul","");apiFields(r).forEach(v=>ul.appendChild(node("li","",v)));h.appendChild(ul);body.appendChild(h);
+const understand=pageUnderstanding(r),uBox=node("section","hci-section");uBox.appendChild(node("b","","ما فهمه النظام من وصف المورد (قراءة نصية)"));if(understand.length){const uu=node("ul","");understand.forEach(v=>uu.appendChild(node("li","",v)));uBox.appendChild(uu);}else uBox.appendChild(node("p","hci-muted","لم تظهر تعليمات تسليم خاصة واضحة في النص المتاح."));body.appendChild(uBox);
 const sec=node("section","hci-section");sec.appendChild(node("b","","إشارات إدخال/كمية وردت في صفحة المورد (غير معتمدة)"));const sig=pageSignals(r);if(sig.length){const su=node("ul","");sig.forEach(v=>su.appendChild(node("li","",v)));sec.appendChild(su);}else sec.appendChild(node("p","hci-muted","لم يُعثر على إشارات إدخال أو مدى كمية واضحة في نص التفاصيل."));sec.appendChild(node("p","hci-note","هذه إشارات نصية فقط. المرجع المعتمد لحقول الشحن هو params وqty_values في API؛ لا تُحوّل هذه الإشارات إلى حقول إلزامية قبل مطابقتها مع توثيق المورد وتجربة آمنة."));sec.appendChild(node("details","hci-raw")).append(node("summary","","عرض نص صفحة المورد الكامل"),node("pre","",snippets(r)||"لا يوجد نص"));body.appendChild(sec);
 const a=r.audit_data||{},audit=node("section","hci-section");audit.appendChild(node("b","","نتيجة التدقيق وملاحظاته"));audit.appendChild(node("p","hci-muted","التصنيف التحليلي السابق: "+(a.kind||"غير مصنف")));if(a.reason)audit.appendChild(node("p","hci-muted","سبب التصنيف: "+a.reason));const m=missing(r);audit.appendChild(node("p","hci-muted",m.length?"نواقص/تحذيرات: "+m.join("، "):"لا توجد نواقص تقنية ظاهرة؛ هذا لا يعني اعتماد المنتج للبيع أو الشحن."));if(a.missing?.length)audit.appendChild(node("p","hci-muted","ملاحظات التدقيق: "+a.missing.join("، ")));body.appendChild(audit);
 const raw=node("details","hci-raw");raw.appendChild(node("summary","","عرض البيانات الخام كاملة"));raw.appendChild(node("pre","",JSON.stringify({product_data:d,page_data:r.page_data||{},audit_data:a},null,2)));body.appendChild(raw);c.appendChild(body);return c;}
@@ -67,11 +84,11 @@ function csvCell(v){
 }
 function exportReport(){
  if(!rows.length){$("hciStatus").textContent="اقرأ التدقيق أولاً قبل تصدير التقرير.";return;}
- const head=["Product ID","Product name","Category","API type","Available","API price USD","Page unit price USD","Page/API gap %","API input fields","Qty min","Qty max","Page health","Page delivery wording","Review level","Review notes"];
+ const head=["Product ID","Product name","Category","API type","Available","API price USD","Page unit price USD","Page/API gap %","API input fields","Qty min","Qty max","Page health","Page delivery wording","Page interpretation","Review level","Review notes"];
  const lines=[head.map(csvCell).join(",")];
  rows.forEach(r=>{
   const d=data(r),a=assessment(r);
-  lines.push([d.id??r.product_id,d.name||r.product_name,d.category,d.product_type,d.available===true?"yes":d.available===false?"no":"unknown",d.price,a.pp,a.gap===null?"":a.gap.toFixed(3),arr(d.params).join(" | "),d.qty_values?.min,d.qty_values?.max,pageHealth(r),a.delivery,a.level,a.issues.join(" | ")].map(csvCell).join(","));
+  lines.push([d.id??r.product_id,d.name||r.product_name,d.category,d.product_type,d.available===true?"yes":d.available===false?"no":"unknown",d.price,a.pp,a.gap===null?"":a.gap.toFixed(3),arr(d.params).join(" | "),d.qty_values?.min,d.qty_values?.max,pageHealth(r),a.delivery,pageUnderstanding(r).join(" | "),a.level,a.issues.join(" | ")].map(csvCell).join(","));
  });
  const blob=new Blob(["\uFEFF"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");
