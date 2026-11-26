@@ -46,6 +46,14 @@ test("Admin catalog audit can enrich products from HomsCard public product pages
   assert.ok(adminUi.includes("p.page_text"));
   assert.ok(adminUi.includes("للوحدة"));
 });
+test("HomsCard audit requires explicit subscription evidence and reports low-confidence items for review", () => {
+  assert.match(adminUi, /explicitSubscriptionWords/);
+  assert.match(adminUi, /hasExplicitSubscription/);
+  assert.match(adminUi, /إشارة زمنية فقط/);
+  assert.match(adminUi, /needsReview=kind==="غير محسوم"\|\|confidence==="منخفض"/);
+  assert.match(adminUi, /تصنيفاً مبدئياً بثقة متوسطة أو أعلى/);
+});
+
 test("HomsCard audit results are persisted and restored through admin-gated server actions", () => {
   assert.match(source, /action === "save_audit_batch"/);
   assert.match(source, /action === "get_latest_audit"/);
