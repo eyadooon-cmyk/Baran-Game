@@ -256,7 +256,7 @@ Deno.serve(async (req: Request) => {
         available: typeof p.available === "boolean" ? p.available : null, availability: typeof p.available === "boolean" ? (p.available ? "available" : "unavailable") : "unknown",
         product_type: p.product_type ?? null,
         qty_values: p.qty_values ?? null, params: p.params ?? [],
-        image: typeof p.image === "string" && /^https:\\/\\//i.test(p.image) ? p.image : null,
+        image: typeof p.image === "string" && /^https:\/\//i.test(p.image) ? p.image : null,
         description: p.description ?? null,
       })), fetched_at: new Date().toISOString(),
       note: "Read-only catalog request. No order was created and no balance was charged." }, 200, origin);
