@@ -199,3 +199,14 @@ test("Supplier directory search does not rebuild or clear the product-link form"
   assert.match(adminUi, /روابط المورد المفضل/);
   assert.match(indexHtml, /renderOpsSuppliers\(window\.__baranSuppliersCache\|\|\[\],window\.__baranSupplierLinksCache\|\|\[\],window\.__baranProductsCache\|\|\[\],true\)/);
 });
+
+test("HomsCard AI control center is mounted as a separate visible card and runs a bounded safe workflow", () => {
+  assert.match(intelligenceUi, /panel\.parentElement\.insertBefore\(root,panel\)/);
+  assert.match(intelligenceUi, /تشغيل الفحص الشامل والإصلاح الآمن/);
+  assert.match(intelligenceUi, /products_id:ids/);
+  assert.match(intelligenceUi, /action:"get_latest_audit"/);
+  assert.match(intelligenceUi, /action:"save_audit_batch"/);
+  assert.match(intelligenceUi, /const ids=\["18","3","280","8","910","37","43","1","893","25","49","45","283","282","458"\]/);
+  assert.match(intelligenceUi, /targets=working\.filter\(r=>r\.page_status!=="success"\)/);
+  assert.match(intelligenceUi, /لا شراء ولا شحن ولا تعديل أسعار بيع أو أرصدة أو طلبات/);
+});
