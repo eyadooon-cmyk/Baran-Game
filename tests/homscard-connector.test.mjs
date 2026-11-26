@@ -101,3 +101,9 @@ test("Admin loads the full HomsCard catalog and persists page images and availab
   assert.match(adminUi, /images:p\.page_images\|\|\[\]/);
   assert.match(adminUi, /availability:p\.page_availability\|\|"unknown"/);
 });
+
+test("Admin catalog cards expose the extracted supplier description, text and image gallery", () => {
+  assert.match(adminUi, /تفاصيل صفحة حمص كارد الكاملة/);
+  assert.match(adminUi, /homscard-page-image-gallery/);
+  assert.match(adminUi, /p\.page_text/);
+});
