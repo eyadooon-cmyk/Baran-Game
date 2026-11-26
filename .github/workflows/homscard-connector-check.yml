@@ -6,6 +6,9 @@ on:
       - "supabase/functions/baran-homscard-connector/**"
       - "supabase/migrations/*homscard*"
       - "tests/homscard-connector.test.mjs"
+      - "tests/homscard-analysis.test.mjs"
+      - "homscard-analysis.js"
+      - "homscard-intelligence.js"
       - "admin-operations.js"
       - "index.html"
       - ".github/workflows/homscard-connector-check.yml"
@@ -27,10 +30,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run HomsCard safety tests
-        run: node --test tests/homscard-connector.test.mjs
+      - name: Run HomsCard safety and analysis tests
+        run: node --test tests/homscard-connector.test.mjs tests/homscard-analysis.test.mjs
       - uses: denoland/setup-deno@v2
       - name: Type-check HomsCard Edge Function
         run: deno check supabase/functions/baran-homscard-connector/index.ts
-      - name: Check admin UI JavaScript syntax
-        run: node --check admin-operations.js
+      - name: Check admin and intelligence JavaScript syntax
+        run: |
+          node --check admin-operations.js
+          node --check homscard-analysis.js
+          node --check homscard-intelligence.js
