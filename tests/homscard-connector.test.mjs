@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const source = await readFile(new URL("../supabase/functions/baran-homscard-connector/index.ts", import.meta.url), "utf8");
 const migration = await readFile(new URL("../supabase/migrations/20261125110000_add_homscard_supplier_api.sql", import.meta.url), "utf8");
 const adminUi = await readFile(new URL("../admin-operations.js", import.meta.url), "utf8");
+const intelligenceUi = await readFile(new URL("../homscard-intelligence.js", import.meta.url), "utf8");
 const auditMigration = await readFile(new URL("../supabase/migrations/20261126100000_add_homscard_audit_storage.sql", import.meta.url), "utf8");
 
 test("HomsCard connector is admin-authenticated and keeps credentials server-side", () => {
@@ -158,4 +159,13 @@ test("Agreed HomsCard page audit is restricted to the exact 15 approved product 
   assert.match(adminUi, /products\.length!==15/);
   assert.match(adminUi, /opsHomsAgreedPageAuditButton/);
   assert.match(adminUi, /homscardPersistAuditRows\(products,auditRows\)/);
+});
+
+test("HomsCard intelligence reads, exports, and rechecks only the 15 agreed products", () => {
+  const ids = ["18","3","280","8","910","37","43","1","893","25","49","45","283","282","458"];
+  for (const id of ids) assert.ok(intelligenceUi.includes('"'+id+'"'));
+  assert.match(intelligenceUi, /const matched=savedRows\.filter\(r=>agreedIds\.has\(r\.product_id\)\)/);
+  assert.match(intelligenceUi, /const missing=\[\.\.\.agreedIds\]/);
+  assert.match(intelligenceUi, /rows=matched/);
+  assert.match(intelligenceUi, /const targets=rows\.filter/);
 });
