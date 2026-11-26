@@ -6,6 +6,8 @@ on:
       - "supabase/functions/baran-homscard-connector/**"
       - "supabase/migrations/*homscard*"
       - "tests/homscard-connector.test.mjs"
+      - "admin-operations.js"
+      - "index.html"
       - ".github/workflows/homscard-connector-check.yml"
   push:
     branches: [main]

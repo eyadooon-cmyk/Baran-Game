@@ -1014,6 +1014,9 @@ async function saveBaranCampaignDraft(){
 
 
 let homscardCatalogCache=[];
+let homscardLastAuditRows=[];
+let homscardRequestBusy=false;
+let homscardAuditRunId=null;
 function renderHomsCardCatalog(){
   const toolsBox=document.getElementById('opsHomsCatalogTools');
   const results=document.getElementById('opsHomsCatalogResults');
@@ -1021,20 +1024,26 @@ function renderHomsCardCatalog(){
   const search=document.getElementById('opsHomsCatalogSearch');
   const category=document.getElementById('opsHomsCatalogCategory');
   const availability=document.getElementById('opsHomsCatalogAvailability');
+  const typeFilter=document.getElementById('opsHomsCatalogType');
   if(!toolsBox||!results||!count||!search||!category||!availability)return;
   toolsBox.classList.remove('hidden');
   const term=String(search.value||'').trim().toLocaleLowerCase();
   const selectedCategory=category.value;
   const selectedAvailability=availability.value;
+  const selectedType=typeFilter?.value||"";
   const filtered=homscardCatalogCache.filter(p=>{
     const haystack=[p.name,p.category,p.code,p.product_code,p.id].map(v=>String(v??'')).join(' ').toLocaleLowerCase();
     if(term&&!haystack.includes(term))return false;
     if(selectedCategory&&String(p.category??'')!==selectedCategory)return false;
     if(selectedAvailability==='available'&&!p.available)return false;
     if(selectedAvailability==='unavailable'&&p.available)return false;
+    if(selectedType){
+      const audit=homscardAutoAuditOne(p);
+      if(audit.kind!==selectedType)return false;
+    }
     return true;
   });
-  count.textContent='عرض '+filtered.length+' من أصل '+homscardCatalogCache.length+' منتج';
+  count.textContent='عرض '+filtered.length+' من أصل '+homscardCatalogCache.length+' منتج'+(selectedType?' · حسب التصنيف المبدئي':'');
   results.replaceChildren();
   if(!filtered.length){results.appendChild(opsNode('div','homscard-empty','ما لقينا منتجات مطابقة. جرّب كلمة بحث أو تصنيفاً آخر.'));return;}
   const fragment=document.createDocumentFragment();
@@ -1064,10 +1073,287 @@ function renderHomsCardCatalog(){
   });
   results.appendChild(fragment);
 }
+
+function homscardAutoAuditParse(value){
+  if(value===null||value===undefined||value==="")return null;
+  if(typeof value!=="string")return value;
+  try{return JSON.parse(value);}catch(_){return value;}
+}
+function homscardAutoAuditText(value){
+  return String(value??"").normalize("NFKC").toLocaleLowerCase().replace(/[ـًٌٍَُِّْ]/g," ").replace(/\s+/g," ").trim();
+}
+function homscardAutoAuditNumber(value){
+  if(typeof value==="number")return Number.isFinite(value)&&value>0?value:null;
+  if(typeof value!=="string")return null;
+  const s=value.trim().replace(/,/g,".");
+  if(!/^\d+(?:\.\d+)?$/.test(s))return null;
+  const n=Number(s);
+  return Number.isFinite(n)&&n>0?n:null;
+}
+function homscardAutoAuditQuantities(value){
+  const root=homscardAutoAuditParse(value),found=[];
+  const seen=new Set();
+  const add=(v)=>{const n=homscardAutoAuditNumber(v);if(n!==null&&!seen.has(n)){seen.add(n);found.push(n);}};
+  const visit=(node,depth=0)=>{
+    if(depth>7||node===null||node===undefined)return;
+    if(typeof node==="number"||typeof node==="string"){add(node);return;}
+    if(Array.isArray(node)){node.forEach(v=>visit(v,depth+1));return;}
+    if(typeof node==="object"){
+      const keys=["value","quantity","qty","amount","count","units","min","max"];
+      let used=false;
+      for(const key of keys)if(Object.prototype.hasOwnProperty.call(node,key)){add(node[key]);used=true;}
+      if(!used){
+        for(const [key,val] of Object.entries(node)){
+          if(/^\d+(?:\.\d+)?$/.test(key)&&(val===true||val===1||val==="1"))add(key);
+          else if(typeof val==="object"||Array.isArray(val))visit(val,depth+1);
+          else if(typeof val==="string"&&/^\d+(?:\.\d+)?$/.test(val))add(val);
+        }
+      }
+    }
+  };
+  visit(root);
+  return found.sort((a,b)=>a-b);
+}
+function homscardAutoAuditKeys(value){
+  const root=homscardAutoAuditParse(value),found=[],seen=new Set();
+  const add=(v)=>{
+    if(typeof v!=="string")return;
+    const s=v.trim();
+    if(!s||s.length>120||/^\d+$/.test(s))return;
+    const k=s.toLocaleLowerCase();
+    if(!seen.has(k)){seen.add(k);found.push(s);}
+  };
+  const visit=(node,depth=0)=>{
+    if(depth>7||node===null||node===undefined)return;
+    if(typeof node==="string"){
+      const s=node.trim();
+      if((s.startsWith("{")&&s.endsWith("}"))||(s.startsWith("[")&&s.endsWith("]"))){
+        try{visit(JSON.parse(s),depth+1);return;}catch(_){}
+      }
+      add(s);return;
+    }
+    if(Array.isArray(node)){node.forEach(v=>visit(v,depth+1));return;}
+    if(typeof node==="object"){
+      for(const [key,val] of Object.entries(node)){
+        if(!/^\d+$/.test(key))add(key);
+        if(typeof val==="string")add(val);
+        else if(val&&typeof val==="object")visit(val,depth+1);
+      }
+    }
+  };
+  visit(root);
+  return found;
+}
+function homscardAutoAuditOne(p){
+  const name=String(p.name||""),category=String(p.category||"");
+  const type=homscardAutoAuditText(p.product_type||"");
+  const pageText=homscardAutoAuditText([p.page_title,p.page_description,p.page_text].filter(Boolean).join(" "));
+  const text=homscardAutoAuditText(name+" "+category+" "+pageText);
+  const unitPriceEvidence=/(للوحدة|سعر الوحدة|per unit|unit price)/i.test(pageText);
+  const params=Array.isArray(p.params)?p.params:(p.params==null?[]:[p.params]);
+  const keys=homscardAutoAuditKeys(params),paramText=homscardAutoAuditText(keys.join(" "));
+  const options=homscardAutoAuditQuantities(p.qty_values);
+  const subscriptionWords=/(اشتراك|شهري|شهر|سنوي|سنة|أسبوع|يوم|subscription|monthly|month|annual|yearly|weekly|duration|days?)/i;
+  const accountWords=/(player.?id|user.?id|uid|account|server|zone|email|login|معرف|آيدي|سيرفر|حساب|بريد|رقم اللاعب)/i;
+  const typeSubscription=/^(subscription|membership|time|duration)$/i.test(type);
+  const typeVariable=/^(quantity|variable|top.?up|recharge|amount|custom)$/i.test(type);
+  const hasDuration=subscriptionWords.test(text)||typeSubscription;
+  const hasVariableEvidence=options.length>0||typeVariable||unitPriceEvidence;
+  const hasPackEvidence=/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|credits|points)/i.test(text)&&/\d/.test(text);
+  let kind="غير محسوم",confidence="منخفض",reason="المعلومات المتاحة لا تكفي لتحديد طريقة البيع دون تخمين.";
+  // Trust the supplier's explicit quantity type before interpreting words in the
+  // product name (e.g. "Yomee" must not be mistaken for Arabic "يومي").
+  if(typeVariable){
+    kind="كمية متغيرة محتملة";
+    confidence=options.length?"متوسط":"منخفض";
+    reason=options.length?"نوع المورد quantity وتوجد قيم كمية منظمة؛ هذا لا يثبت أن السعر سعر وحدة.":"نوع المورد quantity لكن خيارات الكمية غير متاحة.";
+  }else if(typeSubscription){
+    kind="اشتراك بمدة محتملة";
+    confidence="متوسط";
+    reason="نوع المورد يشير إلى اشتراك؛ يلزم تأكيد المدة والتفعيل.";
+  }else if(hasDuration){
+    kind="اشتراك بمدة محتملة";
+    confidence="منخفض";
+    reason="الاسم يتضمن إشارة زمنية؛ قد تكون وصفاً فقط وليست مدة اشتراك مؤكدة.";
+  }else if(options.length||unitPriceEvidence){
+    kind="كمية متغيرة محتملة";
+    confidence="متوسط";
+    reason=options.length?"توجد قيم كمية منظمة؛ هذا لا يثبت أن سعر المورد سعر وحدة.":"صفحة المورد تصف السعر بأنه للوحدة؛ يلزم تأكيد مجال الكمية قبل اعتماد التسعير.";
+  }else if(hasPackEvidence){
+    kind="باقة ثابتة محتملة";
+    confidence="منخفض";
+    reason="الاسم يوحي بباقة ذات قيمة محددة؛ لم يتوفر دليل بنيوي يؤكد ثباتها.";
+  }
+  const price=homscardAutoAuditNumber(p.price);
+  const account=accountWords.test(paramText+" "+pageText);
+  const missing=[];
+  if(!p.product_type||type==="package")missing.push("نوع المنتج قد يكون افتراضياً من الموصل");
+  if(!p.qty_values)missing.push("لا توجد خيارات كمية مؤكدة");
+  if(!params.length)missing.push("لا توجد حقول إدخال ظاهرة");
+  if(price===null)missing.push("السعر غير رقمي أو غير صالح");
+  return {p,kind,confidence,reason,options,keys,account,price,missing,hasDuration,hasVariableEvidence,hasPackEvidence};
+}
+function homscardAutoAuditSelfTests(){
+  const cases=[
+    [{name:"PUBG 60 UC",product_type:"package",price:"1.2"}, "باقة ثابتة محتملة"],
+    [{name:"Free Fire",product_type:"package",price:1}, "غير محسوم"],
+    [{name:"شحن حسب الكمية",product_type:"quantity",qty_values:[100,500],price:0.2}, "كمية متغيرة محتملة"],
+    [{name:"شحن",qty_values:100,price:0.2}, "كمية متغيرة محتملة"],
+    [{name:"اشتراك شهري",product_type:"package"}, "اشتراك بمدة محتملة"],
+    [{name:"VPN Premium 30 days",product_type:"package"}, "اشتراك بمدة محتملة"],
+    [{name:"Game credits",product_type:"package"}, "غير محسوم"],
+    [{name:"خدمة",product_type:"package",qty_values:"غير محدد"}, "غير محسوم"],
+    [{name:"منتج",product_type:"package",qty_values:[{"quantity":"1000"}]}, "كمية متغيرة محتملة"],
+    [{id:1427,name:"Yomee ID",product_type:"quantity",qty_values:{min:1,max:365},price:0.01}, "كمية متغيرة محتملة"]
+  ];
+  const failures=cases.filter(([input,expected])=>homscardAutoAuditOne(input).kind!==expected);
+  return {total:cases.length,passed:cases.length-failures.length,failures:failures.map(([input,expected])=>({name:input.name,expected,actual:homscardAutoAuditOne(input).kind}))};
+}
+async function homscardInspectProductPages(){
+  const status=document.getElementById("opsHomsAutoAuditStatus");
+  const button=document.getElementById("opsHomsPageAuditButton");
+  if(!homscardCatalogCache.length){if(status)status.textContent="حمّل كتالوج HomsCard أولاً.";return;}
+  if(button)button.disabled=true;
+  let inspected=0,failed=0;
+  const products=homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??""))&&p.page_status!=="success");
+  try{
+    if(status)status.textContent="جارٍ استكمال الصفحات غير الناجحة أو غير المفحوصة فقط: 0 / "+products.length;
+    for(let i=0;i<products.length;i+=25){
+      const ids=products.slice(i,i+25).map(p=>String(p.id));
+      const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"product_pages",products_id:ids}});
+      if(error)throw new Error(error.message||"تعذر جلب صفحات المنتجات");
+      if(!data?.success||!Array.isArray(data.data))throw new Error(data?.error||"الموصل لا يدعم فحص صفحات المنتجات بعد.");
+      const byId=new Map(data.data.map(row=>[String(row.id),row]));
+      for(const p of products.slice(i,i+25)){
+        const row=byId.get(String(p.id));
+        if(row?.success){p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";p.page_status="success";p.page_error="";inspected++;}
+        else {p.page_status="failed";p.page_error=row?.error||"تعذر فحص الصفحة";failed++;}
+      }
+      await homscardPersistAuditRows(products.slice(i,i+25),products.slice(i,i+25).map(p=>homscardAutoAuditOne(p)));
+      if(status)status.textContent="جارٍ فحص صفحات HomsCard العامة: "+Math.min(i+25,products.length)+" / "+products.length+" · نجح "+inspected+" · تعذر "+failed;
+    }
+    await homscardRunAutomaticAudit();
+    if(status)status.textContent="اكتمل استكمال الصفحات: نجح "+inspected+" صفحة جديدة، وتعذر "+failed+". الصفحات الناجحة سابقاً لم تُفحص مجدداً.";
+  }catch(error){
+    console.error("[HomsCard product page audit]",error);
+    if(status)status.textContent="توقف فحص الصفحات: "+(error?.message||"خطأ غير معروف")+". لم يتم إنشاء أي طلب أو شحن.";
+  }finally{if(button)button.disabled=false;}
+}
+async function homscardPersistAuditRows(products,auditRows){
+ if(!products?.length)return;
+ if(!homscardAuditRunId)homscardAuditRunId=crypto.randomUUID();
+ const byId=new Map((auditRows||[]).map(x=>[String(x.p?.id),x]));
+ for(let i=0;i<products.length;i+=50){
+  const rows=products.slice(i,i+50).map(p=>{const a=byId.get(String(p.id))||homscardAutoAuditOne(p);return {product_id:String(p.id),product_name:String(p.name||""),product_data:Object.fromEntries(Object.entries(p).filter(([k])=>!k.startsWith("page_"))),page_data:{title:p.page_title||"",description:p.page_description||"",text:p.page_text||""},page_status:p.page_status||(p.page_text?"success":"not_checked"),page_error:p.page_error||"",audit_data:{kind:a.kind,confidence:a.confidence,reason:a.reason,options:a.options,keys:a.keys,account:a.account,missing:a.missing}};});
+  const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"save_audit_batch",run_id:homscardAuditRunId,catalog_count:homscardCatalogCache.length,rows}});
+  if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر حفظ نتائج التدقيق");
+ }
+}
+async function homscardRestoreSavedAudit(){
+ const status=document.getElementById("opsHomsAutoAuditStatus");
+ if(status)status.textContent="جارٍ استرجاع آخر تدقيق محفوظ…";
+ try{
+  const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"get_latest_audit"}});
+  if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر الاسترجاع");
+  if(!data.run||!data.data?.length){if(status)status.textContent="لا يوجد تدقيق محفوظ بعد.";return;}
+  homscardAuditRunId=data.run.run_id;
+  homscardCatalogCache=data.data.map(x=>({...x.product_data,page_title:x.page_data?.title||"",page_description:x.page_data?.description||"",page_text:x.page_data?.text||"",page_status:x.page_status,page_error:x.page_error||""}));
+  initHomsCardCatalogFilters(homscardCatalogCache);
+  await homscardRunAutomaticAudit({persist:false});
+  if(status)status.textContent="تم استرجاع "+homscardCatalogCache.length+" منتجاً. جارٍ استكمال الصفحات غير المفحوصة أو الفاشلة فقط…";
+  await homscardInspectProductPages();
+ }catch(e){if(status)status.textContent="تعذر الاسترجاع: "+(e?.message||"خطأ");}
+}
+
+async function homscardRunAutomaticAudit(options={}){
+  const output=document.getElementById("opsHomsAutoAuditResults");
+  const status=document.getElementById("opsHomsAutoAuditStatus");
+  const button=document.getElementById("opsHomsAutoAuditButton");
+  if(!output||!status){
+    console.error("[HomsCard audit] Missing result/status elements", {output:!!output,status:!!status});
+    if(status)status.textContent="تعذر بدء الفحص: عناصر عرض النتائج غير موجودة. حدّث الصفحة وأعد تحميل الكتالوج.";
+    return;
+  }
+  if(!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length){
+    status.textContent="حمّل كتالوج حمص كارد أولاً؛ لا توجد منتجات محفوظة للفحص.";
+    output.replaceChildren();
+    return;
+  }
+  if(button)button.disabled=true;
+  status.textContent="بدأ الفحص الآن… جارٍ تحليل بيانات المنتجات.";
+  output.replaceChildren();
+  try{
+    const products=homscardCatalogCache.filter(p=>p&&typeof p==="object"&&!Array.isArray(p));
+    if(!products.length)throw new Error("لم تصل بيانات منتجات قابلة للفحص من الكتالوج.");
+    const rows=products.map(p=>homscardAutoAuditOne(p));
+    homscardLastAuditRows=rows.slice();
+    if(options.persist!==false){status.textContent="جارٍ حفظ نتائج التدقيق…";await homscardPersistAuditRows(products,rows);}
+    const labels=["كمية متغيرة محتملة","باقة ثابتة محتملة","اشتراك بمدة محتملة","غير محسوم"];
+    const counts=Object.fromEntries(labels.map(label=>[label,rows.filter(r=>r.kind===label).length]));
+    const tests=homscardAutoAuditSelfTests();
+    status.textContent="اكتمل فحص "+rows.length+" منتجاً وحُفظت النتائج: "+(rows.length-counts["غير محسوم"])+" تصنيفاً مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة. الاختبارات الداخلية: "+tests.passed+"/"+tests.total;
+    const summary=opsNode("div","ops-stats-grid");
+    labels.forEach(label=>{const card=opsNode("div","ops-card");card.append(opsNode("strong","",String(counts[label])),opsNode("div","ops-muted",label));summary.appendChild(card);});
+    output.appendChild(summary);
+    output.appendChild(opsNode("p","ops-muted","التصنيفات استدلالية وليست اعتماداً تجارياً. لا نعتبر package دليلاً لأن الموصل قد يضعها كقيمة افتراضية. لا نحسب تكلفة كمية ولا نفترض أن السعر سعر وحدة."));
+    output.appendChild(opsNode("div","ops-muted",tests.failures.length?"فشل اختبار داخلي: "+JSON.stringify(tests.failures):"اجتازت قواعد التصنيف الاختبارات الداخلية."));
+    const list=opsNode("div","ops-list");
+    rows.sort((a,b)=>labels.indexOf(b.kind)-labels.indexOf(a.kind));
+    rows.forEach(r=>{
+      const d=opsNode("details","ops-item");
+      d.appendChild(opsNode("summary","",opsText(r.p.name)+" — "+r.kind+" · ثقة "+r.confidence));
+      d.append(opsNode("div","ops-muted","معرّف المورد: "+opsText(r.p.id)+" | التصنيف: "+opsText(r.p.category)),
+        opsNode("div","ops-muted","السبب: "+r.reason),
+        opsNode("div","ops-muted","من صفحة المورد: "+opsText([r.p.page_title,r.p.page_description].filter(Boolean).join(" — ")||"لم تُفحص الصفحة بعد").slice(0,500)),
+        opsNode("div","ops-muted","نوع المورد: "+opsText(r.p.product_type||"غير محدد")),
+        opsNode("div","ops-muted","سعر المورد كما ورد: "+opsText(r.p.price??"غير متاح")+" USD — لم تُحسب تكلفة كمية"),
+        opsNode("div","ops-muted","خيارات كمية رقمية مستخرجة: "+(r.options.length?r.options.join("، "):"غير ظاهرة")),
+        opsNode("div","ops-muted","حقول الطلب: "+(r.keys.length?r.keys.slice(0,20).join("، "):"غير ظاهرة")),
+        opsNode("div","ops-muted","بيانات حساب/لاعب محتملة: "+(r.account?"نعم، راجع الحقول يدوياً":"غير ظاهرة")),
+        opsNode("div","ops-muted","نواقص/تحذيرات: "+(r.missing.length?r.missing.join("؛ "):"لا توجد نواقص شكلية ظاهرة")));
+      list.appendChild(d);
+    });
+    output.appendChild(list);
+    output.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }catch(error){
+    console.error("[HomsCard audit] Failed",error);
+    status.textContent="تعذر إكمال الفحص: "+(error?.message||"خطأ غير معروف")+". جرّب إعادة تحميل الكتالوج.";
+    output.replaceChildren(opsNode("div","ops-item",status.textContent));
+  }finally{
+    if(button)button.disabled=false;
+  }
+}
+function homscardEnsureAutoAuditUi(){
+  const panel=document.getElementById("homscardProviderPanel");
+  if(!panel)return;
+  let button=document.getElementById("opsHomsAutoAuditButton");
+  let status=document.getElementById("opsHomsAutoAuditStatus");
+  let output=document.getElementById("opsHomsAutoAuditResults");
+  if(!button){button=opsNode("button","secondary full","🧠 فحص وتصنيف كل المنتجات تلقائياً");button.id="opsHomsAutoAuditButton";panel.appendChild(button);}
+  button.type="button";
+  button.onclick=homscardRunAutomaticAudit;
+  let pageButton=document.getElementById("opsHomsPageAuditButton");
+  if(!pageButton){pageButton=opsNode("button","secondary full","🔎 فحص صفحات HomsCard وتدقيق التفاصيل");pageButton.id="opsHomsPageAuditButton";panel.appendChild(pageButton);}
+  pageButton.type="button";
+  pageButton.onclick=homscardInspectProductPages;
+  let restoreButton=document.getElementById("opsHomsRestoreAuditButton");
+  if(!restoreButton){restoreButton=opsNode("button","secondary full","♻️ استرجاع واستكمال التدقيق المحفوظ");restoreButton.id="opsHomsRestoreAuditButton";panel.appendChild(restoreButton);}
+  restoreButton.type="button";restoreButton.onclick=homscardRestoreSavedAudit;
+  pageButton.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
+  button.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
+  if(!status){status=opsNode("div","ops-muted","حمّل الكتالوج ثم ابدأ الفحص التلقائي.");status.id="opsHomsAutoAuditStatus";panel.appendChild(status);}
+  status.setAttribute("role","status");
+  status.setAttribute("aria-live","polite");
+  if(!output){output=opsNode("div","ops-list");output.id="opsHomsAutoAuditResults";panel.appendChild(output);}
+  output.setAttribute("aria-live","polite");
+}
+
 function initHomsCardCatalogFilters(products){
+  homscardEnsureAutoAuditUi();
   const category=document.getElementById('opsHomsCatalogCategory');
   const search=document.getElementById('opsHomsCatalogSearch');
   const availability=document.getElementById('opsHomsCatalogAvailability');
+  const typeFilter=document.getElementById('opsHomsCatalogType');
   if(category){
     category.replaceChildren(new Option('كل التصنيفات',''));
     [...new Set(products.map(p=>String(p.category??'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar')).forEach(value=>category.appendChild(new Option(value,value)));
@@ -1075,26 +1361,69 @@ function initHomsCardCatalogFilters(products){
   if(search&&!search.dataset.bound){search.addEventListener('input',renderHomsCardCatalog);search.dataset.bound='1';}
   if(category&&!category.dataset.bound){category.addEventListener('change',renderHomsCardCatalog);category.dataset.bound='1';}
   if(availability&&!availability.dataset.bound){availability.addEventListener('change',renderHomsCardCatalog);availability.dataset.bound='1';}
+  if(typeFilter&&!typeFilter.dataset.bound){typeFilter.addEventListener('change',renderHomsCardCatalog);typeFilter.dataset.bound='1';}
   renderHomsCardCatalog();
 }
+function homscardResetCatalogFilters(){
+  ["opsHomsCatalogSearch","opsHomsCatalogCategory","opsHomsCatalogAvailability","opsHomsCatalogType"].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value="";
+  });
+  renderHomsCardCatalog();
+}
+function homscardExportAuditCsv(){
+  if(!Array.isArray(homscardLastAuditRows)||!homscardLastAuditRows.length){
+    const status=document.getElementById("opsHomsAutoAuditStatus");
+    if(status)status.textContent="لا يوجد تقرير للتصدير؛ حمّل الكتالوج وشغّل الفحص أولاً.";
+    return;
+  }
+  const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+  const rows=[["معرّف المورد","اسم المنتج","التصنيف","نوع المورد","السعر كما ورد","التصنيف المبدئي","الثقة","سبب التصنيف","خيارات الكمية","حقول الطلب","حقول حساب محتملة","النواقص","حالة الصفحة","عنوان الصفحة","وصف الصفحة","نص الصفحة","خطأ الصفحة"]];
+  homscardLastAuditRows.forEach(r=>rows.push([
+    r.p.id,r.p.name,r.p.category,r.p.product_type,r.p.price,r.kind,r.confidence,r.reason,
+    r.options.join("، "),r.keys.join("، "),r.account?"نعم":"لا",r.missing.join("؛ "),r.p.page_status||"not_checked",r.p.page_title||"",r.p.page_description||"",r.p.page_text||"",r.p.page_error||""
+  ]));
+  const csv="\uFEFF"+rows.map(row=>row.map(quote).join(",")).join("\r\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;link.download="BARAN-HomsCard-Audit-"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
 async function opsTestHomsCard(action){
+  if(homscardRequestBusy)return;
+  homscardRequestBusy=true;
   const message=document.getElementById('opsApiMessage');
   const output=document.getElementById('opsHomsCardResult');
+  ["opsHomsProfileButton","opsHomsProductsButton"].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=true;});
   if(message)message.textContent=action==='profile'?'جاري فحص اتصال حمص كارد وقراءة الحساب...':'جاري جلب كتالوج حمص كارد للمعاينة فقط...';
-  if(output)output.replaceChildren();
+  if(output)output.replaceChildren(opsNode('div','ops-muted','جارٍ الاتصال بالمورد…'));
   try{
     const {data,error}=await sb.functions.invoke('baran-homscard-connector',{body:{action}});
     if(error)throw new Error(error.message||'تعذر الاتصال بالدالة.');
     if(!data?.success)throw new Error(data?.error||'لم ينجح فحص المورد.');
+    if(output)output.replaceChildren();
     if(action==='profile'){
       const p=data.data||{};
       if(output)output.append(opsNode('strong','','اتصال حمص كارد ناجح'),opsNode('div','ops-muted','الرصيد: '+opsText(p.balance)+' '+opsText(p.currency)),opsNode('div','ops-muted','خصم الحساب: '+opsText(p.discount)+'%'),opsNode('div','ops-muted','الحساب: '+opsText(p.name)));
       if(message)message.textContent='تم فحص الملف الشخصي بنجاح. لم يتم إنشاء أي طلب.';
     }else{
       homscardCatalogCache=Array.isArray(data.data)?data.data:[];
+      homscardAuditRunId=crypto.randomUUID();
       if(output)output.appendChild(opsNode('strong','','تم استرجاع '+homscardCatalogCache.length+' منتج من حمص كارد.'));
       initHomsCardCatalogFilters(homscardCatalogCache);
       if(message)message.textContent='تم جلب الكتالوج بنجاح. استخدم البحث والتصنيفات لمراجعة المنتجات؛ لم يتم استيراد أو تعديل أي منتج.';
+      if(homscardCatalogCache.length)homscardRunAutomaticAudit();
+      else{
+        const status=document.getElementById("opsHomsAutoAuditStatus");
+        if(status)status.textContent="نجح الاتصال لكن المورد لم يُرجع منتجات في هذه المرة.";
+      }
     }
-  }catch(error){if(message)message.textContent='تعذر فحص حمص كارد: '+(error?.message||'خطأ غير معروف');}
+  }catch(error){
+    const errorText='تعذر فحص حمص كارد: '+(error?.message||'خطأ غير معروف');
+    if(message)message.textContent=errorText;
+    if(output)output.appendChild(opsNode('div','ops-item',errorText));
+  }finally{
+    homscardRequestBusy=false;
+    ["opsHomsProfileButton","opsHomsProductsButton"].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=false;});
+  }
 }
