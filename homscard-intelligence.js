@@ -225,6 +225,13 @@ function styles(){
  st.textContent=`
  #${ROOT}{margin:18px 0;padding:0;border:1px solid #76558f;border-radius:22px;overflow:hidden;background:radial-gradient(ellipse at 10% 0%,#9c6ac52a,transparent 38%),linear-gradient(155deg,#21172c,#0d0912 76%);color:#f5eafa;box-shadow:0 18px 42px #0007}
  #${ROOT} *{box-sizing:border-box}
+ #${ROOT} .hci-legacy-tools{margin:0 13px 14px;border:1px solid #68517b;border-radius:14px;background:linear-gradient(145deg,#191221,#100c16);overflow:hidden}
+ #${ROOT} .hci-legacy-tools>summary{padding:14px;cursor:pointer;list-style:none;color:#ead8f8;font-size:12px;font-weight:900}
+ #${ROOT} .hci-legacy-tools>summary::-webkit-details-marker{display:none}
+ #${ROOT} .hci-legacy-tools>summary:after{content:"＋";float:left;color:#c9a6e5;font-size:17px}
+ #${ROOT} .hci-legacy-tools[open]>summary:after{content:"−"}
+ #${ROOT} .hci-legacy-tools #${PANEL}{margin:0;border:0;border-top:1px solid #493653;border-radius:0;background:transparent}
+ #${ROOT} .hci-legacy-tools .homscard-audit-launch{display:none!important}
  #${ROOT} .hci-hero{position:relative;padding:20px;background:linear-gradient(115deg,#382447dd,#17101f 70%);border-bottom:1px solid #614875}
  #${ROOT} .hci-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid #9a75b5;border-radius:999px;background:#120d19;color:#e6cff7;font-size:10px;font-weight:900}
  #${ROOT} .hci-heading{margin:12px 0 5px;font-size:clamp(20px,4vw,27px);font-weight:1000;line-height:1.4}
@@ -353,9 +360,14 @@ function mount(){
  const priceCount=node("div","hci-count");priceCount.id="hciPriceCount";
  const priceResults=node("div","hci-results");priceResults.id="hciPriceResults";pricesView.append(priceCount,priceResults);
  search.oninput=filter;cat.onchange=filter;typ.onchange=filter;av.onchange=filter;risk.onchange=filter;
+ const legacy=node("details","hci-legacy-tools");
+ const legacySummary=node("summary","","🔌 أدوات الاتصال والكتالوج المباشر");
+ legacy.append(legacySummary);
  wrap.append(actions,status,statsBox,tabs,overview,productsView,reviewView,pricesView);
  root.append(hero,wrap);
  panel.parentElement.insertBefore(root,panel);
+ legacy.append(panel);
+ wrap.append(legacy);
  styles();
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
