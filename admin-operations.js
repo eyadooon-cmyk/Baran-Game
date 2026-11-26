@@ -1284,7 +1284,13 @@ async function homscardInspectProductPages(){
       if(status)status.textContent="جارٍ فحص صفحات HomsCard العامة: "+Math.min(i+25,products.length)+" / "+products.length+" · نجح "+inspected+" · تعذر "+failed;
     }
     await homscardRunAutomaticAudit();
-    if(status)status.textContent="اكتمل التدقيق: حُفظت "+restored+" صفحة ناجحة سابقة، وفُحصت "+inspected+" صفحة جديدة بنجاح، وتعذر "+failed+". لم تُستبدل أي صفحة ناجحة بخطأ مؤقت.";
+    const totalSuccessful=homscardCatalogCache.filter(p=>p.page_status==="success").length;
+    const totalFailed=homscardCatalogCache.filter(p=>p.page_status==="failed").length;
+    const unaccountedSuccessful=Math.max(0,totalSuccessful-restored-inspected);
+    const breakdown=unaccountedSuccessful
+      ? "، و"+unaccountedSuccessful+" صفحة ناجحة موجودة في السجل ولم تدخل ضمن عدادي الاستعادة والفحص الحالي"
+      : "";
+    if(status)status.textContent="اكتمل التدقيق: "+totalSuccessful+" صفحة ناجحة إجمالاً (منها "+restored+" صفحة مستعادة و"+inspected+" صفحة فُحصت الآن"+breakdown+")، وتعذر "+totalFailed+" صفحة من أصل "+homscardCatalogCache.length+". لم تُستبدل أي صفحة ناجحة بخطأ مؤقت.";
   }catch(error){
     console.error("[HomsCard product page audit]",error);
     if(status)status.textContent="توقف فحص الصفحات: "+(error?.message||"خطأ غير معروف")+". لم يتم إنشاء أي طلب أو شحن.";

@@ -140,3 +140,12 @@ test("Restoring HomsCard audit starts a new run and preserves historical audit r
   assert.match(adminUi, /Reclassification creates a fresh audit run/);
   assert.match(adminUi, /homscardAuditRunId=crypto\.randomUUID\(\);/);
 });
+
+
+test("HomsCard page audit summary reports authoritative totals without hiding unaccounted successes", () => {
+  assert.match(adminUi, /const totalSuccessful=homscardCatalogCache\.filter\(p=>p\.page_status===\"success\"\)\.length/);
+  assert.match(adminUi, /const totalFailed=homscardCatalogCache\.filter\(p=>p\.page_status===\"failed\"\)\.length/);
+  assert.match(adminUi, /const unaccountedSuccessful=Math\.max\(0,totalSuccessful-restored-inspected\)/);
+  assert.match(adminUi, /صفحة ناجحة موجودة في السجل ولم تدخل ضمن عدادي الاستعادة والفحص الحالي/);
+  assert.match(adminUi, /totalFailed.*homscardCatalogCache\.length/);
+});
