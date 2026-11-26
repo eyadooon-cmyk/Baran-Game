@@ -134,3 +134,9 @@ test("HomsCard classification ignores generic page-template text as product evid
   assert.match(adminUi, /hasPackEvidence=.*identity/);
   assert.match(adminUi, /pageText=homscardAutoAuditText/);
 });
+
+
+test("Restoring HomsCard audit starts a new run and preserves historical audit records", () => {
+  assert.match(adminUi, /Reclassification creates a fresh audit run/);
+  assert.match(adminUi, /homscardAuditRunId=crypto\.randomUUID\(\);/);
+});
