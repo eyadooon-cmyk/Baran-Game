@@ -1071,6 +1071,22 @@ function renderHomsCardCatalog(){
       opsNode('div','homscard-product-meta','البيانات المطلوبة params: '+formatCatalogValue(p.params))
     );
     info.appendChild(metadata);
+    if(p.page_description||p.page_text||p.page_images?.length){
+      const pageDetails=opsNode("details","homscard-product-meta");
+      pageDetails.appendChild(opsNode("summary","","تفاصيل صفحة حمص كارد الكاملة"));
+      if(p.page_description)pageDetails.appendChild(opsNode("div","homscard-product-meta","الوصف: "+p.page_description));
+      if(p.page_text)pageDetails.appendChild(opsNode("div","homscard-product-meta","النص المستخرج: "+p.page_text));
+      if(p.page_images?.length){
+        const gallery=opsNode("div","homscard-page-image-gallery");
+        p.page_images.slice(0,12).forEach((src,index)=>{
+          const image=document.createElement("img");image.src=src;image.alt=String(p.name||"")+" — صورة "+(index+1);image.loading="lazy";image.referrerPolicy="no-referrer";image.className="homscard-page-image";
+          gallery.appendChild(image);
+        });
+        pageDetails.appendChild(gallery);
+      }
+      if(p.page_error)pageDetails.appendChild(opsNode("div","homscard-product-meta","ملاحظة الاستخراج: "+p.page_error));
+      info.appendChild(pageDetails);
+    }
     row.append(info,opsNode('div','homscard-product-price',opsText(p.price)+' USD'));
     fragment.appendChild(row);
   });
