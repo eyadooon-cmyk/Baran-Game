@@ -36,20 +36,60 @@ function decodeHtml(value: string): string {
     .replace(/&#(\d+);/g, (_m, n) => String.fromCodePoint(Number(n)))
     .replace(/&#x([\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)));
 }
+function htmlAttr(tag: string, name: string): string {
+  const match = tag.match(new RegExp("\\b" + name + "\\s*=\\s*(['\"])(.*?)\\1", "i"));
+  return decodeHtml(match?.[2] ?? "");
+}
 function extractProductPage(html: string) {
   const title = decodeHtml((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").replace(/<[^>]+>/g, " ").trim());
-  const descriptionTag = html.match(/<meta[^>]+(?:name|property)=["'](?:description|og:description)["'][^>]+content=["']([^"']*)["'][^>]*>/i)
-    ?? html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+(?:name|property)=["'](?:description|og:description)["'][^>]*>/i);
-  const description = decodeHtml(descriptionTag?.[1] ?? "");
+  const metas = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => m[0]);
+  const metaValue = (names: string[]) => {
+    for (const tag of metas) {
+      const key = (htmlAttr(tag, "name") || htmlAttr(tag, "property")).toLowerCase();
+      if (names.includes(key)) return htmlAttr(tag, "content");
+    }
+    return "";
+  };
+  const description = metaValue(["description", "og:description", "twitter:description"]);
+  const canonicalTag = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/i)?.[0] ?? "";
+  const images: string[] = [];
+  const addImage = (value: string) => {
+    const raw = decodeHtml(value).trim();
+    if (!raw || /^(data:|blob:|javascript:)/i.test(raw)) return;
+    try {
+      const url = new URL(raw, "https://homscard.com/");
+      if (url.protocol === "https:" && /(homscard\.com|amazonaws\.com|cloudfront\.net)$/i.test(url.hostname) && !images.includes(url.href)) images.push(url.href);
+    } catch {}
+  };
+  for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
+    const tag = match[0];
+    for (const attr of ["src", "data-src", "data-lazy-src", "data-original", "srcset"]) {
+      const value = htmlAttr(tag, attr);
+      if (value) addImage(attr === "srcset" ? value.split(",")[0].trim().split(/\s+/)[0] : value);
+    }
+  }
+  for (const tag of metas) {
+    const property = (htmlAttr(tag, "property") || htmlAttr(tag, "name")).toLowerCase();
+    if (property === "og:image" || property === "twitter:image") addImage(htmlAttr(tag, "content"));
+  }
   const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? html;
   const text = decodeHtml(body
     .replace(/<(script|style|noscript|svg|iframe)[^>]*>[\s\S]*?<\/\1>/gi, " ")
     .replace(/<(br|\/p|\/div|\/li|\/h[1-6])[^>]*>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ").trim()).slice(0, 5000);
-  return { title, description, text };
+    .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()).slice(0, 30000);
+  const normalized = text.normalize("NFKC").replace(/\s+/g, " ");
+  const upstreamError = /(عذراً،?\s*حدث خطأ في الاتصال|حدث خطأ في الاتصال|connection error|temporarily unavailable|cloudflare.*error)/i.test(normalized);
+  const hasProductMarker = /(تفاصيل المنتج|اسم المنتج|نوع العملية|سعر المنتج|للوحدة|الكمية\s*\(|product details)/i.test(normalized);
+  const unavailable = /(غير متاح|غير متوفر|نفد المخزون|out of stock|unavailable)/i.test(normalized);
+  const available = !unavailable && /(متاح 24\/7|متوفر الآن|متاح الآن|available now|in stock)/i.test(normalized);
+  const availability = unavailable ? "unavailable" : available ? "available" : "unknown";
+  return {
+    title, description, canonical: htmlAttr(canonicalTag, "href"), text, images: images.slice(0, 30),
+    availability, extraction_status: upstreamError ? "upstream_error" : hasProductMarker ? "extracted" : "unverified",
+    extraction_note: upstreamError ? "صفحة المورد أعادت رسالة خطأ اتصال ضمن محتواها." : hasProductMarker ? null : "لم تظهر علامة مؤكدة على تفاصيل المنتج؛ يلزم التحقق.",
+    html_length: html.length
+  };
 }
-
 Deno.serve(async (req: Request) => {
   const originHeader = req.headers.get("Origin") ?? "";
   const origin = ALLOWED_ORIGINS.has(originHeader) ? originHeader : "https://baran-game.pages.dev";
@@ -133,10 +173,12 @@ Deno.serve(async (req: Request) => {
             headers: { "Accept": "text/html", "User-Agent": "Mozilla/5.0 (compatible; BaranCatalogAudit/1.0)" },
             signal: AbortSignal.timeout(12000),
           });
-          if (!pageResponse.ok) return { id, success: false, error: "HTTP " + pageResponse.status };
+          if (!pageResponse.ok) return { id, success: false, page_status: "http_error", error: "HTTP " + pageResponse.status };
           const html = await pageResponse.text();
-          if (!html || html.length > 2_000_000) return { id, success: false, error: "Invalid or oversized product page" };
-          return { id, success: true, ...extractProductPage(html) };
+          if (!html || html.length > 2_000_000) return { id, success: false, page_status: "invalid_response", error: "Invalid or oversized product page" };
+          const extracted = extractProductPage(html);
+          const valid = extracted.extraction_status === "extracted";
+          return { id, success: valid, page_status: extracted.extraction_status, error: valid ? null : extracted.extraction_note, ...extracted };
         } catch {
           return { id, success: false, error: "تعذر جلب صفحة المنتج" };
         }
@@ -147,7 +189,7 @@ Deno.serve(async (req: Request) => {
         note: "Public product-page metadata only. Read-only; no order or payment action." }, 200, origin);
     } else if (action === "products") {
       path = "/products.php";
-      if (body.available_only !== false) query.set("available", "1");
+      if (body.available_only === true) query.set("available", "1");
       if (Array.isArray(body.products_id) && body.products_id.length) {
         const ids = body.products_id.map((v: unknown) => String(v));
         if (ids.length > 100 || ids.some((v: string) => !/^\d{1,10}$/.test(v))) {
@@ -211,9 +253,11 @@ Deno.serve(async (req: Request) => {
     return json({ success: true, provider: "HomsCard", action, count: products.length,
       data: products.map((p: any) => ({
         id: p.id, name: p.name, price: p.price, category: p.category,
-        available: p.available === true, product_type: p.product_type ?? null,
-        qty_values: p.qty_values ?? null, params: Array.isArray(p.params) ? p.params : [],
-        image: typeof p.image === "string" && p.image.startsWith("https://") ? p.image : null,
+        available: typeof p.available === "boolean" ? p.available : null, availability: typeof p.available === "boolean" ? (p.available ? "available" : "unavailable") : "unknown",
+        product_type: p.product_type ?? null,
+        qty_values: p.qty_values ?? null, params: p.params ?? [],
+        image: typeof p.image === "string" && /^https:\/\//i.test(p.image) ? p.image : null,
+        description: p.description ?? null,
       })), fetched_at: new Date().toISOString(),
       note: "Read-only catalog request. No order was created and no balance was charged." }, 200, origin);
   } catch (error) {
