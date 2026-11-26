@@ -178,7 +178,9 @@ test("HomsCard intelligence handles user-confirmed fixed packages without false 
   assert.match(intelligenceUi, /صفحة المورد تعرض السعر للوحدة بينما API يصنف المنتج package/);
   assert.match(intelligenceUi, /function savedMissingItems\(r\)/);
   assert.match(intelligenceUi, /لا توجد خيارات كمية مؤكدة/);
-  assert.match(intelligenceUi, /confidence\(r\)==="منخفض"&&!isUserConfirmedFixedPackage\(r\)/);
+  assert.match(intelligenceUi, /function confidence\(r\)\{return isUserConfirmedFixedPackage\(r\)\?"تأكيد المستخدم لنوع الباقة"/);
+  assert.match(intelligenceUi, /مصدر تصنيف النوع/);
+  assert.match(intelligenceUi, /if\(a\.reason&&!isUserConfirmedFixedPackage\(r\)\)/);
   assert.match(intelligenceUi, /rowsWithMissing=rows\.filter\(r=>missing\(r\)\.length>0\)\.length/);
   assert.match(intelligenceUi, /savedMissing=rows\.filter\(r=>savedMissingItems\(r\)\.length>0\)\.length/);
 });
