@@ -225,6 +225,9 @@ function styles(){
  st.textContent=`
  #${ROOT}{margin:18px 0;padding:0;border:1px solid #76558f;border-radius:22px;overflow:hidden;background:radial-gradient(ellipse at 10% 0%,#9c6ac52a,transparent 38%),linear-gradient(155deg,#21172c,#0d0912 76%);color:#f5eafa;box-shadow:0 18px 42px #0007}
  #${ROOT} *{box-sizing:border-box}
+ #${ROOT} .hci-readiness-report{margin:14px 0 0!important;border:1px solid #7652a8!important;border-radius:16px!important;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96))!important;color:#f5eafa}
+ #${ROOT} .hci-readiness-report h2{color:#f3e5ff}
+ #${ROOT} .hci-readiness-report button{width:100%;min-height:48px;border-radius:12px}
  #${ROOT} .hci-legacy-tools{margin:0 13px 14px;border:1px solid #68517b;border-radius:14px;background:linear-gradient(145deg,#191221,#100c16);overflow:hidden}
  #${ROOT} .hci-legacy-tools>summary{padding:14px;cursor:pointer;list-style:none;color:#ead8f8;font-size:12px;font-weight:900}
  #${ROOT} .hci-legacy-tools>summary::-webkit-details-marker{display:none}
@@ -360,14 +363,17 @@ function mount(){
  const priceCount=node("div","hci-count");priceCount.id="hciPriceCount";
  const priceResults=node("div","hci-results");priceResults.id="hciPriceResults";pricesView.append(priceCount,priceResults);
  search.oninput=filter;cat.onchange=filter;typ.onchange=filter;av.onchange=filter;risk.onchange=filter;
+ const report=$("baranCatalogReadinessReport");
  const legacy=node("details","hci-legacy-tools");
  const legacySummary=node("summary","","🔌 أدوات الاتصال والكتالوج المباشر");
  legacy.append(legacySummary);
  wrap.append(actions,status,statsBox,tabs,overview,productsView,reviewView,pricesView);
- root.append(hero,wrap);
- panel.parentElement.insertBefore(root,panel);
+ if(report){report.classList.add("hci-readiness-report");wrap.append(report);}
  legacy.append(panel);
  wrap.append(legacy);
+ root.append(hero,wrap);
+ const anchor=report||panel;
+ anchor.parentElement.insertBefore(root,anchor);
  styles();
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
