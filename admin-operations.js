@@ -1264,7 +1264,7 @@ async function homscardInspectAgreedProductPages(){
   const status=document.getElementById("opsHomsAutoAuditStatus");
   const button=document.getElementById("opsHomsAgreedPageAuditButton");
   if(!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length){if(status)status.textContent="حمّل كتالوج HomsCard أولاً.";return;}
-  const byId=new Map(homscardCatalogCache.filter(p=>p&&/^\\d{1,10}$/.test(String(p.id??""))).map(p=>[String(p.id),p]));
+  const byId=new Map(homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??""))).map(p=>[String(p.id),p]));
   const missing=HOMSCARD_AGREED_PRODUCT_IDS.filter(id=>!byId.has(id));
   const products=HOMSCARD_AGREED_PRODUCT_IDS.filter(id=>byId.has(id)).map(id=>byId.get(id));
   if(missing.length){if(status)status.textContent="توقف الفحص الآمن: لم أجد هذه المعرّفات في الكتالوج الحالي: "+missing.join(", ")+". لم يبدأ أي طلب فحص.";return;}
