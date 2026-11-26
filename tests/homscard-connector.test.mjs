@@ -80,3 +80,24 @@ test("HomsCard migration registers the supplier but keeps integration and execut
 test("HomsCard HMAC signs the exact full upstream path including the reseller prefix", () => {
   assert.match(source, /timestamp \+ "\\nGET\\n" \+ "\/reseller" \+ path \+ "\\n"/);
 });
+
+test("HomsCard catalog includes unavailable products unless available_only is explicitly true", () => {
+  assert.match(source, /if \(body\.available_only === true\) query\.set\("available", "1"\)/);
+  assert.match(source, /availability: typeof p\.available === "boolean"/);
+});
+test("HomsCard page extraction captures images and distinguishes upstream error pages", () => {
+  assert.match(source, /data-lazy-src/);
+  assert.match(source, /images: images\.slice\(0, 30\)/);
+  assert.match(source, /extraction_status: upstreamError \? "upstream_error"/);
+  assert.match(source, /const valid = extracted\.extraction_status === "extracted"/);
+});
+test("HomsCard page audit does not mark an error message as successful extraction", () => {
+  assert.match(source, /hasProductMarker/);
+  assert.match(source, /upstreamError/);
+  assert.match(adminUi, /p\.page_extraction_status!==\"extracted\"/);
+});
+test("Admin loads the full HomsCard catalog and persists page images and availability", () => {
+  assert.match(adminUi, /available_only:false/);
+  assert.match(adminUi, /images:p\.page_images\|\|\[\]/);
+  assert.match(adminUi, /availability:p\.page_availability\|\|"unknown"/);
+});
