@@ -1230,7 +1230,10 @@ function homscardAutoAuditSelfTests(){
     [{name:"Game credits",product_type:"package"}, "غير محسوم"],
     [{name:"خدمة",product_type:"package",qty_values:"غير محدد"}, "غير محسوم"],
     [{name:"منتج",product_type:"package",qty_values:[{"quantity":"1000"}]}, "كمية متغيرة محتملة"],
-    [{id:1427,name:"Yomee ID",product_type:"quantity",qty_values:{min:1,max:365},price:0.01}, "كمية متغيرة محتملة"]
+    [{id:1427,name:"Yomee ID",product_type:"quantity",qty_values:{min:1,max:365},price:0.01}, "كمية متغيرة محتملة"],
+    [{name:"100M 0ModdedCar GTA5",product_type:"package",page_text:"subscription available 24/7 within one day"}, "غير محسوم"],
+    [{name:"Iptv اشتراك 3 أشهر",product_type:"package",page_text:"generic product page"}, "اشتراك بمدة محتملة"],
+    [{name:"Service",product_type:"package",page_text:"Price per unit · available 24/7"}, "غير محسوم"]
   ];
   const failures=cases.filter(([input,expected])=>homscardAutoAuditOne(input).kind!==expected);
   return {total:cases.length,passed:cases.length-failures.length,failures:failures.map(([input,expected])=>({name:input.name,expected,actual:homscardAutoAuditOne(input).kind}))};
