@@ -2441,6 +2441,10 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="baran-auto-category-art baran-auto-apps-art">📱</span>
           <span class="item-content"><strong>التطبيقات</strong><span>تطبيقات وخدمات رقمية</span><span class="small">استعراض التطبيقات ←</span></span>
         </button>
+        <button class="item" type="button" onclick="showSection('telecomStore',null)">
+          <span class="baran-auto-category-art">📡</span>
+          <span class="item-content"><strong>الاتصالات</strong><span>خدمات وباقات الاتصالات وشحن الرصيد</span><span class="small">استعراض قسم الاتصالات ←</span></span>
+        </button>
       </div>
     </section>
 
@@ -2575,6 +2579,12 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
       <div class="hero"><h2>التطبيقات والبرامج المدفوعة</h2><p>التطبيقات والاشتراكات الخاصة بها ضمن هذا القسم فقط.</p></div>
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
+    </section>
+
+    <section id="telecomStore" class="hidden">
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الأقسام</button>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">BARAN GAME · TELECOM</span><h2>الاتصالات</h2><p>قسم خدمات وباقات الاتصالات وشحن الرصيد.</p></div>
+      <div class="deposit-card baran-service-catalog" aria-live="polite"><strong>قسم الاتصالات قيد التجهيز</strong><p class="small">نعمل على تجهيز الخدمات والباقات والتحقق من الموردين والأسعار. لن يتم تفعيل أي شحن أو دفع قبل اعتماد المنتجات رسمياً.</p></div>
     </section>
 
 
@@ -4572,7 +4582,7 @@ function openBaroManualGame(category){
   showSection("baroManual",null);
 }
 function showSection(id,button,options){
-  const publicSections=new Set(["home","games","automaticGames","manualGames","pubgStore","freeFireStore","jawakerStore","baroManual","services","chatgptStore","vpnStore","giftCardsStore","appsStore","subscriptionStore","favorites"]);
+  const publicSections=new Set(["home","games","automaticGames","manualGames","pubgStore","freeFireStore","jawakerStore","baroManual","services","chatgptStore","vpnStore","giftCardsStore","appsStore","telecomStore","subscriptionStore","favorites"]);
   if(!currentUser&&!publicSections.has(id)){showGuestAccountPrompt("سجّل الدخول للوصول إلى هذه الخدمة وإكمال طلباتك بأمان.");return;}
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
   if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
@@ -4598,7 +4608,7 @@ function showSection(id,button,options){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الشحن الآلي",automaticGames:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات الرقمية",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",subscriptionStore:"الاشتراكات والترفيه",favorites:"المفضلة",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
+  const labels={home:"الرئيسية",games:"الشحن الآلي",automaticGames:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات الرقمية",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",telecomStore:"الاتصالات",subscriptionStore:"الاشتراكات والترفيه",favorites:"المفضلة",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
