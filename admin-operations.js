@@ -1018,6 +1018,7 @@ let homscardLastAuditRows=[];
 let homscardRequestBusy=false;
 let homscardAuditRunId=null;
 let homscardCatalogPage=0;
+let homscardCatalogLastFilterKey=null;
 const HOMSCARD_CATALOG_PAGE_SIZE=36;
 function homscardCatalogGroup(product){
   const name=String(product?.name||"").normalize("NFKC").toLocaleLowerCase();
@@ -1026,6 +1027,7 @@ function homscardCatalogGroup(product){
   const has=(re)=>re.test(value);
   if(has(/بيع حسابات|حساب للبيع|account for sale|game account|accounts sale/))return "حسابات — خارج العرض";
   if(has(/pubg|ببجي|شدات|uc pack/))return "PUBG Mobile";
+  if(has(/انتقام السلاطين|النجاة في السقيع|النجاة في الصقيع|rise of kingdoms|state of survival/))return "ألعاب استراتيجية أخرى";
   if(has(/free fire|فري فاير|جواهر فري/))return "Free Fire";
   if(has(/jawaker|جواكر/))return "Jawaker";
   if(has(/yalla ludo|يلا لودو|لودو كلوب|ludo/))return "يلا لودو";
@@ -1033,16 +1035,17 @@ function homscardCatalogGroup(product){
   if(has(/clash of clans|clash royale|كلاش/))return "Clash of Clans / Royale";
   if(has(/delta force/))return "Delta Force";
   if(has(/mobile legends|mlbb/))return "Mobile Legends";
+  if(has(/telegram stars|نجوم تيلجرام|نجوم تلغرام/))return "Telegram Stars";
   if(has(/chatgpt|openai|gpt\b|claude|gemini|midjourney|ai service|ذكاء اصطناعي/))return "خدمات الذكاء الاصطناعي";
   if(has(/vpn|nordvpn|expressvpn|surfshark/))return "اشتراكات VPN";
-  if(has(/syriatel|سيرياتيل|mtn|ام تي ان|mt n|touch|alfa|الفا|ألفا|تشريج مباشر|رصيد هاتف/))return "شحن الاتصالات";
-  if(has(/itunes|apple gift|psn|playstation|steam|xbox|nintendo|amazon gift|google play|razer gold|visa|shein/))return "بطاقات وأكواد رقمية";
+  if(has(/syriatel|سيرياتيل|mtn|ام تي ان|mt n|touch|alfa|الفا|ألفا|تشريج مباشر|رصيد هاتف|ميغات|دولارات الفا/))return "شحن الاتصالات";
+  if(has(/itunes|ايتونز|apple gift|psn|playstation|steam|ستيم|xbox|nintendo|amazon gift|google play|razer gold|visa|فيزا|shein|شي ان|بطاقات هدايا|اكواد تشريج|أكواد تشريج|اكواد جاهزة|أكواد جاهزة/))return "بطاقات وأكواد رقمية";
   if(has(/sham cash|شام كاش|whish|usdt|wallet|محفظة|تحويل دولارات/))return "محافظ وتحويلات";
   if(has(/netflix|shahid|شاهد|iptv|watch|اشتراك|subscription|premium monthly/))return "اشتراكات رقمية";
   if(has(/domain|دومين|hosting|استضافة/))return "دومينات وخدمات مواقع";
   if(has(/sugo|livu|liv u|imo|tango|bigo|poppo|likee|tumile|meyo|mixu|yalla live|ddlive|look|telegram stars|تلغرام ستارز/))return "تطبيقات وشحن تطبيقات";
-  if(category==="تطبيقات"||category==="apps"||category==="application")return "تطبيقات — تحتاج تحديد النوع";
-  if(has(/roblox|minecraft|fortnite|mobile game|game/))return "ألعاب أخرى";
+  if(category==="تطبيقات"||category==="apps"||category==="application")return "تطبيقات وشحن عملات التطبيقات — تصنيف المورد عام";
+  if(has(/roblox|روبلكس|minecraft|fortnite|mobile game|game/))return "ألعاب أخرى";
   return "غير مصنف — مراجعة يدوية";
 }
 function homscardSafeImageUrl(value){
@@ -1076,6 +1079,8 @@ function renderHomsCardCatalog(){
   const selectedCategory=category.value;
   const selectedAvailability=availability.value;
   const selectedType=typeFilter?.value||"";
+  const filterKey=[term,selectedCategory,selectedAvailability,selectedType].join("\u001f");
+  if(filterKey!==homscardCatalogLastFilterKey){homscardCatalogLastFilterKey=filterKey;homscardCatalogPage=0;}
   const filtered=homscardCatalogCache.filter(p=>{
     const haystack=[p.name,p.category,p.code,p.product_code,p.id].map(v=>String(v??"")).join(" ").toLocaleLowerCase();
     if(term&&!haystack.includes(term))return false;
