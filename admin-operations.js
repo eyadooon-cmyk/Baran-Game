@@ -1145,7 +1145,8 @@ function renderHomsCardCatalog(){
       );
       if(p.page_description||p.page_text||p.page_images?.length){
         const pageDetails=opsNode("details","homscard-product-meta");
-        pageDetails.appendChild(opsNode("summary","","تفاصيل صفحة حمص كارد"));
+        pageDetails.appendChild(opsNode("summary","","تفاصيل صفحة حمص كارد الكاملة"));
+        if(p.page_text)pageDetails.appendChild(opsNode("div","homscard-product-meta","النص المستخرج: "+String(p.page_text).slice(0,1200)));
         if(p.page_description)pageDetails.appendChild(opsNode("div","homscard-product-meta",String(p.page_description).slice(0,1200)));
         if(p.page_images?.length){
           const pageGallery=opsNode("div","homscard-page-image-gallery");
