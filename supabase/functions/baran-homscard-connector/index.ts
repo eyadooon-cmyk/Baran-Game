@@ -90,6 +90,9 @@ Deno.serve(async (req: Request) => {
       const runId = String(body.run_id ?? "");
       const rows = Array.isArray(body.rows) ? body.rows : [];
       if (!/^[0-9a-f-]{36}$/i.test(runId) || !rows.length || rows.length > 50) return json({ error: "Invalid audit batch" }, 400, origin);
+      const { data: existingRun, error: existingRunError } = await admin.from("baran_homscard_audit_runs").select("created_by").eq("run_id", runId).maybeSingle();
+      if (existingRunError) return json({ error: "تعذر التحقق من ملكية سجل التدقيق." }, 500, origin);
+      if (existingRun && existingRun.created_by !== authData.user.id) return json({ error: "سجل التدقيق لا يخص هذا المدير." }, 403, origin);
       const now = new Date().toISOString();
       const { error: runError } = await admin.from("baran_homscard_audit_runs").upsert({run_id:runId,created_by:authData.user.id,catalog_count:Number.isInteger(body.catalog_count)?Math.max(0,Math.min(body.catalog_count,10000)):rows.length,updated_at:now},{onConflict:"run_id"});
       if (runError) { console.error("HOMSCARD_AUDIT_RUN_SAVE_FAILED",runError.message); return json({error:"تعذر حفظ سجل التدقيق في قاعدة البيانات."},500,origin); }
@@ -105,7 +108,7 @@ Deno.serve(async (req: Request) => {
       return json({success:true,action,run_id:runId,saved:records.length,saved_at:now},200,origin);
     }
     if (action === "get_latest_audit") {
-      const {data:run,error:runError}=await admin.from("baran_homscard_audit_runs").select("run_id,catalog_count,created_at,updated_at").order("updated_at",{ascending:false}).limit(1).maybeSingle();
+      const {data:run,error:runError}=await admin.from("baran_homscard_audit_runs").select("run_id,catalog_count,created_at,updated_at").eq("created_by",authData.user.id).order("updated_at",{ascending:false}).limit(1).maybeSingle();
       if(runError)return json({error:"تعذر قراءة سجل التدقيق المحفوظ."},500,origin);
       if(!run)return json({success:true,action,run:null,data:[]},200,origin);
       const {data:items,error:itemsError}=await admin.from("baran_homscard_audit_items").select("product_id,product_name,product_data,page_data,page_status,page_error,audit_data,updated_at").eq("run_id",run.run_id).order("product_id",{ascending:true});
