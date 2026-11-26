@@ -291,7 +291,7 @@ function renderOpsOrders(orders){
     box.appendChild(card);
   });
 }
-function renderOpsSuppliers(suppliers,links,products){
+function renderOpsSuppliers(suppliers,links,products,searchOnly=false){
   window.__baranSuppliersCache=suppliers;window.__baranSupplierLinksCache=links;window.__baranProductsCache=products;
   const box=document.getElementById("opsSuppliers");if(box){
     const query=(document.getElementById("opsSupplierSearch")?.value||"").trim().toLocaleLowerCase();
@@ -301,7 +301,7 @@ function renderOpsSuppliers(suppliers,links,products){
       statsBox.replaceChildren();
       const active=suppliers.filter(s=>s.is_active).length;
       const preferred=links.filter(link=>link.is_preferred).length;
-      [["إجمالي الموردين",suppliers.length],["موردون فعّالون",active],["روابط المنتجات",links.length],["موردون مفضلون لمنتجات",preferred]].forEach(([label,value])=>{
+      [["إجمالي الموردين",suppliers.length],["موردون فعّالون",active],["روابط المنتجات",links.length],["روابط المورد المفضل",preferred]].forEach(([label,value])=>{
         const item=opsNode("div","ops-card");item.append(opsNode("div","ops-muted",label),opsNode("div","ops-value",String(value)));statsBox.appendChild(item);
       });
     }
@@ -328,6 +328,7 @@ function renderOpsSuppliers(suppliers,links,products){
       card.append(edit,toggle);box.appendChild(card);
     });
   }
+  if(searchOnly)return;
   const supplierSelect=document.getElementById("opsSupplierSelect");
   const productSelect=document.getElementById("opsProductSelect");
   if(supplierSelect){supplierSelect.replaceChildren();opsOption(supplierSelect,"","اختر المورد");suppliers.filter(s=>s.is_active).forEach(s=>opsOption(supplierSelect,s.id,s.name));}
