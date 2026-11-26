@@ -44,12 +44,12 @@ test("Admin catalog audit can enrich products from HomsCard public product pages
   assert.ok(adminUi.includes("homscardInspectProductPages"));
   assert.ok(adminUi.includes('action:"product_pages"'));
   assert.ok(adminUi.includes("p.page_text"));
-  assert.ok(adminUi.includes("للوحدة"));
+  assert.ok(adminUi.includes("p.page_text"));
 });
 test("HomsCard audit requires explicit subscription evidence and reports low-confidence items for review", () => {
   assert.match(adminUi, /explicitSubscriptionWords/);
   assert.match(adminUi, /hasExplicitSubscription/);
-  assert.match(adminUi, /إشارة زمنية فقط/);
+  assert.match(adminUi, /إشارة زمنية في هوية المنتج فقط/);
   assert.match(adminUi, /needsReview=kind==="غير محسوم"\|\|confidence==="منخفض"/);
   assert.match(adminUi, /تصنيفاً مبدئياً بثقة متوسطة أو أعلى/);
 });
@@ -124,4 +124,13 @@ test("HomsCard saved audit combines the latest catalog with previously successfu
   assert.match(adminUi, /homscardMergeSavedSuccessfulPages/);
   assert.match(adminUi, /Preserve current API catalog fields/);
   assert.match(adminUi, /لم تُستبدل أي صفحة ناجحة بخطأ مؤقت/);
+});
+
+test("HomsCard classification ignores generic page-template text as product evidence", () => {
+  assert.match(adminUi, /const identity=homscardAutoAuditText\(\[name,category,pageTitle\]/);
+  assert.match(adminUi, /explicitSubscriptionWords\.test\(identity\)/);
+  assert.match(adminUi, /hasVariableEvidence=options\.length>0\|\|typeVariable/);
+  assert.doesNotMatch(adminUi, /unitPriceEvidence/);
+  assert.match(adminUi, /hasPackEvidence=.*identity/);
+  assert.match(adminUi, /pageText=homscardAutoAuditText/);
 });
