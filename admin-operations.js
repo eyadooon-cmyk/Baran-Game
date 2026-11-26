@@ -1173,10 +1173,12 @@ function homscardAutoAuditOne(p){
   const keys=homscardAutoAuditKeys(params),paramText=homscardAutoAuditText(keys.join(" "));
   const options=homscardAutoAuditQuantities(p.qty_values);
   const subscriptionWords=/(اشتراك|شهري|شهر|سنوي|سنة|أسبوع|يوم|subscription|monthly|month|annual|yearly|weekly|duration|days?)/i;
+  const explicitSubscriptionWords=/(اشتراك|subscription|membership)/i;
   const accountWords=/(player.?id|user.?id|uid|account|server|zone|email|login|معرف|آيدي|سيرفر|حساب|بريد|رقم اللاعب)/i;
   const typeSubscription=/^(subscription|membership|time|duration)$/i.test(type);
   const typeVariable=/^(quantity|variable|top.?up|recharge|amount|custom)$/i.test(type);
   const hasDuration=subscriptionWords.test(text)||typeSubscription;
+  const hasExplicitSubscription=explicitSubscriptionWords.test(text)||typeSubscription;
   const hasVariableEvidence=options.length>0||typeVariable||unitPriceEvidence;
   const hasPackEvidence=/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|credits|points)/i.test(text)&&/\d/.test(text);
   let kind="غير محسوم",confidence="منخفض",reason="المعلومات المتاحة لا تكفي لتحديد طريقة البيع دون تخمين.";
@@ -1190,10 +1192,14 @@ function homscardAutoAuditOne(p){
     kind="اشتراك بمدة محتملة";
     confidence="متوسط";
     reason="نوع المورد يشير إلى اشتراك؛ يلزم تأكيد المدة والتفعيل.";
-  }else if(hasDuration){
+  }else if(hasExplicitSubscription){
     kind="اشتراك بمدة محتملة";
+    confidence="متوسط";
+    reason="الاسم أو نوع المورد يذكر اشتراكاً صراحةً؛ يلزم تأكيد المدة وطريقة التفعيل.";
+  }else if(hasDuration){
+    kind="غير محسوم";
     confidence="منخفض";
-    reason="الاسم يتضمن إشارة زمنية؛ قد تكون وصفاً فقط وليست مدة اشتراك مؤكدة.";
+    reason="توجد إشارة زمنية فقط مثل شهر أو يوم؛ لا تكفي وحدها لإثبات أن المنتج اشتراك.";
   }else if(options.length||unitPriceEvidence){
     kind="كمية متغيرة محتملة";
     confidence="متوسط";
@@ -1210,7 +1216,8 @@ function homscardAutoAuditOne(p){
   if(!p.qty_values)missing.push("لا توجد خيارات كمية مؤكدة");
   if(!params.length)missing.push("لا توجد حقول إدخال ظاهرة");
   if(price===null)missing.push("السعر غير رقمي أو غير صالح");
-  return {p,kind,confidence,reason,options,keys,account,price,missing,hasDuration,hasVariableEvidence,hasPackEvidence};
+  const needsReview=kind==="غير محسوم"||confidence==="منخفض";
+  return {p,kind,confidence,reason,options,keys,account,price,missing,hasDuration,hasExplicitSubscription,hasVariableEvidence,hasPackEvidence,needsReview};
 }
 function homscardAutoAuditSelfTests(){
   const cases=[
@@ -1219,7 +1226,8 @@ function homscardAutoAuditSelfTests(){
     [{name:"شحن حسب الكمية",product_type:"quantity",qty_values:[100,500],price:0.2}, "كمية متغيرة محتملة"],
     [{name:"شحن",qty_values:100,price:0.2}, "كمية متغيرة محتملة"],
     [{name:"اشتراك شهري",product_type:"package"}, "اشتراك بمدة محتملة"],
-    [{name:"VPN Premium 30 days",product_type:"package"}, "اشتراك بمدة محتملة"],
+    [{name:"VPN Premium 30 days",product_type:"package"}, "غير محسوم"],
+    [{name:"VPN subscription 30 days",product_type:"package"}, "اشتراك بمدة محتملة"],
     [{name:"Game credits",product_type:"package"}, "غير محسوم"],
     [{name:"خدمة",product_type:"package",qty_values:"غير محدد"}, "غير محسوم"],
     [{name:"منتج",product_type:"package",qty_values:[{"quantity":"1000"}]}, "كمية متغيرة محتملة"],
@@ -1331,18 +1339,20 @@ async function homscardRunAutomaticAudit(options={}){
     if(options.persist!==false){status.textContent="جارٍ حفظ نتائج التدقيق…";await homscardPersistAuditRows(products,rows);}
     const labels=["كمية متغيرة محتملة","باقة ثابتة محتملة","اشتراك بمدة محتملة","غير محسوم"];
     const counts=Object.fromEntries(labels.map(label=>[label,rows.filter(r=>r.kind===label).length]));
+    const reviewRows=rows.filter(r=>r.needsReview);
+    const preliminaryCount=rows.length-reviewRows.length;
     const tests=homscardAutoAuditSelfTests();
-    status.textContent="اكتمل فحص "+rows.length+" منتجاً وحُفظت النتائج: "+(rows.length-counts["غير محسوم"])+" تصنيفاً مبدئياً، و"+counts["غير محسوم"]+" تحتاج مراجعة. الاختبارات الداخلية: "+tests.passed+"/"+tests.total;
+    status.textContent="اكتمل فحص "+rows.length+" منتجاً وحُفظت النتائج: "+preliminaryCount+" تصنيفاً مبدئياً بثقة متوسطة أو أعلى، و"+reviewRows.length+" تحتاج مراجعة (ثقة منخفضة أو تصنيف غير محسوم). الاختبارات الداخلية: "+tests.passed+"/"+tests.total;
     const summary=opsNode("div","ops-stats-grid");
     labels.forEach(label=>{const card=opsNode("div","ops-card");card.append(opsNode("strong","",String(counts[label])),opsNode("div","ops-muted",label));summary.appendChild(card);});
     output.appendChild(summary);
-    output.appendChild(opsNode("p","ops-muted","التصنيفات استدلالية وليست اعتماداً تجارياً. لا نعتبر package دليلاً لأن الموصل قد يضعها كقيمة افتراضية. لا نحسب تكلفة كمية ولا نفترض أن السعر سعر وحدة."));
+    output.appendChild(opsNode("p","ops-muted","التصنيفات استدلالية وليست اعتماداً تجارياً. يُحسب التصنيف مبدئياً فقط عند الثقة المتوسطة أو الأعلى؛ الثقة المنخفضة أو الحالة غير المحسومة تحتاج مراجعة. الكلمات الزمنية وحدها مثل month أو days لا تثبت الاشتراك. لا نحسب تكلفة كمية ولا نفترض أن السعر سعر وحدة."));
     output.appendChild(opsNode("div","ops-muted",tests.failures.length?"فشل اختبار داخلي: "+JSON.stringify(tests.failures):"اجتازت قواعد التصنيف الاختبارات الداخلية."));
     const list=opsNode("div","ops-list");
     rows.sort((a,b)=>labels.indexOf(b.kind)-labels.indexOf(a.kind));
     rows.forEach(r=>{
       const d=opsNode("details","ops-item");
-      d.appendChild(opsNode("summary","",opsText(r.p.name)+" — "+r.kind+" · ثقة "+r.confidence));
+      d.appendChild(opsNode("summary","",opsText(r.p.name)+" — "+r.kind+" · ثقة "+r.confidence+(r.needsReview?" · تحتاج مراجعة":" · تصنيف مبدئي")));
       d.append(opsNode("div","ops-muted","معرّف المورد: "+opsText(r.p.id)+" | التصنيف: "+opsText(r.p.category)),
         opsNode("div","ops-muted","السبب: "+r.reason),
         opsNode("div","ops-muted","من صفحة المورد: "+opsText([r.p.page_title,r.p.page_description].filter(Boolean).join(" — ")||"لم تُفحص الصفحة بعد").slice(0,500)),
