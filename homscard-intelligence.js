@@ -81,8 +81,37 @@ const understand=pageUnderstanding(r),uBox=node("section","hci-section");uBox.ap
 const sec=node("section","hci-section");sec.appendChild(node("b","","إشارات إدخال/كمية وردت في صفحة المورد (غير معتمدة)"));const sig=pageSignals(r);if(sig.length){const su=node("ul","");sig.forEach(v=>su.appendChild(node("li","",v)));sec.appendChild(su);}else sec.appendChild(node("p","hci-muted","لم يُعثر على إشارات إدخال أو مدى كمية واضحة في نص التفاصيل."));sec.appendChild(node("p","hci-note","هذه إشارات نصية فقط. المرجع المعتمد لحقول الشحن هو params وqty_values في API؛ لا تُحوّل هذه الإشارات إلى حقول إلزامية قبل مطابقتها مع توثيق المورد وتجربة آمنة."));sec.appendChild(node("details","hci-raw")).append(node("summary","","عرض نص صفحة المورد الكامل"),node("pre","",snippets(r)||"لا يوجد نص"));body.appendChild(sec);
 const a=r.audit_data||{},audit=node("section","hci-section");audit.appendChild(node("b","","نتيجة التدقيق وملاحظاته"));audit.appendChild(node("p","hci-muted","التصنيف التحليلي المعروض: "+auditKind(r)));if(isUserConfirmedFixedPackage(r))audit.appendChild(node("p","hci-note","تم تثبيت هذا المنتج كباقة ثابتة بناءً على تأكيد المستخدم؛ هذا تصنيف بشري ولا يثبت نجاح تنفيذ الشحن."));if(a.reason&&!isUserConfirmedFixedPackage(r))audit.appendChild(node("p","hci-muted","سبب التصنيف: "+a.reason));const m=missing(r);audit.appendChild(node("p","hci-muted",m.length?"نواقص/تحذيرات: "+m.join("، "):"لا توجد نواقص تقنية ظاهرة؛ هذا لا يعني اعتماد المنتج للبيع أو الشحن."));const savedNotes=savedMissingItems(r),legacy=legacyPackageWarnings(r);if(savedNotes.length)audit.appendChild(node("p","hci-muted","كل الملاحظات المحفوظة الخام: "+savedNotes.join("، ")));if(legacy.length)audit.appendChild(node("p","hci-note","تحذيرات تاريخية أُنشئت قبل تثبيت نوع الباقة، ولا تُعامل كنقص حالي: "+legacy.join("، ")));body.appendChild(audit);
 const raw=node("details","hci-raw");raw.appendChild(node("summary","","عرض البيانات الخام كاملة"));raw.appendChild(node("pre","",JSON.stringify({product_data:d,page_data:r.page_data||{},audit_data:a},null,2)));body.appendChild(raw);c.appendChild(body);return c;}
-function filter(){const q=norm($("hciSearch")?.value),cat=$("hciCategory")?.value||"",typ=$("hciType")?.value||"",av=$("hciAvailability")?.value||"",delivery=$("hciDelivery")?.value||"",pageState=$("hciPageState")?.value||"",risk=$("hciRisk")?.value||"";filtered=rows.filter(r=>{const d=data(r),hay=norm([d.name,d.id,d.category,d.product_type,...arr(d.params),text(r)].join(" ")),a=assessment(r);if(q&&!hay.includes(q))return false;if(cat&&d.category!==cat)return false;if(typ&&kind(r)!==typ)return false;if(av==="yes"&&d.available!==true)return false;if(av==="no"&&d.available!==false)return false;if(av==="unknown"&&d.available!=null)return false;if(delivery&&!fulfillment(r).includes(delivery))return false;if(pageState==="ok"&&pageHealth(r)!=="تفاصيل المنتج موجودة")return false;if(pageState==="bad"&&pageHealth(r)==="تفاصيل المنتج موجودة")return false;if(risk&&a.level!==risk)return false;return true;});page=0;render();}
-function render(){const box=$("hciResults");if(!box)return;box.replaceChildren();$("hciCount").textContent="النتائج: "+filtered.length+" من "+rows.length;filtered.slice(page*SIZE,(page+1)*SIZE).forEach(r=>box.appendChild(card(r)));if(!filtered.length)box.appendChild(node("div","hci-empty","لا توجد نتائج مطابقة."));const nav=node("div","hci-nav"),prev=node("button","secondary","السابق"),next=node("button","secondary","التالي");prev.type=next.type="button";prev.disabled=page===0;next.disabled=(page+1)*SIZE>=filtered.length;prev.onclick=()=>{page--;render();};next.onclick=()=>{page++;render();};nav.append(prev,node("span","","صفحة "+(page+1)+" / "+Math.max(1,Math.ceil(filtered.length/SIZE))),next);box.appendChild(nav);}
+function filter(){
+ const q=norm($("hciSearch")?.value),cat=$("hciCategory")?.value||"",typ=$("hciType")?.value||"",av=$("hciAvailability")?.value||"",risk=$("hciRisk")?.value||"";
+ filtered=rows.filter(r=>{
+  const d=data(r),hay=norm([d.name,d.id,d.category,d.product_type,...arr(d.params),text(r)].join(" ")),a=assessment(r);
+  if(q&&!hay.includes(q))return false;if(cat&&d.category!==cat)return false;if(typ&&kind(r)!==typ)return false;
+  if(av==="yes"&&d.available!==true)return false;if(av==="no"&&d.available!==false)return false;if(av==="unknown"&&d.available!=null)return false;
+  if(risk&&a.level!==risk)return false;
+  if(activeView==="review"&&!(a.level!=="ok"||missing(r).length>0))return false;
+  if(activeView==="prices"&&a.gap===null)return false;
+  return true;
+ });
+ page=0;render();
+}
+function render(){
+ const box=$("hciResults"),reviewBox=$("hciReviewResults"),priceBox=$("hciPriceResults");
+ const current=filtered.slice(page*SIZE,(page+1)*SIZE);
+ const fill=(target,items)=>{if(!target)return;target.replaceChildren();items.forEach(r=>target.appendChild(card(r)));if(!items.length)target.appendChild(node("div","hci-empty","لا توجد نتائج في هذا القسم حالياً."));};
+ fill(box,activeView==="products"?current:[]);
+ const reviewRows=rows.filter(r=>assessment(r).level!=="ok"||missing(r).length>0);
+ const priceRows=rows.filter(r=>assessment(r).gap!==null);
+ fill(reviewBox,reviewRows);
+ fill(priceBox,priceRows);
+ if($("hciCount"))$("hciCount").textContent="النتائج: "+filtered.length+" من "+rows.length;
+ if($("hciReviewCount"))$("hciReviewCount").textContent="منتجات تتطلب مراجعة: "+reviewRows.length;
+ if($("hciPriceCount"))$("hciPriceCount").textContent="منتجات لها سعر صفحة قابل للمقارنة: "+priceRows.length;
+ const nav=node("div","hci-nav"),prev=node("button","","السابق"),next=node("button","","التالي");
+ prev.type=next.type="button";prev.disabled=page===0;next.disabled=(page+1)*SIZE>=filtered.length;
+ prev.onclick=()=>{page--;render();};next.onclick=()=>{page++;render();};
+ nav.append(prev,node("span","","صفحة "+(page+1)+" / "+Math.max(1,Math.ceil(filtered.length/SIZE))),next);
+ if(box&&activeView==="products")box.appendChild(nav);
+}
 function stats(){
  const box=$("hciStats");box.replaceChildren();
  const auditSummary=auditEngine?.summarize(rows)||{};
@@ -190,40 +219,144 @@ async function smartRun(){
 }
 
 async function recheckPages(){if(busy)return;if(!runId){$("hciStatus").textContent="لا يوجد رقم سجل تدقيق محفوظ لإعادة الفحص.";return;}const targets=rows.filter(r=>pageHealth(r)!=="تفاصيل المنتج موجودة");if(!targets.length){$("hciStatus").textContent="كل صفحات المنتجات تحتوي حالياً على قسم التفاصيل المتوقع.";return;}busy=true;$("hciRecheck").disabled=true;$("hciReload").disabled=true;let refreshed=0,failed=0;try{const client=typeof sb!=="undefined"?sb:window.sb;for(let offset=0;offset<targets.length;offset+=25){const batch=targets.slice(offset,offset+25),ids=batch.map(r=>String(r.product_id));$("hciStatus").textContent="إعادة فحص صفحات المورد: "+Math.min(offset+batch.length,targets.length)+" / "+targets.length+"…";const {data,error}=await client.functions.invoke("baran-homscard-connector",{body:{action:"product_pages",products_id:ids}});if(error||!data?.success||!Array.isArray(data.data))throw Error(data?.error||error?.message||"فشل طلب إعادة فحص الصفحات.");const byId=new Map(data.data.map(x=>[String(x.id),x]));const updated=batch.map(old=>{const fresh=byId.get(String(old.product_id));if(!fresh||fresh.success!==true){failed++;return {...old,page_status:"failed",page_error:fresh?.error||"لم ترجع صفحة المنتج نتيجة صالحة"};}refreshed++;return {...old,page_data:{title:fresh.title||"",description:fresh.description||"",text:fresh.text||""},page_status:"success",page_error:""};});const payload=updated.map(r=>({product_id:r.product_id,product_name:r.product_name,product_data:r.product_data,page_data:r.page_data,page_status:r.page_status,page_error:r.page_error,audit_data:r.audit_data}));const {data:saved,error:saveError}=await client.functions.invoke("baran-homscard-connector",{body:{action:"save_audit_batch",run_id:runId,catalog_count:catalogCount,rows:payload}});if(saveError||!saved?.success)throw Error(saved?.error||saveError?.message||"تعذر حفظ نتيجة إعادة الفحص.");const updatedMap=new Map(updated.map(r=>[String(r.product_id),r]));rows=rows.map(r=>updatedMap.get(String(r.product_id))||r);stats();filter();} $("hciStatus").textContent="انتهت إعادة الفحص: تم تحديث "+refreshed+" صفحة، وفشل جلب "+failed+". لم يتم تنفيذ أي شراء أو شحن.";}catch(e){$("hciStatus").textContent="توقفت إعادة الفحص بعد حفظ الدفعات المكتملة: "+(e?.message||"خطأ غير معروف");}finally{busy=false;$("hciRecheck").disabled=false;$("hciReload").disabled=false;}}
-function styles(){if($("hciStyles"))return;const st=node("style");st.id="hciStyles";st.textContent=
-"#"+ROOT+"{margin:16px 0;padding:15px;border:2px solid #b78bd8;border-radius:19px;background:linear-gradient(145deg,#342044,#100b16 76%);color:#f4eafa;box-shadow:0 10px 28px #0007}"+ "#"+ROOT+" .hci-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}#"+ROOT+" .hci-actions button{min-height:48px;white-space:normal;line-height:1.5}#"+ROOT+" .hci-primary{grid-column:1/-1;background:linear-gradient(100deg,#c59be4,#8c63aa);color:#170d20;font-weight:950;border:1px solid #e4c9f5}"+ "#"+ROOT+"{margin:16px 0;padding:14px;border:1px solid #9a72b8;border-radius:17px;background:linear-gradient(145deg,#21172d,#100b16);color:#f4eafa}"+
-"#"+ROOT+" .hci-heading{font-size:19px;font-weight:950}#"+ROOT+" .hci-muted,#"+ROOT+" .hci-intro{color:#c3b2d2;font-size:12px;line-height:1.8}"+
-"#"+ROOT+" .hci-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}#"+ROOT+" input,#"+ROOT+" select{width:100%;min-width:0;padding:11px;border:1px solid #614a75;border-radius:10px;background:#0d0912;color:white;font:inherit}"+
-"#"+ROOT+" .hci-status{margin:10px 0;padding:10px;border:1px solid #514064;border-radius:10px;background:#171020;color:#dfc9ef;font-size:12px}#"+ROOT+" .hci-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}#"+ROOT+" .hci-stat{padding:9px 4px;border:1px solid #4c3a5c;border-radius:11px;background:#191321;text-align:center}#"+ROOT+" .hci-stat b{display:block;font-size:20px;color:#e2c4f7}#"+ROOT+" .hci-stat small{font-size:10px;color:#c0aecf}"+
-"#"+ROOT+" .hci-count{margin:10px 0;color:#cbb7dc;font-size:12px}#"+ROOT+" .hci-results{display:grid;gap:9px}#"+ROOT+" .hci-card{border:1px solid #554167;border-radius:13px;background:#181220;overflow:hidden}#"+ROOT+" .hci-summary{display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px;cursor:pointer;list-style:none}#"+ROOT+" .hci-img{width:50px;height:50px;object-fit:cover;border-radius:9px;background:#2b2035;display:grid;place-items:center}#"+ROOT+" .hci-title{min-width:0;display:grid;gap:3px}#"+ROOT+" .hci-title b{font-size:13px;overflow-wrap:anywhere}#"+ROOT+" .hci-title small{font-size:10px;color:#bca9cb}#"+ROOT+" .hci-title em{font-size:10px;color:#d9b8f1;font-style:normal}#"+ROOT+" .hci-price{font-size:11px;white-space:nowrap;direction:ltr;color:#e0c2f4}"+
-"#"+ROOT+" .hci-body{padding:10px;border-top:1px solid #40334c}#"+ROOT+" .hci-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}#"+ROOT+" .hci-cell{padding:8px;border:1px solid #40334c;border-radius:9px;background:#110d17;min-width:0}#"+ROOT+" .hci-cell small{display:block;color:#bba9ca;font-size:10px;margin-bottom:4px}#"+ROOT+" .hci-cell b{display:block;font-size:11px;overflow-wrap:anywhere;line-height:1.6}"+
-"#"+ROOT+" .hci-section{margin-top:11px;padding:10px;border:1px solid #463650;border-radius:10px;background:#130e19;font-size:11px;line-height:1.8}#"+ROOT+" .hci-section>b{color:#e4cdf3}#"+ROOT+" .hci-note{font-size:10px;color:#e7c99b;line-height:1.7}#"+ROOT+" ul{padding-inline-start:20px;margin:5px 0;color:#e3d6ec}#"+ROOT+" .hci-raw{margin-top:10px}#"+ROOT+" .hci-raw summary{cursor:pointer;color:#d7b8ed;font-weight:800}#"+ROOT+" pre{max-height:360px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;direction:ltr;text-align:left;background:#09070d;padding:10px;border-radius:9px;font-size:10px}"+
-"#"+ROOT+" .hci-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0}#"+ROOT+" .hci-nav span{font-size:11px;color:#cbb8da}#"+ROOT+" .hci-empty{padding:18px;text-align:center;border:1px dashed #5b466e;border-radius:10px}"+
-"@media(max-width:420px){#"+ROOT+"{padding:10px}#"+ROOT+" .hci-actions{grid-template-columns:1fr}#"+ROOT+" .hci-primary{grid-column:auto}#"+ROOT+" .hci-controls{grid-template-columns:1fr}#"+ROOT+" .hci-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#"+ROOT+" .hci-summary{grid-template-columns:43px minmax(0,1fr) auto;gap:6px}#"+ROOT+" .hci-img{width:43px;height:43px}#"+ROOT+" .hci-price{font-size:10px}}";
-document.head.appendChild(st);}
+function styles(){
+ if($("hciWorkspaceStyles"))return;
+ const st=node("style");st.id="hciWorkspaceStyles";
+ st.textContent=String.raw\`
+ #\${ROOT}{margin:18px 0;padding:0;border:1px solid #76558f;border-radius:22px;overflow:hidden;background:radial-gradient(ellipse at 10% 0%,#9c6ac52a,transparent 38%),linear-gradient(155deg,#21172c,#0d0912 76%);color:#f5eafa;box-shadow:0 18px 42px #0007}
+ #\${ROOT} *{box-sizing:border-box}
+ #\${ROOT} .hci-hero{position:relative;padding:20px;background:linear-gradient(115deg,#382447dd,#17101f 70%);border-bottom:1px solid #614875}
+ #\${ROOT} .hci-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid #9a75b5;border-radius:999px;background:#120d19;color:#e6cff7;font-size:10px;font-weight:900}
+ #\${ROOT} .hci-heading{margin:12px 0 5px;font-size:clamp(20px,4vw,27px);font-weight:1000;line-height:1.4}
+ #\${ROOT} .hci-intro{max-width:780px;margin:0;color:#cbb9d9;font-size:12px;line-height:1.9}
+ #\${ROOT} .hci-hero-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+ #\${ROOT} .hci-chip{padding:6px 9px;border:1px solid #584267;border-radius:9px;background:#110c17;color:#ddc8ee;font-size:10px}
+ #\${ROOT} .hci-body-wrap{padding:13px}
+ #\${ROOT} .hci-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 13px}
+ #\${ROOT} .hci-actions button{min-height:49px;padding:10px;border:1px solid #74558c;border-radius:12px;background:linear-gradient(145deg,#30203d,#1b1424);color:#f5eafa;font-size:12px;font-weight:850;white-space:normal;line-height:1.6}
+ #\${ROOT} .hci-actions .hci-primary{grid-column:1/-1;background:linear-gradient(110deg,#c59be4,#9569b7);color:#180e21;border-color:#e3c9f5;font-weight:1000}
+ #\${ROOT} button:disabled{opacity:.55}
+ #\${ROOT} .hci-status{margin:0 0 13px;padding:11px;border:1px solid #514064;border-radius:11px;background:#120d18;color:#e2cdef;font-size:11px;line-height:1.8}
+ #\${ROOT} .hci-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}
+ #\${ROOT} .hci-stat{min-width:0;padding:11px 6px;border:1px solid #4f3b60;border-radius:13px;background:linear-gradient(145deg,#21182b,#130e19);text-align:center}
+ #\${ROOT} .hci-stat b{display:block;color:#e6cafa;font-size:clamp(18px,4vw,24px);overflow-wrap:anywhere}
+ #\${ROOT} .hci-stat small{display:block;margin-top:4px;color:#c1afcf;font-size:10px;line-height:1.5}
+ #\${ROOT} .hci-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 12px;padding:5px;border:1px solid #4e3a5e;border-radius:13px;background:#0d0912}
+ #\${ROOT} .hci-tab{min-width:0;min-height:43px;padding:7px 4px;border:1px solid transparent;border-radius:9px;background:transparent;color:#cbb9d9;font-size:11px;font-weight:850}
+ #\${ROOT} .hci-tab[aria-selected="true"]{border-color:#9c75ba;background:linear-gradient(145deg,#49305d,#2a1c37);color:#fff;box-shadow:0 4px 12px #0005}
+ #\${ROOT} .hci-view-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0;color:#f0e2fa;font-size:14px;font-weight:950}
+ #\${ROOT} .hci-view-title small{color:#c3b0d1;font-size:10px;font-weight:500}
+ #\${ROOT} .hci-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+ #\${ROOT} input,#\${ROOT} select{width:100%;min-width:0;padding:11px;border:1px solid #614a75;border-radius:10px;background:#0d0912;color:white;font:inherit;font-size:12px}
+ #\${ROOT} .hci-count{margin:10px 0;color:#cbb7dc;font-size:11px}
+ #\${ROOT} .hci-results{display:grid;gap:9px}
+ #\${ROOT} .hci-card{border:1px solid #554167;border-radius:13px;background:#181220;overflow:hidden}
+ #\${ROOT} .hci-summary{display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px;cursor:pointer;list-style:none}
+ #\${ROOT} .hci-img{width:50px;height:50px;object-fit:cover;border-radius:9px;background:#2b2035;display:grid;place-items:center}
+ #\${ROOT} .hci-title{min-width:0;display:grid;gap:3px}
+ #\${ROOT} .hci-title b{font-size:13px;overflow-wrap:anywhere}
+ #\${ROOT} .hci-title small{font-size:10px;color:#bca9cb}
+ #\${ROOT} .hci-title em{font-size:10px;color:#d9b8f1;font-style:normal}
+ #\${ROOT} .hci-price{font-size:11px;white-space:nowrap;direction:ltr;color:#e0c2f4}
+ #\${ROOT} .hci-body{padding:10px;border-top:1px solid #40334c}
+ #\${ROOT} .hci-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #\${ROOT} .hci-cell{padding:8px;border:1px solid #40334c;border-radius:9px;background:#110d17;min-width:0}
+ #\${ROOT} .hci-cell small{display:block;color:#bba9ca;font-size:10px;margin-bottom:4px}
+ #\${ROOT} .hci-cell b{display:block;font-size:11px;overflow-wrap:anywhere;line-height:1.6}
+ #\${ROOT} .hci-section{margin-top:11px;padding:10px;border:1px solid #463650;border-radius:10px;background:#130e19;font-size:11px;line-height:1.8}
+ #\${ROOT} .hci-section>b{color:#e4cdf3}
+ #\${ROOT} .hci-note{font-size:10px;color:#e7c99b;line-height:1.7}
+ #\${ROOT} ul{padding-inline-start:20px;margin:5px 0;color:#e3d6ec}
+ #\${ROOT} .hci-raw{margin-top:10px}
+ #\${ROOT} .hci-raw summary{cursor:pointer;color:#d7b8ed;font-weight:800}
+ #\${ROOT} pre{max-height:360px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;direction:ltr;text-align:left;background:#09070d;padding:10px;border-radius:9px;font-size:10px}
+ #\${ROOT} .hci-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0}
+ #\${ROOT} .hci-nav span{font-size:11px;color:#cbb8da}
+ #\${ROOT} .hci-nav button{min-height:38px;padding:7px 12px;border:1px solid #59446c;border-radius:9px;background:#21172d;color:#f2e7fa}
+ #\${ROOT} .hci-empty{padding:18px;text-align:center;border:1px dashed #5b466e;border-radius:10px;color:#c7b5d5}
+ #\${ROOT} .hci-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+ #\${ROOT} .hci-overview-card{padding:13px;border:1px solid #4f3b60;border-radius:13px;background:linear-gradient(145deg,#21182b,#130e19)}
+ #\${ROOT} .hci-overview-card b{display:block;color:#f0e3fa;font-size:12px}
+ #\${ROOT} .hci-overview-card span{display:block;margin-top:5px;color:#bfaecc;font-size:10px;line-height:1.7}
+ #\${ROOT} .hci-readiness-link{width:100%;min-height:47px;margin:4px 0 12px;padding:10px;border:1px solid #a77dc5;border-radius:12px;background:linear-gradient(110deg,#3b2850,#21172e);color:#f6eafa;font-weight:900}
+ #\${ROOT} .hci-view[hidden]{display:none!important}
+ @media(max-width:520px){#\${ROOT}{border-radius:16px}#\${ROOT} .hci-hero{padding:16px 13px}#\${ROOT} .hci-body-wrap{padding:10px}#\${ROOT} .hci-actions{grid-template-columns:1fr}#\${ROOT} .hci-actions .hci-primary{grid-column:auto}#\${ROOT} .hci-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#\${ROOT} .hci-tabs{gap:4px;padding:4px}#\${ROOT} .hci-tab{font-size:10px;padding:6px 2px}#\${ROOT} .hci-controls{grid-template-columns:1fr}#\${ROOT} .hci-overview-grid{grid-template-columns:1fr}#\${ROOT} .hci-summary{grid-template-columns:43px minmax(0,1fr) auto;gap:6px}#\${ROOT} .hci-img{width:43px;height:43px}#\${ROOT} .hci-price{font-size:10px}}
+ \`;
+ document.head.appendChild(st);
+}
+let activeView="overview";
+function setView(view){
+ activeView=view;
+ const root=$(ROOT);if(!root)return;
+ root.querySelectorAll(".hci-tab").forEach(tab=>tab.setAttribute("aria-selected",String(tab.dataset.view===view)));
+ root.querySelectorAll(".hci-view").forEach(panel=>panel.hidden=panel.dataset.panel!==view);
+ if(view==="review"){if($("hciRisk"))$("hciRisk").value="";filter();}
+ else if(view==="prices"){if($("hciRisk"))$("hciRisk").value="";filter();}
+ else if(view==="products"){if($("hciRisk"))$("hciRisk").value="";filter();}
+}
+function readinessReport(){
+ const report=document.getElementById("baranCatalogReadinessReport");
+ if(report){report.scrollIntoView({behavior:"smooth",block:"start"});const button=document.getElementById("baranCatalogReportButton");if(button)button.focus({preventScroll:true});}
+ if(typeof window.baranLoadCatalogReadinessReport==="function")window.baranLoadCatalogReadinessReport();
+ else {const status=document.getElementById("baranCatalogReportStatus");if(status)status.textContent="زر تقرير الجاهزية غير متاح في هذه النسخة. حدّث الصفحة أو راجع تحميل لوحة الإدارة.";}
+}
 function mount(){
  const panel=$(PANEL);if(!panel||$(ROOT))return;
  const root=node("section","");root.id=ROOT;
- root.append(node("div","hci-heading","🧠 مركز ذكاء HomsCard — لوحة مستقلة"));
- root.append(node("p","hci-intro","مركز واحد يجلب بيانات API للمنتجات الـ15 المتفق عليها، يستعيد الصفحات الناجحة، يعيد محاولة الصفحات المتعثرة فقط، يحفظ تقريراً جديداً، ويعرض المشكلة والإجراء المطلوب لكل منتج. لا شراء ولا شحن ولا تعديل أسعار بيع أو أرصدة أو طلبات."));
+ const hero=node("header","hci-hero");
+ hero.append(node("span","hci-eyebrow","✦ BARAN GAME · HOMSCARD INTELLIGENCE"));
+ hero.append(node("div","hci-heading","مركز إدارة HomsCard الذكي"));
+ hero.append(node("p","hci-intro","لوحة عمل مستقلة لمراجعة كتالوج المورد: حالة المنتجات، بيانات API، صفحات التفاصيل، فروقات الأسعار، النواقص، والتقارير. كل أدوات هذه اللوحة للقراءة والتدقيق فقط؛ لا شراء ولا شحن ولا تعديل أسعار بيع أو أرصدة أو طلبات."));
+ const meta=node("div","hci-hero-meta");
+ ["15 منتجاً ضمن نطاق تدقيق HomsCard","قراءة فقط","الشحن والشراء غير مفعّلين"].forEach(x=>meta.append(node("span","hci-chip",x)));
+ hero.append(meta);
+ const wrap=node("div","hci-body-wrap");
  const actions=node("div","hci-actions");
- const smart=node("button","hci-primary","🚀 تشغيل الفحص الشامل والإصلاح الآمن");smart.type="button";smart.id="hciSmartRun";smart.onclick=smartRun;
- const reload=node("button","secondary","📂 قراءة آخر تدقيق محفوظ");reload.type="button";reload.id="hciReload";reload.onclick=load;
- const exp=node("button","secondary","⬇️ تصدير تقرير CSV");exp.type="button";exp.id="hciExport";exp.onclick=exportReport;
- actions.append(smart,reload,exp);
- const status=node("div","hci-status","ابدأ بزر تشغيل الفحص الشامل. سيعمل على المنتجات الـ15 فقط.");status.id="hciStatus";status.setAttribute("role","status");status.setAttribute("aria-live","polite");
+ const smart=node("button","hci-primary","🚀 تشغيل الفحص الشامل وتحديث التقرير");
+ smart.type="button";smart.id="hciSmartRun";smart.onclick=smartRun;
+ const reload=node("button","","📂 قراءة آخر تدقيق محفوظ");reload.type="button";reload.id="hciReload";reload.onclick=load;
+ const exp=node("button","","⬇️ تصدير تقرير HomsCard CSV");exp.type="button";exp.id="hciExport";exp.onclick=exportReport;
+ const readiness=node("button","","📋 فحص جاهزية المنتجات الـ17");readiness.type="button";readiness.onclick=readinessReport;
+ actions.append(smart,reload,exp,readiness);
+ const status=node("div","hci-status","ابدأ بقراءة آخر تدقيق محفوظ أو شغّل الفحص الشامل. لا يبدأ أي فحص تلقائياً.");
+ status.id="hciStatus";status.setAttribute("role","status");status.setAttribute("aria-live","polite");
  const statsBox=node("div","hci-stats");statsBox.id="hciStats";
- const quick=node("div","hci-controls");
+ const tabs=node("nav","hci-tabs");tabs.setAttribute("aria-label","أقسام مركز HomsCard");
+ [["overview","نظرة عامة"],["products","المنتجات"],["review","تحتاج مراجعة"],["prices","فروقات الأسعار"]].forEach(([view,label])=>{const b=node("button","hci-tab",label);b.type="button";b.dataset.view=view;b.setAttribute("aria-selected",String(view==="overview"));b.onclick=()=>setView(view);tabs.append(b);});
+ const overview=node("section","hci-view");overview.dataset.panel="overview";
+ overview.append(node("div","hci-view-title","ملخص العمل"));
+ const overviewGrid=node("div","hci-overview-grid");
+ [["فحص بيانات المورد","مقارنة نوع المنتج والسعر والتوفر وحقول الإدخال المسجلة في API."],["مراجعة صفحات التفاصيل","مطابقة وصف المورد مع الحقول، وإظهار الصفحات الناجحة أو المتعثرة."],["مراجعة فروقات الأسعار","إظهار اتجاه الفرق بين سعر API وسعر الصفحة دون اعتماد أو تعديل أي سعر."],["قائمة الإجراءات المطلوبة","تحديد المنتجات التي تحتاج مراجعة بشرية وسبب المراجعة دون تنفيذ عمليات حساسة."]].forEach(([title,desc])=>{const c=node("article","hci-overview-card");c.append(node("b","",title),node("span","",desc));overviewGrid.append(c);});
+ overview.append(overviewGrid);
+ const goProducts=node("button","hci-readiness-link","عرض جميع المنتجات الـ15 ←");goProducts.type="button";goProducts.onclick=()=>setView("products");overview.append(goProducts);
+ const goReadiness=node("button","hci-readiness-link","فتح تقرير جاهزية الكتالوج الـ17 ←");goReadiness.type="button";goReadiness.onclick=readinessReport;overview.append(goReadiness);
+ const productsView=node("section","hci-view");productsView.dataset.panel="products";productsView.hidden=true;
+ const reviewView=node("section","hci-view");reviewView.dataset.panel="review";reviewView.hidden=true;
+ const pricesView=node("section","hci-view");pricesView.dataset.panel="prices";pricesView.hidden=true;
+ const makeTitle=(target,title,desc)=>{const h=node("div","hci-view-title");h.append(node("span","",title),node("small","",desc));target.append(h);};
+ makeTitle(productsView,"كتالوج HomsCard","كل المنتجات المشمولة بالتدقيق");
+ makeTitle(reviewView,"قائمة المراجعة","المشكلات والنواقص التي تتطلب تدقيقاً");
+ makeTitle(pricesView,"مقارنة الأسعار","الفروق المحسوبة بين صفحة المورد وAPI");
+ const controls=node("div","hci-controls");
  const search=node("input");search.id="hciSearch";search.type="search";search.placeholder="ابحث باسم المنتج أو ID أو حقل API";
  const cat=node("select");cat.id="hciCategory";
- const typ=node("select");typ.id="hciType";[["","كل الأنواع"],["كمية متغيرة","كمية متغيرة"],["كمية متغيرة ناقصة الحدود","quantity بحدود ناقصة"],["باقة ثابتة","باقات ثابتة مؤكدة"],["باقة","نوع package"],["غير محسوم","نوع غير محسوم"]].forEach(([v,l])=>{const o=node("option","",l);o.value=v;typ.appendChild(o);});
- const av=node("select");av.id="hciAvailability";[["","كل حالات التوفر"],["yes","متوفر"],["no","غير متوفر"],["unknown","غير محدد"]].forEach(([v,l])=>{const o=node("option","",l);o.value=v;av.appendChild(o);});
- const risk=node("select");risk.id="hciRisk";[["","كل مستويات المراجعة"],["critical","مشاكل أساسية"],["review","تحتاج مراجعة"],["ok","لا توجد إشارات خطر"]].forEach(([v,l])=>{const o=node("option","",l);o.value=v;risk.appendChild(o);});
- quick.append(search,cat,typ,av,risk);
+ const typ=node("select");typ.id="hciType";[["","كل الأنواع"],["كمية متغيرة","كمية متغيرة"],["كمية متغيرة ناقصة الحدود","quantity بحدود ناقصة"],["باقة ثابتة","باقات ثابتة مؤكدة"],["باقة","نوع package"],["غير محسوم","نوع غير محسوم"]].forEach(([v,l])=>{const o=node("option","",l);o.value=v;typ.append(o);});
+ const av=node("select");av.id="hciAvailability";[["","كل حالات التوفر"],["yes","متوفر"],["no","غير متوفر"],["unknown","غير محدد"]].forEach(([v,l])=>{const o=node("option","",l);o.value=v;av.append(o);});
+ const risk=node("select");risk.id="hciRisk";[["","كل مستويات المراجعة"],["critical","مشاكل أساسية"],["review","تحتاج مراجعة"],["ok","لا توجد إشارات خطر"]].forEach(([v,l])=>{const o=node("option","",l);o.value=v;risk.append(o);});
+ controls.append(search,cat,typ,av,risk);
+ [productsView,reviewView,pricesView].forEach(v=>v.append(controls.cloneNode(true)));
+ // Keep one live set of controls; cloned controls are decorative labels only, so replace clones with shared originals.
+ productsView.querySelector(".hci-controls").replaceWith(controls);
  const count=node("div","hci-count");count.id="hciCount";
  const results=node("div","hci-results");results.id="hciResults";
- root.append(actions,status,statsBox,quick,count,results);
+ productsView.append(count,results);
+ const reviewCount=node("div","hci-count");reviewCount.id="hciReviewCount";
+ const reviewResults=node("div","hci-results");reviewResults.id="hciReviewResults";reviewView.append(reviewCount,reviewResults);
+ const priceCount=node("div","hci-count");priceCount.id="hciPriceCount";
+ const priceResults=node("div","hci-results");priceResults.id="hciPriceResults";pricesView.append(priceCount,priceResults);
  search.oninput=filter;cat.onchange=filter;typ.onchange=filter;av.onchange=filter;risk.onchange=filter;
+ wrap.append(actions,status,statsBox,tabs,overview,productsView,reviewView,pricesView);
+ root.append(hero,wrap);
  panel.parentElement.insertBefore(root,panel);
  styles();
 }
