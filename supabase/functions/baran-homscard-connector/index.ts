@@ -33,37 +33,16 @@ function decodeHtml(value: string): string {
   return value
     .replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&quot;/gi, '"')
     .replace(/&#39;|&apos;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
-    .replace(/&#(\\d+);/g, (_m, n) => String.fromCodePoint(Number(n)))
-    .replace(/&#x([\\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)));
-}
-function htmlAttr(tag: string, name: string): string {
-  const escaped = name.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\function decodeHtml(value: string): string {
-  return value
-    .replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&quot;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
     .replace(/&#(\d+);/g, (_m, n) => String.fromCodePoint(Number(n)))
     .replace(/&#x([\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)));
 }
-function extractProductPage(html: string) {
-  const title = decodeHtml((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").replace(/<[^>]+>/g, " ").trim());
-  const descriptionTag = html.match(/<meta[^>]+(?:name|property)=["'](?:description|og:description)["'][^>]+content=["']([^"']*)["'][^>]*>/i)
-    ?? html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+(?:name|property)=["'](?:description|og:description)["'][^>]*>/i);
-  const description = decodeHtml(descriptionTag?.[1] ?? "");
-  const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? html;
-  const text = decodeHtml(body
-    .replace(/<(script|style|noscript|svg|iframe)[^>]*>[\s\S]*?<\/\1>/gi, " ")
-    .replace(/<(br|\/p|\/div|\/li|\/h[1-6])[^>]*>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ").trim()).slice(0, 5000);
-  return { title, description, text };
-}
-");
-  const match = tag.match(new RegExp("\\b" + escaped + "\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s>]+))", "i"));
+function htmlAttr(tag: string, name: string): string {
+  const match = tag.match(new RegExp("\\b" + name + "\\s*=\\s*(?:\\"([^\\"]*)\\"|'([^']*)'|([^\\s>]+))", "i"));
   return decodeHtml(match?.[1] ?? match?.[2] ?? match?.[3] ?? "");
 }
 function extractProductPage(html: string) {
-  const title = decodeHtml((html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1] ?? "").replace(/<[^>]+>/g, " ").trim());
-  const metas = [...html.matchAll(/<meta\\b[^>]*>/gi)].map(m => m[0]);
+  const title = decodeHtml((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "").replace(/<[^>]+>/g, " ").trim());
+  const metas = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => m[0]);
   const metaValue = (names: string[]) => {
     for (const tag of metas) {
       const key = (htmlAttr(tag, "name") || htmlAttr(tag, "property")).toLowerCase();
@@ -72,36 +51,40 @@ function extractProductPage(html: string) {
     return "";
   };
   const description = metaValue(["description", "og:description", "twitter:description"]);
-  const canonical = html.match(/<link\\b[^>]*rel=[\"']canonical[\"'][^>]*>/i)?.[0] ?? "";
+  const canonicalTag = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/i)?.[0] ?? "";
   const images: string[] = [];
   const addImage = (value: string) => {
     const raw = decodeHtml(value).trim();
     if (!raw || /^(data:|blob:|javascript:)/i.test(raw)) return;
     try {
       const url = new URL(raw, "https://homscard.com/");
-      if (url.protocol === "https:" && /homscard\\.com$|amazonaws\\.com$|cloudfront\\.net$/i.test(url.hostname) && !images.includes(url.href)) images.push(url.href);
+      if (url.protocol === "https:" && /(homscard\.com|amazonaws\.com|cloudfront\.net)$/i.test(url.hostname) && !images.includes(url.href)) images.push(url.href);
     } catch {}
   };
-  for (const tag of html.matchAll(/<img\\b[^>]*>/gi)) {
-    const imageTag = tag[0];
+  for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
+    const tag = match[0];
     for (const attr of ["src", "data-src", "data-lazy-src", "data-original", "srcset"]) {
-      const value = htmlAttr(imageTag, attr);
-      if (value) addImage(attr === "srcset" ? value.split(",")[0].trim().split(/\\s+/)[0] : value);
+      const value = htmlAttr(tag, attr);
+      if (value) addImage(attr === "srcset" ? value.split(",")[0].trim().split(/\s+/)[0] : value);
     }
   }
-  const body = html.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i)?.[1] ?? html;
+  for (const tag of metas) {
+    const property = (htmlAttr(tag, "property") || htmlAttr(tag, "name")).toLowerCase();
+    if (property === "og:image" || property === "twitter:image") addImage(htmlAttr(tag, "content"));
+  }
+  const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? html;
   const text = decodeHtml(body
-    .replace(/<(script|style|noscript|svg|iframe)[^>]*>[\\s\\S]*?<\\/\\1>/gi, " ")
-    .replace(/<(br|\\/p|\\/div|\\/li|\\/h[1-6])[^>]*>/gi, " ")
-    .replace(/<[^>]+>/g, " ").replace(/\\s+/g, " ").trim()).slice(0, 30000);
-  const normalized = text.normalize("NFKC").replace(/\\s+/g, " ");
-  const upstreamError = /(عذراً،?\\s*حدث خطأ في الاتصال|حدث خطأ في الاتصال|connection error|temporarily unavailable|cloudflare.*error)/i.test(normalized);
-  const hasProductMarker = /(تفاصيل المنتج|اسم المنتج|نوع العملية|سعر المنتج|للوحدة|الكمية \\(|product details)/i.test(normalized);
+    .replace(/<(script|style|noscript|svg|iframe)[^>]*>[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<(br|\/p|\/div|\/li|\/h[1-6])[^>]*>/gi, " ")
+    .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()).slice(0, 30000);
+  const normalized = text.normalize("NFKC").replace(/\s+/g, " ");
+  const upstreamError = /(عذراً،?\s*حدث خطأ في الاتصال|حدث خطأ في الاتصال|connection error|temporarily unavailable|cloudflare.*error)/i.test(normalized);
+  const hasProductMarker = /(تفاصيل المنتج|اسم المنتج|نوع العملية|سعر المنتج|للوحدة|الكمية\s*\(|product details)/i.test(normalized);
   const unavailable = /(غير متاح|غير متوفر|نفد المخزون|out of stock|unavailable)/i.test(normalized);
-  const available = !unavailable && /(متاح 24\\/7|متوفر الآن|متاح الآن|available now|in stock)/i.test(normalized);
+  const available = !unavailable && /(متاح 24\/7|متوفر الآن|متاح الآن|available now|in stock)/i.test(normalized);
   const availability = unavailable ? "unavailable" : available ? "available" : "unknown";
   return {
-    title, description, canonical: htmlAttr(canonical, "href"), text, images: images.slice(0, 30),
+    title, description, canonical: htmlAttr(canonicalTag, "href"), text, images: images.slice(0, 30),
     availability, extraction_status: upstreamError ? "upstream_error" : hasProductMarker ? "extracted" : "unverified",
     extraction_note: upstreamError ? "صفحة المورد أعادت رسالة خطأ اتصال ضمن محتواها." : hasProductMarker ? null : "لم تظهر علامة مؤكدة على تفاصيل المنتج؛ يلزم التحقق.",
     html_length: html.length
