@@ -9087,8 +9087,8 @@ function baranAttachCatalogSearch(container,cardSelector,placeholder){
 #appsStore .baran-hc-apps-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
 #appsStore .baran-hc-app-card{min-width:0;overflow:hidden;border:1px solid #574365;border-radius:15px;background:linear-gradient(155deg,#241b2d,#14101a);box-shadow:0 7px 18px #0004}
 #appsStore .baran-hc-app-card[hidden]{display:none!important}
-#appsStore .baran-hc-app-image{display:grid;place-items:center;width:100%;height:118px;background:radial-gradient(circle at 50% 35%,#604575,#21172c 70%);overflow:hidden}
-#appsStore .baran-hc-app-image img{width:100%;height:100%;object-fit:contain;background:#17121e}
+#appsStore .baran-hc-app-image{display:flex;align-items:center;justify-content:center;width:100%;height:160px;padding:8px;box-sizing:border-box;background:radial-gradient(circle at 50% 35%,#604575,#21172c 70%);overflow:visible}
+#appsStore .baran-hc-app-image img{display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center center;background:transparent}
 #appsStore .baran-hc-app-image span{font-size:38px;color:#e4c9f7;font-weight:900}
 #appsStore .baran-hc-app-copy{padding:10px}
 #appsStore .baran-hc-app-copy strong{display:block;min-height:38px;color:#f3e9fa;font-size:13px;line-height:1.5}
@@ -9096,7 +9096,7 @@ function baranAttachCatalogSearch(container,cardSelector,placeholder){
 #appsStore .baran-hc-app-state{display:block;margin-top:8px;padding:6px 7px;border:1px solid #76578d;border-radius:8px;background:#2a1d35;color:#e5c9f8;font-size:10px;text-align:center;line-height:1.5}
 #appsStore .baran-hc-app-qty{margin-top:5px;color:#a998b6;font-size:10px;line-height:1.6}
 #appsStore .baran-hc-app-empty{padding:18px;border:1px dashed #665078;border-radius:12px;color:#b9a9c9;text-align:center}
-@media(max-width:650px){#appsStore .baran-hc-apps-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#appsStore .baran-hc-app-image{height:105px}#appsStore .baran-hc-app-copy{padding:9px}}
+@media(max-width:650px){#appsStore .baran-hc-apps-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#appsStore .baran-hc-app-image{height:145px}#appsStore .baran-hc-app-copy{padding:9px}}
 @media(max-width:350px){#appsStore .baran-hc-apps-grid{grid-template-columns:1fr}}
 </style>
 <script id="baran-homscard-apps-catalog-data-20261127">
@@ -9116,12 +9116,10 @@ function renderBaranHomsCardAppsCatalog(){
     {id:"25",name:"Yoho",image:"https://homscard.com/uploads/thumbs/9f6d1faf6d4946eed40e719cfd6051079e2f3823_360.webp",min:10000,max:5000000},
     {id:"893",name:"سوجو - Sugo",image:"https://homscard.com/uploads/thumbs/6fd5276df01b52f631a696c652f4f341297098ea_360.webp",min:10000,max:4000000},
     {id:"910",name:"لايكي - Likee",image:"https://homscard.com/uploads/thumbs/2db94c85544a2b1d538042e08564fc9f1c914cbb_360.webp",min:50,max:50000},
-    {id:"282",name:"Weplay 10000",image:"https://homscard.com/uploads/thumbs/a28dc384d7fdaeed1d8d2b00a9942718be83d584_360.webp",package:true},
-    {id:"283",name:"Weplay 3000",image:"",package:true},
-    {id:"458",name:"Weplay 50000",image:"https://homscard.com/uploads/thumbs/a8cd8c35ef8fb666342e356e9e58ee1615a2c0e9_360.webp",package:true}
+
   ];
   const card=p=>'<article class="baran-hc-app-card" data-search="'+(p.name+" "+p.id).toLowerCase()+'"><div class="baran-hc-app-image">'+(p.image?'<img src="'+p.image+'" alt="'+p.name+'" loading="lazy" onerror="this.parentElement.innerHTML=\'<span>📱</span>\'">':'<span>📱</span>')+'</div><div class="baran-hc-app-copy"><strong>'+p.name+'</strong><div class="baran-hc-app-meta"><span>HomsCard</span><span>#'+p.id+'</span></div>'+(p.package?'<div class="baran-hc-app-qty">باقة ثابتة حسب كتالوج المورد</div>':'<div class="baran-hc-app-qty">الكمية: '+p.min.toLocaleString("en-US")+' – '+p.max.toLocaleString("en-US")+'</div>')+'<span class="baran-hc-app-state">معاينة المورد · قيد اعتماد باقات باران</span></div></article>';
-  root.innerHTML='<div class="baran-hc-apps-intro"><strong>كتالوج التطبيقات — HomsCard</strong><br>هذه البطاقات من آخر تدقيق محفوظ بتاريخ 26-11-2026. المعروض معاينة للمنتجات والصور فقط؛ أسعار البيع والشراء والشحن غير مفعّلة حتى اعتماد باقات باران.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في تطبيقات حمص كارد"><div class="baran-hc-apps-group"><h3>تطبيقات الشحن <small>12 تطبيقاً</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.filter(p=>!p.package).map(card).join("")+'</div></div><div class="baran-hc-apps-group"><h3>باقات WePlay <small>3 باقات</small></h3><div class="baran-hc-apps-grid" id="baranHomsWeplayGrid">'+items.filter(p=>p.package).map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
+  root.innerHTML='<div class="baran-hc-apps-intro"><strong>كتالوج التطبيقات — HomsCard</strong><br>هذه التطبيقات من آخر تدقيق محفوظ بتاريخ 26-11-2026. المعروض معاينة للمنتجات والصور فقط؛ أسعار البيع والشراء والشحن غير مفعّلة حتى اعتماد باقات باران.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في تطبيقات حمص كارد"><div class="baran-hc-apps-group"><h3>تطبيقات الشحن <small>12 تطبيقاً</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.filter(p=>!p.package).map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
   const search=root.querySelector(".baran-hc-apps-search");
   search.addEventListener("input",()=>{
     const q=search.value.trim().toLowerCase();let shown=0;
