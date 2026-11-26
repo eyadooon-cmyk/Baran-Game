@@ -53,7 +53,7 @@ test("HomsCard audit results are persisted and restored through admin-gated serv
   assert.match(adminUi, /homscardPersistAuditRows/);
   assert.match(adminUi, /homscardRestoreSavedAudit/);
   assert.match(adminUi, /save_audit_batch/);
-  assert.match(adminUi, /p\.page_status!=="success"/);
+  assert.match(adminUi, /homscardPageNeedsRecheck\(p\)/);
   assert.match(adminUi, /await homscardInspectProductPages\(\)/);
 });
 test("HomsCard audit tables deny direct client access and allow server role", () => {
@@ -79,4 +79,13 @@ test("HomsCard migration registers the supplier but keeps integration and execut
 
 test("HomsCard HMAC signs the exact full upstream path including the reseller prefix", () => {
   assert.match(source, /timestamp \+ "\\nGET\\n" \+ "\/reseller" \+ path \+ "\\n"/);
+});
+
+test("HomsCard product page validation rejects upstream error pages and empty metadata", () => {
+  assert.match(source, /صفحة المورد تعرض رسالة خطأ بدلاً من تفاصيل المنتج/);
+  assert.match(source, /لم تُرجع الصفحة عنواناً أو وصفاً تعريفياً للمنتج/);
+  assert.match(adminUi, /function homscardPageHasErrorContent/);
+  assert.match(adminUi, /function homscardPageIsUsable/);
+  assert.match(adminUi, /function homscardPageNeedsRecheck/);
+  assert.match(adminUi, /!homscardPageIsUsable\(row\)/);
 });
