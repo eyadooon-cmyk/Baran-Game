@@ -184,3 +184,10 @@ test("Supplier directory supports search, supplier editing, and reversible activ
   assert.match(adminUi, /المنتجات المرتبطة:/);
   assert.match(adminUi, /لم تُحذف روابط المنتجات أو الأسعار/);
 });
+
+test("Supplier directory search does not rebuild or clear the product-link form", () => {
+  assert.match(adminUi, /function renderOpsSuppliers\(suppliers,links,products,searchOnly=false\)/);
+  assert.match(adminUi, /if\(searchOnly\)return;\s*const supplierSelect=document\.getElementById\("opsSupplierSelect"\)/);
+  assert.match(adminUi, /روابط المورد المفضل/);
+  assert.match(indexHtml, /opsSupplierLinksCache/);
+});
