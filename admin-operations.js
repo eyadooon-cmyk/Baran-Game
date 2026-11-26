@@ -1035,8 +1035,8 @@ function renderHomsCardCatalog(){
     const haystack=[p.name,p.category,p.code,p.product_code,p.id].map(v=>String(v??'')).join(' ').toLocaleLowerCase();
     if(term&&!haystack.includes(term))return false;
     if(selectedCategory&&String(p.category??'')!==selectedCategory)return false;
-    if(selectedAvailability==='available'&&!p.available)return false;
-    if(selectedAvailability==='unavailable'&&p.available)return false;
+    if(selectedAvailability==='available'&&p.available!==true)return false;
+    if(selectedAvailability==='unavailable'&&p.available!==false)return false;
     if(selectedType){
       const audit=homscardAutoAuditOne(p);
       if(audit.kind!==selectedType)return false;
@@ -1052,7 +1052,7 @@ function renderHomsCardCatalog(){
     const info=opsNode('div','');
     info.appendChild(opsNode('div','homscard-product-name',opsText(p.name)));
     info.appendChild(opsNode('div','homscard-product-meta','التصنيف: '+opsText(p.category)+(p.code||p.product_code?' | الرمز: '+opsText(p.code||p.product_code):'')));
-    info.appendChild(opsNode('div','homscard-product-state'+(p.available?'':' unavailable'),p.available?'متوفر':'غير متوفر'));
+    info.appendChild(opsNode('div','homscard-product-state'+(p.available?'':' unavailable'),p.available===true?'متوفر':p.available===false?'غير متوفر':'حالة API غير معروفة'));
     if(p.image){const image=document.createElement("img");image.src=p.image;image.alt=String(p.name||"");image.loading="lazy";image.referrerPolicy="no-referrer";image.className="homscard-product-image";info.appendChild(image);}
     if(p.page_availability&&p.page_availability!=="unknown")info.appendChild(opsNode("div","homscard-product-meta","حالة صفحة المورد: "+(p.page_availability==="unavailable"?"غير متاح":"متاح")));
     if(p.page_images?.length){const pageImages=opsNode("div","homscard-product-meta","صور صفحة المورد: "+p.page_images.length);info.appendChild(pageImages);}
@@ -1218,7 +1218,7 @@ async function homscardInspectProductPages(){
   if(!homscardCatalogCache.length){if(status)status.textContent="حمّل كتالوج HomsCard أولاً.";return;}
   if(button)button.disabled=true;
   let inspected=0,failed=0;
-  const products=homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??""))&&p.page_status!=="success");
+  const products=homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??""))&&(p.page_status!=="success"||p.page_extraction_status!=="extracted"));
   try{
     if(status)status.textContent="جارٍ استكمال الصفحات غير الناجحة أو غير المفحوصة فقط: 0 / "+products.length;
     for(let i=0;i<products.length;i+=25){
