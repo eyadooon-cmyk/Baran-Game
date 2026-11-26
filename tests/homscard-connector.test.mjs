@@ -149,3 +149,13 @@ test("HomsCard page audit summary reports authoritative totals without hiding un
   assert.match(adminUi, /صفحة ناجحة موجودة في السجل ولم تدخل ضمن عدادي الاستعادة والفحص الحالي/);
   assert.match(adminUi, /totalFailed.*homscardCatalogCache\.length/);
 });
+
+test("Agreed HomsCard page audit is restricted to the exact 15 approved product IDs", () => {
+  const ids = ["18","3","280","8","910","37","43","1","893","25","49","45","283","282","458"];
+  assert.match(adminUi, /HOMSCARD_AGREED_PRODUCT_IDS=Object\.freeze\(/);
+  for (const id of ids) assert.ok(adminUi.includes('"'+id+'"'));
+  assert.match(adminUi, /products_id:HOMSCARD_AGREED_PRODUCT_IDS/);
+  assert.match(adminUi, /products\.length!==15/);
+  assert.match(adminUi, /opsHomsAgreedPageAuditButton/);
+  assert.match(adminUi, /homscardPersistAuditRows\(products,auditRows\)/);
+});
