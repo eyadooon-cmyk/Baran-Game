@@ -1307,7 +1307,8 @@ async function homscardRestoreSavedAudit(){
   const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"get_latest_audit"}});
   if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر الاسترجاع");
   if(!data.run||!data.data?.length){if(status)status.textContent="لا يوجد تدقيق محفوظ بعد.";return;}
-  homscardAuditRunId=data.run.run_id;
+  // Reclassification creates a fresh audit run; never overwrite the historical run.
+  homscardAuditRunId=crypto.randomUUID();
   homscardCatalogCache=data.data.map(x=>({...x.product_data,page_title:x.page_data?.title||"",page_description:x.page_data?.description||"",page_text:x.page_data?.text||"",page_images:Array.isArray(x.page_data?.images)?x.page_data.images:[],page_availability:x.page_data?.availability||"unknown",page_extraction_status:x.page_data?.extraction_status||"not_checked",page_status:x.page_status,page_error:x.page_error||""}));
   initHomsCardCatalogFilters(homscardCatalogCache);
   await homscardRunAutomaticAudit({persist:false});
