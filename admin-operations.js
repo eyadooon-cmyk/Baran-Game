@@ -1166,9 +1166,10 @@ function homscardAutoAuditKeys(value){
 function homscardAutoAuditOne(p){
   const name=String(p.name||""),category=String(p.category||"");
   const type=homscardAutoAuditText(p.product_type||"");
+  const pageTitle=String(p.page_title||"");
   const pageText=homscardAutoAuditText([p.page_title,p.page_description,p.page_text].filter(Boolean).join(" "));
-  const text=homscardAutoAuditText(name+" "+category+" "+pageText);
-  const unitPriceEvidence=/(للوحدة|سعر الوحدة|per unit|unit price)/i.test(pageText);
+  // Classification evidence must describe the product identity, not generic page-template copy.
+  const identity=homscardAutoAuditText([name,category,pageTitle].filter(Boolean).join(" "));
   const params=Array.isArray(p.params)?p.params:(p.params==null?[]:[p.params]);
   const keys=homscardAutoAuditKeys(params),paramText=homscardAutoAuditText(keys.join(" "));
   const options=homscardAutoAuditQuantities(p.qty_values);
@@ -1177,13 +1178,11 @@ function homscardAutoAuditOne(p){
   const accountWords=/(player.?id|user.?id|uid|account|server|zone|email|login|معرف|آيدي|سيرفر|حساب|بريد|رقم اللاعب)/i;
   const typeSubscription=/^(subscription|membership|time|duration)$/i.test(type);
   const typeVariable=/^(quantity|variable|top.?up|recharge|amount|custom)$/i.test(type);
-  const hasDuration=subscriptionWords.test(text)||typeSubscription;
-  const hasExplicitSubscription=explicitSubscriptionWords.test(text)||typeSubscription;
-  const hasVariableEvidence=options.length>0||typeVariable||unitPriceEvidence;
-  const hasPackEvidence=/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|credits|points)/i.test(text)&&/\d/.test(text);
+  const hasDuration=subscriptionWords.test(identity)||typeSubscription;
+  const hasExplicitSubscription=explicitSubscriptionWords.test(identity)||typeSubscription;
+  const hasVariableEvidence=options.length>0||typeVariable;
+  const hasPackEvidence=/(شدات|جواهر|توكن|كوين|عملات|uc|diamond|gem|token|coin|credits|points)/i.test(identity)&&/\d/.test(identity);
   let kind="غير محسوم",confidence="منخفض",reason="المعلومات المتاحة لا تكفي لتحديد طريقة البيع دون تخمين.";
-  // Trust the supplier's explicit quantity type before interpreting words in the
-  // product name (e.g. "Yomee" must not be mistaken for Arabic "يومي").
   if(typeVariable){
     kind="كمية متغيرة محتملة";
     confidence=options.length?"متوسط":"منخفض";
@@ -1195,19 +1194,19 @@ function homscardAutoAuditOne(p){
   }else if(hasExplicitSubscription){
     kind="اشتراك بمدة محتملة";
     confidence="متوسط";
-    reason="الاسم أو نوع المورد يذكر اشتراكاً صراحةً؛ يلزم تأكيد المدة وطريقة التفعيل.";
+    reason="اسم المنتج أو تصنيفه يذكر اشتراكاً صراحةً؛ يلزم تأكيد المدة وطريقة التفعيل.";
   }else if(hasDuration){
     kind="غير محسوم";
     confidence="منخفض";
-    reason="توجد إشارة زمنية فقط مثل شهر أو يوم؛ لا تكفي وحدها لإثبات أن المنتج اشتراك.";
-  }else if(options.length||unitPriceEvidence){
+    reason="توجد إشارة زمنية في هوية المنتج فقط؛ لا تكفي وحدها لإثبات أن المنتج اشتراك.";
+  }else if(options.length){
     kind="كمية متغيرة محتملة";
     confidence="متوسط";
-    reason=options.length?"توجد قيم كمية منظمة؛ هذا لا يثبت أن سعر المورد سعر وحدة.":"صفحة المورد تصف السعر بأنه للوحدة؛ يلزم تأكيد مجال الكمية قبل اعتماد التسعير.";
+    reason="توجد قيم كمية منظمة؛ هذا لا يثبت أن سعر المورد سعر وحدة.";
   }else if(hasPackEvidence){
     kind="باقة ثابتة محتملة";
     confidence="منخفض";
-    reason="الاسم يوحي بباقة ذات قيمة محددة؛ لم يتوفر دليل بنيوي يؤكد ثباتها.";
+    reason="اسم المنتج يوحي بباقة ذات قيمة محددة؛ لم يتوفر دليل بنيوي يؤكد ثباتها.";
   }
   const price=homscardAutoAuditNumber(p.price);
   const account=accountWords.test(paramText+" "+pageText);
