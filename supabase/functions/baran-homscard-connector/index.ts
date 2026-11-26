@@ -37,7 +37,7 @@ function decodeHtml(value: string): string {
     .replace(/&#x([\da-f]+);/gi, (_m, n) => String.fromCodePoint(parseInt(n, 16)));
 }
 function htmlAttr(tag: string, name: string): string {
-  const match = tag.match(new RegExp("\\b" + name + "\\s*=\\s*(?:\\"([^\\"]*)\\"|'([^']*)'|([^\\s>]+))", "i"));
+  const match = tag.match(new RegExp("\\b" + name + "\\s*=\\s*(['\"])(.*?)\\1", "i"));
   return decodeHtml(match?.[1] ?? match?.[2] ?? match?.[3] ?? "");
 }
 function extractProductPage(html: string) {
