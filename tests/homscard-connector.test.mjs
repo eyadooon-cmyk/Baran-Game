@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const source = await readFile(new URL("../supabase/functions/baran-homscard-connector/index.ts", import.meta.url), "utf8");
 const migration = await readFile(new URL("../supabase/migrations/20261125110000_add_homscard_supplier_api.sql", import.meta.url), "utf8");
 const adminUi = await readFile(new URL("../admin-operations.js", import.meta.url), "utf8");
+const indexHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const intelligenceUi = await readFile(new URL("../homscard-intelligence.js", import.meta.url), "utf8");
 const auditMigration = await readFile(new URL("../supabase/migrations/20261126100000_add_homscard_audit_storage.sql", import.meta.url), "utf8");
 
@@ -189,5 +190,5 @@ test("Supplier directory search does not rebuild or clear the product-link form"
   assert.match(adminUi, /function renderOpsSuppliers\(suppliers,links,products,searchOnly=false\)/);
   assert.match(adminUi, /if\(searchOnly\)return;\s*const supplierSelect=document\.getElementById\("opsSupplierSelect"\)/);
   assert.match(adminUi, /روابط المورد المفضل/);
-  assert.match(indexHtml, /opsSupplierLinksCache/);
+  assert.match(indexHtml, /renderOpsSuppliers\(window\.__baranSuppliersCache\|\|\[\],window\.__baranSupplierLinksCache\|\|\[\],window\.__baranProductsCache\|\|\[\],true\)/);
 });
