@@ -169,3 +169,18 @@ test("HomsCard intelligence reads, exports, and rechecks only the 15 agreed prod
   assert.match(intelligenceUi, /rows=matched/);
   assert.match(intelligenceUi, /const targets=rows\.filter/);
 });
+
+test("HomsCard intelligence separates confirmed fixed WePlay packages from unresolved audit labels and counts missing rows", () => {
+  assert.match(intelligenceUi, /USER_CONFIRMED_FIXED_PACKAGE_IDS=new Set\(\["283","282","458"\]\)/);
+  assert.match(intelligenceUi, /باقة ثابتة \(تأكيد المستخدم\)/);
+  assert.match(intelligenceUi, /rowsWithMissing=rows\.filter\(r=>missing\(r\)\.length>0\)\.length/);
+  assert.match(intelligenceUi, /savedMissing=rows\.filter\(r=>Array\.isArray\(r\.audit_data\?\.missing\)/);
+});
+test("Supplier directory supports search, supplier editing, and reversible activation without deleting links", () => {
+  assert.match(adminUi, /function opsResetSupplierForm\(\)/);
+  assert.match(adminUi, /async function opsToggleSupplierStatus\(supplier\)/);
+  assert.match(adminUi, /supplier_id:supplierId\|\|undefined/);
+  assert.match(adminUi, /window\.__baranSuppliersCache=suppliers/);
+  assert.match(adminUi, /المنتجات المرتبطة:/);
+  assert.match(adminUi, /لم تُحذف روابط المنتجات أو الأسعار/);
+});
