@@ -148,12 +148,32 @@ Deno.serve(async (req: Request) => {
       return json({success:true,action,run_id:runId,saved:records.length,saved_at:now},200,origin);
     }
     if (action === "get_latest_audit") {
-      const {data:run,error:runError}=await admin.from("baran_homscard_audit_runs").select("run_id,catalog_count,created_at,updated_at").eq("created_by",authData.user.id).order("updated_at",{ascending:false}).limit(1).maybeSingle();
+      // Return the newest catalog snapshot, but retain the newest successfully
+      // extracted page for each product across recent audit runs. A transient
+      // supplier error must never erase previously verified page details.
+      const {data:runs,error:runError}=await admin.from("baran_homscard_audit_runs")
+        .select("run_id,catalog_count,created_at,updated_at")
+        .eq("created_by",authData.user.id).order("updated_at",{ascending:false}).limit(50);
       if(runError)return json({error:"تعذر قراءة سجل التدقيق المحفوظ."},500,origin);
-      if(!run)return json({success:true,action,run:null,data:[]},200,origin);
-      const {data:items,error:itemsError}=await admin.from("baran_homscard_audit_items").select("product_id,product_name,product_data,page_data,page_status,page_error,audit_data,updated_at").eq("run_id",run.run_id).order("product_id",{ascending:true});
+      if(!runs?.length)return json({success:true,action,run:null,data:[]},200,origin);
+      const run=runs[0],runIds=runs.map((item: {run_id:string})=>item.run_id);
+      const {data:items,error:itemsError}=await admin.from("baran_homscard_audit_items")
+        .select("run_id,product_id,product_name,product_data,page_data,page_status,page_error,audit_data,updated_at")
+        .in("run_id",runIds).order("updated_at",{ascending:false});
       if(itemsError)return json({error:"تعذر قراءة تفاصيل التدقيق المحفوظ."},500,origin);
-      return json({success:true,action,run,count:items?.length??0,data:items??[]},200,origin);
+      const latestByProduct=new Map<string,Record<string,unknown>>();
+      const bestPageByProduct=new Map<string,Record<string,unknown>>();
+      for(const item of items??[]){
+        const id=String(item.product_id);
+        if(!latestByProduct.has(id))latestByProduct.set(id,item);
+        const extracted=item.page_data?.extraction_status==="extracted"&&item.page_status==="success";
+        if(extracted&&!bestPageByProduct.has(id))bestPageByProduct.set(id,item);
+      }
+      const merged=[...latestByProduct.entries()].map(([id,latest])=>{
+        const best=bestPageByProduct.get(id);
+        return best?{...latest,page_data:best.page_data,page_status:"success",page_error:null,successful_page_run_id:best.run_id}:latest;
+      }).sort((a,b)=>String(a.product_id).localeCompare(String(b.product_id),undefined,{numeric:true}));
+      return json({success:true,action,run,count:merged.length,data:merged},200,origin);
     }
     if (!apiToken) return json({ error: "HOMSCARD_API_TOKEN is not configured in Supabase secrets" }, 503, origin);
     const query = new URLSearchParams();

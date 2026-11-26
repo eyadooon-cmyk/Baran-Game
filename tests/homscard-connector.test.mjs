@@ -107,3 +107,13 @@ test("Admin catalog cards expose the extracted supplier description, text and im
   assert.match(adminUi, /homscard-page-image-gallery/);
   assert.match(adminUi, /p\.page_text/);
 });
+
+test("HomsCard saved audit combines the latest catalog with previously successful page extractions", () => {
+  assert.match(source, /\.limit\(50\)/);
+  assert.match(source, /bestPageByProduct/);
+  assert.match(source, /page_data:best\.page_data,page_status:"success"/);
+  assert.match(source, /successful_page_run_id/);
+  assert.match(adminUi, /homscardMergeSavedSuccessfulPages/);
+  assert.match(adminUi, /Preserve current API catalog fields/);
+  assert.match(adminUi, /لم تُستبدل أي صفحة ناجحة بخطأ مؤقت/);
+});
