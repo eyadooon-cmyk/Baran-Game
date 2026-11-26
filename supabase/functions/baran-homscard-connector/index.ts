@@ -136,7 +136,15 @@ Deno.serve(async (req: Request) => {
           if (!pageResponse.ok) return { id, success: false, error: "HTTP " + pageResponse.status };
           const html = await pageResponse.text();
           if (!html || html.length > 2_000_000) return { id, success: false, error: "Invalid or oversized product page" };
-          return { id, success: true, ...extractProductPage(html) };
+          const extracted = extractProductPage(html);
+          const pageText = String(extracted.text ?? "").normalize("NFKC").toLocaleLowerCase();
+          if (/(عذرا.{0,24}حدث خطأ|حدث خطأ في الاتصال|تعذر تحميل الصفحة|page not found|internal server error|try again later)/i.test(pageText)) {
+            return { id, success: false, error: "صفحة المورد تعرض رسالة خطأ بدلاً من تفاصيل المنتج", ...extracted };
+          }
+          if (!String(extracted.title ?? "").trim() && !String(extracted.description ?? "").trim()) {
+            return { id, success: false, error: "لم تُرجع الصفحة عنواناً أو وصفاً تعريفياً للمنتج", ...extracted };
+          }
+          return { id, success: true, ...extracted };
         } catch {
           return { id, success: false, error: "تعذر جلب صفحة المنتج" };
         }

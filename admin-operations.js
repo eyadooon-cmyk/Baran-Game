@@ -1209,31 +1209,51 @@ function homscardAutoAuditSelfTests(){
   const failures=cases.filter(([input,expected])=>homscardAutoAuditOne(input).kind!==expected);
   return {total:cases.length,passed:cases.length-failures.length,failures:failures.map(([input,expected])=>({name:input.name,expected,actual:homscardAutoAuditOne(input).kind}))};
 }
+function homscardPageHasErrorContent(page){
+  const text=homscardAutoAuditText([page?.title,page?.description,page?.text].filter(Boolean).join(" "));
+  return /(عذرا.{0,24}حدث خطأ|حدث خطأ في الاتصال|تعذر تحميل الصفحة|page not found|internal server error|try again later)/i.test(text);
+}
+function homscardPageIsUsable(page){
+  if(!page||homscardPageHasErrorContent(page))return false;
+  return Boolean(String(page.title||"").trim()||String(page.description||"").trim());
+}
+function homscardPageNeedsRecheck(product){
+  if(product?.page_status!=="success")return true;
+  return !homscardPageIsUsable({title:product.page_title,description:product.page_description,text:product.page_text});
+}
 async function homscardInspectProductPages(){
   const status=document.getElementById("opsHomsAutoAuditStatus");
   const button=document.getElementById("opsHomsPageAuditButton");
   if(!homscardCatalogCache.length){if(status)status.textContent="حمّل كتالوج HomsCard أولاً.";return;}
   if(button)button.disabled=true;
   let inspected=0,failed=0;
-  const products=homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??""))&&p.page_status!=="success");
+  const products=homscardCatalogCache.filter(p=>p&&/^\d{1,10}$/.test(String(p.id??""))&&homscardPageNeedsRecheck(p));
   try{
-    if(status)status.textContent="جارٍ استكمال الصفحات غير الناجحة أو غير المفحوصة فقط: 0 / "+products.length;
+    if(status)status.textContent="جارٍ فحص الصفحات غير المفحوصة أو التي لا تحتوي تفاصيل منتج فعلية: 0 / "+products.length;
     for(let i=0;i<products.length;i+=25){
-      const ids=products.slice(i,i+25).map(p=>String(p.id));
+      const batch=products.slice(i,i+25);
+      const ids=batch.map(p=>String(p.id));
       const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"product_pages",products_id:ids}});
       if(error)throw new Error(error.message||"تعذر جلب صفحات المنتجات");
       if(!data?.success||!Array.isArray(data.data))throw new Error(data?.error||"الموصل لا يدعم فحص صفحات المنتجات بعد.");
       const byId=new Map(data.data.map(row=>[String(row.id),row]));
-      for(const p of products.slice(i,i+25)){
+      for(const p of batch){
         const row=byId.get(String(p.id));
-        if(row?.success){p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";p.page_status="success";p.page_error="";inspected++;}
-        else {p.page_status="failed";p.page_error=row?.error||"تعذر فحص الصفحة";failed++;}
+        if(row?.success&&homscardPageIsUsable(row)){
+          p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";p.page_status="success";p.page_error="";inspected++;
+        }else{
+          if(row){p.page_title=row.title||"";p.page_description=row.description||"";p.page_text=row.text||"";}
+          p.page_status="failed";
+          p.page_error=row?.error||"لم تُرجع الصفحة عنواناً أو وصفاً صالحاً للمنتج.";
+          failed++;
+        }
       }
-      await homscardPersistAuditRows(products.slice(i,i+25),products.slice(i,i+25).map(p=>homscardAutoAuditOne(p)));
-      if(status)status.textContent="جارٍ فحص صفحات HomsCard العامة: "+Math.min(i+25,products.length)+" / "+products.length+" · نجح "+inspected+" · تعذر "+failed;
+      await homscardPersistAuditRows(batch,batch.map(p=>homscardAutoAuditOne(p)));
+      if(status)status.textContent="جارٍ فحص صفحات HomsCard: "+Math.min(i+25,products.length)+" / "+products.length+" · صالحة "+inspected+" · تحتاج إعادة فحص "+failed;
     }
     await homscardRunAutomaticAudit();
-    if(status)status.textContent="اكتمل استكمال الصفحات: نجح "+inspected+" صفحة جديدة، وتعذر "+failed+". الصفحات الناجحة سابقاً لم تُفحص مجدداً.";
+    const remaining=homscardCatalogCache.filter(homscardPageNeedsRecheck).length;
+    if(status)status.textContent="انتهى فحص الصفحات: "+inspected+" صالحة، "+failed+" لم تنجح، والمتبقي لإعادة الفحص "+remaining+".";
   }catch(error){
     console.error("[HomsCard product page audit]",error);
     if(status)status.textContent="توقف فحص الصفحات: "+(error?.message||"خطأ غير معروف")+". لم يتم إنشاء أي طلب أو شحن.";
@@ -1244,7 +1264,7 @@ async function homscardPersistAuditRows(products,auditRows){
  if(!homscardAuditRunId)homscardAuditRunId=crypto.randomUUID();
  const byId=new Map((auditRows||[]).map(x=>[String(x.p?.id),x]));
  for(let i=0;i<products.length;i+=50){
-  const rows=products.slice(i,i+50).map(p=>{const a=byId.get(String(p.id))||homscardAutoAuditOne(p);return {product_id:String(p.id),product_name:String(p.name||""),product_data:Object.fromEntries(Object.entries(p).filter(([k])=>!k.startsWith("page_"))),page_data:{title:p.page_title||"",description:p.page_description||"",text:p.page_text||""},page_status:p.page_status||(p.page_text?"success":"not_checked"),page_error:p.page_error||"",audit_data:{kind:a.kind,confidence:a.confidence,reason:a.reason,options:a.options,keys:a.keys,account:a.account,missing:a.missing}};});
+  const rows=products.slice(i,i+50).map(p=>{const a=byId.get(String(p.id))||homscardAutoAuditOne(p);return {product_id:String(p.id),product_name:String(p.name||""),product_data:Object.fromEntries(Object.entries(p).filter(([k])=>!k.startsWith("page_"))),page_data:{title:p.page_title||"",description:p.page_description||"",text:p.page_text||""},page_status:p.page_status||(homscardPageIsUsable({title:p.page_title,description:p.page_description,text:p.page_text})?"success":p.page_text?"failed":"not_checked"),page_error:p.page_error||(p.page_text&&!homscardPageIsUsable({title:p.page_title,description:p.page_description,text:p.page_text})?"محتوى الصفحة لا يثبت نجاح تحميل تفاصيل المنتج":""),audit_data:{kind:a.kind,confidence:a.confidence,reason:a.reason,options:a.options,keys:a.keys,account:a.account,missing:a.missing}};});
   const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"save_audit_batch",run_id:homscardAuditRunId,catalog_count:homscardCatalogCache.length,rows}});
   if(error||!data?.success)throw new Error(data?.error||error?.message||"تعذر حفظ نتائج التدقيق");
  }
