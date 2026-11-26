@@ -3214,7 +3214,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <div id="opsHomsAutoAuditResults" class="ops-list" aria-live="polite"></div>
         </div>
         <div id="opsHomsCatalogTools" class="homscard-catalog-tools hidden">
-          <div class="homscard-catalog-heading"><strong>استعراض كتالوج المورد</strong><span id="opsHomsCatalogCount">لم يتم تحميل المنتجات بعد</span></div>
+          <div class="homscard-catalog-heading"><strong>معرض كتالوج HomsCard المصنف بالصور</strong><span id="opsHomsCatalogCount">لم يتم تحميل المنتجات بعد</span></div>
           <input id="opsHomsCatalogSearch" type="search" inputmode="search" placeholder="ابحث عن PUBG أو Free Fire أو Jawaker أو اسم المنتج..." aria-label="ابحث في كتالوج حمص كارد">
           <div class="homscard-catalog-filters">
             <select id="opsHomsCatalogCategory" aria-label="تصفية حسب التصنيف"><option value="">كل التصنيفات</option></select>
@@ -3955,7 +3955,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 <script src="./community.js?v=20261117-attachments-gate-1"></script>
 <script src="./communication-center.js?v=20261117-unified-2"></script>
 <script src="./baran-assistant.js?v=20261124-toggle-v2"></script>
-<script src="./admin-operations.js?v=20261126-homscard-persistent-audit-2"></script>
+<script src="./admin-operations.js?v=20261126-homscard-visual-gallery-v1"></script>
 <script src="./homscard-intelligence.js?v=20261126-intelligence-v1"></script>
 <script src="./admin-assistant.js?v=20261121-admin-assistant-syntax-fix-2"></script>
 <script src="./automatic-fulfillment.js?v=20261116-auto-1"></script>
@@ -9056,6 +9056,27 @@ function baranAttachCatalogSearch(container,cardSelector,placeholder){
 .homscard-product-state{display:inline-block;margin-top:4px;font-size:10px;color:#aee6c1}
 .homscard-product-state.unavailable{color:#ffc1c8}
 .homscard-empty{padding:16px;text-align:center;color:#b9a9c9;border:1px dashed #665078;border-radius:11px}
+.homscard-gallery-group{margin:12px 0;padding:11px;border:1px solid #59436b;border-radius:14px;background:linear-gradient(150deg,#17111f,#100c15)}
+.homscard-gallery-group-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid #493653;color:#f1e5ff}
+.homscard-gallery-group-heading strong{font-size:14px;font-weight:900}
+.homscard-gallery-group-heading span{font-size:10px;color:#b9a9c9}
+.homscard-gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.homscard-gallery-card{min-width:0;overflow:hidden;border:1px solid #44344f;border-radius:13px;background:linear-gradient(180deg,#21182b,#15111b);box-shadow:0 5px 14px #0004}
+.homscard-product-media{position:relative;display:grid;place-items:center;aspect-ratio:1.45/1;overflow:hidden;background:radial-gradient(circle at 50% 35%,#3a2949,#100b16 75%);border-bottom:1px solid #493653}
+.homscard-product-image{display:block;width:100%;height:100%;object-fit:contain;padding:7px}
+.homscard-product-image-fallback{display:grid;place-items:center;width:100%;height:100%;color:#c9b2dc;font:900 17px Orbitron,Cairo,sans-serif;letter-spacing:2px;background:linear-gradient(145deg,#342441,#120d18)}
+.homscard-gallery-card-body{padding:9px;min-width:0}
+.homscard-gallery-product-name{display:block;min-height:38px;color:#f5eafa;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.homscard-gallery-card .homscard-product-meta{overflow-wrap:anywhere}
+.homscard-gallery-card .homscard-product-price{margin:7px 0;white-space:normal;text-align:start;direction:ltr;font-size:12px}
+.homscard-product-details{margin-top:8px;padding-top:7px;border-top:1px solid #40334b}
+.homscard-product-details summary{cursor:pointer;color:#d9c3e9;font-weight:800}
+.homscard-gallery-pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0;padding:10px;border:1px solid #59436b;border-radius:12px;background:#17111f}
+.homscard-gallery-pagination button{min-width:86px;padding:9px 12px}
+.homscard-gallery-pagination span{font-size:12px;color:#e9dff1}
+@media(max-width:620px){.homscard-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.homscard-gallery-group{padding:8px}.homscard-gallery-card-body{padding:8px}.homscard-gallery-product-name{font-size:11px;min-height:42px}.homscard-product-media{aspect-ratio:1.2/1}}
+@media(max-width:350px){.homscard-gallery-grid{grid-template-columns:1fr}.homscard-product-media{aspect-ratio:1.8/1}}
+
 @media(max-width:420px){.homscard-catalog-filters{grid-template-columns:1fr}.homscard-product-row{grid-template-columns:minmax(0,1fr) auto;padding:9px}.homscard-product-price{font-size:12px}}
 </style>
 </body>
