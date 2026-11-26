@@ -199,3 +199,15 @@ test("Supplier directory search does not rebuild or clear the product-link form"
   assert.match(adminUi, /روابط المورد المفضل/);
   assert.match(indexHtml, /renderOpsSuppliers\(window\.__baranSuppliersCache\|\|\[\],window\.__baranSupplierLinksCache\|\|\[\],window\.__baranProductsCache\|\|\[\],true\)/);
 });
+
+test("Supplier intelligence center provides rule-based recommendations and historical comparison for the agreed 15 only", () => {
+  assert.match(source, /action === "get_audit_history"/);
+  assert.match(source, /const agreedIds = \["18","3","280","8","910","37","43","1","893","25","49","45","283","282","458"\]/);
+  assert.match(intelligenceUi, /function advisorItems\(\)/);
+  assert.match(intelligenceUi, /function renderAdvisor\(\)/);
+  assert.match(intelligenceUi, /function renderHistory\(\)/);
+  assert.match(intelligenceUi, /get_audit_history/);
+  assert.match(intelligenceUi, /لا يعيد جلب صفحات المورد/);
+  assert.match(intelligenceUi, /فرق سعر صفحة\/API/);
+  assert.match(indexHtml, /homscard-intelligence.js\?v=20261127-supplier-intelligence-v1/);
+});
