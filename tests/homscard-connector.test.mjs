@@ -171,11 +171,16 @@ test("HomsCard intelligence reads, exports, and rechecks only the 15 agreed prod
   assert.match(intelligenceUi, /const targets=rows\.filter/);
 });
 
-test("HomsCard intelligence separates confirmed fixed WePlay packages from unresolved audit labels and counts missing rows", () => {
+test("HomsCard intelligence handles user-confirmed fixed packages without false quantity warnings", () => {
   assert.match(intelligenceUi, /USER_CONFIRMED_FIXED_PACKAGE_IDS=new Set\(\["283","282","458"\]\)/);
   assert.match(intelligenceUi, /باقة ثابتة \(تأكيد المستخدم\)/);
+  assert.match(intelligenceUi, /if\(!isUserConfirmedFixedPackage\(r\)&&pp!==null/);
+  assert.match(intelligenceUi, /صفحة المورد تعرض السعر للوحدة بينما API يصنف المنتج package/);
+  assert.match(intelligenceUi, /function savedMissingItems\(r\)/);
+  assert.match(intelligenceUi, /لا توجد خيارات كمية مؤكدة/);
+  assert.match(intelligenceUi, /confidence\(r\)==="منخفض"&&!isUserConfirmedFixedPackage\(r\)/);
   assert.match(intelligenceUi, /rowsWithMissing=rows\.filter\(r=>missing\(r\)\.length>0\)\.length/);
-  assert.match(intelligenceUi, /savedMissing=rows\.filter\(r=>Array\.isArray\(r\.audit_data\?\.missing\)/);
+  assert.match(intelligenceUi, /savedMissing=rows\.filter\(r=>savedMissingItems\(r\)\.length>0\)\.length/);
 });
 test("Supplier directory supports search, supplier editing, and reversible activation without deleting links", () => {
   assert.match(adminUi, /function opsResetSupplierForm\(\)/);
