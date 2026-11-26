@@ -20,9 +20,9 @@ function snippets(r){return pageDetails(r);}
 function pageSignals(r){
  const t=pageDetails(r),out=[];
  const patterns=[
-  [/أدخل\\s+([A-Za-z0-9_ -]{2,40})/gi,"حقل إدخال مذكور بالنص"],
-  [/تأكّد من صحة\\s+([^—.،]{2,60})/gi,"تعليمات تحقق مذكورة بالنص"],
-  [/الكمية\\s*\\(من\\s*([0-9,]+)\\s*إلى\\s*([0-9,]+)/gi,"مدى كمية مذكور بالنص"]
+  [/أدخل\s+([A-Za-z0-9_ -]{2,40})/gi,"حقل إدخال مذكور بالنص"],
+  [/تأكّد من صحة\s+([^—.،]{2,60})/gi,"تعليمات تحقق مذكورة بالنص"],
+  [/الكمية\s*\(من\s*([0-9,]+)\s*إلى\s*([0-9,]+)\)/gi,"مدى كمية مذكور بالنص"]
  ];
  for(const [re,label] of patterns){let m;while((m=re.exec(t))!==null){const val=m.slice(1).filter(Boolean).join(" إلى ");if(val&&!out.some(x=>x===label+": "+val))out.push(label+": "+val);}}
  return out;
