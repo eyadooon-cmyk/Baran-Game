@@ -85,5 +85,8 @@ test("settlement keeps unknown outcomes pending and refunds only confirmed suppl
   assert.match(failedBranch, /baran_refund_failed_supplier_order/);
   assert.match(settlementMigration, /v_attempt_status='succeeded' and p_result<>'succeeded'/);
   assert.match(settlementMigration, /v_f\.refund_status='completed' or v_f\.dispatch_state='refunded'/);
+  assert.match(settlementMigration, /if v_f\.refund_status='completed' or v_f\.dispatch_state='refunded' then[\s\S]*'refunded'/);
+  assert.match(settlementMigration, /v_attempt_status='succeeded' and p_result<>'succeeded'/);
+  assert.doesNotMatch(settlementMigration, /integration_enabled|execution_enabled/);
   assert.match(settlementMigration, /grant execute[\s\S]*to service_role/i);
 });
