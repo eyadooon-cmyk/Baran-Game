@@ -62,7 +62,7 @@
       '<div class="fx-monitor-card"><div class="finance-section-heading"><div><span class="finance-kicker">LIVE SYRIAN FX</span><h3>مراقب سعر الصرف السوري التلقائي</h3>' +
       '<p class="small">مرجع دمشق · مصدران مستقلان · تحديث كل 6 ساعات · الارتفاع تلقائي والانخفاض بقرار المدير فقط</p></div><span class="finance-section-icon">📡</span></div>' +
       '<div class="fx-monitor-grid">' +
-      '<div class="fx-monitor-stat"><span class="fx-monitor-meta">سعر التحويل المعتمد للتكلفة</span><strong dir="ltr">' + (state.applied_rate_old == null ? '—' : syp(Number(state.applied_rate_old)/100)) + '</strong><span class="fx-monitor-meta">ليرة جديدة لكل دولار</span></div>' +
+      '<div class="fx-monitor-stat"><span class="fx-monitor-meta">سعر السوق المعتمد</span><strong dir="ltr">' + (state.applied_rate_old == null ? '—' : syp(Number(state.applied_rate_old)/100)) + '</strong><span class="fx-monitor-meta">ليرة جديدة لكل دولار قبل حماية الصرف</span></div>' +
       sourceCard("Liraty", latest.Liraty) + sourceCard("LiraScope", latest.LiraScope) +
       '</div><div class="fx-monitor-meta">الحالة: ' + esc(statusLabels[state.status] || state.status || "غير معروف") +
       ' · فرق المصدرين: ' + (state.source_difference_percent == null ? "—" : number(state.source_difference_percent,2) + "%") +
