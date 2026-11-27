@@ -29,6 +29,34 @@ export function parseHomsCardCheck(payload, expectedUuid) {
   return { kind: "unknown", reason: "Unrecognized supplier order status" };
 }
 
+/**
+ * order.php returns a single data object (unlike check.php's data array).
+ * Normalize only documented terminal/pending statuses into check-parser shape.
+ */
+export function normalizeHomsCardCreate(payload, expectedUuid, expectedQuantity) {
+  if (!payload || payload.status !== "OK" || !payload.data ||
+      typeof payload.data !== "object" || Array.isArray(payload.data)) return null;
+  const row = payload.data;
+  const status = String(row.status ?? "").toLowerCase();
+  const supplierOrderId = safeText(row.order_id, 160);
+  if (status === "pending" || status === "cancelled") {
+    return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId, status }] };
+  }
+  if (status !== "completed") return null;
+  const quantity = Number(row.quantity);
+  const price = Number(row.price);
+  const delivery = typeof row.delivery === "string" ? row.delivery.trim() : "";
+  if (!supplierOrderId || !Number.isSafeInteger(quantity) || quantity !== expectedQuantity ||
+      !Number.isFinite(price) || price < 0 || !delivery || delivery.length > 4000) return null;
+  return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId,
+    status: "completed", price, quantity, delivery }] };
+}
+
+export function homscardConfirmedRejection(code) {
+  const numericCode = Number(code);
+  return [100, 103, 109, 110, 112, 113, 114].includes(numericCode);
+}
+
 function safeText(value, max) {
   if (typeof value !== "string") return null;
   const text = value.trim();
