@@ -5847,6 +5847,20 @@ async function sendBaranAnnouncement(){
   }finally{if(button)button.disabled=false;}
 }
 
+async function callFxRatesApi(payload=null){
+  const {data:{session},error:sessionError}=await sb.auth.getSession();
+  if(sessionError||!session)throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
+  const response=await fetch(SUPABASE_URL+"/functions/v1/baran-fx-rates",{
+    method:payload?"POST":"GET",
+    headers:{"Authorization":"Bearer "+session.access_token,"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+    body:payload?JSON.stringify(payload):undefined
+  });
+  let result={};try{result=await response.json();}catch(error){}
+  if(!response.ok)throw new Error(result.error||"تعذر جلب سعر الصرف.");
+  return result;
+}
+window.callFxRatesApi=callFxRatesApi;
+
 async function callAdminApi(method="GET",payload=null){
   const {data:{session},error:sessionError}=await sb.auth.getSession();
   if(sessionError||!session) throw new Error("انتهت الجلسة. سجّل الدخول مجدداً.");
