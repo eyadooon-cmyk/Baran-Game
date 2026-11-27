@@ -4,7 +4,8 @@ alter table private.baran_supplier_order_attempts
   add column if not exists supplier_order_uuid uuid not null default gen_random_uuid();
 
 alter table public.order_fulfillment
-  add column if not exists supplier_delivery text;
+  add column if not exists supplier_delivery text,
+  add column if not exists supplier_order_uuid uuid;
 
 create or replace function public.set_order_price_snapshot()
 returns trigger
@@ -227,6 +228,8 @@ begin
   v_attempt_id := nullif(v_prepare->>'attempt_id','')::uuid;
   select a.supplier_order_uuid into v_supplier_uuid
     from private.baran_supplier_order_attempts a where a.id=v_attempt_id;
+  update public.order_fulfillment set supplier_order_uuid=v_supplier_uuid,updated_at=now()
+   where order_id=v_order.id;
 
   return jsonb_build_object('success',true,'duplicate',false,'order_id',v_order.id,
     'status','awaiting_supplier','amount_charged',v_amount,'payment_currency',p_payment_currency,
