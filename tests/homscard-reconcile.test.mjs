@@ -90,3 +90,36 @@ test("settlement keeps unknown outcomes pending and refunds only confirmed suppl
   assert.doesNotMatch(settlementMigration, /integration_enabled|execution_enabled/);
   assert.match(settlementMigration, /grant execute[\s\S]*to service_role/i);
 });
+
+
+const gateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
+
+test("direct checkout and manual polling share strict UUID/status validation", () => {
+  assert.match(gateway, /parseHomsCardCheck\(\{status:"OK",data:\[data\]\},supplierUuid\)/);
+  assert.match(gateway, /parseHomsCardCheck\(checked\.payload,uuid\)/);
+  assert.match(gateway, /parsed\.quantity!==quantity/);
+  assert.match(gateway, /parsed\.quantity!==Number\(order\.quantity\)/);
+});
+
+test("delivery is persisted before success settlement in both direct and manual paths", () => {
+  const direct = gateway.indexOf('const {error:deliveryError}=await admin.from("order_fulfillment")', gateway.indexOf("const settle=async"));
+  const directFinalize = gateway.indexOf('p_result:"succeeded"', direct);
+  const manual = gateway.indexOf('const {error:deliveryError}=await admin.from("order_fulfillment")', gateway.indexOf('if (body?.action === "homscard_variable_check_order")'));
+  const manualFinalize = gateway.indexOf('p_result:"succeeded"', manual);
+  assert.ok(direct >= 0 && directFinalize > direct);
+  assert.ok(manual >= 0 && manualFinalize > manual);
+});
+
+test("late failure cannot overwrite a recorded success and refund remains idempotent", () => {
+  assert.match(settlementMigration, /v_attempt_status='succeeded' and p_result<>'succeeded'/);
+  assert.match(settlementMigration, /v_f\.refund_status='completed' or v_f\.dispatch_state='refunded'/);
+  assert.match(settlementMigration, /duplicate',true,'result','refunded'/);
+  assert.match(settlementMigration, /duplicate',true,'result','succeeded'/);
+});
+
+test("supplier worker never dispatches orders and retries only status reads", () => {
+  assert.doesNotMatch(worker, /\/order\.php/);
+  assert.match(worker, /buildCheckPath\(row\.supplier_order_uuid\)/);
+  assert.match(worker, /parseHomsCardCheck\(payload,row\.supplier_order_uuid\)/);
+  assert.match(worker, /baran_supplier_finalize_order/);
+});
