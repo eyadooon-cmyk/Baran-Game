@@ -2372,7 +2372,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <div class="baran-shipping-choices" aria-label="طرق الشحن">
         <div class="baran-home-section-intro">
           <span class="baran-section-index">TOP-UP</span>
-          <div><h2>اختر القسم المناسب</h2><p>الألعاب والتطبيقات والاتصالات والشحن اليدوي عبر BARO</p></div>
+          <div><h2>اختر القسم المناسب</h2><p>الشحن الآلي للألعاب والخدمات، أو الشحن اليدوي عبر BARO</p></div>
         </div>
 
         <button class="baran-shipping-card baran-shipping-auto" type="button" onclick="showSection('games',null)">
@@ -2387,17 +2387,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="baran-shipping-number">01</span>
         </button>
 
-        <button class="baran-shipping-card baran-shipping-apps" type="button" onclick="showSection('appsStore',this)">
-          <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1400&q=85" alt="تطبيقات وخدمات رقمية" loading="lazy">
-          <span class="baran-shipping-shade"></span>
-          <span class="baran-shipping-content">
-            <small>APPS & DIGITAL SERVICES</small>
-            <strong>التطبيقات</strong>
-            <em>شحن أرصدة تطبيقات البث المباشر والمحادثات والهدايا داخل التطبيقات.</em>
-            <b>استعراض التطبيقات <i>←</i></b>
-          </span>
-          <span class="baran-shipping-number">02</span>
-        </button>
+
 
         
 
@@ -2443,7 +2433,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         </button>
         <button class="item" type="button" onclick="showSection('appsStore',null)">
           <span class="baran-auto-category-art baran-auto-apps-art">📱</span>
-          <span class="item-content"><strong>التطبيقات</strong><span>تطبيقات وخدمات رقمية</span><span class="small">استعراض التطبيقات ←</span></span>
+          <span class="item-content"><strong>التطبيقات</strong><span>شحن أرصدة البث المباشر والمحادثات والهدايا داخل التطبيقات</span><span class="small">استعراض تطبيقات الشحن ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('telecomStore',null)">
           <span class="baran-auto-category-art">📶</span>
@@ -2606,7 +2596,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
     </section>
 
     <section id="appsStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى أقسام الشحن الآلي</button>
       <div class="hero"><h2>شحن تطبيقات البث والتواصل</h2><p>اشحن الرصيد والعملات داخل تطبيقات البث المباشر والمحادثات، واستخدمها لإرسال الهدايا والتفاعل داخل التطبيق.</p></div>
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
@@ -9257,7 +9247,7 @@ function renderBaranHomsCardAppsCatalog(){
 
 <style id="baran-telecom-cards-preview-20261127">
 /* Four independent homepage destinations; telecom stays separate from Games. */
-#home .baran-shipping-choices{grid-template-columns:repeat(4,minmax(0,1fr))}
+#home .baran-shipping-choices{grid-template-columns:repeat(2,minmax(0,1fr))}
 .baran-telecom-provider-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0}
 .baran-telecom-provider-card{min-width:0;overflow:hidden;border:1px solid #76558f!important;background:linear-gradient(145deg,#241a30,#100c16)!important}
 .baran-telecom-provider-card img{width:100%;height:190px;object-fit:contain!important;padding:18px;background:#0d0a11;display:block}
