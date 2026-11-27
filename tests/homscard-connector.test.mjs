@@ -8,6 +8,9 @@ const adminUi = await readFile(new URL("../admin-operations.js", import.meta.url
 const indexHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const intelligenceUi = await readFile(new URL("../homscard-intelligence.js", import.meta.url), "utf8");
 const auditMigration = await readFile(new URL("../supabase/migrations/20261126100000_add_homscard_audit_storage.sql", import.meta.url), "utf8");
+const orderGateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
+const instantAppsUi = await readFile(new URL("../baran-homscard-instant-apps.js", import.meta.url), "utf8");
+const instantAppsCss = await readFile(new URL("../baran-homscard-instant-apps.css", import.meta.url), "utf8");
 
 test("HomsCard connector is admin-authenticated and keeps credentials server-side", () => {
   assert.match(source, /admin_is_user/);
@@ -162,8 +165,8 @@ test("Agreed HomsCard page audit is restricted to the exact 15 approved product 
   assert.match(adminUi, /homscardPersistAuditRows\(products,auditRows\)/);
 });
 
-test("HomsCard intelligence reads, exports, and rechecks only the 15 agreed products", () => {
-  const ids = ["18","3","280","8","910","37","43","1","893","25","49","45","283","282","458"];
+test("HomsCard intelligence reads, exports, and rechecks only the 17 agreed products", () => {
+  const ids = ["78","79","80","81","82","83","92","93","94","95","96","483","865","89","90","91","649"];
   for (const id of ids) assert.ok(intelligenceUi.includes('"'+id+'"'));
   assert.match(intelligenceUi, /const matched=savedRows\.filter\(r=>agreedIds\.has\(r\.product_id\)\)/);
   assert.match(intelligenceUi, /const missing=\[\.\.\.agreedIds\]/);
@@ -171,18 +174,14 @@ test("HomsCard intelligence reads, exports, and rechecks only the 15 agreed prod
   assert.match(intelligenceUi, /const targets=rows\.filter/);
 });
 
-test("HomsCard intelligence handles user-confirmed fixed packages without false quantity warnings", () => {
-  assert.match(intelligenceUi, /USER_CONFIRMED_FIXED_PACKAGE_IDS=new Set\(\["283","282","458"\]\)/);
-  assert.match(intelligenceUi, /باقة ثابتة \(تأكيد المستخدم\)/);
-  assert.match(intelligenceUi, /if\(!isUserConfirmedFixedPackage\(r\)&&pp!==null/);
-  assert.match(intelligenceUi, /صفحة المورد تعرض السعر للوحدة بينما API يصنف المنتج package/);
-  assert.match(intelligenceUi, /function savedMissingItems\(r\)/);
-  assert.match(intelligenceUi, /لا توجد خيارات كمية مؤكدة/);
-  assert.match(intelligenceUi, /function confidence\(r\)\{return isUserConfirmedFixedPackage\(r\)\?"تأكيد المستخدم لنوع الباقة"/);
-  assert.match(intelligenceUi, /مصدر تصنيف النوع/);
-  assert.match(intelligenceUi, /if\(a\.reason&&!isUserConfirmedFixedPackage\(r\)\)/);
-  assert.match(intelligenceUi, /rowsWithMissing=rows\.filter\(r=>missing\(r\)\.length>0\)\.length/);
-  assert.match(intelligenceUi, /savedMissing=rows\.filter\(r=>savedMissingItems\(r\)\.length>0\)\.length/);
+test("HomsCard intelligence trusts API package type without inventing quantity options", () => {
+  assert.match(intelligenceUi, /function isApiPackage\(r\)\{return String\(data\(r\)\.product_type\|\|""\)\.toLowerCase\(\)==="package";\}/);
+  assert.match(intelligenceUi, /function auditKind\(r\)\{return isApiPackage\(r\)\?"باقة ثابتة \(حسب API\)"/);
+  assert.match(intelligenceUi, /function pageUnitPrice\(r\)/);
+  assert.match(intelligenceUi, /if\(!isApiPackage\(r\)&&pp!==null/);
+  assert.match(intelligenceUi, /نوع المنتج package محدد من بيانات API/);
+  assert.match(intelligenceUi, /نوع quantity لكن حدود الكمية ناقصة/);
+  assert.match(intelligenceUi, /لا تُحوّل هذه الإشارات إلى حقول إلزامية/);
 });
 test("Supplier directory supports search, supplier editing, and reversible activation without deleting links", () => {
   assert.match(adminUi, /function opsResetSupplierForm\(\)/);
@@ -206,7 +205,33 @@ test("HomsCard AI control center is mounted as a separate visible card and runs 
   assert.match(intelligenceUi, /products_id:ids/);
   assert.match(intelligenceUi, /action:"get_latest_audit"/);
   assert.match(intelligenceUi, /action:"save_audit_batch"/);
-  assert.match(intelligenceUi, /const ids=\["18","3","280","8","910","37","43","1","893","25","49","45","283","282","458"\]/);
+  assert.match(intelligenceUi, /const ids=\["78","79","80","81","82","83","92","93","94","95","96","483","865","89","90","91","649"\]/);
   assert.match(intelligenceUi, /targets=working\.filter\(r=>r\.page_status!=="success"\)/);
   assert.match(intelligenceUi, /لا شراء ولا شحن ولا تعديل أسعار بيع أو أرصدة أو طلبات/);
+});
+
+test("HomsCard instant app catalog is restricted to approved available quantity products", () => {
+  assert.match(orderGateway, /action === "homscard_app_catalog"/);
+  assert.match(orderGateway, /const allowedAppIds = \["18","280","49","37","3","1","45","8","43","25","893","910"\]/);
+  assert.match(orderGateway, /data\.product_type !== "quantity"/);
+  assert.match(orderGateway, /data\.available !== true/);
+  assert.match(orderGateway, /sale_unit_usd/);
+});
+
+test("HomsCard app checkout displays a server quote without creating an order or charging a wallet", () => {
+  assert.match(instantAppsUi, /action:"homscard_app_quote"/);
+  assert.match(instantAppsUi, /معرّف الحساب/);
+  assert.match(instantAppsUi, /الكمية المطلوبة/);
+  assert.match(instantAppsUi, /مراجعة السعر/);
+  assert.match(orderGateway, /mode: "read_only_quote"/);
+  assert.match(orderGateway, /can_create_order: false/);
+  assert.match(orderGateway, /charged: false/);
+  assert.doesNotMatch(instantAppsUi, /wallet_deduct|create_order|fulfill_order/);
+});
+
+test("mobile-first HomsCard app storefront assets are mounted", () => {
+  assert.match(indexHtml, /baran-homscard-instant-apps\.css/);
+  assert.match(indexHtml, /baran-homscard-instant-apps\.js/);
+  assert.match(instantAppsCss, /@media\(max-width:360px\)/);
+  assert.match(instantAppsCss, /\.baran-ia-modal/);
 });
