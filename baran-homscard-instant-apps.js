@@ -2,7 +2,7 @@
   "use strict";
   const GATEWAY="baran-order-gateway";
   const ROOT_ID="baranInstantAppsRoot";
-  let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,loading=false;
+  let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,loading=false,catalogPromise=null;
   const $=(id)=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const money=(v)=>Number(v||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:6});
@@ -18,7 +18,7 @@
   function renderCatalog(host,category){
     if(!host)return;
     host.replaceChildren();
-    const visibleProducts=products.filter(p=>p.category===category);
+    const visibleProducts=products.filter(p=>{const c=String(p.category||"").replace(/^ال/,"");return c.includes(category)||category.includes(c);});
     const head=el("div","baran-ia-heading");
     const copy=el("div");copy.append(el("span","baran-ia-kicker","HOMSCARD · INSTANT TOP-UP"),el("h3","","منتجات الشحن حسب الكمية"),el("p","","اختر المنتج، أدخل معرّف الحساب إذا طُلب، وحدد الكمية قبل مراجعة السعر."));
     head.append(copy,el("span","baran-ia-count",visibleProducts.length+" منتج"));
@@ -41,12 +41,19 @@
     });
     host.append(grid);
   }
-  async function loadCatalog(){
-    const host=$("appsProductCatalog");if(!host||loading)return;
-    loading=true;host.replaceChildren(el("div","baran-ia-loading","جاري تحميل منتجات HomsCard المتاحة..."));
-    try{const data=await invoke({action:"homscard_variable_catalog"});products=Array.isArray(data.products)?data.products:[];renderCatalog(host,"تطبيقات");}
-    catch(error){host.replaceChildren(el("div","baran-ia-empty",error.message));}
-    finally{loading=false;}
+  async function loadCatalog(host,category){
+    if(!host)return;
+    if(products.length){renderCatalog(host,category);return;}
+    if(!catalogPromise){
+      host.replaceChildren(el("div","baran-ia-loading","جاري تحميل منتجات HomsCard المتاحة..."));
+      catalogPromise=invoke({action:"homscard_variable_catalog"}).then(data=>{
+        products=Array.isArray(data.products)?data.products:[];
+        return products;
+      }).finally(()=>{loading=false;});
+    }
+    loading=true;
+    try{await catalogPromise;renderCatalog(host,category);}
+    catch(error){host.replaceChildren(el("div","baran-ia-empty",error.message));catalogPromise=null;}
   }
   function ensureModal(){
     let modal=$(ROOT_ID);if(modal)return modal;
@@ -107,11 +114,22 @@
     finally{button.disabled=false;}
   }
   function observeSection(){
-    const section=$("appsStore");if(!section)return;
-    const observer=new MutationObserver(()=>{if(!section.classList.contains("hidden")&&!section.dataset.baranInstantLoaded){section.dataset.baranInstantLoaded="1";loadCatalog();}});
-    observer.observe(section,{attributes:true,attributeFilter:["class"]});
-    if(!section.classList.contains("hidden"))loadCatalog();
+    const sections=[["automaticGames","ألعاب"],["appsStore","تطبيقات"],["telecomStore","اتصالات"],["digitalWalletsStore","محافظ"]];
+    sections.forEach(([id,category])=>{
+      const section=$(id);if(!section)return;
+      let host=section.querySelector(".baran-variable-products");
+      if(!host){
+        host=el("div","deposit-card baran-service-catalog baran-variable-products");
+        host.setAttribute("aria-live","polite");
+        const anchor=section.querySelector(".hero")||section.firstElementChild;
+        if(anchor?.parentNode)anchor.parentNode.insertBefore(host,anchor.nextSibling);else section.append(host);
+      }
+      const load=()=>{if(!section.classList.contains("hidden"))loadCatalog(host,category);};
+      const observer=new MutationObserver(load);
+      observer.observe(section,{attributes:true,attributeFilter:["class"]});
+      load();
+    });
   }
-  window.loadBaranInstantApps=loadCatalog;
+  window.loadBaranInstantApps=()=>observeSection();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",observeSection,{once:true});else observeSection();
 })();
