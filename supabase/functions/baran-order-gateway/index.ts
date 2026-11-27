@@ -105,7 +105,7 @@ Deno.serve(async (req: Request) => {
       );
       if (!audited) return json({ success: false, error: "تكلفة أو تفاصيل هذا التطبيق غير مؤكدة حالياً." }, 503);
       const pageText = String(audited.page_data.text);
-      const limits = pageText.match(/الكمية[\\s\\S]{0,100}?من\\s*([0-9,]+)\\s*إلى\\s*([0-9,]+)/);
+      const limits = pageText.match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
       if (!limits) return json({ success: false, error: "حدود الكمية لم تُستخرج بشكل موثوق من صفحة المورد." }, 503);
       const minQuantity = Number(limits[1].replace(/,/g, ""));
       const maxQuantity = Number(limits[2].replace(/,/g, ""));
