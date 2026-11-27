@@ -110,7 +110,11 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const result = parseHomsCardCheck(payload, uuid) as\n        | { kind: "pending"; supplierOrderId?: string | null }\n        | { kind: "failed"; supplierOrderId?: string | null; reason: string }\n        | { kind: "unknown"; reason: string }\n        | { kind: "completed"; supplierOrderId: string; totalCost: number; quantity: number; delivery: string };
+      const result = parseHomsCardCheck(payload, uuid) as
+        | { kind: "pending"; supplierOrderId?: string | null }
+        | { kind: "failed"; supplierOrderId?: string | null; reason: string }
+        | { kind: "unknown"; reason: string }
+        | { kind: "completed"; supplierOrderId: string; totalCost: number; quantity: number; delivery: string };
       if (result.kind === "pending") {
         await admin.from("order_fulfillment").update({
           dispatch_state: "awaiting_result", supplier_status: "processing",
