@@ -4408,7 +4408,7 @@ function showAdminPanel(id){
   if(id==="homscard"){
     const homsPanel=admin.querySelector('.admin-subpanel[data-admin-panel="homscard"]');
     const providerCard=document.getElementById("homscardProviderPanel");
-    if(homsPanel){homsPanel.hidden=false;homsPanel.classList.remove("hidden");homsPanel.style.setProperty("display","block","important");}
+    if(homsPanel){homsPanel.hidden=false;homsPanel.classList.remove("hidden");homsPanel.style.removeProperty("display");}
     if(providerCard){providerCard.hidden=false;providerCard.removeAttribute("hidden");providerCard.classList.remove("hidden");providerCard.style.setProperty("display","block","important");providerCard.style.setProperty("visibility","visible","important");providerCard.style.setProperty("opacity","1","important");}
   }
   buildAdminSectionNav(admin.querySelector('.admin-subpanel[data-admin-panel="'+id+'"]'),id);
