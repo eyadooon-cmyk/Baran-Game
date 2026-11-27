@@ -14,6 +14,8 @@ on:
       - "tests/homscard-fixed-transaction-simulation.test.mjs"
       - "tests/postgres/homscard-fixed-order.integration.sql"
       - "baran-homscard-fixed-checkout.js"
+      - "baran-homscard-player-name-check.js"
+      - "tests/homscard-player-name-check.test.mjs"
       - "baran-homscard-instant-apps-20261127-v3.js"
       - "homscard-analysis.js"
       - "homscard-intelligence.js"
@@ -34,6 +36,8 @@ on:
       - "tests/homscard-fixed-transaction-simulation.test.mjs"
       - "tests/postgres/homscard-fixed-order.integration.sql"
       - "baran-homscard-fixed-checkout.js"
+      - "baran-homscard-player-name-check.js"
+      - "tests/homscard-player-name-check.test.mjs"
       - "baran-homscard-instant-apps-20261127-v3.js"
       - "homscard-analysis.js"
       - "homscard-intelligence.js"
@@ -68,7 +72,7 @@ jobs:
       - name: Run HomsCard safety and analysis tests
         run: node --test tests/homscard-connector.test.mjs tests/homscard-analysis.test.mjs
       - name: Run fixed and variable checkout contract tests
-        run: node --test tests/homscard-fixed-checkout.test.mjs
+        run: node --test tests/homscard-fixed-checkout.test.mjs tests/homscard-player-name-check.test.mjs
       - name: Run isolated fixed-order transaction simulation
         run: node --test tests/homscard-fixed-transaction-simulation.test.mjs
       - name: Install PostgreSQL client
@@ -90,3 +94,4 @@ jobs:
           node --check baran-homscard-instant-apps.js
           node --check baran-homscard-instant-apps-20261127-v3.js
           node --check baran-homscard-fixed-checkout.js
+          node --check baran-homscard-player-name-check.js

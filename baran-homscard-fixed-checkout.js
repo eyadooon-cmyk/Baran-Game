@@ -54,6 +54,7 @@
    finally{quoteButton.disabled=false}
   });
   form.append(label,player,currencyLabel,currency,quoteButton,purchase,result);
+  window.BaranPlayerNameCheck?.attach(player,{product_code:product.product_code,name:product.name});
   const note=el("p","baran-fixed-note","الشحن غير مفعّل حالياً. زر التأكيد معطّل عمداً حتى اكتمال المعاملة الآمنة واختبارات المورد.");
   panel.append(top,title,desc,price,form,note);overlay.append(panel);
   overlay.addEventListener("click",e=>{if(e.target===overlay)close()});
