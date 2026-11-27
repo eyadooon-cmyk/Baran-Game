@@ -1,11 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { buildCheckPath, parseHomsCardCheck, retryDelaySeconds } from "./core.mjs";
 
-const json = (body, status = 200) => new Response(JSON.stringify(body), {
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
 });
 
-function constantTimeEqual(a, b) {
+function constantTimeEqual(a: string, b: string) {
   const aa = new TextEncoder().encode(a), bb = new TextEncoder().encode(b);
   if (aa.length !== bb.length) return false;
   let diff = 0;
@@ -13,9 +13,9 @@ function constantTimeEqual(a, b) {
   return diff === 0;
 }
 
-async function signedGet(path, token, secret) {
+async function signedGet(path: string, token: string, secret: string): Promise<{ response: Response; payload: unknown }> {
   const timestamp = Math.floor(Date.now() / 1000).toString();
-  const headers = { "api-token": token, "Accept": "application/json" };
+  const headers: Record<string, string> = { "api-token": token, "Accept": "application/json" };
   if (secret) {
     const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret),
       { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const result = parseHomsCardCheck(payload, uuid);
+      const result = parseHomsCardCheck(payload, uuid) as\n        | { kind: "pending"; supplierOrderId?: string | null }\n        | { kind: "failed"; supplierOrderId?: string | null; reason: string }\n        | { kind: "unknown"; reason: string }\n        | { kind: "completed"; supplierOrderId: string; totalCost: number; quantity: number; delivery: string };
       if (result.kind === "pending") {
         await admin.from("order_fulfillment").update({
           dispatch_state: "awaiting_result", supplier_status: "processing",
