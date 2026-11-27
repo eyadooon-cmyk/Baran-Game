@@ -4404,7 +4404,7 @@ function showAdminPanel(id){
   if((id==="wallet-finance"||id==="staff-management"||id==="shamcash-control")&&currentUser.id!=="7c6f69ed-7786-43ce-b340-78c4c1f9a4d7"){alert("هذا القسم مخصص للمالك فقط.");return Promise.resolve();}
   const hub=document.getElementById("adminHub");
   if(hub)hub.classList.add("hidden");
-  admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.adminPanel!==id));
+  admin.querySelectorAll(".admin-subpanel").forEach(panel=>{const active=panel.dataset.adminPanel===id;panel.classList.toggle("hidden",!active);panel.hidden=!active;panel.style.setProperty("display",active?"block":"none","important");});
   if(id==="homscard"){
     const homsPanel=admin.querySelector('.admin-subpanel[data-admin-panel="homscard"]');
     const providerCard=document.getElementById("homscardProviderPanel");
@@ -4446,7 +4446,7 @@ function showAdminPanel(id){
 function closeAdminPanel(){
   const admin=document.getElementById("admin");
   if(!admin)return;
-  admin.querySelectorAll(".admin-subpanel").forEach(panel=>panel.classList.add("hidden"));
+  admin.querySelectorAll(".admin-subpanel").forEach(panel=>{panel.classList.add("hidden");panel.hidden=true;panel.style.setProperty("display","none","important");});
   const hub=document.getElementById("adminHub");
   if(hub)hub.classList.remove("hidden");
   window.scrollTo({top:0,behavior:"smooth"});
