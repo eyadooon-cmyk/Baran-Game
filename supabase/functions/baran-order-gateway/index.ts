@@ -234,7 +234,7 @@ Deno.serve(async (req: Request) => {
       const pageText = String(audited.page_data.text);
       const requiresTarget = (Array.isArray(audited.product_data?.params) && audited.product_data.params.length > 0) ||
         /player\s*id|معرّف اللاعب|ايدي اللاعب|رقم الهاتف|رقم الموبايل|phone|mobile|رقم المحفظة|wallet|معرّف الحساب|رقم الحساب|account\s*id|user\s*id|\buid\b/i.test(pageText);
-      if (requiresTarget && playerId.length < 2) return json({ success: false, error: "أدخل بيانات الحساب المطلوبة لهذا المنتج أولاً." }, 400);
+      // Quote-only preview: allow pricing before target ID is entered. The order RPC still enforces required account fields.
       const limits = pageText.match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
       const minQuantity = Number(audited.product_data?.qty_values?.min ?? limits?.[1]?.replace(/,/g, ""));
       const maxQuantity = Number(audited.product_data?.qty_values?.max ?? limits?.[2]?.replace(/,/g, ""));
