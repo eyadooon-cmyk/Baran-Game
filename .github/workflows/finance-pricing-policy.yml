@@ -1,0 +1,28 @@
+name: BARAN Finance Pricing Policy Tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20261127171000_baran_general_pricing_policy.sql"
+      - "supabase/functions/baran-admin/index.ts"
+      - "finance-pricing.js"
+      - "index.html"
+      - "tests/finance-pricing-policy.test.mjs"
+      - ".github/workflows/finance-pricing-policy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  finance-pricing-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run BARAN finance pricing policy safety tests
+        run: node --test tests/finance-pricing-policy.test.mjs
