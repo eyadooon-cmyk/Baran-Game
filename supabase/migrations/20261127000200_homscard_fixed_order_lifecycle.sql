@@ -31,7 +31,7 @@ begin
     if market_rate is null or market_rate <= 0 or fx_buffer is null or fx_buffer < 0 then
       raise exception 'Store commercial exchange rate is unavailable';
     end if;
-    current_rate := market_rate * (1 + fx_buffer / 100);
+    current_rate := market_rate * (1 + fx_buffer / 100) / 100;
   else
     select s.exchange_rate into current_rate
       from public.store_settings s where s.id = 'main';
@@ -125,7 +125,7 @@ declare
 begin
   if p_user_id is null or p_request_id is null
      or p_product_code is null or p_product_code !~ '^[A-Z0-9_]{3,100}$'
-     or p_payment_currency not in ('USD','SYP')
+     or p_payment_currency is null or p_payment_currency not in ('USD','SYP')
      or v_player is null or length(v_player) < 2 or length(v_player) > 100 then
     raise exception 'بيانات الطلب الثابت غير صالحة' using errcode='22023';
   end if;
