@@ -40,7 +40,7 @@ test("fixed and variable products use separate customer interfaces", () => {
   assert.match(variableUi, /homscard_variable_catalog/);
   assert.match(variableUi, /homscard_variable_quote/);
   assert.match(fixedUi, /purchase\.disabled=true/);
-  assert.doesNotMatch(fixedUi, /homscard_fixed_create_order/);
+  assert.match(fixedUi, /action:"homscard_fixed_create_order"/);
 });
 
 const migration = await readFile(new URL("../supabase/migrations/20261127000200_homscard_fixed_order_lifecycle.sql", import.meta.url), "utf8");
