@@ -8,6 +8,7 @@ const adminUi = await readFile(new URL("../admin-operations.js", import.meta.url
 const indexHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const intelligenceUi = await readFile(new URL("../homscard-intelligence.js", import.meta.url), "utf8");
 const auditMigration = await readFile(new URL("../supabase/migrations/20261126100000_add_homscard_audit_storage.sql", import.meta.url), "utf8");
+const variableOrderMigration = await readFile(new URL("../supabase/migrations/20261127000100_homscard_variable_order_lifecycle.sql", import.meta.url), "utf8");
 const orderGateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
 const instantAppsUi = await readFile(new URL("../baran-homscard-instant-apps.js", import.meta.url), "utf8");
 const instantAppsCss = await readFile(new URL("../baran-homscard-instant-apps.css", import.meta.url), "utf8");
@@ -231,7 +232,8 @@ test("HomsCard app checkout displays a server quote without creating an order or
   assert.match(orderGateway, /mode: "read_only_quote"/);
   assert.match(orderGateway, /can_create_order: false/);
   assert.match(orderGateway, /charged: false/);
-  assert.doesNotMatch(instantAppsUi, /wallet_deduct|create_order|fulfill_order/);
+  assert.match(instantAppsUi, /action:"homscard_variable_create_order"/);
+  assert.match(instantAppsUi, /action:"homscard_variable_check_order"/);
 });
 
 test("shared HomsCard variable-quantity cards mount in games, apps, telecom and wallets", () => {
@@ -248,4 +250,31 @@ test("mobile-first HomsCard app storefront assets are mounted", () => {
   assert.match(indexHtml, /baran-homscard-instant-apps\.js/);
   assert.match(instantAppsCss, /@media\(max-width:360px\)/);
   assert.match(instantAppsCss, /\.baran-ia-modal/);
+});
+
+test("HomsCard variable order lifecycle is transactionally gated and idempotent", () => {
+  assert.match(variableOrderMigration, /baran_create_homscard_variable_order/);
+  assert.match(variableOrderMigration, /p_request_id/);
+  assert.match(variableOrderMigration, /pg_advisory_xact_lock/);
+  assert.match(variableOrderMigration, /client_request_id/);
+  assert.match(variableOrderMigration, /integration_enabled or not v_config\.execution_enabled/);
+  assert.match(variableOrderMigration, /baran_supplier_prepare_order/);
+  assert.match(variableOrderMigration, /supplier_order_uuid uuid not null default gen_random_uuid/);
+  assert.match(variableOrderMigration, /grant execute .* to service_role/);
+  assert.match(variableOrderMigration, /HOMSCARD_VAR_/);
+});
+test("HomsCard gateway uses one persisted supplier UUID and never blindly resends uncertain orders", () => {
+  assert.match(orderGateway, /homscard_variable_create_order/);
+  assert.match(orderGateway, /homscard_variable_check_order/);
+  assert.match(orderGateway, /order_uuid:supplierUuid/);
+  assert.match(orderGateway, /p_result:"unknown"/);
+  assert.match(orderGateway, /لا نكرر الإرسال أو الاسترداد/);
+  assert.match(orderGateway, /HOMSCARD_API_TOKEN/);
+  assert.match(orderGateway, /X-Signature/);
+});
+test("Variable checkout preserves request UUID on uncertain outcomes and polls pending supplier orders", () => {
+  assert.match(instantAppsUi, /activeRequestId=crypto\.randomUUID\(\)/);
+  assert.match(instantAppsUi, /scheduleStatusPoll/);
+  assert.match(instantAppsUi, /setTimeout\(\(\)=>\{pollCount\+\+;checkOrder\(true\);\},15000\)/);
+  assert.match(instantAppsUi, /orderSubmitted/);
 });
