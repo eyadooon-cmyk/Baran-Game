@@ -106,6 +106,12 @@ begin
   select * into v_existing from public.orders
    where user_id=p_user_id and client_request_id=p_request_id for update;
   if found then
+    if v_existing.product_code <> 'HOMSCARD_VAR_'||p_product_id
+       or v_existing.quantity <> p_quantity
+       or v_existing.payment_currency <> p_payment_currency
+       or coalesce(v_existing.player_id,'') <> coalesce(nullif(btrim(coalesce(p_player_id,'')),''),'') then
+      raise exception 'معرّف الطلب مستخدم لطلب مختلف.' using errcode='22023';
+    end if;
     select a.id,a.supplier_order_uuid into v_attempt_id,v_supplier_uuid
       from private.baran_supplier_order_attempts a
      where a.order_id=v_existing.id order by a.attempt_number desc limit 1;
