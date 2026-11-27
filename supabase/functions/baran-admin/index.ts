@@ -181,7 +181,7 @@ Deno.serve(async (req: Request) => {
       }
       const { data: settings, error: settingsError } = await admin
         .from("store_settings")
-        .select("exchange_rate,updated_at")
+        .select("exchange_rate,updated_at,market_exchange_rate,fx_buffer_percent,product_markup_percent,pricing_updated_at,pricing_updated_by")
         .eq("id", "main")
         .single();
       if (settingsError) {
@@ -471,6 +471,14 @@ Deno.serve(async (req: Request) => {
         recovery_audit: recoveryAudit ?? [],
         exchange_rate: Number(settings.exchange_rate),
         exchange_rate_updated_at: settings.updated_at,
+        pricing_policy: {
+          market_exchange_rate: Number(settings.market_exchange_rate),
+          fx_buffer_percent: Number(settings.fx_buffer_percent),
+          product_markup_percent: Number(settings.product_markup_percent),
+          commercial_exchange_rate: Number(settings.market_exchange_rate) * (1 + Number(settings.fx_buffer_percent) / 100),
+          updated_at: settings.pricing_updated_at,
+          updated_by: settings.pricing_updated_by,
+        },
       });
     }
 
@@ -502,6 +510,9 @@ Deno.serve(async (req: Request) => {
         is_active?: boolean;
         sort_order?: number;
         exchange_rate?: number;
+        market_exchange_rate?: number;
+        fx_buffer_percent?: number;
+        product_markup_percent?: number;
         feedback_id?: string;
         feedback_status?: string;
         admin_reply?: string;
@@ -1052,6 +1063,28 @@ Deno.serve(async (req: Request) => {
             "تعذر حفظ الرد وتسجيل العملية." }, status);
         }
         return respond({ feedback: updated, notification_created: updated?.notification_created === true, audit_logged: true });
+      }
+
+      if (body.action === "pricing_policy_update") {
+        const marketRate = body.market_exchange_rate;
+        const fxBuffer = body.fx_buffer_percent;
+        const productMarkup = body.product_markup_percent;
+        if (typeof marketRate !== "number" || !Number.isFinite(marketRate) || marketRate <= 0 || marketRate > 100000000 ||
+            typeof fxBuffer !== "number" || !Number.isFinite(fxBuffer) || fxBuffer < 0 || fxBuffer > 25 ||
+            typeof productMarkup !== "number" || !Number.isFinite(productMarkup) || productMarkup < 0 || productMarkup > 100) {
+          return respond({ error: "تحقق من سعر السوق وفرق التحويل والزيادة على تكلفة المنتج." }, 400);
+        }
+        const { data: pricingPolicy, error: pricingPolicyError } = await admin.rpc("admin_update_pricing_policy", {
+          p_admin_id: user.id,
+          p_market_exchange_rate: marketRate,
+          p_fx_buffer_percent: fxBuffer,
+          p_product_markup_percent: productMarkup,
+        });
+        if (pricingPolicyError) {
+          console.error("baran-admin: pricing policy update failed", pricingPolicyError.message);
+          return respond({ error: pricingPolicyError.message || "تعذر حفظ سياسة التسعير." }, 400);
+        }
+        return respond({ pricing_policy: pricingPolicy });
       }
 
       if (body.action === "exchange_rate_update") {
