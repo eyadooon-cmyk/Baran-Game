@@ -94,7 +94,7 @@
     const quoteBox=el("div","baran-ia-quote");quoteBox.id="baranIaQuote";quoteBox.append(el("span","","الإجمالي التقديري"),el("strong","","أدخل المعرّف والكمية لحساب السعر."));
     const currencyLabel=el("label","","عملة الدفع");currencyLabel.htmlFor="baranIaCurrency";
     const currency=document.createElement("select");currency.id="baranIaCurrency";
-    [["USD","دولار أمريكي"],["SYP","ليرة سورية"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;currency.append(o);});
+    [["USD","دولار أمريكي"],["SYP","ليرة سورية جديدة"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;currency.append(o);});
     currency.addEventListener("change",()=>{paymentCurrency=currency.value;quote=null;$("baranIaPurchase").disabled=true;scheduleQuote();});
     player.addEventListener("input",()=>{quote=null;$("baranIaPurchase").disabled=true;scheduleQuote();});
     const note=el("p","baran-ia-note","المعاينة لا تخصم رصيداً. عند تفعيل الربط واعتماد المورد فقط، يُرسل الطلب وتُتابع حالته تلقائياً.");
@@ -166,11 +166,11 @@
         throw new Error("تعذر مطابقة المنتج مع تسعيرة المورد. حدّث الصفحة وحاول مجدداً؛ لم يتم إنشاء طلب أو خصم رصيد.");
       }
       quote=data.quote;
-      const amount=requestedCurrency==="USD"?money(quote.sale_usd)+" $":Number(quote.sale_syp||0).toLocaleString("en-US")+" ل.س";
+      const amount=requestedCurrency==="USD"?money(quote.sale_usd)+" $":Number(quote.sale_syp||0).toLocaleString("en-US")+" ل.س جديدة";
       const quotedUnit=Number(quote.sale_usd||0)/Number(quote.quantity||requestedQuantity);
-      const unitAmount=requestedCurrency==="USD"?money(quotedUnit)+" $ / وحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س / وحدة";
+      const unitAmount=requestedCurrency==="USD"?money(quotedUnit)+" $ / وحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س جديدة / وحدة";
       const productMeta=$("baranIaProduct")?.querySelector("small");
-      if(productMeta)productMeta.textContent=requestedCurrency==="USD"?money(quotedUnit)+" $ للوحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س للوحدة";
+      if(productMeta)productMeta.textContent=requestedCurrency==="USD"?money(quotedUnit)+" $ للوحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س جديدة للوحدة";
       $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","",amount),el("small","",unitAmount+" · "+Number(quote.quantity).toLocaleString("en-US")+" وحدة"));
       const needsTarget=requestedProduct.requires_target&&playerId.length<2;
       $("baranIaPurchase").disabled=needsTarget;
