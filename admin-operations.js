@@ -1311,6 +1311,59 @@ async function homscardMergeSavedSuccessfulPages(){
   return restored;
 }
 const HOMSCARD_AGREED_PRODUCT_IDS=Object.freeze(["18","3","280","8","910","37","43","1","893","25","49","45","283","282","458"]);
+async function homscardInspect8BallPoolPages(){
+  const status=document.getElementById("opsHomsAutoAuditStatus");
+  const button=document.getElementById("opsHoms8BallPoolPageAuditButton");
+  const ids=["140","141","142","143","144","145","146"];
+  if(!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length){
+    if(status)status.textContent="حمّل كتالوج HomsCard أولاً؛ لن يبدأ الفحص قبل توفر بيانات المنتجات.";
+    return;
+  }
+  const byId=new Map(homscardCatalogCache.filter(p=>p&&/^\\d{1,10}$/.test(String(p.id??""))).map(p=>[String(p.id),p]));
+  const missing=ids.filter(id=>!byId.has(id));
+  if(missing.length){
+    if(status)status.textContent="توقف الفحص الآمن: لم أجد معرّفات باقات 8 Ball Pool التالية في الكتالوج المحمّل: "+missing.join("، ")+". لم يبدأ أي اتصال لفحص الصفحات.";
+    return;
+  }
+  const products=ids.map(id=>byId.get(id));
+  if(button)button.disabled=true;
+  let inspected=0,failed=0;
+  try{
+    if(status)status.textContent="جارٍ فحص صفحات باقات 8 Ball Pool السبع فقط (140–146)…";
+    const {data,error}=await sb.functions.invoke("baran-homscard-connector",{body:{action:"product_pages",products_id:ids}});
+    if(error)throw new Error(error.message||"تعذر جلب صفحات الباقات");
+    if(!data?.success||!Array.isArray(data.data))throw new Error(data?.error||"تعذر قراءة نتائج فحص الصفحات");
+    const resultById=new Map(data.data.map(row=>[String(row.id),row]));
+    for(const p of products){
+      const row=resultById.get(String(p.id));
+      if(row){
+        p.page_title=row.title||"";
+        p.page_description=row.description||"";
+        p.page_text=row.text||"";
+        p.page_images=Array.isArray(row.images)?row.images:[];
+        p.page_availability=row.availability||"unknown";
+        p.page_extraction_status=row.page_status||row.extraction_status||"unverified";
+        p.page_status=row.success===true&&p.page_extraction_status==="extracted"?"success":"failed";
+        p.page_error=row.error||row.extraction_note||"";
+      }else{
+        p.page_status="failed";
+        p.page_extraction_status="missing_response";
+        p.page_error="لم يرجع الموصل نتيجة لهذا المعرّف";
+      }
+      if(p.page_status==="success")inspected++;else failed++;
+    }
+    // Store these seven page checks as a separate audit run; do not overwrite the 15-product audit.
+    homscardAuditRunId=crypto.randomUUID();
+    await homscardPersistAuditRows(products,products.map(p=>homscardAutoAuditOne(p)));
+    if(status)status.textContent="انتهى فحص باقات 8 Ball Pool السبع فقط: نجح استخراج "+inspected+" صفحة، وتعذر استخراج "+failed+". حُفظت النتائج في تدقيق مستقل. لم يتم فحص بقية الكتالوج أو إنشاء طلب أو تنفيذ شحن.";
+    if(typeof renderHomsCardCatalog==="function")renderHomsCardCatalog();
+  }catch(error){
+    console.error("[HomsCard 8 Ball Pool seven-page audit]",error);
+    if(status)status.textContent="توقف فحص باقات 8 Ball Pool: "+(error?.message||"خطأ غير معروف")+". لم يتم إنشاء أي طلب أو شحن.";
+  }finally{
+    if(button)button.disabled=false;
+  }
+}
 async function homscardInspectAgreedProductPages(){
   const status=document.getElementById("opsHomsAutoAuditStatus");
   const button=document.getElementById("opsHomsAgreedPageAuditButton");
@@ -1490,6 +1543,11 @@ function homscardEnsureAutoAuditUi(){
   agreedPageButton.type="button";
   agreedPageButton.onclick=homscardInspectAgreedProductPages;
   agreedPageButton.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
+  let eightBallButton=document.getElementById("opsHoms8BallPoolPageAuditButton");
+  if(!eightBallButton){eightBallButton=opsNode("button","secondary full","🎱 فحص باقات 8 Ball Pool السبع فقط (140–146)");eightBallButton.id="opsHoms8BallPoolPageAuditButton";panel.appendChild(eightBallButton);}
+  eightBallButton.type="button";
+  eightBallButton.onclick=homscardInspect8BallPoolPages;
+  eightBallButton.disabled=!Array.isArray(homscardCatalogCache)||!homscardCatalogCache.length;
   let pageButton=document.getElementById("opsHomsPageAuditButton");
   if(!pageButton){pageButton=opsNode("button","secondary full","🔎 فحص صفحات HomsCard وتدقيق التفاصيل");pageButton.id="opsHomsPageAuditButton";panel.appendChild(pageButton);}
   pageButton.type="button";
