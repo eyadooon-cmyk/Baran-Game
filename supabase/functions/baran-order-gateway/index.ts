@@ -1,5 +1,4 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { parseHomsCardCheck } from "../baran-homscard-reconcile/core.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +10,29 @@ const corsHeaders = {
 };
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: corsHeaders });
+
+function parseHomsCardCheck(payload: any, expectedUuid: string) {
+  if (!payload || payload.status !== "OK" || !Array.isArray(payload.data))
+    return { kind: "unknown" as const, reason: "Malformed or unsuccessful supplier response" };
+  const row = payload.data.find((item: any) =>
+    item && String(item.order_uuid ?? "").toLowerCase() === expectedUuid.toLowerCase()
+  );
+  if (!row) return { kind: "unknown" as const, reason: "Supplier response did not contain the exact order UUID" };
+  const status = String(row.status ?? "").toLowerCase();
+  const supplierOrderId = typeof row.order_id === "string" ? row.order_id.trim() : "";
+  if (status === "pending") return { kind: "pending" as const, supplierOrderId: supplierOrderId || null };
+  if (status === "cancelled") return { kind: "failed" as const, supplierOrderId: supplierOrderId || null, reason: "HomsCard confirmed the order was cancelled" };
+  if (status === "completed") {
+    const totalCost = Number(row.price);
+    const quantity = Number(row.quantity);
+    const delivery = typeof row.delivery === "string" ? row.delivery.trim() : "";
+    if (!supplierOrderId || supplierOrderId.length > 160 || !Number.isFinite(totalCost) || totalCost < 0 ||
+        !Number.isSafeInteger(quantity) || quantity < 1 || !delivery || delivery.length > 4000)
+      return { kind: "unknown" as const, reason: "Completed response is missing verified order, cost, quantity, or delivery data" };
+    return { kind: "completed" as const, supplierOrderId, totalCost, quantity, delivery };
+  }
+  return { kind: "unknown" as const, reason: "Unrecognized supplier order status" };
+}
 
 function readKeyObject(name: string): string | undefined {
   const raw = Deno.env.get(name);
