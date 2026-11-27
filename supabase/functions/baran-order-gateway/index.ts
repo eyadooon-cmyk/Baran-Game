@@ -34,6 +34,30 @@ function parseHomsCardCheck(payload: any, expectedUuid: string) {
   return { kind: "unknown" as const, reason: "Unrecognized supplier order status" };
 }
 
+function normalizeHomsCardCreate(payload: any, expectedUuid: string, expectedQuantity: number) {
+  // order.php returns a single data object; check.php returns an array.
+  if (!payload || payload.status !== "OK" || !payload.data ||
+      typeof payload.data !== "object" || Array.isArray(payload.data)) return null;
+  const row = payload.data;
+  const status = String(row.status ?? "").toLowerCase();
+  const supplierOrderId = typeof row.order_id === "string" ? row.order_id.trim() : "";
+  if (status === "pending") {
+    return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId, status: "pending" }] };
+  }
+  if (status === "cancelled") {
+    return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId, status: "cancelled" }] };
+  }
+  if (status !== "completed") return null;
+  const quantity = Number(row.quantity);
+  const price = Number(row.price);
+  const delivery = typeof row.delivery === "string" ? row.delivery.trim() : "";
+  if (!supplierOrderId || supplierOrderId.length > 160 ||
+      !Number.isSafeInteger(quantity) || quantity !== expectedQuantity ||
+      !Number.isFinite(price) || price < 0 || !delivery || delivery.length > 4000) return null;
+  return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId,
+    status: "completed", price, quantity, delivery }] };
+}
+
 function readKeyObject(name: string): string | undefined {
   const raw = Deno.env.get(name);
   if (!raw) return undefined;
@@ -340,10 +364,36 @@ Deno.serve(async (req: Request) => {
           product_id:Number(productId),order_uuid:supplierUuid,qty:quantity,...(playerId?{player_id:playerId}:{})
         });
         if(sent.payload?.status==="OK"&&sent.payload?.data){
-          const result=await settle(sent.payload);
-          return json({success:true,order_id:orderId,...result});
+          const normalizedCreate=normalizeHomsCardCreate(sent.payload,supplierUuid,quantity);
+          if(normalizedCreate){
+            const result=await settle(normalizedCreate);
+            return json({success:true,order_id:orderId,...result});
+          }
+          await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",
+            p_reason:"رد order.php لا يطابق صيغة النجاح/الحالة الموثقة أو ينقصه تحقق السعر/الكمية/التسليم."});
+          return json({success:true,order_id:orderId,status:"awaiting_supplier",
+            message:"وصل رد إنشاء غير مكتمل أو غير مطابق؛ أبقينا الطلب قيد التحقق دون استرداد أو إعادة إرسال."});
         }
         const code=Number(sent.payload?.error?.code);
+        const confirmedRejectionCodes=new Set([100,103,109,110,112,113,114]);
+        if(confirmedRejectionCodes.has(code)){
+          const reasons:Record<number,string>={
+            100:"رصيد حساب HomsCard غير كافٍ؛ رفض المورد الطلب.",
+            103:"بيانات اللاعب المطلوبة غير مكتملة؛ رفض المورد الطلب.",
+            109:"معرّف المنتج غير موجود لدى HomsCard.",
+            110:"المنتج غير متاح لدى HomsCard.",
+            112:"الكمية أقل من الحد الأدنى لدى المورد.",
+            113:"الكمية أكبر من الحد الأعلى لدى المورد.",
+            114:"أكد HomsCard رفض الطلب؛ يعالج المورد إعادة المبلغ إلى رصيد حسابه.",
+          };
+          const {error:settleError}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"failed",
+            p_reason:"رفض مؤكد من HomsCard (code "+code+"): "+reasons[code],
+          });
+          if(settleError)throw settleError;
+          return json({success:true,order_id:orderId,status:"rejected",refunded:true,
+            supplier_error_code:code,message:"رفض المورد الطلب وتمت معالجة استرداد رصيد الزبون في باران."});
+        }
         if(sent.http_status>=500||code===500||code===102){
           const checked=await homscardRequest(checkPath,"GET");
           const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
