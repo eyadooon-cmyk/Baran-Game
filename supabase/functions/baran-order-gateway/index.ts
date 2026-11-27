@@ -108,9 +108,17 @@ Deno.serve(async (req: Request) => {
         if (!Number.isSafeInteger(min) || !Number.isSafeInteger(max) || min < 1 || max < min || !Number.isFinite(cost) || cost <= 0) continue;
         const images = [data.image_url,data.image,data.img,data.photo,page.images?.[0]].filter(v => typeof v === "string");
         const image = images.find(v => /^https:\/\//i.test(v)) ?? "";
+        const fieldRules = [
+          { pattern: /player\\s*id|معرّف اللاعب|ايدي اللاعب/i, label: "Player ID" },
+          { pattern: /رقم الهاتف|رقم الموبايل|phone|mobile/i, label: "رقم الهاتف" },
+          { pattern: /رقم المحفظة|wallet/i, label: "رقم المحفظة" },
+          { pattern: /معرّف الحساب|رقم الحساب|account\\s*id|user\\s*id|\\buid\\b/i, label: "معرّف الحساب" },
+        ];
+        const targetField = fieldRules.find(rule => rule.pattern.test(page.text));
         result.push({
           product_id: id, name: String(row.product_name || data.name || "منتج").slice(0, 100),
           category: String(data.category), min_quantity: min, max_quantity: max, image,
+          requires_target: !!targetField, target_label: targetField?.label ?? "بيانات الحساب (إن لزمت)",
           sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
         });
       }
@@ -124,7 +132,7 @@ Deno.serve(async (req: Request) => {
       const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
       if (!/^[0-9]{1,10}$/.test(productId)) return json({ success: false, error: "معرّف المنتج غير صالح." }, 400);
       if (!Number.isSafeInteger(quantity) || quantity <= 0) return json({ success: false, error: "أدخل كمية صحيحة." }, 400);
-      if (!playerId || playerId.length < 2 || playerId.length > 100) return json({ success: false, error: "أدخل معرّف الحساب المطلوب بشكل صحيح." }, 400);
+      if (playerId.length > 100) return json({ success: false, error: "بيانات الحساب أطول من المسموح." }, 400);
       if (!["USD","SYP"].includes(currency)) return json({ success: false, error: "عملة الدفع غير مدعومة." }, 400);
 
       const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
