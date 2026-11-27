@@ -521,8 +521,8 @@ Deno.serve(async (req: Request) => {
         p_payment_currency:currency,p_request_id:requestId,
       });
       if(createError){
-        console.error("HOMSCARD_VARIABLE_ORDER_CREATE_FAILED",createError.message);
-        return json({success:false,error:createError.message||"تعذر إنشاء الطلب. لم يتم إرسال طلب إلى المورد."},400);
+        console.error("HOMSCARD_FIXED_ORDER_CREATE_FAILED",createError.message);
+        return json({success:false,error:createError.message||"تعذر إنشاء الطلب الثابت. لم يتم إرسال طلب إلى المورد."},400);
       }
       const orderId=String(created?.order_id||"");
       const productId=String(created?.supplier_sku||"");
