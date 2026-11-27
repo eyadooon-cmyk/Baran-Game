@@ -202,6 +202,7 @@ Deno.serve(async (req: Request) => {
           category: String(data.category), min_quantity: min, max_quantity: max, image,
           requires_target: !!targetField, target_label: targetField?.label ?? "بيانات الحساب (إن لزمت)",
           sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
+          sale_unit_syp: Number((cost * (1 + markup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(2)),
         });
       }
       return json({ success: true, products: result, provider: "HomsCard", mode: "read_only_catalog", scope: "all_variable_quantity_categories" });
@@ -259,7 +260,7 @@ Deno.serve(async (req: Request) => {
       const totalCost = unitCost * quantity;
       const round = (value: number, digits: number) => Number((value + Number.EPSILON).toFixed(digits));
       const saleUsd = round(totalCost * (1 + markupPercent / 100), 4);
-      const saleSyp = Math.round(totalCost * (1 + markupPercent / 100) * commercialRate);
+      const saleSyp = Number((totalCost * (1 + markupPercent / 100) * commercialRate / 100).toFixed(2));
       const { data: adminRecord, error: adminCheckError } = await admin.from("admin_users")
         .select("user_id").eq("user_id", user.id).maybeSingle();
       if (adminCheckError) return json({ success: false, error: "تعذر التحقق من صلاحية الإدارة." }, 500);
@@ -272,14 +273,14 @@ Deno.serve(async (req: Request) => {
         max_quantity: maxQuantity,
         sale_usd: saleUsd,
         sale_syp: saleSyp,
-        commercial_rate: round(commercialRate, 2),
+        commercial_rate: round(commercialRate / 100, 2),
         markup_percent: markupPercent,
         currency,
       };
       if (isAdmin) {
         quote.cost_usd = round(totalCost, 6);
         quote.profit_usd = round(saleUsd - totalCost, 6);
-        quote.profit_syp = saleSyp - Math.round(totalCost * commercialRate);
+        quote.profit_syp = Number(((saleUsd - totalCost) * commercialRate / 100).toFixed(2));
         quote.is_admin = true;
       }
       return json({
@@ -518,7 +519,7 @@ Deno.serve(async (req: Request) => {
       const unitCost = Number(mapping.unit_cost);
       const totalCost = unitCost * quantity;
       const exactSaleUsd = totalCost * (1 + markupPercent / 100);
-      const exactSaleSyp = exactSaleUsd * commercialRate;
+      const exactSaleSyp = exactSaleUsd * commercialRate / 100;
       const round = (value: number, digits: number) => Number((value + Number.EPSILON).toFixed(digits));
       const { data: adminRecord, error: adminCheckError } = await admin.from("admin_users")
         .select("user_id").eq("user_id", user.id).maybeSingle();
@@ -527,15 +528,15 @@ Deno.serve(async (req: Request) => {
       const quote: Record<string, unknown> = {
         quantity,
         sale_usd: round(exactSaleUsd, 2),
-        sale_syp: Math.round(exactSaleSyp),
-        commercial_rate: round(commercialRate, 2),
+        sale_syp: Number(exactSaleSyp.toFixed(2)),
+        commercial_rate: round(commercialRate / 100, 2),
         markup_percent: markupPercent,
         currency,
       };
       if (isAdmin) {
         quote.cost_usd = round(totalCost, 6);
         quote.profit_usd = round(exactSaleUsd - totalCost, 6);
-        quote.profit_syp = Math.round((exactSaleUsd - totalCost) * commercialRate);
+        quote.profit_syp = Number(((exactSaleUsd - totalCost) * commercialRate / 100).toFixed(2));
         quote.is_admin = true;
       }
       return json({
