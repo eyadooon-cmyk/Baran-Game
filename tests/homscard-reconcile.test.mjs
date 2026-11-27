@@ -119,7 +119,7 @@ test("late failure cannot overwrite a recorded success and refund remains idempo
 
 test("supplier worker never dispatches orders and retries only status reads", () => {
   assert.doesNotMatch(worker, /\/order\.php/);
-  assert.match(worker, /buildCheckPath\(row\.supplier_order_uuid\)/);
-  assert.match(worker, /parseHomsCardCheck\(payload,row\.supplier_order_uuid\)/);
+  assert.match(worker, /buildCheckPath\(uuid\)/);
+  assert.match(worker, /parseHomsCardCheck\(payload, uuid\)/);
   assert.match(worker, /baran_supplier_finalize_order/);
 });
