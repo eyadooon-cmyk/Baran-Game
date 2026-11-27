@@ -3333,8 +3333,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       </div>
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز الموردين والأسعار</h2></div>
-        <nav class="supplier-quick-nav" aria-label="التنقل بين أقسام الموردين"><a href="#homscardProviderPanel">حمص كارد</a><a href="#supplierDirectoryGroup">دليل الموردين</a><a href="#syriaMarketComparisonPanel">مقارنة الأسعار</a><a href="#supplierApiSettingsGroup">إعدادات API</a></nav>
-        <p class="small supplier-page-intro">كل مورد له مساحة مستقلة. ابدأ بحمص كارد، واستخدم سوريا ماركت للمقارنة المؤقتة فقط، ثم اربط المنتجات والأسعار من الدليل.</p>
+        <p class="small supplier-page-intro">إدارة المورد المعتمد حالياً: حمص كارد فقط. أدوات الاتصال والكتالوج والتدقيق مجمّعة داخل بطاقته المستقلة أدناه.</p>
         <div class="admin-workgroup-label"><span>01</span><div><strong>حالة التشغيل</strong><small>تحقق من وضع الشحن الآلي قبل إدارة الموردين</small></div></div>
         <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
@@ -3389,47 +3388,6 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <p class="small">هذه النتائج للبحث والمراجعة فقط. لا يوجد استيراد أو شراء أو تنفيذ شحن من هنا.</p>
         </div>
       </section>
-      <details class="supplier-fold" id="syriaMarketComparisonGroup"><summary>⚖️ Syria Market — مقارنة الأسعار المؤقتة فقط <span>فتح / إغلاق</span></summary>
-      <section class="deposit-card supplier-comparison-panel" id="syriaMarketComparisonPanel" style="border:1px solid #80619a;background:linear-gradient(145deg,rgba(65,38,91,.22),rgba(16,13,24,.98));">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:28px">⚖️</span>
-          <div><h2 style="margin:0">Syria Market — قسم المقارنة فقط</h2><p class="small" style="margin:4px 0 0">مورد مؤقت لمقارنة المنتجات والأسعار مع حمص كارد، وليس مسار تنفيذ أو شحن</p></div>
-          <span class="ops-pill">مقارنة فقط · مؤقت</span>
-        </div>
-      </section>
-      <section class="deposit-card" id="syriaMarketLegacyCatalogPanel" style="border:1px solid #9a70bb;background:linear-gradient(145deg,rgba(65,38,91,.42),rgba(16,13,24,.98));">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:28px">🇸🇾</span>
-          <div><h3 style="margin:0">بيانات المقارنة — اتصال وقراءة كتالوج</h3><p class="small" style="margin:4px 0 0">اقرأ بيانات المورد لمقارنتها مع أسعار حمص كارد؛ لا تُستورد تلقائياً إلى متجر الزبائن.</p></div>
-        </div>
-        <div class="small" style="margin:12px 0;padding:10px;border:1px solid #514064;border-radius:10px;background:#100b16">المفتاح محفوظ في Supabase Secrets ولا يظهر في المتصفح. كل العمليات أدناه قراءة فقط.</div>
-        <button class="full secondary" type="button" id="syriaMarketFullAuditButton" onclick="startSyriaMarketFullAudit()">🧾 بدء تدقيق شامل جديد</button>
-        <div id="syriaMarketFullAuditStatus" class="small" role="status" aria-live="polite" style="margin-top:10px">التدقيق الشامل يجلب صفحات المورد ويحفظ أرقام التدقيق ومعرّفات المنتجات فقط؛ لا يغيّر الكاش الحي.</div>
-        <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
-          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('profile')">🔌 اختبار الاتصال والحساب</button>
-          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('products')">📦 جلب المنتجات</button>
-          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('games_catalog')">🎮 جلب كتالوج الألعاب والخدمات (V2)</button>
-          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('freefire_catalog')">🔥 فحص باقات Free Fire فقط</button>
-          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('categories')">🗂️ جلب التصنيفات</button>
-          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('docs')">📘 قراءة وثائق API</button>
-          <button class="secondary" type="button" onclick="baranSyriaMarketFetch('openapi')">🧩 قراءة OpenAPI</button>
-        </div>
-        <div id="syriaMarketCatalogStatus" class="small" role="status" aria-live="polite" style="margin-top:12px">لم يتم الاتصال بالمورد بعد. اختر إحدى عمليات القراءة أعلاه.</div>
-        <div id="syriaMarketCatalogSummary" style="display:grid;gap:8px;margin-top:10px"></div>
-        <details id="syriaMarketCatalogRawWrap" style="margin-top:12px">
-          <summary style="cursor:pointer;color:#d7c4e8;font-weight:800;padding:8px 0">عرض البيانات المستلمة</summary>
-          <pre id="syriaMarketCatalogRaw" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow:auto;background:#09080d;border:1px solid #40334b;border-radius:10px;padding:12px;font-size:11px;direction:ltr;text-align:left">ستظهر نتيجة القراءة هنا.</pre>
-        </details>
-      <section class="deposit-card" id="baranFreeFireRegionTest" style="border:1px solid #80619a;background:linear-gradient(145deg,rgba(65,38,91,.32),rgba(16,13,24,.98));">
-        <h2>🧭 فحص منطقة حساب Free Fire</h2>
-        <p class="small">فحص آيدي اللاعب عبر Volsever MENA Checker. يعرض اسم اللاعب والمنطقة التي ترجعها الخدمة. هذا الفحص لا يشحن ولا ينشئ طلباً ولا يثبت وحده توافق باقة المورد.</p>
-        <label for="baranFreeFireTestId">Player ID لحساب تجريبي</label>
-        <input id="baranFreeFireTestId" type="text" inputmode="numeric" maxlength="20" autocomplete="off" placeholder="أدخل آيدي Free Fire" dir="ltr">
-        <button class="full secondary" type="button" id="baranFreeFireTestButton" onclick="baranRunFreeFireRegionTest()">🔎 فحص اسم اللاعب والمنطقة</button>
-        <div id="baranFreeFireTestResult" class="small" role="status" aria-live="polite" style="margin-top:10px;padding:12px;border:1px solid #514064;border-radius:10px;background:#100b16">أدخل آيدي حساب تجريبي ثم اضغط فحص.</div>
-      </section>
-      </section>
-      </details>
       <div class="admin-workgroup-label"><span>03</span><div><strong>الفحص والتحقق</strong><small>اختبر بيانات المنتج واللاعب والرصيد قبل أي إجراء تشغيلي</small></div></div>
       <section class="deposit-card" id="baranAdminOrderPreflight" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
         <h2>🛡️ فحص جاهزية الطلب — للإدارة</h2>
