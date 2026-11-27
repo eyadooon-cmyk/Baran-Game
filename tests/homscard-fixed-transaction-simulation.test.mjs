@@ -146,7 +146,7 @@ test("variable catalog and quantities cannot enter the fixed transaction model",
 });
 
 test("fixed-order RPC validates supplier SKU and supplier attempt UUID before commit", () => {
-  const skuCheck = migration.indexOf("v_mapping.supplier_sku !~");
+  const skuCheck = migration.indexOf("translate(v_mapping.supplier_sku, '0123456789', '') <> ''");
   const orderInsert = migration.indexOf("insert into public.orders");
   const attemptCheck = migration.indexOf("if v_attempt_id is null or v_supplier_uuid is null");
   const returnObject = migration.indexOf("return jsonb_build_object('success',true,'duplicate',false");
