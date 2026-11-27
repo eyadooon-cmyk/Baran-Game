@@ -30,7 +30,7 @@
   const panel=card?.querySelector(":scope > .baran-product-detail-panel");
   if(!card||!panel)return;
   const titleNode=panel.querySelector("strong");
-  const name=titleNode?.textContent?.replace(/^تفاصيل\\s*/,"")||card.querySelector(".game-package-option strong,.baran-service-product-head strong")?.textContent||"تفاصيل المنتج";
+  const name=titleNode?.textContent?.replace(/^تفاصيل\s*/,"")||card.querySelector(".game-package-option strong,.baran-service-product-head strong")?.textContent||"تفاصيل المنتج";
   const image=card.querySelector(".baran-service-brand-visual img,.baran-package-art img,.baran-service-product-icon img");
   const visual=card.querySelector(".baran-package-art,.baran-service-product-icon,.baran-service-brand-visual");
   const fallback=visual?.textContent?.trim()||"BG";
@@ -52,7 +52,7 @@
   const content=document.createElement("div");content.className="bpf-card";
   const description=document.createElement("p");description.textContent=desc;content.append(description);
   const price=document.createElement("div");price.className="bpf-price";price.textContent=priceLine;content.append(price);
-  if(meta.length){const details=document.createElement("div");details.className="bpf-meta";details.textContent=meta.join("\\n");content.append(details)}
+  if(meta.length){const details=document.createElement("div");details.className="bpf-meta";details.textContent=meta.join("\n");content.append(details)}
   const cta=document.createElement("button");cta.type="button";cta.className="bpf-action";cta.textContent=action?(action.classList.contains("baran-package-button")?"اختيار الباقة":"اختيار للمراجعة"):"إغلاق التفاصيل";
   if(action&&action.disabled)cta.disabled=true;
   cta.addEventListener("click",()=>{if(action&&!action.disabled){overlay.remove();action.click()}else overlay.remove()});
