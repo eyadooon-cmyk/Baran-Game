@@ -641,13 +641,28 @@ Deno.serve(async (req: Request) => {
     if (body?.action === "homscard_variable_check_order" || body?.action === "homscard_fixed_check_order") {
       const orderId=typeof body.order_id==="string"?body.order_id.trim():"";
       if(!/^[0-9a-f-]{36}$/i.test(orderId))return json({success:false,error:"معرّف الطلب غير صالح."},400);
-      const {data:order,error:orderError}=await admin.from("orders").select("id,user_id,quantity,status")
+      const isFixedCheck=body.action==="homscard_fixed_check_order";
+      const {data:order,error:orderError}=await admin.from("orders")
+        .select("id,user_id,product_code,quantity,status")
         .eq("id",orderId).eq("user_id",user.id).maybeSingle();
       if(orderError||!order)return json({success:false,error:"الطلب غير موجود أو لا تملك صلاحية الاطلاع عليه."},404);
+      if(isFixedCheck){
+        const {data:product,error:productError}=await admin.from("products")
+          .select("catalog_group").eq("product_code",order.product_code).maybeSingle();
+        if(productError||product?.catalog_group!=="homscard_fixed")
+          return json({success:false,error:"هذا الطلب ليس من كتالوج HomsCard الثابت."},403);
+        if(Number(order.quantity)!==1)
+          return json({success:false,error:"كمية الطلب لا تطابق نظام المنتجات الثابتة."},409);
+      }
       const {data:fulfillment,error:fulfillmentError}=await admin.from("order_fulfillment")
         .select("supplier_order_uuid,supplier_id,supplier_delivery,dispatch_state")
         .eq("order_id",orderId).maybeSingle();
-      if(fulfillmentError||!fulfillment?.supplier_order_uuid)return json({success:false,error:"لا توجد بيانات متابعة HomsCard لهذا الطلب."},404);
+      if(fulfillmentError||!fulfillment?.supplier_order_uuid||!fulfillment.supplier_id)
+        return json({success:false,error:"لا توجد بيانات متابعة HomsCard لهذا الطلب."},404);
+      const {data:orderSupplier,error:supplierError}=await admin.from("suppliers")
+        .select("name").eq("id",fulfillment.supplier_id).maybeSingle();
+      if(supplierError||String(orderSupplier?.name||"").toLowerCase()!=="homscard")
+        return json({success:false,error:"مورد هذا الطلب لا يطابق HomsCard؛ أوقفنا الاستعلام."},403);
       if(["succeeded","refunded","failed"].includes(String(fulfillment.dispatch_state))){
         return json({success:true,order_id:orderId,status:order.status,dispatch_state:fulfillment.dispatch_state,delivery:fulfillment.supplier_delivery});
       }
