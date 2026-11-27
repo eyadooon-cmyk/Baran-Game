@@ -8074,25 +8074,36 @@ async function loadBaranJawakerCatalog(){
 async function baranRenderJawakerQuantityCalculator(card,product){
   const panel=document.createElement("section");
   panel.className="baran-jawaker-quantity-quote";
-  panel.style.cssText="display:grid;gap:10px;padding:13px;margin-top:10px;border:1px solid #6b4c91;border-radius:14px;background:linear-gradient(145deg,#21172e,#120f19);";
+  panel.style.cssText="display:grid;gap:12px;padding:14px;margin-top:10px;border:1px solid #6b4c91;border-radius:14px;background:linear-gradient(145deg,#21172e,#120f19);";
   const title=document.createElement("strong");title.textContent="شحن توكنز بكمية مخصصة";
-  const hint=document.createElement("small");hint.className="small";hint.textContent="أدخل Player ID والكمية المطلوبة. هذا فحص سعر فقط ولا ينشئ طلباً.";
+  const hint=document.createElement("small");hint.className="small";hint.textContent="أدخل Player ID وحدد الكمية. معاينة سعر فقط — لا يتم إنشاء طلب.";
   const playerLabel=document.createElement("label");playerLabel.textContent="Player ID";
-  const player=document.createElement("input");player.type="text";player.inputMode="numeric";player.autocomplete="off";player.maxLength=100;player.placeholder="أدخل معرّف حساب جواكر";player.setAttribute("aria-label","Player ID");player.style.cssText="width:100%;padding:11px;border-radius:9px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
+  const player=document.createElement("input");player.type="text";player.inputMode="numeric";player.autocomplete="off";player.maxLength=100;player.placeholder="أدخل معرّف حساب جواكر";player.setAttribute("aria-label","Player ID");player.style.cssText="width:100%;padding:12px;border-radius:10px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
   playerLabel.append(player);
   const quantityLabel=document.createElement("label");quantityLabel.textContent="عدد التوكنز";
-  const quantity=document.createElement("input");quantity.type="number";quantity.min="10000";quantity.max="10000000";quantity.step="1";quantity.value="10000";quantity.inputMode="numeric";quantity.style.cssText="width:100%;padding:11px;border-radius:9px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
-  quantityLabel.append(quantity);
+  const quantityRow=document.createElement("div");quantityRow.style.cssText="display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:9px;align-items:center";
+  const quantity=document.createElement("input");quantity.type="number";quantity.min="10000";quantity.max="10000000";quantity.step="10000";quantity.value="10000";quantity.inputMode="numeric";quantity.style.cssText="width:100%;min-width:0;text-align:center;font-size:20px;font-weight:700;padding:12px 4px;border-radius:10px;border:1px solid #8063a2;background:#0d0a12;color:#fff;box-sizing:border-box";
+  const minus=document.createElement("button");minus.type="button";minus.textContent="−";minus.setAttribute("aria-label","تقليل الكمية");minus.style.cssText="height:48px;font-size:26px;border-radius:10px;border:1px solid #8063a2;background:#342344;color:#fff";
+  const plus=document.createElement("button");plus.type="button";plus.textContent="+";plus.setAttribute("aria-label","زيادة الكمية");plus.style.cssText="height:48px;font-size:26px;border-radius:10px;border:1px solid #8063a2;background:#342344;color:#fff";
+  const minQty=10000,maxQty=10000000,stepQty=10000;
+  const setQty=value=>{quantity.value=String(Math.max(minQty,Math.min(maxQty,Math.round(Number(value)/stepQty)*stepQty)));};
+  minus.addEventListener("click",()=>setQty(Number(quantity.value||minQty)-stepQty));
+  plus.addEventListener("click",()=>setQty(Number(quantity.value||minQty)+stepQty));
+  quantity.addEventListener("change",()=>setQty(Number(quantity.value||minQty)));
+  quantityRow.append(minus,quantity,plus);
+  const shortcuts=document.createElement("div");shortcuts.style.cssText="display:flex;flex-wrap:wrap;gap:8px";
+  [["200 ألف",200000],["500 ألف",500000],["مليون",1000000]].forEach(([label,value])=>{const chip=document.createElement("button");chip.type="button";chip.textContent=label;chip.style.cssText="flex:1;min-width:85px;padding:9px 10px;border-radius:20px;border:1px solid #8063a2;background:#2b1d3a;color:#fff";chip.addEventListener("click",()=>setQty(value));shortcuts.append(chip);});
+  quantityLabel.append(quantityRow,shortcuts);
   const currencyLabel=document.createElement("label");currencyLabel.textContent="عملة الدفع";
-  const currency=document.createElement("select");currency.style.cssText="width:100%;padding:11px;border-radius:9px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
-  [["SYP","الليرة السورية القديمة"],["USD","الدولار الأمريكي"]].forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;currency.append(option);});
+  const currency=document.createElement("select");currency.style.cssText="width:100%;padding:12px;border-radius:10px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
+  [["SYP","الليرة السورية الجديدة"],["USD","الدولار الأمريكي"]].forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;currency.append(option);});
   currencyLabel.append(currency);
   const button=document.createElement("button");button.type="button";button.className="primary";button.textContent="احسب السعر";
-  const result=document.createElement("div");result.className="small";result.setAttribute("aria-live","polite");result.style.cssText="padding:10px;border-radius:9px;background:#0d0a12;line-height:1.8;white-space:pre-line";result.textContent="أدخل البيانات ثم اضغط احسب السعر.";
+  const result=document.createElement("div");result.className="small";result.setAttribute("aria-live","polite");result.style.cssText="padding:12px;border-radius:10px;background:#0d0a12;line-height:1.9;white-space:pre-line";result.textContent="اختر الكمية ثم اضغط احسب السعر.";
   const formatMoney=(value,digits=2)=>Number(value).toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits});
   button.addEventListener("click",async()=>{
     const qty=Number(quantity.value),playerId=player.value.trim();
-    if(!Number.isSafeInteger(qty)||qty<10000||qty>10000000){result.textContent="الكمية يجب أن تكون عدداً صحيحاً من 10,000 إلى 10,000,000.";return;}
+    if(!Number.isSafeInteger(qty)||qty<minQty||qty>maxQty){result.textContent="الكمية يجب أن تكون من 10,000 إلى 10,000,000 توكن.";return;}
     if(!playerId||playerId.length<3){result.textContent="أدخل Player ID صحيحاً قبل حساب السعر.";return;}
     if(!currentUser){result.textContent="سجّل الدخول أولاً لحساب السعر.";return;}
     button.disabled=true;button.textContent="جاري حساب السعر...";
@@ -8102,8 +8113,8 @@ async function baranRenderJawakerQuantityCalculator(card,product){
       if(error)throw error;
       if(!data?.success||!data?.quote)throw new Error(data?.error||"تعذر حساب السعر.");
       const q=data.quote;
-      const lines=["الكمية: "+Number(q.quantity).toLocaleString("en-US")+" توكن","سعر البيع: "+(currency.value==="USD"?formatMoney(q.sale_usd,2)+" $":formatMoney(q.sale_syp,0)+" ل.س قديمة"),"سعر الصرف التجاري: "+formatMoney(q.commercial_rate,2)+" ل.س لكل دولار","هامش الربح المطبق: "+formatMoney(q.markup_percent,2)+"%"];
-      if(q.is_admin){lines.push("تكلفة المورد: "+formatMoney(q.cost_usd,4)+" $","الربح المتوقع: "+formatMoney(q.profit_usd,4)+" $ · "+formatMoney(q.profit_syp,0)+" ل.س");}
+      const lines=["الكمية: "+Number(q.quantity).toLocaleString("en-US")+" توكن","سعر البيع: "+(currency.value==="USD"?formatMoney(q.sale_usd,2)+" $":formatMoney(Number(q.sale_syp)/100,0)+" ل.س جديدة"),"سعر الصرف التجاري: "+formatMoney(Number(q.commercial_rate)/100,2)+" ل.س جديدة لكل دولار","هامش الربح المطبق: "+formatMoney(q.markup_percent,2)+"%"];
+      if(q.is_admin){lines.push("تكلفة المورد: "+formatMoney(q.cost_usd,4)+" $","الربح المتوقع: "+formatMoney(q.profit_usd,4)+" $ · "+formatMoney(Number(q.profit_syp)/100,0)+" ل.س جديدة");}
       lines.push("معاينة فقط — الشراء والشحن والخصم غير مفعّلة.");
       result.textContent=lines.join("\n");
     }catch(error){result.textContent=error?.message||"تعذر حساب السعر. حاول مجدداً.";}
