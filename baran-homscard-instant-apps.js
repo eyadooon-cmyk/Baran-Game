@@ -15,16 +15,17 @@
     return data;
   }
   function showMessage(node,message,isError){node.textContent=message;node.classList.toggle("is-error",!!isError);node.classList.toggle("is-ok",!isError);}
-  function renderCatalog(){
-    const host=$("appsProductCatalog");if(!host)return;
+  function renderCatalog(host,category){
+    if(!host)return;
     host.replaceChildren();
+    const visibleProducts=products.filter(p=>p.category===category);
     const head=el("div","baran-ia-heading");
-    const copy=el("div");copy.append(el("span","baran-ia-kicker","HOMSCARD · INSTANT TOP-UP"),el("h3","","تطبيقات الشحن الفوري"),el("p","","اختر التطبيق، أدخل معرّف الحساب، وحدد الكمية قبل مراجعة السعر."));
-    head.append(copy,el("span","baran-ia-count",products.length+" منتج"));
+    const copy=el("div");copy.append(el("span","baran-ia-kicker","HOMSCARD · INSTANT TOP-UP"),el("h3","","منتجات الشحن حسب الكمية"),el("p","","اختر المنتج، أدخل معرّف الحساب إذا طُلب، وحدد الكمية قبل مراجعة السعر."));
+    head.append(copy,el("span","baran-ia-count",visibleProducts.length+" منتج"));
     host.append(head);
-    if(!products.length){host.append(el("div","baran-ia-empty","لا توجد حالياً منتجات تطبيقات اجتازت فحص التوفر والسعر وحقول الشحن لدى HomsCard."));return;}
+    if(!visibleProducts.length){host.append(el("div","baran-ia-empty","لا توجد حالياً منتجات متغيرة الكمية اجتازت فحص التوفر والسعر لدى HomsCard ضمن هذا القسم."));return;}
     const grid=el("div","baran-ia-grid");
-    products.forEach(p=>{
+    visibleProducts.forEach(p=>{
       const card=el("article","baran-ia-card");
       const art=el("div","baran-ia-art");
       const image=safeImage(p.image);
@@ -43,7 +44,7 @@
   async function loadCatalog(){
     const host=$("appsProductCatalog");if(!host||loading)return;
     loading=true;host.replaceChildren(el("div","baran-ia-loading","جاري تحميل منتجات HomsCard المتاحة..."));
-    try{const data=await invoke({action:"homscard_app_catalog"});products=Array.isArray(data.products)?data.products:[];renderCatalog();}
+    try{const data=await invoke({action:"homscard_variable_catalog"});products=Array.isArray(data.products)?data.products:[];renderCatalog(host,"تطبيقات");}
     catch(error){host.replaceChildren(el("div","baran-ia-empty",error.message));}
     finally{loading=false;}
   }
@@ -98,7 +99,7 @@
     if(playerId.length<2){if(showErrors)showMessage($("baranIaStatus"),"أدخل معرّف الحساب أولاً.",true);return;}
     const button=document.querySelector(".baran-ia-review");button.disabled=true;showMessage($("baranIaStatus"),"جاري حساب السعر...",false);
     try{
-      const data=await invoke({action:"homscard_app_quote",product_id:activeProduct.product_id,quantity,player_id:playerId,payment_currency:"USD"});
+      const data=await invoke({action:"homscard_variable_quote",product_id:activeProduct.product_id,quantity,player_id:playerId,payment_currency:"USD"});
       quote=data.quote;
       $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","",money(quote.sale_usd)+" $"),el("small","",Number(quote.quantity).toLocaleString("en-US")+" وحدة"));
       showMessage($("baranIaStatus"),"تم تحديث السعر. راجع الكمية ومعرّف الحساب قبل المتابعة.",false);
