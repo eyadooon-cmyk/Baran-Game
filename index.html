@@ -2132,19 +2132,32 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
 .baran-guest-prompt-close{position:absolute;top:10px;left:10px;width:36px;height:36px;padding:0;border:1px solid #59456b;background:#21172c;color:#fff;font-size:24px}
 </style>
 
-<style id="baran-real-category-photos-20261125">
-/* صور فوتوغرافية حقيقية لأقسام المتجر — صور خارجية من Unsplash */
+<style id="baran-real-category-photos-20261127">
+/* صور فوتوغرافية محسّنة لأقسام الشحن الآلي — هوية بنفسجية موحّدة */
 .baran-auto-category-grid .baran-auto-category-art{
   position:relative;isolation:isolate;overflow:hidden;
   background-position:center;background-size:cover;background-repeat:no-repeat;
-  border:1px solid #8d69aa;box-shadow:inset 0 0 35px #130b20aa,0 7px 18px #0005;
+  border:1px solid #b18bd0;
+  box-shadow:inset 0 0 42px #100817aa,0 9px 22px #0007;
   font-size:0;color:transparent;text-shadow:none;
+  transition:transform .28s ease,filter .28s ease,border-color .28s ease;
 }
-.baran-auto-category-grid .baran-auto-category-art:not(.baran-auto-apps-art):not(.baran-auto-chat-art):not(.baran-auto-vpn-art):not(.baran-auto-gifts-art){
-  background-image:linear-gradient(180deg,#170d2440,#170d24a8),url("https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1000&q=85");
+.baran-auto-category-grid .baran-auto-category-art:after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(145deg,#b98be822,transparent 48%,#10081766);
+  box-shadow:inset 0 1px #ffffff30;
+}
+.baran-auto-category-grid .baran-auto-category-art:not(.baran-auto-apps-art):not(.baran-auto-chat-art):not(.baran-auto-vpn-art):not(.baran-auto-gifts-art):not(.baran-auto-telecom-art):not(.baran-auto-wallet-art){
+  background-image:linear-gradient(180deg,#170d2420,#170d24a8),url("https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&q=88");
 }
 .baran-auto-category-grid .baran-auto-apps-art{
-  background-image:linear-gradient(180deg,#170d2440,#170d24a8),url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1000&q=85");
+  background-image:linear-gradient(180deg,#170d2418,#170d24a8),url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=88");
+}
+.baran-auto-category-grid .baran-auto-telecom-art{
+  background-image:linear-gradient(180deg,#100d2418,#100d24b8),url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=88");
+}
+.baran-auto-category-grid .baran-auto-wallet-art{
+  background-image:linear-gradient(180deg,#170d2418,#170d24b8),url("https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200&q=88");
 }
 .baran-auto-category-grid .baran-auto-chat-art{
   background-image:linear-gradient(180deg,#170d2433,#170d24b8),url("https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1000&q=85");
@@ -2155,14 +2168,39 @@ html:not([data-baran-theme="day"]) .baran-theme-copy span{font-size:12px;color:#
 .baran-auto-category-grid .baran-auto-gifts-art{
   background-image:linear-gradient(180deg,#170d2433,#170d24b8),url("https://images.unsplash.com/photo-1513883049090-d0b7439799bf?w=1000&q=85");
 }
+@media(hover:hover){
+ .baran-auto-category-grid .item:hover .baran-auto-category-art{transform:scale(1.025);filter:saturate(1.15);border-color:#d6b5ef}
+}
 html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
   border-color:#b99bcf;box-shadow:inset 0 0 30px #21112b55,0 5px 14px #39244818;
 }
+@media(prefers-reduced-motion:reduce){.baran-auto-category-grid .baran-auto-category-art{transition:none}}
 </style>
 
 <link rel="stylesheet" href="./baran-wide-layout.css?v=20261125-wide-v2">
 <link rel="stylesheet" href="./automatic-topup-showcase.css?v=20261125-v1">
 <link rel="stylesheet" href="./automatic-topup-catalog-premium.css?v=20261125-v2">
+<style id="baran-category-img-elements-20261127">
+/* اجعل صور الأقسام عناصر IMG فعلية لتظهر حتى عند تعارض خلفيات CSS */
+#games .baran-auto-category-grid .baran-auto-category-art{
+ position:relative!important;display:block!important;min-height:150px!important;
+ overflow:hidden!important;background:#21152d!important;isolation:isolate!important;
+}
+#games .baran-auto-category-grid .baran-auto-category-art>img{
+ position:absolute!important;inset:0!important;display:block!important;
+ width:100%!important;height:100%!important;max-width:none!important;
+ object-fit:cover!important;object-position:center!important;opacity:1!important;
+ z-index:0!important;border:0!important;border-radius:inherit!important;
+}
+#games .baran-auto-category-grid .baran-auto-category-art:after{
+ content:""!important;position:absolute!important;inset:0!important;z-index:1!important;
+ pointer-events:none!important;
+ background:linear-gradient(180deg,#160d2410 15%,#160d2475 100%)!important;
+ box-shadow:inset 0 1px #ffffff35!important;
+}
+#games .baran-auto-category-grid .baran-auto-category-art{font-size:0!important;color:transparent!important}
+@media(max-width:380px){#games .baran-auto-category-grid .baran-auto-category-art{min-height:118px!important}}
+</style>
 </head>
 <body>
 
@@ -2372,7 +2410,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <div class="baran-shipping-choices" aria-label="طرق الشحن">
         <div class="baran-home-section-intro">
           <span class="baran-section-index">TOP-UP</span>
-          <div><h2>اختر القسم المناسب</h2><p>الألعاب والتطبيقات والشحن اليدوي عبر BARO</p></div>
+          <div><h2>اختر القسم المناسب</h2><p>الشحن الآلي للألعاب والخدمات، أو الشحن اليدوي عبر BARO</p></div>
         </div>
 
         <button class="baran-shipping-card baran-shipping-auto" type="button" onclick="showSection('games',null)">
@@ -2387,17 +2425,11 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="baran-shipping-number">01</span>
         </button>
 
-        <button class="baran-shipping-card baran-shipping-apps" type="button" onclick="showSection('appsStore',this)">
-          <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1400&q=85" alt="تطبيقات وخدمات رقمية" loading="lazy">
-          <span class="baran-shipping-shade"></span>
-          <span class="baran-shipping-content">
-            <small>APPS & DIGITAL SERVICES</small>
-            <strong>التطبيقات</strong>
-            <em>تصفّح التطبيقات والخدمات الرقمية المتاحة في المتجر.</em>
-            <b>استعراض التطبيقات <i>←</i></b>
-          </span>
-          <span class="baran-shipping-number">02</span>
-        </button>
+
+
+        
+
+        
 
         <button class="baran-shipping-card baran-shipping-manual" type="button" onclick="showSection('manualGames',this)">
           <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1400&q=85" alt="معدات ألعاب وشحن يدوي" loading="lazy">
@@ -2434,24 +2466,20 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <label class="baran-auto-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="ابحث عن لعبة أو خدمة..." autocomplete="off" oninput="filterAutomaticCatalog(this, '#games .baran-auto-category-grid .item')"><kbd>بحث</kbd></label>
       <div class="grid baran-auto-category-grid">
         <button class="item" type="button" onclick="showSection('automaticGames',null)">
-          <span class="baran-auto-category-art">🎮</span>
+          <span class="baran-auto-category-art baran-auto-games-art"><img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=1200&amp;q=88" alt="أجهزة وأجواء ألعاب إلكترونية" loading="lazy"></span>
           <span class="item-content"><strong>الألعاب</strong><span>PUBG MOBILE وFree Fire وجواكر وألعاب أخرى</span><span class="small">استعراض الألعاب ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('appsStore',null)">
-          <span class="baran-auto-category-art baran-auto-apps-art">📱</span>
-          <span class="item-content"><strong>البرامج والتطبيقات</strong><span>تطبيقات مدفوعة وخدمات رقمية</span><span class="small">استعراض البرامج ←</span></span>
+          <span class="baran-auto-category-art baran-auto-apps-art"><img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&amp;q=88" alt="أجهزة وتطبيقات رقمية" loading="lazy"></span>
+          <span class="item-content"><strong>التطبيقات</strong><span>اشحن عملات ورصيد تطبيقات البث والمحادثة مثل Bigo وChamet وLikee، وأرسل الهدايا وتفاعل داخل التطبيق.</span><span class="small">استعراض تطبيقات الشحن ←</span></span>
         </button>
-        <button class="item" type="button" onclick="showSection('chatgptStore',null)">
-          <span class="baran-auto-category-art baran-auto-chat-art">💬</span>
-          <span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT واشتراكات وخدمات المحادثة</span><span class="small">استعراض خدمات الدردشة ←</span></span>
+        <button class="item" type="button" onclick="showSection('telecomStore',null)">
+          <span class="baran-auto-category-art baran-auto-telecom-art"><img src="https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=1200&amp;q=88" alt="شبكات واتصالات" loading="lazy"></span>
+          <span class="item-content"><strong>الاتصالات</strong><span>باقات سيرياتل وMTN سوريا</span><span class="small">استعراض باقات الاتصالات ←</span></span>
         </button>
-        <button class="item" type="button" onclick="showSection('vpnStore',null)">
-          <span class="baran-auto-category-art baran-auto-vpn-art">🛡️</span>
-          <span class="item-content"><strong>اشتراكات VPN</strong><span>خدمات الشبكات الخاصة والاتصال</span><span class="small">استعراض اشتراكات VPN ←</span></span>
-        </button>
-        <button class="item" type="button" onclick="showSection('giftCardsStore',null)">
-          <span class="baran-auto-category-art baran-auto-gifts-art">🎁</span>
-          <span class="item-content"><strong>البطاقات الرقمية</strong><span>Google Play وبطاقات رقمية أخرى</span><span class="small">استعراض البطاقات ←</span></span>
+        <button class="item" type="button" onclick="showSection('wallet',null)">
+          <span class="baran-auto-category-art baran-auto-wallet-art"><img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&amp;q=88" alt="دفع ومحافظ رقمية" loading="lazy"></span>
+          <span class="item-content"><strong>المحافظ</strong><span>محفظتك الرقمية وخدمات المحافظ</span><span class="small">فتح المحافظ ←</span></span>
         </button>
       </div>
     </section>
@@ -2473,6 +2501,28 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="baran-auto-game-art baran-jawaker-art"><span>J</span><small>JAWAKER</small></span>
           <span class="item-content"><strong>جواكر · JAWAKER</strong><span>توكنز السيرفرات ومسرّعات جواكر</span><span class="small">فتح متجر جواكر ←</span></span>
         </button>
+        <article class="item baran-extra-game-card" data-baran-extra-game="yalla-ludo">
+          <img src="https://img.tapimg.net/market/images/2a6deb395c3445180ceff676bf97b384.jpg" alt="Yalla Ludo" loading="lazy">
+          <span class="item-content"><strong>يلا لودو · YALLA LUDO</strong><span>لودو وجاكارو والدومينو وغرف اللعب</span><span class="baran-game-coming">قيد تجهيز كتالوج الشحن</span></span>
+        </article>
+        <article class="item baran-extra-game-card" data-baran-extra-game="ludo-club">
+          <img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/8b/58/83/8b5883f9-ed7f-ded5-5011-48b6bd6c279a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/1024x1024bb.png" alt="Ludo Club" loading="lazy">
+          <span class="item-content"><strong>لودو كلوب · LUDO CLUB</strong><span>لعبة لودو متعددة اللاعبين</span><span class="baran-game-coming">قيد تجهيز كتالوج الشحن</span></span>
+        </article>
+        <article class="item baran-extra-game-card" data-baran-extra-game="billiards">
+          <img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/74/5c/61/745c6160-c9d9-804c-d2ae-6a9ecd8f1fe8/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg" alt="8 Ball Pool" loading="lazy">
+          <span class="item-content"><strong>بلياردو · 8 BALL POOL</strong><span>طاولات البلياردو والعملات داخل اللعبة</span><span class="baran-game-coming">قيد تجهيز كتالوج الشحن</span></span>
+        </article>
+        <article class="item baran-extra-game-card" data-baran-extra-game="whiteout">
+          <img src="https://res.ldrescdn.com/rms/ldplayer/process/img/430e3dc9b3e748e69a972d79dade0c6b1763237006.png?x-oss-process=image%2Fformat%2Cwebp%2Fquality%2CQ_100%2Fresize%2Cw_1024" alt="Whiteout Survival — النجاة في السقيع" loading="lazy">
+          <span class="item-content"><strong>النجاة في السقيع · WHITEOUT SURVIVAL</strong><span>ألماس وموارد لعبة البقاء الجليدية</span><span class="baran-game-coming">قيد تجهيز كتالوج الشحن</span></span>
+        </article>
+        
+        <article class="item baran-extra-game-card" data-baran-extra-game="mobile-legends">
+          <img src="https://is4-ssl.mzstatic.com/image/thumb/Purple126/v4/0e/ae/e4/0eaee45b-a414-e99b-2eed-b7868478f522/AppIcon-0-0-1x_U007emarketing-0-0-0-6-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/1200x630wa.png" alt="Mobile Legends Bang Bang" loading="lazy">
+          <span class="item-content"><strong>موبايل ليجند · MOBILE LEGENDS</strong><span>ألماس وبطاقات وعناصر اللعبة</span><span class="baran-game-coming">قيد تجهيز كتالوج الشحن</span></span>
+        </article>
+        
       </div>
     </section>
 
@@ -2560,7 +2610,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <button class="item" type="button" onclick="showSection('chatgptStore',null)"><span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT وGemini وClaude وGrok وأدوات AI</span><span class="small">فتح القسم ←</span></span></button>
         <button class="item" type="button" onclick="showSection('vpnStore',null)"><span class="item-content"><strong>VPN</strong><span>اشتراكات VPN</span><span class="small">فتح القسم ←</span></span></button>
         <button class="item" type="button" onclick="showSection('giftCardsStore',null)"><span class="item-content"><strong>Google Play</strong><span>بطاقات رقمية</span><span class="small">فتح القسم ←</span></span></button>
-        <button class="item" type="button" onclick="showSection('appsStore',null)"><span class="item-content"><strong>التطبيقات والبرامج</strong><span>Canva وCapCut وFigma وغيرها</span><span class="small">فتح القسم ←</span></span></button>
+        
         <button class="item" type="button" onclick="showSection('subscriptionStore',null)"><span class="item-content"><strong>الاشتراكات والترفيه</strong><span>Netflix وShahid وAnghami وخدمات TV</span><span class="small">فتح القسم ←</span></span></button>
       </div>
     </section>
@@ -2584,9 +2634,70 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
     </section>
 
     <section id="appsStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('services',null)">← العودة إلى الخدمات الرقمية</button>
-      <div class="hero"><h2>التطبيقات والبرامج المدفوعة</h2><p>التطبيقات والاشتراكات الخاصة بها ضمن هذا القسم فقط.</p></div>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى أقسام الشحن الآلي</button>
+      <div class="hero"><h2>شحن رصيد وعملات التطبيقات</h2><p>اختر تطبيقك واشحن العملات أو الرصيد لاستخدامه في البث المباشر والمحادثات وإرسال الهدايا والتفاعل مع الآخرين.</p></div>
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
+    </section>
+
+    <section id="telecomStore" class="hidden">
+      <button class="secondary baran-back-button" type="button" onclick="showSection('home',null)">← العودة للرئيسية</button>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">BARAN GAME · TELECOM</span><h2>باقات الاتصالات</h2><p>كل الباقات التي عثرنا عليها في كتالوج HomsCard، مرتبة حسب الشركة.</p></div>
+      <div class="deposit-card baran-service-catalog"><strong>معاينة وفرز الكتالوج فقط</strong><p class="small">تم فرز 42 منتجاً: 22 لسيرياتل و20 لـ MTN. حالة التوفر من آخر تدقيق للكتالوج بتاريخ 26-11-2026، وقد تتغير عند المزامنة. لا توجد أسعار بيع أو أزرار شراء أو تنفيذ شحن.</p></div>
+
+      
+      <div id="baranTelecomProviders" class="grid baran-auto-category-grid baran-telecom-provider-picker">
+        <button class="item" type="button" onclick="showTelecomProvider('syriatel')">
+          <img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="سيرياتل" loading="lazy">
+          <span class="item-content"><strong>سيرياتل · SYRIATEL</strong><span>باقات سيرياتل المتوفرة حالياً</span><span class="small">عرض 13 باقة متوفرة ←</span></span>
+        </button>
+        <button class="item" type="button" onclick="showTelecomProvider('mtn')">
+          <img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/ki987645612098nbv.jpeg" alt="MTN سوريا" loading="lazy">
+          <span class="item-content"><strong>MTN سوريا</strong><span>باقات MTN المتوفرة حالياً</span><span class="small">عرض 20 باقة متوفرة ←</span></span>
+        </button>
+      </div>
+      <section class="baran-telecom-provider-section hidden" id="baranSyriatelPackages"><button class="secondary baran-back-button" type="button" onclick="showTelecomProviders()">← العودة لشركات الاتصالات</button><label class="baran-telecom-search"><span>⌕</span><input type="search" placeholder="ابحث ضمن باقات سيرياتل..." oninput="filterAutomaticCatalog(this, '#baranSyriatelPackages .baran-telecom-package')"></label><div class="baran-telecom-provider-heading"><div><h3>سيرياتل</h3><p>باقات سيرياتل المسترجعة من المورد</p></div><span>22 باقة</span></div><div class="grid baran-telecom-packages-grid"><article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="100.96 syriatel"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/sososososososososog_6g.jpeg" alt="100.96 syriatel" loading="lazy"><div class="item-content"><strong>100.96 syriatel</strong><span class="baran-telecom-package-id">رمز المورد: 399</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="115.38 syriatel"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="115.38 Syriatel" loading="lazy"><div class="item-content"><strong>115.38 Syriatel</strong><span class="baran-telecom-package-id">رمز المورد: 187</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="20.19 syriatel"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="20.19 Syriatel" loading="lazy"><div class="item-content"><strong>20.19 Syriatel</strong><span class="baran-telecom-package-id">رمز المورد: 1363</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="40.38 syriatel"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="40.38 Syriatel" loading="lazy"><div class="item-content"><strong>40.38 Syriatel</strong><span class="baran-telecom-package-id">رمز المورد: 1364</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="52.88 syriatel"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="52.88 Syriatel" loading="lazy"><div class="item-content"><strong>52.88 Syriatel</strong><span class="baran-telecom-package-id">رمز المورد: 184</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="72.11 syriatel"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="72.11 Syriatel" loading="lazy"><div class="item-content"><strong>72.11 Syriatel</strong><span class="baran-telecom-package-id">رمز المورد: 188</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="9.61 syriatel"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="9.61 Syriatel" loading="lazy"><div class="item-content"><strong>9.61 Syriatel</strong><span class="baran-telecom-package-id">رمز المورد: 1362</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="96.15 syriatel"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/sososososososososog_6g.jpeg" alt="96.15 syriatel" loading="lazy"><div class="item-content"><strong>96.15 syriatel</strong><span class="baran-telecom-package-id">رمز المورد: 398</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+
+
+
+
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="syriatel 240.38"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="syriatel 240.38" loading="lazy"><div class="item-content"><strong>syriatel 240.38</strong><span class="baran-telecom-package-id">رمز المورد: 609</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+
+
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="syriatel 432.69"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="syriatel 432.69" loading="lazy"><div class="item-content"><strong>syriatel 432.69</strong><span class="baran-telecom-package-id">رمز المورد: 613</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="syriatel 576.92"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="syriatel 576.92" loading="lazy"><div class="item-content"><strong>syriatel 576.92</strong><span class="baran-telecom-package-id">رمز المورد: 615</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="syriatel 721.15"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="syriatel 721.15" loading="lazy"><div class="item-content"><strong>syriatel 721.15</strong><span class="baran-telecom-package-id">رمز المورد: 617</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+
+<article class="item baran-telecom-package is-listed" data-provider="syriatel" data-package-name="syriatel 951.92"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="syriatel 951.92" loading="lazy"><div class="item-content"><strong>syriatel 951.92</strong><span class="baran-telecom-package-id">رمز المورد: 619</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article></div></section>
+      
+      <section class="baran-telecom-provider-section hidden" id="baranMtnPackages"><button class="secondary baran-back-button" type="button" onclick="showTelecomProviders()">← العودة لشركات الاتصالات</button><label class="baran-telecom-search"><span>⌕</span><input type="search" placeholder="ابحث ضمن باقات MTN..." oninput="filterAutomaticCatalog(this, '#baranMtnPackages .baran-telecom-package')"></label><div class="baran-telecom-provider-heading"><div><h3>MTN سوريا</h3><p>باقات MTN المسترجعة من المورد</p></div><span>20 باقة</span></div><div class="grid baran-telecom-packages-grid"><article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="50 mtn"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/ki987645612098nbv.jpeg" alt="50 MTN" loading="lazy"><div class="item-content"><strong>50 MTN</strong><span class="baran-telecom-package-id">رمز المورد: 192</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 100"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/ki987645612098nbv.jpeg" alt="MTN 100" loading="lazy"><div class="item-content"><strong>MTN 100</strong><span class="baran-telecom-package-id">رمز المورد: 315</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 1000"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 1000" loading="lazy"><div class="item-content"><strong>MTN 1000</strong><span class="baran-telecom-package-id">رمز المورد: 590</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 150"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/ki987645612098nbv.jpeg" alt="MTN 150" loading="lazy"><div class="item-content"><strong>MTN 150</strong><span class="baran-telecom-package-id">رمز المورد: 1365</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 200"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 200" loading="lazy"><div class="item-content"><strong>MTN 200</strong><span class="baran-telecom-package-id">رمز المورد: 581</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 2000"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 2000" loading="lazy"><div class="item-content"><strong>MTN 2000</strong><span class="baran-telecom-package-id">رمز المورد: 591</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 2500"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 2500" loading="lazy"><div class="item-content"><strong>MTN 2500</strong><span class="baran-telecom-package-id">رمز المورد: 592</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 260"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 260" loading="lazy"><div class="item-content"><strong>MTN 260</strong><span class="baran-telecom-package-id">رمز المورد: 583</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 300"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 300" loading="lazy"><div class="item-content"><strong>MTN 300</strong><span class="baran-telecom-package-id">رمز المورد: 585</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 3500"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 3500" loading="lazy"><div class="item-content"><strong>MTN 3500</strong><span class="baran-telecom-package-id">رمز المورد: 594</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 360"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 360" loading="lazy"><div class="item-content"><strong>MTN 360</strong><span class="baran-telecom-package-id">رمز المورد: 1367</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 400"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 400" loading="lazy"><div class="item-content"><strong>MTN 400</strong><span class="baran-telecom-package-id">رمز المورد: 586</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 4500"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 4500" loading="lazy"><div class="item-content"><strong>MTN 4500</strong><span class="baran-telecom-package-id">رمز المورد: 595</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 480"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 480" loading="lazy"><div class="item-content"><strong>MTN 480</strong><span class="baran-telecom-package-id">رمز المورد: 1366</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 500"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 500" loading="lazy"><div class="item-content"><strong>MTN 500</strong><span class="baran-telecom-package-id">رمز المورد: 587</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 5000"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 5000" loading="lazy"><div class="item-content"><strong>MTN 5000</strong><span class="baran-telecom-package-id">رمز المورد: 596</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 6000"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 6000" loading="lazy"><div class="item-content"><strong>MTN 6000</strong><span class="baran-telecom-package-id">رمز المورد: 597</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 700"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 700" loading="lazy"><div class="item-content"><strong>MTN 700</strong><span class="baran-telecom-package-id">رمز المورد: 589</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn 7200"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN 7200" loading="lazy"><div class="item-content"><strong>MTN 7200</strong><span class="baran-telecom-package-id">رمز المورد: 598</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article>
+<article class="item baran-telecom-package is-listed" data-provider="mtn" data-package-name="mtn3000"><img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/WhatsApp_Image_2026-01-05_at_10.23.19_PM.jpeg" alt="MTN3000" loading="lazy"><div class="item-content"><strong>MTN3000</strong><span class="baran-telecom-package-id">رمز المورد: 593</span><span class="baran-telecom-status ">متوفر حسب آخر تدقيق</span></div></article></div></section>
     </section>
 
 
@@ -2632,6 +2743,31 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="wallet-card-watermark wallet-arabic-mark" aria-hidden="true">ل.س</span>
         </article>
       </div>
+      <section class="baran-wallet-services" aria-labelledby="baranWalletServicesTitle">
+        <div class="baran-wallet-services-heading">
+          <div><span class="baran-wallet-services-kicker">HOMSCARD · DIGITAL WALLETS</span><h2 id="baranWalletServicesTitle">خدمات المحافظ الرقمية</h2><p>ثلاث خدمات من كتالوج حمص كارد — معاينة فقط إلى حين استكمال تدقيق الربط والأسعار.</p></div>
+          <span class="baran-wallet-services-count">03 خدمات</span>
+        </div>
+        <div class="baran-wallet-services-grid">
+          <article class="baran-wallet-service-card">
+            <div class="baran-wallet-service-brand baran-wallet-usdt"><span>₮</span><small>TRC / BEP</small></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة عملات رقمية</span><h3>USDT BEP20</h3><p>إرسال إلى عنوان استقبال USDT على شبكة BEP20.</p><div class="baran-wallet-service-meta"><span>معرّف المورد</span><strong dir="ltr">1217</strong></div><div class="baran-wallet-service-meta"><span>الكمية حسب المورد</span><strong dir="ltr">50 – 7,000</strong></div><div class="baran-wallet-service-field"><b>حقل الطلب المطلوب</b><span dir="ltr">USDT BEP20 Address</span></div></div>
+            <span class="baran-wallet-service-status">قيد التدقيق · غير متاح للشراء</span>
+          </article>
+          <article class="baran-wallet-service-card">
+            <div class="baran-wallet-service-brand baran-wallet-whish"><span>W</span><small>WHISH MONEY</small></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية</span><h3>Wish Money · ويش موني</h3><p>خدمة ويش موني وفق بيانات المنتج لدى المورد.</p><div class="baran-wallet-service-meta"><span>معرّف المورد</span><strong dir="ltr">1218</strong></div><div class="baran-wallet-service-meta"><span>الكمية حسب المورد</span><strong dir="ltr">20 – 2,999</strong></div><div class="baran-wallet-service-field"><b>حقل الطلب المطلوب</b><span dir="ltr">Whish Money Number</span></div></div>
+            <span class="baran-wallet-service-status">قيد التدقيق · غير متاح للشراء</span>
+          </article>
+          <article class="baran-wallet-service-card">
+            <div class="baran-wallet-service-brand baran-wallet-sham"><span>ش</span><small>SHAM CASH</small></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية سورية</span><h3>Sham Cash · شام كاش</h3><p>خدمة شام كاش مع ضرورة التحقق من بيانات الاستلام قبل أي طلب.</p><div class="baran-wallet-service-meta"><span>معرّف المورد</span><strong dir="ltr">1219</strong></div><div class="baran-wallet-service-meta"><span>الكمية حسب المورد</span><strong dir="ltr">10 – 1,000</strong></div><div class="baran-wallet-service-field"><b>حقل الطلب المطلوب</b><span>عنوان حساب شام كاش أو صورة الباركود للدعم</span></div></div>
+            <span class="baran-wallet-service-status">قيد التدقيق · غير متاح للشراء</span>
+          </article>
+        </div>
+        <p class="baran-wallet-services-note">ملاحظة: لم نعرض أسعار المورد كأنها أسعار بيع، ولم نضف أزرار طلب أو تحويل أو شحن. تفعيل الخدمات يحتاج تدقيق العملة وطريقة احتساب الكمية والتحقق من الشبكة/الحساب أولاً.</p>
+      </section>
+
       <div class="wallet-actions">
 <button class="wallet-refresh-button wallet-payment-entry" type="button" onclick="showSection('paymentMethods',null)">
 <span class="wallet-action-icon" aria-hidden="true">＋</span>
@@ -4583,8 +4719,21 @@ function openBaroManualGame(category){
   window.baroManualSelectedCategory=category;
   showSection("baroManual",null);
 }
+
+function showTelecomProviders(){
+  document.getElementById("baranTelecomProviders")?.classList.remove("hidden");
+  document.getElementById("baranSyriatelPackages")?.classList.add("hidden");
+  document.getElementById("baranMtnPackages")?.classList.add("hidden");
+}
+function showTelecomProvider(provider){
+  const valid=provider==="syriatel"||provider==="mtn";
+  if(!valid)return;
+  document.getElementById("baranTelecomProviders")?.classList.add("hidden");
+  document.getElementById("baranSyriatelPackages")?.classList.toggle("hidden",provider!=="syriatel");
+  document.getElementById("baranMtnPackages")?.classList.toggle("hidden",provider!=="mtn");
+}
 function showSection(id,button,options){
-  const publicSections=new Set(["home","games","automaticGames","manualGames","pubgStore","freeFireStore","jawakerStore","baroManual","services","chatgptStore","vpnStore","giftCardsStore","appsStore","subscriptionStore","favorites"]);
+  const publicSections=new Set(["home","games","automaticGames","manualGames","pubgStore","freeFireStore","jawakerStore","baroManual","services","chatgptStore","vpnStore","giftCardsStore","appsStore","telecomStore","subscriptionStore","favorites"]);
   if(!currentUser&&!publicSections.has(id)){showGuestAccountPrompt("سجّل الدخول للوصول إلى هذه الخدمة وإكمال طلباتك بأمان.");return;}
   if(id==="admin"&&!baranAdminPanelAuthorized){alert("لوحة الإدارة غير متاحة لهذا الحساب.");return;}
   if(id==="staffPortal"&&!baranStaffPortalAuthorized){alert("بوابة المشرفة غير متاحة قبل التحقق من الصلاحية.");return;}
@@ -4610,7 +4759,7 @@ function showSection(id,button,options){
     if(active)link.setAttribute("aria-current","page");
     else link.removeAttribute("aria-current");
   });
-  const labels={home:"الرئيسية",games:"الشحن الآلي",automaticGames:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات الرقمية",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",subscriptionStore:"الاشتراكات والترفيه",favorites:"المفضلة",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
+  const labels={home:"الرئيسية",games:"الشحن الآلي",automaticGames:"الألعاب",pubgStore:"متجر PUBG",freeFireStore:"متجر Free Fire",jawakerStore:"متجر جواكر",baroManual:"BARO – الشحن اليدوي",services:"الخدمات الرقمية",chatgptStore:"ChatGPT",vpnStore:"VPN",giftCardsStore:"بطاقات الهدايا",appsStore:"التطبيقات",telecomStore:"الاتصالات",subscriptionStore:"الاشتراكات والترفيه",favorites:"المفضلة",wallet:"المحفظة",paymentMethods:"طرق الدفع",shamCashPayment:"الدفع عبر شام كاش",orders:"طلباتي",rewards:"المكافآت",support:"الدعم الفني",settings:"الإعدادات",account:"حسابي",learning:"مركز التعلم",admin:"لوحة الإدارة",staffPortal:"بوابة المشرفة",staffTasks:"مهامي"};
   const label=document.getElementById("currentSectionLabel");
   if(label)label.textContent=labels[id]||"BARAN GAME";
   closeSideMenu();
@@ -4620,7 +4769,7 @@ function showSection(id,button,options){
   if(id==="chatgptStore")loadBaranServiceCatalog("ai","chatgptProductCatalog","باقات ChatGPT","🤖");
   if(id==="vpnStore")loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️");
   if(id==="giftCardsStore")loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁");
-  if(id==="appsStore")loadBaranServiceCatalog("app","appsProductCatalog","التطبيقات والبرامج المدفوعة","📱");
+  if(id==="appsStore")renderBaranHomsCardAppsCatalog();
   if(id==="subscriptionStore")loadBaranServiceCatalog("subscription","subscriptionProductCatalog","اشتراكات الترفيه والمشاهدة","📺");
   if(id==="baroManual"){const box=document.getElementById("baroCustomerCatalog"),orders=document.getElementById("baroCustomerOrders");if(typeof loadBaroCustomer!=="function"){const msg="تعذر تشغيل BARO: ملف baro.js لم يحمّل أو يحتوي خطأ JavaScript. أعد تحميل الصفحة، وإذا استمرت المشكلة أبلغ الدعم.";if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] loadBaroCustomer is unavailable");}else{try{const task=loadBaroCustomer();if(task&&typeof task.catch==="function")task.catch(error=>{const msg="تعذر تشغيل BARO: "+(error?.message||"خطأ غير معروف");if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] customer loader rejected",error);});}catch(error){const msg="تعذر تشغيل BARO: "+(error?.message||"خطأ غير معروف");if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] customer loader threw",error);}}}
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
@@ -4677,7 +4826,7 @@ async function refreshCurrentSection(){
       case "chatgptStore": await loadBaranServiceCatalog("ai","chatgptProductCatalog","باقات ChatGPT","🤖"); break;
       case "vpnStore": await loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️"); break;
       case "giftCardsStore": await loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁"); break;
-      case "appsStore": await loadBaranServiceCatalog("app","appsProductCatalog","التطبيقات المدفوعة","📱"); break;
+      case "appsStore": renderBaranHomsCardAppsCatalog(); break;
       case "wallet": await loadWallet(); break;
       case "orders": await loadMyOrders(); break;
       case "rewards": if(typeof loadMyRewards==="function")await loadMyRewards(); break;
@@ -9076,6 +9225,123 @@ function baranAttachCatalogSearch(container,cardSelector,placeholder){
 .homscard-empty{padding:16px;text-align:center;color:#b9a9c9;border:1px dashed #665078;border-radius:11px}
 @media(max-width:420px){.homscard-catalog-filters{grid-template-columns:1fr}.homscard-product-row{grid-template-columns:minmax(0,1fr) auto;padding:9px}.homscard-product-price{font-size:12px}}
 </style>
+
+<style id="baran-homscard-apps-catalog-20261127">
+#appsStore .baran-hc-apps-intro{margin:0 0 14px;padding:13px 14px;border:1px solid #684d7e;border-radius:14px;background:linear-gradient(130deg,#2b2038,#17121e);color:#e9def2;line-height:1.8}
+#appsStore .baran-hc-apps-intro strong{color:#e6c9fa}
+#appsStore .baran-hc-apps-search{width:100%;margin:12px 0;padding:13px 14px;border:1px solid #72558a;border-radius:12px;background:#100c16;color:#fff;font:inherit}
+#appsStore .baran-hc-apps-group{margin:18px 0}
+#appsStore .baran-hc-apps-group h3{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 11px;color:#eadcf5;font-size:16px}
+#appsStore .baran-hc-apps-group h3 small{color:#bba9ca;font-size:11px;font-weight:600}
+#appsStore .baran-hc-apps-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+#appsStore .baran-hc-app-card{min-width:0;overflow:hidden;border:1px solid #574365;border-radius:15px;background:linear-gradient(155deg,#241b2d,#14101a);box-shadow:0 7px 18px #0004}
+#appsStore .baran-hc-app-card[hidden]{display:none!important}
+#appsStore .baran-hc-app-image{position:relative;display:grid;place-items:center;width:100%;height:142px;padding:13px;box-sizing:border-box;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#76518d 0%,#382447 43%,#17111f 100%)}
+#appsStore .baran-hc-app-image:before{content:"";position:absolute;inset:9px;border:1px solid #ffffff20;border-radius:17px;background:linear-gradient(145deg,#ffffff0b,#00000014);pointer-events:none}
+#appsStore .baran-hc-app-image-frame{position:relative;z-index:1;display:grid;place-items:center;width:94px;height:94px;padding:9px;box-sizing:border-box;border:1px solid #ffffff35;border-radius:23px;background:linear-gradient(145deg,#fff,#eee8f5);box-shadow:0 10px 24px #0007,inset 0 1px #fff}
+#appsStore .baran-hc-app-image-frame img{display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center;background:transparent;border-radius:13px}
+#appsStore .baran-hc-app-image-frame span{font-size:36px;color:#65427d;font-weight:900}
+#appsStore .baran-hc-app-image-glow{position:absolute;z-index:0;width:125px;height:125px;border-radius:50%;background:#c28de755;filter:blur(27px)}
+#appsStore .baran-hc-app-description{min-height:54px;margin:6px 0 0;color:#cbbbd7;font-size:11px;line-height:1.75;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#appsStore .baran-hc-app-copy{padding:10px}
+#appsStore .baran-hc-app-copy strong{display:block;min-height:38px;color:#f3e9fa;font-size:13px;line-height:1.5}
+#appsStore .baran-hc-app-meta{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:8px;color:#c4b2d2;font-size:10px}
+#appsStore .baran-hc-app-state{display:block;margin-top:8px;padding:6px 7px;border:1px solid #76578d;border-radius:8px;background:#2a1d35;color:#e5c9f8;font-size:10px;text-align:center;line-height:1.5}
+#appsStore .baran-hc-app-qty{margin-top:5px;color:#a998b6;font-size:10px;line-height:1.6}
+#appsStore .baran-hc-app-empty{padding:18px;border:1px dashed #665078;border-radius:12px;color:#b9a9c9;text-align:center}
+@media(max-width:650px){#appsStore .baran-hc-apps-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#appsStore .baran-hc-app-image{height:132px;padding:10px}#appsStore .baran-hc-app-image-frame{width:82px;height:82px;border-radius:20px}#appsStore .baran-hc-app-copy{padding:10px}#appsStore .baran-hc-app-description{font-size:10px;min-height:53px}}
+@media(max-width:350px){#appsStore .baran-hc-apps-grid{grid-template-columns:1fr}}
+</style>
+<script id="baran-homscard-apps-catalog-data-20261127">
+function renderBaranHomsCardAppsCatalog(){
+  const root=document.getElementById("appsProductCatalog");
+  if(!root)return;
+  const items=[
+    {id:"18",name:"Bigo",description:"شحن رصيد Bigo Live لاستخدامه في البث المباشر والتفاعل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/8215a119605b301eef539b3981dce41fc147bbf1_360.webp",min:50,max:1000000},
+    {id:"280",name:"Chamet Live",description:"شحن رصيد Chamet للتفاعل مع البث المباشر وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/c43818544a6c65b201ff47c4a386b34d3237166d_360.webp",min:15000,max:50000000},
+    {id:"49",name:"Hawa",description:"شحن رصيد Hawa للمحادثات والتواصل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/50e023e8d8343a79a06a8a719e204193cf2e0ffe_360.webp",min:1000,max:1000000},
+    {id:"37",name:"Mico Live",description:"شحن رصيد Mico Live لدعم البث المباشر والتفاعل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/df7cf64a47353642a75ebedfe1254017a8cd1ce7_360.webp",min:100,max:10000000},
+    {id:"3",name:"Poppo Live",description:"شحن رصيد Poppo Live للتفاعل مع المضيفين وإرسال الهدايا في البث.",image:"https://homscard.com/uploads/thumbs/387aa56f3cf5e2916321607792fcbf61ec3456cd_360.webp",min:100,max:10000000},
+    {id:"1",name:"Soul Chill Crystal",description:"شحن كريستالات Soul Chill لاستخدامها في مزايا وتفاعلات التطبيق.",image:"https://homscard.com/uploads/thumbs/9efc0a7f4942f348985d6907e4f0f41842f3725c_360.webp",min:1000,max:600000},
+    {id:"45",name:"Taka",description:"شحن رصيد Taka للمحادثات والتفاعل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/d6bcb526074f5d70696bd9f0dfa53e3189d8ac90_360.webp",min:100,max:10000000},
+    {id:"8",name:"Tango",description:"شحن رصيد Tango Live للتفاعل مع البث المباشر وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/698f48989f407f95dd8f160ed2f4b3424356d7c4_360.webp",min:200,max:500000},
+    {id:"43",name:"Top Top",description:"شحن رصيد TopTop للألعاب الاجتماعية والتواصل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/e98c40acc9e161b79be5a9d1f9e4e2eb2c0a58fe_360.webp",min:15000,max:25000000},
+    {id:"25",name:"Yoho",description:"شحن رصيد YOHO للمحادثات الصوتية والغرف وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/9f6d1faf6d4946eed40e719cfd6051079e2f3823_360.webp",min:10000,max:5000000},
+    {id:"893",name:"سوجو - Sugo",description:"شحن رصيد SUGO للمحادثات والتواصل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/6fd5276df01b52f631a696c652f4f341297098ea_360.webp",min:10000,max:4000000},
+    {id:"910",name:"لايكي - Likee",description:"شحن رصيد Likee لاستخدامه في البث المباشر ودعم صناع المحتوى بالهدايا.",image:"https://homscard.com/uploads/thumbs/2db94c85544a2b1d538042e08564fc9f1c914cbb_360.webp",min:50,max:50000},
+
+  ];
+  const card=p=>'<article class="baran-hc-app-card" data-search="'+(p.name+" "+p.id).toLowerCase()+'"><div class="baran-hc-app-image"><div class="baran-hc-app-image-frame">'+(p.image?'<img src="'+p.image+'" alt="'+p.name+'" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML=\'<span>📱</span>\'">':'<span>📱</span>')+'</div><span class="baran-hc-app-image-glow" aria-hidden="true"></span></div><div class="baran-hc-app-copy"><strong>'+p.name+'</strong><p class="baran-hc-app-description">'+p.description+'</p><div class="baran-hc-app-meta"><span>HomsCard</span><span>#'+p.id+'</span></div>'+(p.package?'<div class="baran-hc-app-qty">باقة ثابتة حسب كتالوج المورد</div>':'<div class="baran-hc-app-qty">الكمية: '+p.min.toLocaleString("en-US")+' – '+p.max.toLocaleString("en-US")+'</div>')+'<span class="baran-hc-app-state">معاينة المورد · قيد اعتماد باقات باران</span></div></article>';
+  root.innerHTML='<div class="baran-hc-apps-intro"><strong>شحن تطبيقات البث والتواصل — HomsCard</strong><br>هنا تجد خدمات شحن الرصيد والعملات داخل تطبيقات البث والمحادثات والألعاب الاجتماعية. اختر التطبيق المطلوب لمعرفة خدمته، وتذكّر أن هذه معاينة لمنتجات المورد فقط؛ الأسعار والشراء والشحن غير مفعّلة حتى اعتماد باقات باران.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في تطبيقات حمص كارد"><div class="baran-hc-apps-group"><h3>تطبيقات البث المباشر والتواصل <small>12 خدمة شحن</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.filter(p=>!p.package).map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
+  const search=root.querySelector(".baran-hc-apps-search");
+  search.addEventListener("input",()=>{
+    const q=search.value.trim().toLowerCase();let shown=0;
+    root.querySelectorAll(".baran-hc-app-card").forEach(el=>{const match=el.dataset.search.includes(q);el.hidden=!match;if(match)shown++;});
+    root.querySelectorAll(".baran-hc-apps-group").forEach(group=>{group.hidden=!group.querySelector(".baran-hc-app-card:not([hidden])");});
+    root.querySelector("#baranHomsAppsNoResults").hidden=shown>0;
+  });
+}
+</script>
+
+<style id="baran-telecom-cards-preview-20261127">
+/* Four independent homepage destinations; telecom stays separate from Games. */
+#home .baran-shipping-choices{grid-template-columns:repeat(2,minmax(0,1fr))}
+.baran-telecom-provider-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0}
+.baran-telecom-provider-card{min-width:0;overflow:hidden;border:1px solid #76558f!important;background:linear-gradient(145deg,#241a30,#100c16)!important}
+.baran-telecom-provider-card img{width:100%;height:190px;object-fit:contain!important;padding:18px;background:#0d0a11;display:block}
+.baran-telecom-provider-card .item-content{display:grid;gap:7px}
+.baran-telecom-provider-card .item-content strong{font-size:20px}
+.baran-telecom-provider-card .item-content>span{color:#cbb9da;font-size:12px}
+.baran-telecom-provider-card .item-content .small{color:#b9a9c9}
+.baran-telecom-status{display:inline-flex!important;width:max-content;max-width:100%;padding:6px 10px;border:1px solid #80619a;border-radius:999px;background:#2b1b3a;color:#eadcf5!important;font-weight:800}
+@media(max-width:900px){#home .baran-shipping-choices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){#home .baran-shipping-choices{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:520px){.baran-telecom-provider-grid{grid-template-columns:minmax(0,1fr);gap:11px}.baran-telecom-provider-card img{height:175px}}
+</style>
+
+ 
+<style id="baran-wallet-services-homscard-20261127">
+.baran-wallet-services{margin:22px 0;padding:17px;border:1px solid #654b79;border-radius:20px;background:linear-gradient(145deg,#21182b,#120e18);box-shadow:0 12px 28px #0004}
+.baran-wallet-services-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.baran-wallet-services-kicker{color:#c7a6df;font-size:10px;font-weight:900;letter-spacing:1px}
+.baran-wallet-services-heading h2{margin:5px 0;color:#f2e7fa;font-size:clamp(18px,3vw,23px)}
+.baran-wallet-services-heading p{margin:0;color:#b9a9c9;font-size:12px;line-height:1.8}
+.baran-wallet-services-count{flex:0 0 auto;padding:7px 10px;border:1px solid #80619a;border-radius:999px;background:#30213d;color:#e8d7f4;font-size:11px;font-weight:900}
+.baran-wallet-services-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.baran-wallet-service-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #574365;border-radius:16px;background:linear-gradient(155deg,#211a29,#100d15);box-shadow:0 7px 18px #0003}
+.baran-wallet-service-brand{height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#fff}
+.baran-wallet-service-brand>span{font-size:38px;font-weight:1000;line-height:1.1}
+.baran-wallet-service-brand>small{font-size:9px;font-weight:900;letter-spacing:2px}
+.baran-wallet-usdt{background:radial-gradient(circle at 50% 20%,#2d806c,#12382f 72%)}
+.baran-wallet-whish{background:radial-gradient(circle at 50% 20%,#9b4d83,#3e1b3d 72%)}
+.baran-wallet-sham{background:radial-gradient(circle at 50% 20%,#3e80a3,#172e4a 72%)}
+.baran-wallet-service-body{display:flex;flex:1;flex-direction:column;padding:13px}
+.baran-wallet-service-type{color:#bda6cf;font-size:10px;font-weight:800}
+.baran-wallet-service-body h3{margin:5px 0;color:#f3e8fa;font-size:16px;line-height:1.5}
+.baran-wallet-service-body p{min-height:44px;margin:0 0 10px;color:#b9a9c9;font-size:11px;line-height:1.8}
+.baran-wallet-service-meta{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #3b2e46;font-size:10px}
+.baran-wallet-service-meta span{color:#a997b8}
+.baran-wallet-service-meta strong{color:#e6d5f1}
+.baran-wallet-service-field{display:grid;gap:5px;margin-top:8px;padding:9px;border:1px dashed #705586;border-radius:10px;background:#17111f}
+.baran-wallet-service-field b{color:#d7c2e8;font-size:10px}
+.baran-wallet-service-field span{color:#eee4f5;font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+.baran-wallet-service-status{display:block;margin:0 12px 12px;padding:8px 9px;border:1px solid #80619a;border-radius:10px;background:#2b1b3a;color:#e6d4f3;text-align:center;font-size:10px;font-weight:900}
+.baran-wallet-services-note{margin:14px 0 0;padding:11px;border-radius:11px;background:#332818;color:#f1d8a9;font-size:11px;line-height:1.9}
+@media(max-width:760px){.baran-wallet-services-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.baran-wallet-services{padding:12px;border-radius:16px}.baran-wallet-services-grid{grid-template-columns:minmax(0,1fr);gap:10px}.baran-wallet-service-card{display:grid;grid-template-columns:94px minmax(0,1fr)}.baran-wallet-service-brand{height:100%;min-height:100%;grid-row:1;grid-column:1}.baran-wallet-service-brand>span{font-size:31px}.baran-wallet-service-brand>small{font-size:7px;letter-spacing:1px}.baran-wallet-service-body{grid-row:1;grid-column:2;padding:11px}.baran-wallet-service-body p{min-height:0}.baran-wallet-service-status{grid-column:1/-1;margin:0 10px 10px}.baran-wallet-services-heading{gap:7px}.baran-wallet-services-count{font-size:9px;padding:6px 8px}}
+</style>
+
+
+<style id="baran-extra-games-cards-20261127">
+.baran-extra-game-card{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.baran-extra-game-card>img{display:block;width:100%;height:145px;object-fit:cover;border-radius:13px 13px 0 0;background:#21182b}
+.baran-extra-game-card .item-content{display:grid;gap:6px;padding:10px 11px 12px}
+.baran-extra-game-card .item-content strong{line-height:1.55}
+.baran-extra-game-card .item-content>span:not(.baran-game-coming){font-size:11px;line-height:1.7;color:var(--muted)}
+.baran-game-coming{display:inline-flex;align-self:start;margin-top:3px;padding:5px 8px;border:1px solid #73558b;border-radius:8px;background:#2c1e39;color:#e3c9f5;font-size:10px;font-weight:900}
+@media(max-width:380px){.baran-extra-game-card>img{height:112px}.baran-extra-game-card .item-content{padding:8px}}
+</style>
+
 </body>
 </html>
 
@@ -9337,4 +9603,10 @@ function baranAttachCatalogSearch(container,cardSelector,placeholder){
 #home .baran-shipping-manual{
   display:flex!important;
 }
+
+/* BARAN TELECOM CATALOG */
+.baran-telecom-provider-section{margin:26px 0}.baran-telecom-provider-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:0 2px}.baran-telecom-provider-heading h3{margin:0;font-size:1.25rem}.baran-telecom-provider-heading p{margin:5px 0 0;color:var(--muted,#888);font-size:.88rem}.baran-telecom-provider-heading>span{white-space:nowrap;border:1px solid var(--border,rgba(150,150,150,.25));border-radius:999px;padding:6px 12px;font-size:.82rem}.baran-telecom-packages-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.baran-telecom-package{overflow:hidden}.baran-telecom-package>img{width:100%;height:130px;object-fit:cover}.baran-telecom-package .item-content{display:flex;flex-direction:column;gap:7px}.baran-telecom-package-id{font-size:.75rem;color:var(--muted,#888)}.baran-telecom-status{display:inline-flex;width:fit-content;padding:5px 9px;border-radius:20px;background:rgba(34,197,94,.12);color:#16a34a;font-size:.74rem}.baran-telecom-status.is-off{background:rgba(239,68,68,.10);color:#dc2626}.baran-telecom-search{display:flex;align-items:center;gap:10px;margin:18px 0;padding:10px 14px;border:1px solid var(--border,rgba(150,150,150,.25));border-radius:14px}.baran-telecom-search input{width:100%;border:0;outline:0;background:transparent;color:inherit;font:inherit}.baran-telecom-package[hidden]{display:none!important}@media(max-width:900px){.baran-telecom-packages-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.baran-telecom-packages-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.baran-telecom-package>img{height:105px}.baran-telecom-package .item-content{padding:10px}.baran-telecom-package .item-content strong{font-size:.9rem}}
+
+/* BARAN WALLET HOME CARD */
+.baran-shipping-wallets{--baran-card-accent:#a78bfa}.baran-shipping-wallets .baran-shipping-shade{background:linear-gradient(115deg,rgba(18,12,35,.94),rgba(67,35,112,.52),rgba(12,12,20,.18))}.baran-shipping-wallets .baran-shipping-content b{color:#d8c8ff}
 </style>
