@@ -339,7 +339,8 @@
     if(!orders.length)orderBox.append(node("p","baran-experience-muted","لا توجد طلبات لهذا العميل ضمن آخر السجل المحمّل."));
     orders.slice(0,30).forEach(o=>{
       const row=node("div","baran-profile-record");
-      row.append(node("strong","","#"+String(o.id||"").slice(0,8)+" · "+(o.product_code||"طلب")),node("span","",o.status||"—"),node("small","",date(o.created_at)+" · "+(o.total_price_usd!=null?money(o.total_price_usd,"USD"):money(o.total_price_syp,"SYP"))));
+      const orderSyp=Number(o.total_price_syp||0)/(Number(o.exchange_rate)>1000?100:1);
+      row.append(node("strong","","#"+String(o.id||"").slice(0,8)+" · "+(o.product_code||"طلب")),node("span","",o.status||"—"),node("small","",date(o.created_at)+" · "+(o.total_price_usd!=null?money(o.total_price_usd,"USD"):money(orderSyp,"SYP")+" جديدة")));
       orderBox.append(row);
     });dialog.append(orderBox);
     const support=node("section","baran-profile-section");support.append(node("h4","","التذاكر والتقييمات"));
