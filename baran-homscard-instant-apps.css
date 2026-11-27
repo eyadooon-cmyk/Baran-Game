@@ -52,3 +52,5 @@
 body.baran-ia-modal-open{overflow:hidden}
 @media(max-width:360px){.baran-variable-products .baran-ia-grid{gap:8px}.baran-variable-products .baran-ia-card-body{padding:9px}.baran-variable-products .baran-ia-card h4{font-size:13px}.baran-ia-modal{padding:14px}.baran-ia-presets{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:700px){.baran-variable-products .baran-ia-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}}
+
+.baran-ia-form [hidden]{display:none!important}
