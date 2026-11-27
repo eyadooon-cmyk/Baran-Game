@@ -58,8 +58,8 @@
         currentSyp: Number(product.price_syp || 0),
         saleUsd,
         saleSyp: saleUsd * commercial,
-        profitUsd: saleUsd - costUsd,
-        profitSyp: (saleUsd - costUsd) * commercial,
+        profitUsd: saleUsd * commercial / market - costUsd,
+        profitSyp: saleUsd * commercial - costUsd * market,
         currency: link.currency
       };
     }).filter(Boolean).sort((a,b) => a.name.localeCompare(b.name, "ar"));
@@ -75,7 +75,7 @@
     box.innerHTML = '<div class="pricing-preview-wrap"><table><thead><tr>' +
       '<th>المنتج</th><th>تكلفة حمص كارد</th><th>التكلفة بسعر السوق</th>' +
       '<th>سعر البيع المقترح USD</th><th>سعر البيع المقترح SYP</th>' +
-      '<th>الربح المتوقع SYP</th><th>السعر الحالي USD / SYP</th></tr></thead><tbody>' +
+      '<th>الفارق الإجمالي قبل الرسوم</th><th>السعر الحالي USD / SYP</th></tr></thead><tbody>' +
       rows.map((row) => '<tr><td>' + esc(row.name) + '<small style="display:block;color:#a998b8">' + esc(row.code) + '</small></td>' +
         '<td dir="ltr">' + usd(row.costUsd) + '</td><td dir="ltr">' + syp(row.costAtMarket) + '</td>' +
         '<td dir="ltr">' + usd(row.saleUsd) + '</td><td dir="ltr">' + syp(row.saleSyp) + '</td>' +
@@ -121,7 +121,7 @@
       '<div class="ops-actions" style="margin-top:12px"><button type="button" id="financePricingSave">حفظ سياسة التسعير</button><button type="button" class="secondary" id="financePricingExport">تصدير معاينة الأسعار CSV</button></div>' +
       '<div id="financePricingStatus" class="pricing-policy-status" role="status" aria-live="polite"></div>' +
       '<div class="finance-section-heading" style="margin-top:18px"><div><span class="finance-kicker">HOMSCARD COST PREVIEW</span><h3>معاينة أسعار منتجات حمص كارد</h3>' +
-      '<p class="small">اقتراحات للعرض فقط. لا يتم تغيير أسعار المنتجات الحالية أو فتح الشحن تلقائياً.</p></div><span class="finance-section-icon">🧮</span></div>' +
+      '<p class="small">اقتراحات للعرض فقط. الفارق الإجمالي يشمل أثر فرق التحويل والزيادة على التكلفة، قبل رسوم الدفع وإعادة شراء الدولار. لا يتم تغيير أسعار المنتجات الحالية أو فتح الشحن تلقائياً.</p></div><span class="finance-section-icon">🧮</span></div>' +
       '<div id="financePricingPreview"></div>' +
       '<p class="small" style="margin-top:10px">آخر حفظ لسياسة التسعير: ' + esc(updated) + '. سعر الصرف القديم المستخدم في أجزاء المتجر الأخرى يبقى منفصلاً ولا يتغير من هنا.</p>';
 
