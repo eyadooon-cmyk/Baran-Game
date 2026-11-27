@@ -160,6 +160,82 @@ Deno.serve(async (req: Request) => {
       return json({ success: true, report });
     }
 
+
+    // Fixed HomsCard products have a separate catalog and quote contract.
+    // This path is read-only until a dedicated fixed-order transaction is reviewed and enabled.
+    if (body?.action === "homscard_fixed_catalog" || body?.action === "homscard_fixed_quote") {
+      const isQuote = body.action === "homscard_fixed_quote";
+      const productCode = typeof body.product_code === "string" ? body.product_code.trim().toUpperCase() : "";
+      const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
+      const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
+      if (isQuote && (!/^[A-Z0-9_]{3,80}$/.test(productCode) || playerId.length < 2 || playerId.length > 100))
+        return json({success:false,error:"اختر منتجاً ثابتاً وأدخل Player ID صالحاً."},400);
+      if (!["USD","SYP"].includes(currency))
+        return json({success:false,error:"عملة الدفع غير مدعومة."},400);
+
+      const {data: settings,error:settingsError}=await admin.from("store_settings")
+        .select("market_exchange_rate,fx_buffer_percent,product_markup_percent").eq("id","main").maybeSingle();
+      if(settingsError||!settings)return json({success:false,error:"إعدادات التسعير غير متاحة."},503);
+      const marketRate=Number(settings.market_exchange_rate),buffer=Number(settings.fx_buffer_percent),markup=Number(settings.product_markup_percent);
+      if(![marketRate,buffer,markup].every(Number.isFinite)||marketRate<=0||buffer<0||markup<0)
+        return json({success:false,error:"إعدادات التسعير غير صالحة."},503);
+
+      const {data:supplier,error:supplierError}=await admin.from("suppliers")
+        .select("id").ilike("name","HomsCard").eq("is_active",true).maybeSingle();
+      if(supplierError||!supplier)return json({success:false,error:"مورد HomsCard غير متاح."},503);
+
+      const {data:productRows,error:productsError}=await admin.from("products")
+        .select("id,product_code,name,description,category,price_usd,price_syp,catalog_group,sort_order")
+        .eq("is_active",true).gt("price_usd",0).or("catalog_group.is.null,catalog_group.eq.homscard_fixed")
+        .order("sort_order",{ascending:true}).limit(250);
+      if(productsError)return json({success:false,error:"تعذر تحميل كتالوج المنتجات الثابتة."},503);
+      const ids=(productRows??[]).map((p:any)=>p.id);
+      if(!ids.length)return json({success:true,products:[],mode:"read_only_fixed_catalog",can_purchase:false});
+      const {data:mappings,error:mappingError}=await admin.from("supplier_products")
+        .select("product_id,supplier_sku,unit_cost,currency,is_preferred,input_schema")
+        .eq("supplier_id",supplier.id).eq("is_preferred",true).in("product_id",ids);
+      if(mappingError)return json({success:false,error:"تعذر قراءة ربط منتجات HomsCard."},503);
+      const mappingByProduct=new Map((mappings??[]).map((m:any)=>[String(m.product_id),m]));
+      const skus=[...new Set((mappings??[]).map((m:any)=>String(m.supplier_sku||"")).filter(Boolean))];
+      const {data:auditRows,error:auditError}=await admin.from("baran_homscard_audit_items")
+        .select("product_id,product_name,product_data,page_data,page_status,updated_at")
+        .in("product_id",skus.length?skus:["__none__"]).eq("page_status","success")
+        .order("updated_at",{ascending:false}).limit(500);
+      if(auditError)return json({success:false,error:"تعذر التحقق من تدقيق منتجات HomsCard."},503);
+      const latestAudit=new Map<string,any>();
+      for(const row of auditRows??[])if(!latestAudit.has(String(row.product_id)))latestAudit.set(String(row.product_id),row);
+      const ready=[];
+      for(const p of productRows??[]){
+        const m:any=mappingByProduct.get(String(p.id));
+        if(!m||m.currency!=="USD"||!Number.isFinite(Number(m.unit_cost))||Number(m.unit_cost)<=0)continue;
+        // Subscription products are outside the approved current catalog.
+        if(/MEMBERSHIP|SUBSCRIPTION|WEEKLY/i.test(String(p.product_code))||String(p.product_code).toUpperCase()==="JAWAKER_TOKENS")continue;
+        const audit=latestAudit.get(String(m.supplier_sku));
+        const data=audit?.product_data??{},page=audit?.page_data??{};
+        if(!audit||new Date(audit.updated_at).getTime()<Date.now()-24*60*60*1000||
+           data.product_type!=="package"||data.available!==true||
+           Math.abs(Number(data.price)-Number(m.unit_cost))>0.000001||
+           !Array.isArray(data.params)||data.params.length!==1||
+           !/player\s*id/i.test(String(data.params[0]))||
+           !/player\s*id/i.test(String(page.text||"")))continue;
+        const saleUsd=Number((Number(m.unit_cost)*(1+markup/100)).toFixed(2));
+        if(!(saleUsd>0)||Math.abs(Number(p.price_usd)-saleUsd)>0.000001)continue;
+        const saleSyp=Number((saleUsd*marketRate*(1+buffer/100)/100).toFixed(2));
+        ready.push({product_id:p.id,product_code:p.product_code,name:p.name,description:p.description,category:p.category,
+          supplier_sku:String(m.supplier_sku),target_label:"Player ID",sale_usd:saleUsd,sale_syp:saleSyp,
+          currency,can_purchase:false});
+      }
+      if(!isQuote)return json({success:true,mode:"read_only_fixed_catalog",can_purchase:false,products:ready});
+      const selected=ready.find((p:any)=>p.product_code===productCode);
+      if(!selected)return json({success:false,error:"المنتج الثابت غير معتمد حالياً أو يحتاج تحديث تدقيق المورد."},404);
+      const quote={product_code:selected.product_code,product_name:selected.name,player_id_masked:playerId.length>4?playerId.slice(0,2)+"•••"+playerId.slice(-2):"••••",
+        sale_usd:selected.sale_usd,sale_syp:selected.sale_syp,currency,markup_percent:markup,
+        commercial_rate:Number((marketRate*(1+buffer/100)/100).toFixed(4))};
+      return json({success:true,mode:"read_only_fixed_quote",can_create_order:false,can_purchase:false,
+        charged:false,order_created:false,quote,
+        message:"تم تأكيد سعر المنتج الثابت فقط. لا يوجد إنشاء طلب أو خصم رصيد حتى اكتمال مسار الشراء الآمن."});
+    }
+
     if ((body?.action === "homscard_app_catalog" || body?.action === "homscard_variable_catalog")) {
       const variableCategories = new Set(["ألعاب", "تطبيقات", "اتصالات", "محافظ"]);
       const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
@@ -428,16 +504,165 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    if (body?.action === "homscard_variable_check_order") {
+    if (body?.action === "homscard_fixed_create_order") {
+      const productCode = typeof body.product_code === "string" ? body.product_code.trim().toUpperCase() : "";
+      const quantity = 1;
+      const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
+      const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
+      const requestId = typeof body.request_id === "string" ? body.request_id.trim() : "";
+      if (!/^[A-Z0-9_]{3,100}$/.test(productCode) ||
+          !["USD","SYP"].includes(currency) ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId) ||
+          playerId.length > 100) return json({success:false,error:"بيانات الطلب غير صالحة."},400);
+      if (!Deno.env.get("HOMSCARD_API_TOKEN")) return json({success:false,error:"مفتاح HomsCard API غير مضبوط على الخادم؛ لم يتم إنشاء طلب أو خصم رصيد.",code:"SUPPLIER_SECRET_MISSING"},503);
+
+      const {data: created,error:createError}=await admin.rpc("baran_create_homscard_fixed_order",{
+        p_user_id:user.id,p_product_code:productCode,p_player_id:playerId,
+        p_payment_currency:currency,p_request_id:requestId,
+      });
+      if(createError){
+        console.error("HOMSCARD_FIXED_ORDER_CREATE_FAILED",createError.message);
+        return json({success:false,error:createError.message||"تعذر إنشاء الطلب الثابت. لم يتم إرسال طلب إلى المورد."},400);
+      }
+      const orderId=String(created?.order_id||"");
+      const productId=String(created?.supplier_sku||"");
+      const supplierUuid=String(created?.supplier_order_uuid||"");
+      if(!/^[0-9]{1,10}$/.test(productId))return json({success:false,error:"معرّف منتج المورد غير مكتمل؛ أوقفنا الإرسال للمراجعة.",order_id:orderId||null},503);
+      if(!orderId||!supplierUuid)return json({success:false,error:"تم تسجيل الطلب لكن بيانات متابعة المورد غير مكتملة. أوقفنا الإرسال للمراجعة.",order_id:orderId||null},503);
+
+      const checkPath="/check.php?uuid=1&orders="+encodeURIComponent(supplierUuid);
+      const settle=async (payload:any)=>{
+        const rows=Array.isArray(payload?.data)?payload.data:
+          payload?.data&&typeof payload.data==="object"?[payload.data]:[];
+        const parsed=parseHomsCardCheck({status:payload?.status,data:rows},supplierUuid);
+        if(parsed.kind==="completed"){
+          if(parsed.quantity!==quantity || parsed.delivery.length>2000){
+            await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"بيانات نجاح المورد لا تطابق UUID أو كمية الطلب أو حد بيانات التسليم."});
+            return {status:"awaiting_supplier",message:"وصل رد غير مطابق للطلب؛ أبقيناه قيد التحقق دون تسوية مالية."};
+          }
+          const {error:deliveryError}=await admin.from("order_fulfillment")
+            .update({supplier_delivery:parsed.delivery}).eq("order_id",orderId);
+          if(deliveryError) throw deliveryError;
+          const {error}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"succeeded",p_supplier_reference:parsed.supplierOrderId,
+            p_supplier_unit_cost:parsed.totalCost/parsed.quantity,p_cost_currency:"USD",p_reason:null,
+          });
+          if(error)throw error;
+          return {status:"completed",message:"تم تأكيد تنفيذ الطلب من HomsCard."};
+        }
+        if(parsed.kind==="failed"){
+          const {error}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"failed",p_supplier_reference:parsed.supplierOrderId,
+            p_reason:"أكد HomsCard إلغاء الطلب؛ تم طلب استرداد المبلغ لمحفظة الزبون.",
+          });
+          if(error)throw error;
+          return {status:"rejected",message:"أُلغي الطلب لدى المورد وتمت معالجة الاسترداد."};
+        }
+        await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",
+          p_reason:parsed.reason||"الطلب ما زال pending أو لم تصل نتيجة مؤكدة من HomsCard.",
+        });
+        return {status:"awaiting_supplier",message:"الطلب قيد التنفيذ أو التحقق؛ لن نكرر الإرسال أو الاسترداد قبل تأكيد النتيجة."};
+      };
+
+      if(created.duplicate===true){
+        try{
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,duplicate:true,order_id:orderId,...result});}
+        }catch(error){console.error("HOMSCARD_DUPLICATE_CHECK_FAILED",String(error));}
+        return json({success:true,duplicate:true,order_id:orderId,status:"awaiting_supplier",
+          message:"الطلب مسجل مسبقاً. نتحقق من نفس UUID لمنع أي خصم أو شحن مكرر."});
+      }
+
+      try{
+        const sent=await homscardRequest("/order.php","POST",{
+          product_id:Number(productId),order_uuid:supplierUuid,qty:quantity,...(playerId?{player_id:playerId}:{})
+        });
+        if(sent.payload?.status==="OK"&&sent.payload?.data){
+          const normalizedCreate=normalizeHomsCardCreate(sent.payload,supplierUuid,quantity);
+          if(normalizedCreate){
+            const result=await settle(normalizedCreate);
+            return json({success:true,order_id:orderId,...result});
+          }
+          await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",
+            p_reason:"رد order.php لا يطابق صيغة النجاح/الحالة الموثقة أو ينقصه تحقق السعر/الكمية/التسليم."});
+          return json({success:true,order_id:orderId,status:"awaiting_supplier",
+            message:"وصل رد إنشاء غير مكتمل أو غير مطابق؛ أبقينا الطلب قيد التحقق دون استرداد أو إعادة إرسال."});
+        }
+        const code=Number(sent.payload?.error?.code);
+        if(homscardConfirmedRejection(code)){
+          const reasons:Record<number,string>={
+            100:"رصيد حساب HomsCard غير كافٍ؛ رفض المورد الطلب.",
+            103:"بيانات اللاعب المطلوبة غير مكتملة؛ رفض المورد الطلب.",
+            109:"معرّف المنتج غير موجود لدى HomsCard.",
+            110:"المنتج غير متاح لدى HomsCard.",
+            112:"الكمية أقل من الحد الأدنى لدى المورد.",
+            113:"الكمية أكبر من الحد الأعلى لدى المورد.",
+            114:"أكد HomsCard رفض الطلب؛ يعالج المورد إعادة المبلغ إلى رصيد حسابه.",
+          };
+          const {error:settleError}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"failed",
+            p_reason:"رفض مؤكد من HomsCard (code "+code+"): "+reasons[code],
+          });
+          if(settleError)throw settleError;
+          return json({success:true,order_id:orderId,status:"rejected",refunded:true,
+            supplier_error_code:code,message:"رفض المورد الطلب وتمت معالجة استرداد رصيد الزبون في باران."});
+        }
+        if(sent.http_status>=500||code===500||code===102){
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,order_id:orderId,...result});}
+          await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"انقطع أو تعذر حسم رد إنشاء الطلب؛ تم فحص UUID ولم تظهر نتيجة مؤكدة."});
+          return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"الطلب قيد التحقق لدى المورد؛ لم نعد إرساله ولم نسترد المبلغ."});
+        }
+        await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",
+          p_reason:String(sent.payload?.error?.message||"لم يصل رد نجاح مؤكد من HomsCard؛ لا يمكن إثبات أن الطلب لم يُنشأ.").slice(0,500),
+        });
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",
+          message:"لم يصل تأكيد نهائي من المورد. أبقينا الطلب قيد التحقق دون إعادة إرسال أو استرداد حتى لا يحدث شحن أو خصم مزدوج."});
+      }catch(error){
+        console.error("HOMSCARD_ORDER_DISPATCH_UNCERTAIN",String(error));
+        try{
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,order_id:orderId,...result});}
+        }catch(checkError){console.error("HOMSCARD_ORDER_STATUS_CHECK_FAILED",String(checkError));}
+        await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"انقطع الاتصال أثناء الإرسال وتعذر التحقق؛ الطلب معلّق لمنع التكرار."});
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",
+          message:"انقطع الاتصال أثناء الإرسال. حفظنا UUID ونعلّق الطلب للتحقق؛ لا يوجد إعادة إرسال أو استرداد تلقائي."});
+      }
+    }
+
+    if (body?.action === "homscard_variable_check_order" || body?.action === "homscard_fixed_check_order") {
       const orderId=typeof body.order_id==="string"?body.order_id.trim():"";
       if(!/^[0-9a-f-]{36}$/i.test(orderId))return json({success:false,error:"معرّف الطلب غير صالح."},400);
-      const {data:order,error:orderError}=await admin.from("orders").select("id,user_id,quantity,status")
+      const isFixedCheck=body.action==="homscard_fixed_check_order";
+      const {data:order,error:orderError}=await admin.from("orders")
+        .select("id,user_id,product_code,quantity,status")
         .eq("id",orderId).eq("user_id",user.id).maybeSingle();
       if(orderError||!order)return json({success:false,error:"الطلب غير موجود أو لا تملك صلاحية الاطلاع عليه."},404);
+      if(isFixedCheck){
+        const {data:product,error:productError}=await admin.from("products")
+          .select("catalog_group").eq("product_code",order.product_code).maybeSingle();
+        if(productError||product?.catalog_group!=="homscard_fixed")
+          return json({success:false,error:"هذا الطلب ليس من كتالوج HomsCard الثابت."},403);
+        if(Number(order.quantity)!==1)
+          return json({success:false,error:"كمية الطلب لا تطابق نظام المنتجات الثابتة."},409);
+      }
       const {data:fulfillment,error:fulfillmentError}=await admin.from("order_fulfillment")
         .select("supplier_order_uuid,supplier_id,supplier_delivery,dispatch_state")
         .eq("order_id",orderId).maybeSingle();
-      if(fulfillmentError||!fulfillment?.supplier_order_uuid)return json({success:false,error:"لا توجد بيانات متابعة HomsCard لهذا الطلب."},404);
+      if(fulfillmentError||!fulfillment?.supplier_order_uuid||!fulfillment.supplier_id)
+        return json({success:false,error:"لا توجد بيانات متابعة HomsCard لهذا الطلب."},404);
+      const {data:orderSupplier,error:supplierError}=await admin.from("suppliers")
+        .select("name").eq("id",fulfillment.supplier_id).maybeSingle();
+      if(supplierError||String(orderSupplier?.name||"").toLowerCase()!=="homscard")
+        return json({success:false,error:"مورد هذا الطلب لا يطابق HomsCard؛ أوقفنا الاستعلام."},403);
       if(["succeeded","refunded","failed"].includes(String(fulfillment.dispatch_state))){
         return json({success:true,order_id:orderId,status:order.status,dispatch_state:fulfillment.dispatch_state,delivery:fulfillment.supplier_delivery});
       }
