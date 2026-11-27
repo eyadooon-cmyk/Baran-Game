@@ -104,12 +104,19 @@
     const actions=el("div","baran-ia-actions");
     const back=el("button","baran-ia-back","رجوع لتفاصيل المنتج");back.type="button";back.addEventListener("click",()=>{form.hidden=true;details.hidden=false;summary.hidden=true;title.textContent="تفاصيل المنتج";});
     const review=el("button","baran-ia-review","مراجعة السعر");review.type="button";review.addEventListener("click",()=>fetchQuote(true));
-    const purchase=el("button","baran-ia-purchase","تأكيد الطلب والشحن");purchase.type="button";purchase.disabled=true;purchase.id="baranIaPurchase";purchase.addEventListener("click",createOrder);
+    const purchase=el("button","baran-ia-purchase","مراجعة الطلب");purchase.type="button";purchase.disabled=true;purchase.id="baranIaPurchase";purchase.addEventListener("click",openReview);
     const cancel=el("button","baran-ia-cancel","إلغاء");cancel.type="button";cancel.addEventListener("click",closeCheckout);
     const check=el("button","baran-ia-check","تحديث حالة الطلب");check.type="button";check.id="baranIaCheck";check.hidden=true;check.addEventListener("click",()=>checkOrder(false));
     actions.append(back,cancel,review,purchase,check);
-    form.append(idLabel,player,qtyLabel,qtyRow,presets,currencyLabel,currency,quoteBox,note,status,actions);
-    panel.append(top,title,details,summary,form);modal.append(panel);
+    form.append(idLabel,player,qtyLabel,qtyRow,presets,currencyLabel,currency,quoteBox,note,actions);
+    const reviewPanel=el("div","baran-ia-review-panel");reviewPanel.id="baranIaReviewPanel";reviewPanel.hidden=true;
+    reviewPanel.append(el("span","baran-ia-kicker","BARAN GAME · ORDER REVIEW"),el("h4","","مراجعة الطلب"));
+    const reviewInfo=el("div","baran-ia-review-info");reviewInfo.id="baranIaReviewInfo";
+    const reviewBack=el("button","baran-ia-back","رجوع للتعديل");reviewBack.type="button";reviewBack.addEventListener("click",()=>{reviewPanel.hidden=true;form.hidden=false;title.textContent="إتمام الشراء";});
+    const reviewConfirm=el("button","baran-ia-review-confirm","متابعة");reviewConfirm.type="button";reviewConfirm.id="baranIaReviewConfirm";reviewConfirm.addEventListener("click",createOrder);
+    const reviewActions=el("div","baran-ia-review-actions");reviewActions.append(reviewBack,reviewConfirm);
+    reviewPanel.append(reviewInfo,reviewActions);
+    panel.append(top,title,details,summary,form,reviewPanel,status);modal.append(panel);
     modal.addEventListener("click",e=>{if(e.target===modal)closeCheckout();});
     document.body.append(modal);
     return modal;
@@ -133,13 +140,13 @@
     if(product)activeProduct=product;if(!activeProduct)return;product=activeProduct;
     quantity=Number(product.min_quantity)||1;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;paymentCurrency="USD";
     const modal=ensureModal();$("baranIaTitle").textContent="إتمام الشراء";
-    $("baranIaDetails").hidden=true;$("baranIaProduct").hidden=false;$("baranIaForm").hidden=false;
+    $("baranIaDetails").hidden=true;$("baranIaProduct").hidden=false;$("baranIaForm").hidden=false;$("baranIaReviewPanel").hidden=true;
     $("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","مراجعة طلبك"),el("small","",productUnitPrice(product)+" للوحدة"));
     const targetInput=$("baranIaPlayer"),targetLabel=document.querySelector('label[for="baranIaPlayer"]');
     targetInput.value="";targetInput.required=!!product.requires_target;targetInput.hidden=!product.requires_target;
     targetInput.placeholder=product.target_label||"أدخل بيانات الحساب";targetLabel.hidden=!product.requires_target;targetLabel.textContent=product.target_label||"بيانات الحساب";
      window.BaranPlayerNameCheck?.attach(targetInput,{product_code:product.product_code,name:product.name});
-    $("baranIaStatus").textContent="";$("baranIaCurrency").value=paymentCurrency;$("baranIaPurchase").disabled=true;$("baranIaPurchase").textContent="تأكيد الطلب والشحن";$("baranIaCheck").hidden=true;
+    $("baranIaStatus").textContent="";$("baranIaCurrency").value=paymentCurrency;$("baranIaPurchase").disabled=true;$("baranIaPurchase").textContent="مراجعة الطلب";$("baranIaReviewConfirm").textContent="متابعة";$("baranIaReviewConfirm").disabled=false;$("baranIaCheck").hidden=true;
     $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","","أدخل الكمية لحساب السعر."));
     const presets=$("baranIaPresets");presets.replaceChildren(el("small","baran-ia-presets-label","كميات سريعة — اختيارات للكمية وليست باقات ثابتة"));
     const min=Number(product.min_quantity),max=Number(product.max_quantity);
@@ -149,6 +156,23 @@
     vals.forEach(v=>{const b=el("button","baran-ia-preset",Number(v).toLocaleString("en-US"));b.type="button";b.addEventListener("click",()=>{quantity=v;quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();});presets.append(b);});
     updateQuantityUI();modal.hidden=false;document.body.classList.add("baran-ia-modal-open");
     if(product.requires_target)$("baranIaPlayer").focus();else $("baranIaQuantity").focus();
+  }
+  function openReview(){
+    if(!activeProduct||!quote)return;
+    const playerId=$("baranIaPlayer").value.trim();
+    if(activeProduct.requires_target&&playerId.length<2){showMessage($("baranIaStatus"),"أدخل معرّف الحساب أولاً.",true);return;}
+    const total=paymentCurrency==="USD"?money(quote.sale_usd)+" $":Number(quote.sale_syp||0).toLocaleString("en-US")+" ل.س جديدة";
+    const unit=paymentCurrency==="USD"?money(Number(quote.sale_usd||0)/Number(quote.quantity||quantity))+" $":(Number(quote.sale_syp||0)/Number(quote.quantity||quantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س جديدة";
+    const info=$("baranIaReviewInfo");info.replaceChildren();
+    const row=(label,value)=>{const line=el("div","baran-ia-review-row");line.append(el("span","",label),el("strong","",value));info.append(line);};
+    row("المنتج",activeProduct.name||"منتج الشحن");
+    if(activeProduct.requires_target)row("Player ID",playerId);
+    row("الكمية",Number(quote.quantity||quantity).toLocaleString("en-US")+" وحدة");
+    row("سعر الوحدة",unit);
+    row("الرصيد", "يُتحقق منه عند المتابعة");
+    row("الإجمالي",total);
+    $("baranIaForm").hidden=true;$("baranIaReviewPanel").hidden=false;$("baranIaTitle").textContent="مراجعة الطلب";
+    showMessage($("baranIaStatus"),"راجع تفاصيل الطلب قبل المتابعة. لن يتم خصم الرصيد في مرحلة المعاينة.",false);
   }
   function closeCheckout(){if(pollTimer)clearTimeout(pollTimer);pollTimer=null;const m=$(ROOT_ID);if(m)m.hidden=true;document.body.classList.remove("baran-ia-modal-open");activeProduct=null;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;}
   function changeQuantity(direction){if(!activeProduct)return;const min=Number(activeProduct.min_quantity)||1;const step=min>=10000?10000:min>=1000?1000:min>=200?100:min;quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,quantity+direction*step));quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();}
@@ -187,14 +211,14 @@
     const playerId=$("baranIaPlayer").value.trim();
     if(activeProduct.requires_target&&playerId.length<2){showMessage($("baranIaStatus"),"أدخل بيانات الحساب المطلوبة أولاً.",true);return;}
     if(!activeRequestId)activeRequestId=crypto.randomUUID();
-    const button=$("baranIaPurchase");button.disabled=true;
+    const button=$("baranIaReviewConfirm");button.disabled=true;
     showMessage($("baranIaStatus"),"جاري التحقق من جاهزية المورد وإنشاء الطلب...",false);
     try{
       const data=await invoke({action:"homscard_variable_create_order",product_id:activeProduct.product_id,
         quantity,player_id:playerId,payment_currency:paymentCurrency,request_id:activeRequestId});
       lastOrderId=data.order_id;activeRequestId=null;orderSubmitted=true;pollCount=0;$("baranIaCheck").hidden=false;
       showMessage($("baranIaStatus"),data.message||("تم تسجيل الطلب. الحالة: "+(data.status||"قيد المعالجة")+". رقم الطلب: "+data.order_id),false);
-      $("baranIaPurchase").textContent="تم تسجيل الطلب";
+      $("baranIaPurchase").textContent="تم تسجيل الطلب";$("baranIaReviewConfirm").textContent="تم تسجيل الطلب";
       if(data.status!=="completed"&&data.status!=="rejected")scheduleStatusPoll();
     }catch(error){
       showMessage($("baranIaStatus"),error.message,true);
@@ -213,8 +237,8 @@
       const data=await invoke({action:"homscard_variable_check_order",order_id:lastOrderId});
       if(!silent||data.status==="completed"||data.status==="rejected")
         showMessage($("baranIaStatus"),data.message||("حالة الطلب: "+data.status),data.status==="rejected");
-      if(data.status==="completed"){$("baranIaPurchase").textContent="تم الشحن بنجاح";if(pollTimer)clearTimeout(pollTimer);pollTimer=null;}
-      else if(data.status==="rejected"){$("baranIaPurchase").textContent="تم الاسترداد";if(pollTimer)clearTimeout(pollTimer);pollTimer=null;}
+      if(data.status==="completed"){$("baranIaPurchase").textContent="تم الشحن بنجاح";$("baranIaReviewConfirm").textContent="تم الشحن بنجاح";if(pollTimer)clearTimeout(pollTimer);pollTimer=null;}
+      else if(data.status==="rejected"){$("baranIaPurchase").textContent="تم الاسترداد";$("baranIaReviewConfirm").textContent="تم الاسترداد";if(pollTimer)clearTimeout(pollTimer);pollTimer=null;}
       else scheduleStatusPoll();
     }catch(error){if(!silent)showMessage($("baranIaStatus"),error.message,true);if(silent)scheduleStatusPoll();}
     finally{button.disabled=false;}
