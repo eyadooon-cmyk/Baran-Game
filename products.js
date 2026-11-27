@@ -7,7 +7,7 @@ let currentExchangeRate=144;
 function applyExchangeRate(rate){
   const parsed=Number(rate);
   if(!Number.isFinite(parsed)||parsed<=0)return;
-  currentExchangeRate=parsed/100;
+  currentExchangeRate=parsed;
   const input=document.getElementById("exchangeRateInput");
   if(input)input.value=String(currentExchangeRate);
   const display=document.getElementById("currentExchangeRate");
