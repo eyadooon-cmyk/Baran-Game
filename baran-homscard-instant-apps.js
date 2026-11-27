@@ -2,7 +2,7 @@
   "use strict";
   const GATEWAY="baran-order-gateway";
   const ROOT_ID="baranInstantAppsRoot";
-  let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,loading=false,catalogPromise=null,paymentCurrency="USD",activeRequestId=null,lastOrderId=null;
+  let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,loading=false,catalogPromise=null,paymentCurrency="USD",activeRequestId=null,lastOrderId=null,pollTimer=null,pollCount=0;
   const $=(id)=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const money=(v)=>Number(v||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:6});
@@ -84,7 +84,7 @@
     const review=el("button","baran-ia-review","مراجعة السعر");review.type="button";review.addEventListener("click",()=>fetchQuote(true));
     const purchase=el("button","baran-ia-purchase","تأكيد الطلب والشحن");purchase.type="button";purchase.disabled=true;purchase.id="baranIaPurchase";purchase.addEventListener("click",createOrder);
     const cancel=el("button","baran-ia-cancel","إلغاء");cancel.type="button";cancel.addEventListener("click",closeCheckout);
-    const check=el("button","baran-ia-check","تحديث حالة الطلب");check.type="button";check.id="baranIaCheck";check.hidden=true;check.addEventListener("click",checkOrder);
+    const check=el("button","baran-ia-check","تحديث حالة الطلب");check.type="button";check.id="baranIaCheck";check.hidden=true;check.addEventListener("click",()=>checkOrder(false));
     actions.append(cancel,review,purchase,check);
     form.append(idLabel,player,qtyLabel,qtyRow,presets,currencyLabel,currency,quoteBox,note,status,actions);
     panel.append(top,title,summary,form);modal.append(panel);
@@ -106,7 +106,7 @@
     updateQuantityUI();modal.hidden=false;document.body.classList.add("baran-ia-modal-open");
     $("baranIaPlayer").focus();
   }
-  function closeCheckout(){const m=$(ROOT_ID);if(m)m.hidden=true;document.body.classList.remove("baran-ia-modal-open");activeProduct=null;quote=null;activeRequestId=null;lastOrderId=null;}
+  function closeCheckout(){if(pollTimer)clearTimeout(pollTimer);pollTimer=null;const m=$(ROOT_ID);if(m)m.hidden=true;document.body.classList.remove("baran-ia-modal-open");activeProduct=null;quote=null;activeRequestId=null;lastOrderId=null;}
   function changeQuantity(direction){if(!activeProduct)return;const step=activeProduct.min_quantity>=1000?100:1;quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,quantity+direction*step));updateQuantityUI();scheduleQuote();}
   function updateQuantityUI(){const input=$("baranIaQuantity");if(input&&activeProduct){input.min=String(activeProduct.min_quantity);input.max=String(activeProduct.max_quantity);input.value=String(quantity);}}
   function scheduleQuote(){if(quoteTimer)clearTimeout(quoteTimer);quoteTimer=setTimeout(()=>{if(activeProduct&&(!activeProduct.requires_target||$("baranIaPlayer")?.value.trim().length>=2))fetchQuote(false);},500);}
@@ -135,23 +135,31 @@
     try{
       const data=await invoke({action:"homscard_variable_create_order",product_id:activeProduct.product_id,
         quantity,player_id:playerId,payment_currency:paymentCurrency,request_id:activeRequestId});
-      lastOrderId=data.order_id;activeRequestId=null;$("baranIaCheck").hidden=false;
+      lastOrderId=data.order_id;activeRequestId=null;pollCount=0;$("baranIaCheck").hidden=false;
       showMessage($("baranIaStatus"),data.message||("تم تسجيل الطلب. الحالة: "+(data.status||"قيد المعالجة")+". رقم الطلب: "+data.order_id),false);
       $("baranIaPurchase").textContent="تم تسجيل الطلب";
+      if(data.status!=="completed"&&data.status!=="rejected")scheduleStatusPoll();
     }catch(error){
       showMessage($("baranIaStatus"),error.message,true);
       // Keep the same request UUID on uncertain network failures to prevent duplicate orders.
     }finally{button.disabled=!quote;}
   }
-  async function checkOrder(){
+  function scheduleStatusPoll(){
+    if(pollTimer)clearTimeout(pollTimer);
+    if(!lastOrderId||pollCount>=20)return;
+    pollTimer=setTimeout(()=>{pollCount++;checkOrder(true);},15000);
+  }
+  async function checkOrder(silent){
     if(!lastOrderId)return;
     const button=$("baranIaCheck");button.disabled=true;
     try{
       const data=await invoke({action:"homscard_variable_check_order",order_id:lastOrderId});
-      showMessage($("baranIaStatus"),data.message||("حالة الطلب: "+data.status),data.status==="rejected");
-      if(data.status==="completed")$("baranIaPurchase").textContent="تم الشحن بنجاح";
-      if(data.status==="rejected")$("baranIaPurchase").textContent="تم الاسترداد";
-    }catch(error){showMessage($("baranIaStatus"),error.message,true);}
+      if(!silent||data.status==="completed"||data.status==="rejected")
+        showMessage($("baranIaStatus"),data.message||("حالة الطلب: "+data.status),data.status==="rejected");
+      if(data.status==="completed"){$("baranIaPurchase").textContent="تم الشحن بنجاح";if(pollTimer)clearTimeout(pollTimer);pollTimer=null;}
+      else if(data.status==="rejected"){$("baranIaPurchase").textContent="تم الاسترداد";if(pollTimer)clearTimeout(pollTimer);pollTimer=null;}
+      else scheduleStatusPoll();
+    }catch(error){if(!silent)showMessage($("baranIaStatus"),error.message,true);if(silent)scheduleStatusPoll();}
     finally{button.disabled=false;}
   }
   function observeSection(){
