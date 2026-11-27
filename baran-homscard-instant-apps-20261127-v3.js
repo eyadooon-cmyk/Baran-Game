@@ -124,7 +124,7 @@
   function openProductDetails(product){
     activeProduct=product;quantity=Number(product.min_quantity)||1;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;paymentCurrency="USD";
     const modal=ensureModal();$("baranIaTitle").textContent="تفاصيل المنتج";
-    $("baranIaDetails").hidden=false;$("baranIaProduct").hidden=true;$("baranIaForm").hidden=true;
+    $("baranIaDetails").hidden=false;$("baranIaProduct").hidden=true;$("baranIaForm").hidden=true;$("baranIaReviewPanel").hidden=true;
     $("baranIaDetailImage").replaceChildren();
     const image=safeImage(product.image);
     if(image){const img=el("img");img.src=image;img.alt=product.name||"صورة المنتج";img.loading="lazy";img.onerror=()=>{img.remove();$("baranIaDetailImage").append(el("span","baran-ia-placeholder","✦"));};$("baranIaDetailImage").append(img);}
