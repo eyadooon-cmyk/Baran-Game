@@ -38,8 +38,8 @@
       const body=el("div","baran-ia-card-body");
       body.append(el("h4","",p.name),el("p","baran-ia-range","الكمية: "+Number(p.min_quantity).toLocaleString("en-US")+" – "+Number(p.max_quantity).toLocaleString("en-US")));
       const price=el("div","baran-ia-unit");price.append(el("small","","سعر الوحدة يبدأ من"),el("strong","",productUnitPrice(p)));
-      const button=el("button","baran-ia-buy","تحديد الكمية");
-      button.type="button";button.addEventListener("click",()=>openCheckout(p));
+      const button=el("button","baran-ia-buy","عرض التفاصيل");
+      button.type="button";button.addEventListener("click",()=>openProductDetails(p));
       body.append(price,button);card.append(art,body);grid.append(card);
     });
     host.append(grid);
@@ -73,7 +73,16 @@
     const close=el("button","baran-ia-close","×");close.type="button";close.setAttribute("aria-label","إغلاق");close.addEventListener("click",closeCheckout);top.append(close);
     const title=el("h3","","إتمام الشراء");title.id="baranIaTitle";
     const summary=el("div","baran-ia-product-summary");summary.id="baranIaProduct";
-    const form=el("div","baran-ia-form");
+    const details=el("div","baran-ia-details");details.id="baranIaDetails";
+    const detailImage=el("div","baran-ia-detail-image");detailImage.id="baranIaDetailImage";
+    const detailName=el("h4","","");detailName.id="baranIaDetailName";
+    const detailDescription=el("p","baran-ia-detail-description","");detailDescription.id="baranIaDetailDescription";
+    const detailPrice=el("div","baran-ia-detail-price","");detailPrice.id="baranIaDetailPrice";
+    const detailLimits=el("p","baran-ia-detail-limits","");detailLimits.id="baranIaDetailLimits";
+    const detailTarget=el("p","baran-ia-detail-target","");detailTarget.id="baranIaDetailTarget";
+    const detailsBuy=el("button","baran-ia-details-buy","شراء الآن");detailsBuy.type="button";detailsBuy.addEventListener("click",()=>openCheckout(activeProduct));
+    details.append(detailImage,detailName,detailDescription,detailPrice,detailLimits,detailTarget,detailsBuy);
+    const form=el("div","baran-ia-form");form.id="baranIaForm";form.hidden=true;
     const idLabel=el("label","","بيانات الحساب");idLabel.htmlFor="baranIaPlayer";
     const player=document.createElement("input");player.id="baranIaPlayer";player.type="text";player.autocomplete="off";player.inputMode="text";player.placeholder="أدخل معرّف الحساب";player.maxLength=100;player.dir="ltr";
     const qtyLabel=el("label","","الكمية المطلوبة");qtyLabel.htmlFor="baranIaQuantity";
@@ -92,33 +101,55 @@
 
     const status=el("p","baran-ia-status");status.id="baranIaStatus";status.setAttribute("role","status");
     const actions=el("div","baran-ia-actions");
+    const back=el("button","baran-ia-back","رجوع لتفاصيل المنتج");back.type="button";back.addEventListener("click",()=>{form.hidden=true;details.hidden=false;summary.hidden=true;title.textContent="تفاصيل المنتج";});
     const review=el("button","baran-ia-review","مراجعة السعر");review.type="button";review.addEventListener("click",()=>fetchQuote(true));
     const purchase=el("button","baran-ia-purchase","تأكيد الطلب والشحن");purchase.type="button";purchase.disabled=true;purchase.id="baranIaPurchase";purchase.addEventListener("click",createOrder);
     const cancel=el("button","baran-ia-cancel","إلغاء");cancel.type="button";cancel.addEventListener("click",closeCheckout);
     const check=el("button","baran-ia-check","تحديث حالة الطلب");check.type="button";check.id="baranIaCheck";check.hidden=true;check.addEventListener("click",()=>checkOrder(false));
-    actions.append(cancel,review,purchase,check);
+    actions.append(back,cancel,review,purchase,check);
     form.append(idLabel,player,qtyLabel,qtyRow,presets,currencyLabel,currency,quoteBox,note,status,actions);
-    panel.append(top,title,summary,form);modal.append(panel);
+    panel.append(top,title,details,summary,form);modal.append(panel);
     modal.addEventListener("click",e=>{if(e.target===modal)closeCheckout();});
     document.body.append(modal);
     return modal;
   }
+  function openProductDetails(product){
+    activeProduct=product;quantity=Number(product.min_quantity)||1;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;paymentCurrency="USD";
+    const modal=ensureModal();$("baranIaTitle").textContent="تفاصيل المنتج";
+    $("baranIaDetails").hidden=false;$("baranIaProduct").hidden=true;$("baranIaForm").hidden=true;
+    $("baranIaDetailImage").replaceChildren();
+    const image=safeImage(product.image);
+    if(image){const img=el("img");img.src=image;img.alt=product.name||"صورة المنتج";img.loading="lazy";img.onerror=()=>{img.remove();$("baranIaDetailImage").append(el("span","baran-ia-placeholder","✦"));};$("baranIaDetailImage").append(img);}
+    else $("baranIaDetailImage").append(el("span","baran-ia-placeholder","✦"));
+    $("baranIaDetailName").textContent=product.name||"المنتج";
+    $("baranIaDetailDescription").textContent=product.description||("اشحن "+(product.name||"هذا المنتج")+" بالكمية التي تحتاجها. سيظهر السعر النهائي بعد حساب الكمية وقبل تأكيد الطلب.");
+    $("baranIaDetailPrice").replaceChildren(el("small","","سعر الوحدة الحالي"),el("strong","",productUnitPrice(product)));
+    $("baranIaDetailLimits").textContent="حدود الكمية: "+Number(product.min_quantity).toLocaleString("en-US")+" – "+Number(product.max_quantity).toLocaleString("en-US");
+    $("baranIaDetailTarget").textContent=product.requires_target?"البيانات المطلوبة عند الشراء: "+(product.target_label||"معرّف الحساب"):"لا يتطلب هذا المنتج معرّف حساب إضافياً.";
+    modal.hidden=false;document.body.classList.add("baran-ia-modal-open");
+  }
   function openCheckout(product){
-    activeProduct=product;quantity=product.min_quantity;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;paymentCurrency="USD";
-    const modal=ensureModal();$("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","معاينة طلب"),el("small","",productUnitPrice(product)+" للوحدة"));
+    if(product)activeProduct=product;if(!activeProduct)return;product=activeProduct;
+    quantity=Number(product.min_quantity)||1;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;paymentCurrency="USD";
+    const modal=ensureModal();$("baranIaTitle").textContent="إتمام الشراء";
+    $("baranIaDetails").hidden=true;$("baranIaProduct").hidden=false;$("baranIaForm").hidden=false;
+    $("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","مراجعة طلبك"),el("small","",productUnitPrice(product)+" للوحدة"));
     const targetInput=$("baranIaPlayer"),targetLabel=document.querySelector('label[for="baranIaPlayer"]');
     targetInput.value="";targetInput.required=!!product.requires_target;targetInput.hidden=!product.requires_target;
-    targetInput.placeholder=product.target_label||"بيانات الحساب";targetLabel.hidden=!product.requires_target;targetLabel.textContent=product.target_label||"بيانات الحساب";
+    targetInput.placeholder=product.target_label||"أدخل بيانات الحساب";targetLabel.hidden=!product.requires_target;targetLabel.textContent=product.target_label||"بيانات الحساب";
     $("baranIaStatus").textContent="";$("baranIaCurrency").value=paymentCurrency;$("baranIaPurchase").disabled=true;$("baranIaPurchase").textContent="تأكيد الطلب والشحن";$("baranIaCheck").hidden=true;
-    $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","","أدخل المعرّف والكمية لحساب السعر."));
-    const presets=$("baranIaPresets");presets.replaceChildren();
-    const vals=[product.min_quantity,Math.min(product.max_quantity,Math.max(product.min_quantity,1000)),Math.min(product.max_quantity,Math.max(product.min_quantity,10000)),product.max_quantity].filter((v,i,a)=>a.indexOf(v)===i);
-    vals.forEach(v=>{const b=el("button","baran-ia-preset",Number(v).toLocaleString("en-US"));b.type="button";b.addEventListener("click",()=>{quantity=v;updateQuantityUI();scheduleQuote();});presets.append(b);});
+    $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","","أدخل الكمية لحساب السعر."));
+    const presets=$("baranIaPresets");presets.replaceChildren(el("small","baran-ia-presets-label","كميات سريعة — اختيارات للكمية وليست باقات ثابتة"));
+    const min=Number(product.min_quantity),max=Number(product.max_quantity);
+    const step=min>=10000?10000:min>=1000?1000:min>=200?100:min;
+    const snap=value=>Math.min(max,Math.max(min,min+Math.floor((value-min)/step)*step));
+    const vals=[min,snap(min*10),snap(min*100),max].filter((v,i,a)=>Number.isSafeInteger(v)&&v>=min&&v<=max&&a.indexOf(v)===i);
+    vals.forEach(v=>{const b=el("button","baran-ia-preset",Number(v).toLocaleString("en-US"));b.type="button";b.addEventListener("click",()=>{quantity=v;quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();});presets.append(b);});
     updateQuantityUI();modal.hidden=false;document.body.classList.add("baran-ia-modal-open");
-    $("baranIaPlayer").focus();
+    if(product.requires_target)$("baranIaPlayer").focus();else $("baranIaQuantity").focus();
   }
   function closeCheckout(){if(pollTimer)clearTimeout(pollTimer);pollTimer=null;const m=$(ROOT_ID);if(m)m.hidden=true;document.body.classList.remove("baran-ia-modal-open");activeProduct=null;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;}
-  function changeQuantity(direction){if(!activeProduct)return;const step=activeProduct.min_quantity>=1000?100:1;quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,quantity+direction*step));quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();}
+  function changeQuantity(direction){if(!activeProduct)return;const min=Number(activeProduct.min_quantity)||1;const step=min>=10000?10000:min>=1000?1000:min>=200?100:min;quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,quantity+direction*step));quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();}
   function updateQuantityUI(){const input=$("baranIaQuantity");if(input&&activeProduct){input.min=String(activeProduct.min_quantity);input.max=String(activeProduct.max_quantity);input.value=String(quantity);}}
   function scheduleQuote(){quoteSequence++;if(quoteTimer)clearTimeout(quoteTimer);quoteTimer=setTimeout(()=>{if(activeProduct)fetchQuote(false);},350);}
   async function fetchQuote(showErrors){
