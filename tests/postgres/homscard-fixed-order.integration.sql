@@ -238,6 +238,10 @@ begin
   if coalesce((v_result->>'duplicate')::boolean,false) is not true then
     raise exception 'retry was not recognized as duplicate';
   end if;
+  if v_result->>'supplier_sku' <> '60'
+     or nullif(v_result->>'supplier_order_uuid','') is null then
+    raise exception 'duplicate retry did not return the validated supplier identifiers';
+  end if;
   select balance_usd into v_balance from public.wallets where user_id=v_user;
   if v_balance <> 90 then raise exception 'expected exactly one USD 10 debit, got %',v_balance; end if;
   select count(*) into v_count from public.orders;
