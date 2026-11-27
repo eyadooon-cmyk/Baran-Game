@@ -85,7 +85,7 @@ with homscard as (
     and coalesce(ai.page_data->>'text','') ~* 'player\s*id'
     and abs((ai.product_data->>'price')::numeric - sp.unit_cost) <= 0.000001
     and abs(p.price_usd - round(sp.unit_cost * (1 + ss.product_markup_percent / 100), 2)) <= 0.000001
-    and p.product_code !~* '(MEMBERSHIP|SUBSCRIPTION|WEEKLY)'
+    and p.product_code !~* '(MEMBERSHIP|SUBSCRIPTION|WEEKLY|^JAWAKER_TOKENS$)'
 )
 update public.products p
    set catalog_group = 'homscard_fixed', updated_at = now()
