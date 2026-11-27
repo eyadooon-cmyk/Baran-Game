@@ -210,16 +210,17 @@ test("HomsCard AI control center is mounted as a separate visible card and runs 
   assert.match(intelligenceUi, /لا شراء ولا شحن ولا تعديل أسعار بيع أو أرصدة أو طلبات/);
 });
 
-test("HomsCard instant app catalog is restricted to approved available quantity products", () => {
-  assert.match(orderGateway, /action === "homscard_app_catalog"/);
-  assert.match(orderGateway, /const allowedAppIds = \["18","280","49","37","3","1","45","8","43","25","893","910"\]/);
+test("HomsCard variable quantity catalog covers all active storefront categories without hard-coded product IDs", () => {
+  assert.match(orderGateway, /homscard_variable_catalog/);
+  assert.match(orderGateway, /new Set\(\["ألعاب", "تطبيقات", "اتصالات", "محافظ"\]\)/);
   assert.match(orderGateway, /data\.product_type !== "quantity"/);
   assert.match(orderGateway, /data\.available !== true/);
-  assert.match(orderGateway, /sale_unit_usd/);
+  assert.match(orderGateway, /scope: "all_variable_quantity_categories"/);
+  assert.doesNotMatch(orderGateway, /allowedAppIds/);
 });
 
 test("HomsCard app checkout displays a server quote without creating an order or charging a wallet", () => {
-  assert.match(instantAppsUi, /action:"homscard_app_quote"/);
+  assert.match(instantAppsUi, /action:"homscard_variable_quote"/);
   assert.match(instantAppsUi, /معرّف الحساب/);
   assert.match(instantAppsUi, /الكمية المطلوبة/);
   assert.match(instantAppsUi, /مراجعة السعر/);
@@ -229,6 +230,15 @@ test("HomsCard app checkout displays a server quote without creating an order or
   assert.doesNotMatch(instantAppsUi, /wallet_deduct|create_order|fulfill_order/);
 });
 
+test("shared HomsCard variable-quantity cards mount in games, apps, telecom and wallets", () => {
+  assert.match(instantAppsUi, /\["automaticGames","ألعاب"\]/);
+  assert.match(instantAppsUi, /\["appsStore","تطبيقات"\]/);
+  assert.match(instantAppsUi, /\["telecomStore","اتصالات"\]/);
+  assert.match(instantAppsUi, /\["digitalWalletsStore","محافظ"\]/);
+  assert.match(instantAppsUi, /baran-variable-products/);
+  assert.match(instantAppsUi, /min_quantity/);
+  assert.match(instantAppsUi, /max_quantity/);
+});
 test("mobile-first HomsCard app storefront assets are mounted", () => {
   assert.match(indexHtml, /baran-homscard-instant-apps\.css/);
   assert.match(indexHtml, /baran-homscard-instant-apps\.js/);
