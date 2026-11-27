@@ -20,7 +20,7 @@
     host.replaceChildren();
     const visibleProducts=products.filter(p=>{const c=String(p.category||"").replace(/^ال/,"");return c.includes(category)||category.includes(c);});
     const head=el("div","baran-ia-heading");
-    const copy=el("div");copy.append(el("span","baran-ia-kicker","HOMSCARD · INSTANT TOP-UP"),el("h3","","منتجات الشحن حسب الكمية"),el("p","","اختر المنتج، أدخل معرّف الحساب إذا طُلب، وحدد الكمية قبل مراجعة السعر."));
+    const copy=el("div");copy.append(el("span","baran-ia-kicker","HOMSCARD · VARIABLE QUANTITY"),el("h3","","منتجات الشحن حسب الكمية"),el("p","","اختر المنتج، أدخل معرّف الحساب إذا طُلب، وحدد الكمية قبل مراجعة السعر."));
     head.append(copy,el("span","baran-ia-count",visibleProducts.length+" منتج"));
     host.append(head);
     if(!visibleProducts.length){host.append(el("div","baran-ia-empty","لا توجد حالياً منتجات متغيرة الكمية اجتازت فحص التوفر والسعر لدى HomsCard ضمن هذا القسم."));return;}
