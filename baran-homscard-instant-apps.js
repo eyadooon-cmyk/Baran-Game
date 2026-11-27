@@ -3,7 +3,7 @@
   const GATEWAY="baran-order-gateway";
   const ROOT_ID="baranInstantAppsRoot";
   let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,quoteSequence=0,catalogPromise=null,paymentCurrency="USD",activeRequestId=null,lastOrderId=null,pollTimer=null,pollCount=0,orderSubmitted=false;
-  const CATALOG_CACHE_KEY="baran_homscard_variable_catalog_v1";
+  const CATALOG_CACHE_KEY="baran_homscard_variable_catalog_v2";
   try{const cached=JSON.parse(sessionStorage.getItem(CATALOG_CACHE_KEY)||"null");if(cached&&Date.now()-cached.savedAt<10*60*1000&&Array.isArray(cached.products))products=cached.products;}catch{}
   const $=(id)=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
@@ -130,9 +130,16 @@
     try{
       const data=await invoke({action:"homscard_variable_quote",product_id:requestedProduct.product_id,quantity:requestedQuantity,player_id:playerId,payment_currency:requestedCurrency});
       if(sequence!==quoteSequence||activeProduct!==requestedProduct||quantity!==requestedQuantity||paymentCurrency!==requestedCurrency)return;
+      if(String(data?.quote?.product_id??"")!==String(requestedProduct.product_id??"") ||
+         String(data?.quote?.product_name??"").trim()!==String(requestedProduct.name??"").trim()) {
+        throw new Error("تعذر مطابقة المنتج مع تسعيرة المورد. حدّث الصفحة وحاول مجدداً؛ لم يتم إنشاء طلب أو خصم رصيد.");
+      }
       quote=data.quote;
       const amount=requestedCurrency==="USD"?money(quote.sale_usd)+" $":Number(quote.sale_syp||0).toLocaleString("en-US")+" ل.س";
-      const unitAmount=requestedCurrency==="USD"?money(Number(quote.sale_usd||0)/Number(quote.quantity||requestedQuantity))+" $ / وحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س / وحدة";
+      const quotedUnit=Number(quote.sale_usd||0)/Number(quote.quantity||requestedQuantity);
+      const unitAmount=requestedCurrency==="USD"?money(quotedUnit)+" $ / وحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س / وحدة";
+      const productMeta=$("baranIaProduct")?.querySelector("small");
+      if(productMeta)productMeta.textContent=requestedCurrency==="USD"?money(quotedUnit)+" $ للوحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س للوحدة";
       $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","",amount),el("small","",unitAmount+" · "+Number(quote.quantity).toLocaleString("en-US")+" وحدة"));
       const needsTarget=requestedProduct.requires_target&&playerId.length<2;
       $("baranIaPurchase").disabled=needsTarget;
