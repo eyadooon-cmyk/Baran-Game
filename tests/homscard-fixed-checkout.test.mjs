@@ -42,3 +42,31 @@ test("fixed and variable products use separate customer interfaces", () => {
   assert.match(fixedUi, /purchase\.disabled=true/);
   assert.doesNotMatch(fixedUi, /homscard_fixed_create_order/);
 });
+
+const migration = await readFile(new URL("../supabase/migrations/20261127000200_homscard_fixed_order_lifecycle.sql", import.meta.url), "utf8");
+
+test("fixed order RPC is transactional, idempotent, and service-role only", () => {
+  assert.match(migration, /baran_create_homscard_fixed_order/);
+  assert.match(migration, /pg_advisory_xact_lock/);
+  assert.match(migration, /client_request_id/);
+  assert.match(migration, /for update/);
+  assert.match(migration, /wallet_transactions/);
+  assert.match(migration, /baran_supplier_prepare_order/);
+  assert.match(migration, /execution_enabled/);
+  assert.match(migration, /revoke all on function public\.baran_create_homscard_fixed_order/);
+  assert.match(migration, /to service_role/);
+});
+
+test("fixed order price snapshot uses new Syrian lira commercial conversion", () => {
+  assert.match(migration, /product_group = 'homscard_fixed'/);
+  assert.match(migration, /market_rate \* \(1 \+ fx_buffer \/ 100\) \/ 100/);
+  assert.match(migration, /market_exchange_rate \* \(1 \+ ss\.fx_buffer_percent \/ 100\) \/ 100/);
+});
+
+test("fixed gateway creates fixed orders only through the dedicated RPC", () => {
+  assert.match(gateway, /homscard_fixed_create_order/);
+  assert.match(gateway, /baran_create_homscard_fixed_order/);
+  assert.match(gateway, /homscard_fixed_check_order/);
+  assert.match(gateway, /p_product_code:productCode/);
+  assert.match(gateway, /created\?\.supplier_sku/);
+});
