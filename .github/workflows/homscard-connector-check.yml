@@ -95,4 +95,3 @@ jobs:
           node --check baran-homscard-instant-apps-20261127-v3.js
           node --check baran-homscard-fixed-checkout.js
           node --check baran-homscard-player-name-check.js
-          node --check baran-homscard-player-name-check.js
