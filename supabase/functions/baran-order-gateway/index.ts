@@ -186,7 +186,7 @@ Deno.serve(async (req: Request) => {
 
       const {data:productRows,error:productsError}=await admin.from("products")
         .select("id,product_code,name,description,category,price_usd,price_syp,catalog_group,sort_order")
-        .eq("is_active",true).gt("price_usd",0).is("catalog_group",null)
+        .eq("is_active",true).gt("price_usd",0).or("catalog_group.is.null,catalog_group.eq.homscard_fixed")
         .order("sort_order",{ascending:true}).limit(250);
       if(productsError)return json({success:false,error:"تعذر تحميل كتالوج المنتجات الثابتة."},503);
       const ids=(productRows??[]).map((p:any)=>p.id);
@@ -504,7 +504,141 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    if (body?.action === "homscard_variable_check_order") {
+    if (body?.action === "homscard_fixed_create_order") {
+      const productCode = typeof body.product_code === "string" ? body.product_code.trim().toUpperCase() : "";
+      const quantity = 1;
+      const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
+      const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
+      const requestId = typeof body.request_id === "string" ? body.request_id.trim() : "";
+      if (!/^[A-Z0-9_]{3,100}$/.test(productCode) ||
+          !["USD","SYP"].includes(currency) ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId) ||
+          playerId.length > 100) return json({success:false,error:"بيانات الطلب غير صالحة."},400);
+      if (!Deno.env.get("HOMSCARD_API_TOKEN")) return json({success:false,error:"مفتاح HomsCard API غير مضبوط على الخادم؛ لم يتم إنشاء طلب أو خصم رصيد.",code:"SUPPLIER_SECRET_MISSING"},503);
+
+      const {data: created,error:createError}=await admin.rpc("baran_create_homscard_fixed_order",{
+        p_user_id:user.id,p_product_code:productCode,p_player_id:playerId,
+        p_payment_currency:currency,p_request_id:requestId,
+      });
+      if(createError){
+        console.error("HOMSCARD_VARIABLE_ORDER_CREATE_FAILED",createError.message);
+        return json({success:false,error:createError.message||"تعذر إنشاء الطلب. لم يتم إرسال طلب إلى المورد."},400);
+      }
+      const orderId=String(created?.order_id||"");
+      const productId=String(created?.supplier_sku||"");
+      const supplierUuid=String(created?.supplier_order_uuid||"");
+      if(!/^[0-9]{1,10}$/.test(productId))return json({success:false,error:"معرّف منتج المورد غير مكتمل؛ أوقفنا الإرسال للمراجعة.",order_id:orderId||null},503);
+      if(!orderId||!supplierUuid)return json({success:false,error:"تم تسجيل الطلب لكن بيانات متابعة المورد غير مكتملة. أوقفنا الإرسال للمراجعة.",order_id:orderId||null},503);
+
+      const checkPath="/check.php?uuid=1&orders="+encodeURIComponent(supplierUuid);
+      const settle=async (payload:any)=>{
+        const rows=Array.isArray(payload?.data)?payload.data:
+          payload?.data&&typeof payload.data==="object"?[payload.data]:[];
+        const parsed=parseHomsCardCheck({status:payload?.status,data:rows},supplierUuid);
+        if(parsed.kind==="completed"){
+          if(parsed.quantity!==quantity || parsed.delivery.length>2000){
+            await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"بيانات نجاح المورد لا تطابق UUID أو كمية الطلب أو حد بيانات التسليم."});
+            return {status:"awaiting_supplier",message:"وصل رد غير مطابق للطلب؛ أبقيناه قيد التحقق دون تسوية مالية."};
+          }
+          const {error:deliveryError}=await admin.from("order_fulfillment")
+            .update({supplier_delivery:parsed.delivery}).eq("order_id",orderId);
+          if(deliveryError) throw deliveryError;
+          const {error}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"succeeded",p_supplier_reference:parsed.supplierOrderId,
+            p_supplier_unit_cost:parsed.totalCost/parsed.quantity,p_cost_currency:"USD",p_reason:null,
+          });
+          if(error)throw error;
+          return {status:"completed",message:"تم تأكيد تنفيذ الطلب من HomsCard."};
+        }
+        if(parsed.kind==="failed"){
+          const {error}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"failed",p_supplier_reference:parsed.supplierOrderId,
+            p_reason:"أكد HomsCard إلغاء الطلب؛ تم طلب استرداد المبلغ لمحفظة الزبون.",
+          });
+          if(error)throw error;
+          return {status:"rejected",message:"أُلغي الطلب لدى المورد وتمت معالجة الاسترداد."};
+        }
+        await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",
+          p_reason:parsed.reason||"الطلب ما زال pending أو لم تصل نتيجة مؤكدة من HomsCard.",
+        });
+        return {status:"awaiting_supplier",message:"الطلب قيد التنفيذ أو التحقق؛ لن نكرر الإرسال أو الاسترداد قبل تأكيد النتيجة."};
+      };
+
+      if(created.duplicate===true){
+        try{
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,duplicate:true,order_id:orderId,...result});}
+        }catch(error){console.error("HOMSCARD_DUPLICATE_CHECK_FAILED",String(error));}
+        return json({success:true,duplicate:true,order_id:orderId,status:"awaiting_supplier",
+          message:"الطلب مسجل مسبقاً. نتحقق من نفس UUID لمنع أي خصم أو شحن مكرر."});
+      }
+
+      try{
+        const sent=await homscardRequest("/order.php","POST",{
+          product_id:Number(productId),order_uuid:supplierUuid,qty:quantity,...(playerId?{player_id:playerId}:{})
+        });
+        if(sent.payload?.status==="OK"&&sent.payload?.data){
+          const normalizedCreate=normalizeHomsCardCreate(sent.payload,supplierUuid,quantity);
+          if(normalizedCreate){
+            const result=await settle(normalizedCreate);
+            return json({success:true,order_id:orderId,...result});
+          }
+          await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",
+            p_reason:"رد order.php لا يطابق صيغة النجاح/الحالة الموثقة أو ينقصه تحقق السعر/الكمية/التسليم."});
+          return json({success:true,order_id:orderId,status:"awaiting_supplier",
+            message:"وصل رد إنشاء غير مكتمل أو غير مطابق؛ أبقينا الطلب قيد التحقق دون استرداد أو إعادة إرسال."});
+        }
+        const code=Number(sent.payload?.error?.code);
+        if(homscardConfirmedRejection(code)){
+          const reasons:Record<number,string>={
+            100:"رصيد حساب HomsCard غير كافٍ؛ رفض المورد الطلب.",
+            103:"بيانات اللاعب المطلوبة غير مكتملة؛ رفض المورد الطلب.",
+            109:"معرّف المنتج غير موجود لدى HomsCard.",
+            110:"المنتج غير متاح لدى HomsCard.",
+            112:"الكمية أقل من الحد الأدنى لدى المورد.",
+            113:"الكمية أكبر من الحد الأعلى لدى المورد.",
+            114:"أكد HomsCard رفض الطلب؛ يعالج المورد إعادة المبلغ إلى رصيد حسابه.",
+          };
+          const {error:settleError}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"failed",
+            p_reason:"رفض مؤكد من HomsCard (code "+code+"): "+reasons[code],
+          });
+          if(settleError)throw settleError;
+          return json({success:true,order_id:orderId,status:"rejected",refunded:true,
+            supplier_error_code:code,message:"رفض المورد الطلب وتمت معالجة استرداد رصيد الزبون في باران."});
+        }
+        if(sent.http_status>=500||code===500||code===102){
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,order_id:orderId,...result});}
+          await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"انقطع أو تعذر حسم رد إنشاء الطلب؛ تم فحص UUID ولم تظهر نتيجة مؤكدة."});
+          return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"الطلب قيد التحقق لدى المورد؛ لم نعد إرساله ولم نسترد المبلغ."});
+        }
+        await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",
+          p_reason:String(sent.payload?.error?.message||"لم يصل رد نجاح مؤكد من HomsCard؛ لا يمكن إثبات أن الطلب لم يُنشأ.").slice(0,500),
+        });
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",
+          message:"لم يصل تأكيد نهائي من المورد. أبقينا الطلب قيد التحقق دون إعادة إرسال أو استرداد حتى لا يحدث شحن أو خصم مزدوج."});
+      }catch(error){
+        console.error("HOMSCARD_ORDER_DISPATCH_UNCERTAIN",String(error));
+        try{
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,order_id:orderId,...result});}
+        }catch(checkError){console.error("HOMSCARD_ORDER_STATUS_CHECK_FAILED",String(checkError));}
+        await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"انقطع الاتصال أثناء الإرسال وتعذر التحقق؛ الطلب معلّق لمنع التكرار."});
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",
+          message:"انقطع الاتصال أثناء الإرسال. حفظنا UUID ونعلّق الطلب للتحقق؛ لا يوجد إعادة إرسال أو استرداد تلقائي."});
+      }
+    }
+
+    if (body?.action === "homscard_variable_check_order" || body?.action === "homscard_fixed_check_order") {
       const orderId=typeof body.order_id==="string"?body.order_id.trim():"";
       if(!/^[0-9a-f-]{36}$/i.test(orderId))return json({success:false,error:"معرّف الطلب غير صالح."},400);
       const {data:order,error:orderError}=await admin.from("orders").select("id,user_id,quantity,status")
