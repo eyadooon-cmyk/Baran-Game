@@ -46,6 +46,7 @@
     });
     const statusLabels = {
       success: "المصدران متوافقان — تم تحديث السعر",
+      rate_decrease_pending: "السوق انخفض — أبقينا سعر المتجر بانتظار قرار المدير",
       source_disagreement: "اختلاف بين المصدرين — أوقفنا الاعتماد الآلي",
       source_unavailable: "تعذر الوصول للمصدرين — احتفظنا بالسعر السابق",
       stale: "مصدر واحد فقط متاح — لم نعتمد سعراً جديداً",
@@ -59,7 +60,7 @@
         : '<strong>لا توجد قراءة</strong><span class="fx-monitor-meta">لم يتم استلام سعر موثوق</span>') + '</div>';
     box.innerHTML =
       '<div class="fx-monitor-card"><div class="finance-section-heading"><div><span class="finance-kicker">LIVE SYRIAN FX</span><h3>مراقب سعر الصرف السوري التلقائي</h3>' +
-      '<p class="small">مرجع دمشق · مصدران مستقلان · تحديث مجدول كل 6 ساعات</p></div><span class="finance-section-icon">📡</span></div>' +
+      '<p class="small">مرجع دمشق · مصدران مستقلان · تحديث كل 6 ساعات · الارتفاع تلقائي والانخفاض بقرار المدير فقط</p></div><span class="finance-section-icon">📡</span></div>' +
       '<div class="fx-monitor-grid">' +
       '<div class="fx-monitor-stat"><span class="fx-monitor-meta">سعر التحويل المعتمد للتكلفة</span><strong dir="ltr">' + (state.applied_rate_old == null ? '—' : syp(state.applied_rate_old)) + '</strong><span class="fx-monitor-meta">الليرة القديمة لكل دولار</span></div>' +
       sourceCard("Liraty", latest.Liraty) + sourceCard("LiraScope", latest.LiraScope) +
@@ -70,7 +71,7 @@
       (state.last_error ? '<br><span style="color:#e8bd83">ملاحظة: ' + esc(state.last_error) + '</span>' : '') +
       '</div><div class="ops-actions" style="margin-top:10px"><button type="button" id="financeFxRefresh">فحص السعر الآن</button></div>' +
       '<div id="financeFxStatus" class="pricing-policy-status" role="status" aria-live="polite">' + esc(message || "الأسعار استرشادية؛ عند اختلاف المصدرين بأكثر من 2% لا نغير سعر المتجر.") + '</div>' +
-      '<p class="fx-monitor-meta">المصدران: <a href="https://liraty.com/developers" target="_blank" rel="noopener">Liraty</a> و <a href="https://lirascope.syria-cloud.sy/ar/api-docs" target="_blank" rel="noopener">LiraScope</a>. الأسعار الجديدة تحوّل ×100 إلى الليرة القديمة. سعر المبيع هو تكلفة شراء الدولار من الصراف. لا تتغير أسعار المنتجات أو المحافظ أو الطلبات تلقائياً.</p></div>';
+      '<p class="fx-monitor-meta">المصدران: <a href="https://liraty.com/developers" target="_blank" rel="noopener">Liraty</a> و <a href="https://lirascope.syria-cloud.sy/ar/api-docs" target="_blank" rel="noopener">LiraScope</a>. الأسعار الجديدة تحوّل ×100 إلى الليرة القديمة. سعر المبيع هو تكلفة شراء الدولار من الصراف. الارتفاع يُعتمد تلقائياً، أما الانخفاض فلا يغيّر سعر المتجر إلا بقرار المدير. لا تتغير أسعار المنتجات أو المحافظ أو الطلبات تلقائياً.</p></div>';
     $("financeFxRefresh")?.addEventListener("click", async () => {
       const button = $("financeFxRefresh"), status = $("financeFxStatus");
       button.disabled = true; status.textContent = "جاري فحص المصدرين...";
@@ -84,7 +85,10 @@
           return;
         }
         const latestData = await window.callFxRatesApi();
-        renderFxMonitor(latestData, result.status === "success" ? "تمت مطابقة المصدرين وتحديث سعر السوق." : (result.message || "لم نعتمد سعراً جديداً."));
+        renderFxMonitor(latestData, result.status === "rate_decrease_pending" ? "السوق انخفض؛ لم نخفض سعر المتجر. التخفيض يحتاج قرار المدير." : (result.status === "success" ? "تمت مطابقة المصدرين وتحديث سعر السوق عند الارتفاع فقط." : (result.message || "لم نعتمد سعراً جديداً.")));
+        if (result.status === "success" || result.status === "rate_decrease_pending") {
+          if (typeof window.loadAdminPanel === "function") await window.loadAdminPanel();
+        }
       } catch (error) {
         status.textContent = "تعذر الفحص: " + (error?.message || "خطأ غير معروف");
       } finally {
