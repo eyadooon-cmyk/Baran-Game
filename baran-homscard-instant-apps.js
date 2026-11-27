@@ -35,7 +35,7 @@
       art.append(el("span","baran-ia-live","متاح لدى المورد"));
       const body=el("div","baran-ia-card-body");
       body.append(el("h4","",p.name),el("p","baran-ia-range","الكمية: "+Number(p.min_quantity).toLocaleString("en-US")+" – "+Number(p.max_quantity).toLocaleString("en-US")));
-      const price=el("div","baran-ia-unit");price.append(el("small","","سعر الوحدة يبدأ من"),el("strong","",money(p.sale_unit_usd)+" $"));
+      const price=el("div","baran-ia-unit");price.append(el("small","","سعر الوحدة يبدأ من"),el("strong","",productUnitPrice(p)));
       const button=el("button","baran-ia-buy","تحديد الكمية");
       button.type="button";button.addEventListener("click",()=>openCheckout(p));
       body.append(price,button);card.append(art,body);grid.append(card);
