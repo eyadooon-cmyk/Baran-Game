@@ -61,3 +61,9 @@ body.baran-ia-modal-open{overflow:hidden}
 .baran-ia-check{background:#24212d}
 .baran-ia-actions{display:flex;flex-wrap:wrap;gap:8px}
 .baran-ia-actions button{flex:1 1 130px}
+
+/* Customer-facing catalog: quiet skeletons instead of supplier loading text */
+.baran-variable-products .baran-ia-skeleton{display:inline-block;vertical-align:top;width:calc(50% - 7px);height:238px;margin:0 10px 12px 0;border:1px solid #624775;border-radius:18px;background:linear-gradient(100deg,#21182b 20%,#3a2a49 38%,#21182b 58%);background-size:220% 100%;animation:baranCatalogShimmer 1.35s ease-in-out infinite}
+@keyframes baranCatalogShimmer{to{background-position-x:-220%}}
+@media(min-width:700px){.baran-variable-products .baran-ia-skeleton{width:calc(33.333% - 12px);height:270px}}
+@media(prefers-reduced-motion:reduce){.baran-variable-products .baran-ia-skeleton{animation:none}}
