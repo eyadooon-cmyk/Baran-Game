@@ -6,6 +6,7 @@ import { readFile } from "node:fs/promises";
 const worker = await readFile(new URL("../supabase/functions/baran-homscard-reconcile/index.ts", import.meta.url), "utf8");
 const attemptMigration = await readFile(new URL("../supabase/migrations/20261127200000_homscard_reconcile_attempt_rpc.sql", import.meta.url), "utf8");
 const schedulerMigration = await readFile(new URL("../supabase/migrations/20261127210000_homscard_reconcile_scheduler.sql", import.meta.url), "utf8");
+const settlementMigration = await readFile(new URL("../supabase/migrations/20261127190000_homscard_settlement_after_disable.sql", import.meta.url), "utf8");
 
 const uuid = "ecbdd545-e616-4aee-8770-7eefa977bcd1";
 
@@ -68,4 +69,21 @@ test("scheduler signs requests in Vault and schedules only the read-only reconci
   assert.match(schedulerMigration, /cron\.schedule/);
   assert.match(schedulerMigration, /baran-homscard-reconcile-every-minute/);
   assert.doesNotMatch(schedulerMigration, /order\.php/);
+});
+
+
+test("settlement keeps unknown outcomes pending and refunds only confirmed supplier cancellation", () => {
+  const unknownStart = settlementMigration.indexOf("if p_result='unknown' then");
+  const failedStart = settlementMigration.indexOf("elsif p_result='failed' then");
+  const successStart = settlementMigration.indexOf("else\n    if p_supplier_reference", failedStart);
+  assert.ok(unknownStart >= 0 && failedStart > unknownStart && successStart > failedStart);
+  const unknownBranch = settlementMigration.slice(unknownStart, failedStart);
+  const failedBranch = settlementMigration.slice(failedStart, successStart);
+  assert.doesNotMatch(unknownBranch, /baran_refund_failed_supplier_order/);
+  assert.match(unknownBranch, /dispatch_state='awaiting_result'/);
+  assert.match(unknownBranch, /refunded',false/);
+  assert.match(failedBranch, /baran_refund_failed_supplier_order/);
+  assert.match(settlementMigration, /v_attempt_status='succeeded' and p_result<>'succeeded'/);
+  assert.match(settlementMigration, /v_f\.refund_status='completed' or v_f\.dispatch_state='refunded'/);
+  assert.match(settlementMigration, /grant execute .* to service_role/i);
 });
