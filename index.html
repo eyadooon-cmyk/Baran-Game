@@ -2693,6 +2693,31 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="wallet-card-watermark wallet-arabic-mark" aria-hidden="true">ل.س</span>
         </article>
       </div>
+      <section class="baran-wallet-services" aria-labelledby="baranWalletServicesTitle">
+        <div class="baran-wallet-services-heading">
+          <div><span class="baran-wallet-services-kicker">HOMSCARD · DIGITAL WALLETS</span><h2 id="baranWalletServicesTitle">خدمات المحافظ الرقمية</h2><p>ثلاث خدمات من كتالوج حمص كارد — معاينة فقط إلى حين استكمال تدقيق الربط والأسعار.</p></div>
+          <span class="baran-wallet-services-count">03 خدمات</span>
+        </div>
+        <div class="baran-wallet-services-grid">
+          <article class="baran-wallet-service-card">
+            <div class="baran-wallet-service-brand baran-wallet-usdt"><span>₮</span><small>TRC / BEP</small></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة عملات رقمية</span><h3>USDT BEP20</h3><p>إرسال إلى عنوان استقبال USDT على شبكة BEP20.</p><div class="baran-wallet-service-meta"><span>معرّف المورد</span><strong dir="ltr">1217</strong></div><div class="baran-wallet-service-meta"><span>الكمية حسب المورد</span><strong dir="ltr">50 – 7,000</strong></div><div class="baran-wallet-service-field"><b>حقل الطلب المطلوب</b><span dir="ltr">USDT BEP20 Address</span></div></div>
+            <span class="baran-wallet-service-status">قيد التدقيق · غير متاح للشراء</span>
+          </article>
+          <article class="baran-wallet-service-card">
+            <div class="baran-wallet-service-brand baran-wallet-whish"><span>W</span><small>WHISH MONEY</small></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية</span><h3>Wish Money · ويش موني</h3><p>خدمة ويش موني وفق بيانات المنتج لدى المورد.</p><div class="baran-wallet-service-meta"><span>معرّف المورد</span><strong dir="ltr">1218</strong></div><div class="baran-wallet-service-meta"><span>الكمية حسب المورد</span><strong dir="ltr">20 – 2,999</strong></div><div class="baran-wallet-service-field"><b>حقل الطلب المطلوب</b><span dir="ltr">Whish Money Number</span></div></div>
+            <span class="baran-wallet-service-status">قيد التدقيق · غير متاح للشراء</span>
+          </article>
+          <article class="baran-wallet-service-card">
+            <div class="baran-wallet-service-brand baran-wallet-sham"><span>ش</span><small>SHAM CASH</small></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية سورية</span><h3>Sham Cash · شام كاش</h3><p>خدمة شام كاش مع ضرورة التحقق من بيانات الاستلام قبل أي طلب.</p><div class="baran-wallet-service-meta"><span>معرّف المورد</span><strong dir="ltr">1219</strong></div><div class="baran-wallet-service-meta"><span>الكمية حسب المورد</span><strong dir="ltr">10 – 1,000</strong></div><div class="baran-wallet-service-field"><b>حقل الطلب المطلوب</b><span>عنوان حساب شام كاش أو صورة الباركود للدعم</span></div></div>
+            <span class="baran-wallet-service-status">قيد التدقيق · غير متاح للشراء</span>
+          </article>
+        </div>
+        <p class="baran-wallet-services-note">ملاحظة: لم نعرض أسعار المورد كأنها أسعار بيع، ولم نضف أزرار طلب أو تحويل أو شحن. تفعيل الخدمات يحتاج تدقيق العملة وطريقة احتساب الكمية والتحقق من الشبكة/الحساب أولاً.</p>
+      </section>
+
       <div class="wallet-actions">
 <button class="wallet-refresh-button wallet-payment-entry" type="button" onclick="showSection('paymentMethods',null)">
 <span class="wallet-action-icon" aria-hidden="true">＋</span>
@@ -9205,6 +9230,38 @@ function renderBaranHomsCardAppsCatalog(){
 @media(max-width:900px){#home .baran-shipping-choices{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){#home .baran-shipping-choices{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:520px){.baran-telecom-provider-grid{grid-template-columns:minmax(0,1fr);gap:11px}.baran-telecom-provider-card img{height:175px}}
+</style>
+
+ 
+<style id="baran-wallet-services-homscard-20261127">
+.baran-wallet-services{margin:22px 0;padding:17px;border:1px solid #654b79;border-radius:20px;background:linear-gradient(145deg,#21182b,#120e18);box-shadow:0 12px 28px #0004}
+.baran-wallet-services-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.baran-wallet-services-kicker{color:#c7a6df;font-size:10px;font-weight:900;letter-spacing:1px}
+.baran-wallet-services-heading h2{margin:5px 0;color:#f2e7fa;font-size:clamp(18px,3vw,23px)}
+.baran-wallet-services-heading p{margin:0;color:#b9a9c9;font-size:12px;line-height:1.8}
+.baran-wallet-services-count{flex:0 0 auto;padding:7px 10px;border:1px solid #80619a;border-radius:999px;background:#30213d;color:#e8d7f4;font-size:11px;font-weight:900}
+.baran-wallet-services-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.baran-wallet-service-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #574365;border-radius:16px;background:linear-gradient(155deg,#211a29,#100d15);box-shadow:0 7px 18px #0003}
+.baran-wallet-service-brand{height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#fff}
+.baran-wallet-service-brand>span{font-size:38px;font-weight:1000;line-height:1.1}
+.baran-wallet-service-brand>small{font-size:9px;font-weight:900;letter-spacing:2px}
+.baran-wallet-usdt{background:radial-gradient(circle at 50% 20%,#2d806c,#12382f 72%)}
+.baran-wallet-whish{background:radial-gradient(circle at 50% 20%,#9b4d83,#3e1b3d 72%)}
+.baran-wallet-sham{background:radial-gradient(circle at 50% 20%,#3e80a3,#172e4a 72%)}
+.baran-wallet-service-body{display:flex;flex:1;flex-direction:column;padding:13px}
+.baran-wallet-service-type{color:#bda6cf;font-size:10px;font-weight:800}
+.baran-wallet-service-body h3{margin:5px 0;color:#f3e8fa;font-size:16px;line-height:1.5}
+.baran-wallet-service-body p{min-height:44px;margin:0 0 10px;color:#b9a9c9;font-size:11px;line-height:1.8}
+.baran-wallet-service-meta{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #3b2e46;font-size:10px}
+.baran-wallet-service-meta span{color:#a997b8}
+.baran-wallet-service-meta strong{color:#e6d5f1}
+.baran-wallet-service-field{display:grid;gap:5px;margin-top:8px;padding:9px;border:1px dashed #705586;border-radius:10px;background:#17111f}
+.baran-wallet-service-field b{color:#d7c2e8;font-size:10px}
+.baran-wallet-service-field span{color:#eee4f5;font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+.baran-wallet-service-status{display:block;margin:0 12px 12px;padding:8px 9px;border:1px solid #80619a;border-radius:10px;background:#2b1b3a;color:#e6d4f3;text-align:center;font-size:10px;font-weight:900}
+.baran-wallet-services-note{margin:14px 0 0;padding:11px;border-radius:11px;background:#332818;color:#f1d8a9;font-size:11px;line-height:1.9}
+@media(max-width:760px){.baran-wallet-services-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.baran-wallet-services{padding:12px;border-radius:16px}.baran-wallet-services-grid{grid-template-columns:minmax(0,1fr);gap:10px}.baran-wallet-service-card{display:grid;grid-template-columns:94px minmax(0,1fr)}.baran-wallet-service-brand{height:100%;min-height:100%;grid-row:1;grid-column:1}.baran-wallet-service-brand>span{font-size:31px}.baran-wallet-service-brand>small{font-size:7px;letter-spacing:1px}.baran-wallet-service-body{grid-row:1;grid-column:2;padding:11px}.baran-wallet-service-body p{min-height:0}.baran-wallet-service-status{grid-column:1/-1;margin:0 10px 10px}.baran-wallet-services-heading{gap:7px}.baran-wallet-services-count{font-size:9px;padding:6px 8px}}
 </style>
 
 </body>
