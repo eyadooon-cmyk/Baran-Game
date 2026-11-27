@@ -9391,7 +9391,7 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
   const button=document.createElement("button");button.type="button";button.textContent="احسب السعر";button.style.cssText="padding:11px;border:0;border-radius:9px;background:#8b5bb1;color:#fff;font-weight:800";
   const result=document.createElement("div");result.className="baran-app-quote-result";result.style.cssText="font-size:12px;line-height:1.8;color:#e7d8f1";
   button.addEventListener("click",async()=>{
-    if(!window.sb||!window.currentUser){result.textContent="سجّل الدخول أولاً لحساب السعر.";return;}
+    if(typeof sb==="undefined"||!currentUser){result.textContent="سجّل الدخول أولاً لحساب السعر.";return;}
     const amount=normalize(),playerId=player.value.trim();
     if(playerId.length<2){result.textContent="أدخل "+p.input+" بشكل صحيح.";return;}
     button.disabled=true;button.textContent="جاري حساب السعر…";result.textContent="";
