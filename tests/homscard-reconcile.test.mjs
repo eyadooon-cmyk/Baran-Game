@@ -150,14 +150,18 @@ test("ambiguous create-order HTTP errors never trigger automatic refunds", () =>
   const createStart = gateway.indexOf('if (body?.action === "homscard_variable_create_order")');
   const checkStart = gateway.indexOf('if (body?.action === "homscard_variable_check_order")', createStart);
   const createBlock = gateway.slice(createStart, checkStart);
-  const ambiguousResponse = createBlock.slice(createBlock.indexOf('const code=Number(sent.payload?.error?.code)'), createBlock.indexOf('}catch(error){', createBlock.indexOf('const code=Number(sent.payload?.error?.code)')));
+  const ambiguousStart = createBlock.indexOf('if(sent.http_status>=500||code===500||code===102)');
+  const ambiguousEnd = createBlock.indexOf('}catch(error){', ambiguousStart);
+  const ambiguousResponse = createBlock.slice(ambiguousStart, ambiguousEnd);
+  assert.ok(ambiguousStart >= 0 && ambiguousEnd > ambiguousStart);
   assert.match(ambiguousResponse, /p_result:"unknown"/);
   assert.doesNotMatch(ambiguousResponse, /p_result:"failed"/);
+  assert.match(createBlock, /homscardConfirmedRejection\(code\)/);
   assert.match(createBlock, /دون إعادة إرسال أو استرداد/);
 });
 
 test("supplier response parser receives the complete payload and searches exact UUID", () => {
   assert.match(gateway, /Array\.isArray\(payload\?\.data\)\?payload\.data/);
   assert.match(gateway, /settle\(checked\.payload\)/);
-  assert.match(gateway, /settle\(sent\.payload\)/);
+  assert.match(gateway, /normalizeHomsCardCreate\(sent\.payload,supplierUuid,quantity\)/);
 });
