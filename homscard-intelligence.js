@@ -159,7 +159,7 @@ const matched=savedRows.filter(r=>agreedIds.has(r.product_id));
 const missing=[...agreedIds].filter(id=>!matched.some(r=>r.product_id===id));
 if(missing.length)throw Error("التدقيق المحفوظ لا يحتوي كل المنتجات الـ17 المتفق عليها. المعرّفات الناقصة: "+missing.join(", ")+". لم نعرض بقية الكتالوج.");
 rows=matched;
-stats();categories();filter();$("hciStatus").textContent="تمت قراءة المنتجات الـ17 المتفق عليها فقط من سجل التدقيق المحفوظ. إجمالي السجل الأصلي: "+catalogCount+" منتجاً؛ المعروض والمصدّر والمعاد فحصه هنا يقتصر على 15. معاينة فقط؛ لا شراء ولا شحن ولا خصم رصيد.";}catch(e){$("hciStatus").textContent="تعذر تحميل البيانات: "+(e?.message||"خطأ غير معروف");}finally{busy=false;$("hciReload").disabled=false;}}
+stats();categories();filter();$("hciStatus").textContent="تمت قراءة المنتجات الـ17 المتفق عليها فقط من سجل التدقيق المحفوظ. إجمالي السجل الأصلي: "+catalogCount+" منتجاً؛ المعروض والمصدّر والمعاد فحصه هنا يقتصر على 17. معاينة فقط؛ لا شراء ولا شحن ولا خصم رصيد.";}catch(e){$("hciStatus").textContent="تعذر تحميل البيانات: "+(e?.message||"خطأ غير معروف");}finally{busy=false;$("hciReload").disabled=false;}}
 
 async function smartRun(){
  if(busy)return;
