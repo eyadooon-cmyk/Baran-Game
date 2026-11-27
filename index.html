@@ -3073,7 +3073,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
             <button type="button" class="admin-hub-card" data-admin-search="الطلبات متابعة الطلبات حالات شحن شراء orders" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>غرفة متابعة الطلبات</strong><small>راجع الطلبات وحالاتها وتفاصيل التنفيذ، وتابع ما يحتاج إلى تدخل.</small><span class="admin-hub-open">متابعة الطلبات <b>←</b></span></button>
           </div></section>
           <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>02</span><div><strong>المنتجات والتجارة</strong><small>إدارة ما نبيعه، جاهزية الكتالوج، العروض، وبرامج الولاء.</small></div><em>CATALOG & SALES</em></div><div class="admin-hub-grid">
-            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="HomsCard حمص كارد المورد الاتصال الكتالوج التدقيق" onclick="document.getElementById('homscardHubSection')?.scrollIntoView({behavior:'smooth',block:'start'})"><span class="admin-hub-icon">🏛️</span><strong>حمص كارد · المورد المعتمد</strong><small>بطاقة مستقلة للاتصال والكتالوج والتدقيق وتقرير الجاهزية، دون شراء أو شحن.</small><span class="admin-hub-open">فتح مركز حمص كارد <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="HomsCard حمص كارد المورد الاتصال الكتالوج التدقيق" onclick="showAdminPanel('suppliers').then(()=>document.getElementById('homscardHubSection')?.scrollIntoView({behavior:'smooth',block:'start'}))"><span class="admin-hub-icon">🏛️</span><strong>حمص كارد · المورد المعتمد</strong><small>بطاقة مستقلة للاتصال والكتالوج والتدقيق وتقرير الجاهزية، دون شراء أو شحن.</small><span class="admin-hub-open">فتح مركز حمص كارد <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="الموردون المنتجات الاسعار التكلفة الربط api catalog suppliers" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والكتالوج</strong><small>تابع الموردين، أسعار التكلفة، ربط المنتجات، وجاهزية البيع.</small><span class="admin-hub-open">إدارة المنتجات والموردين <b>←</b></span></button>
             <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="baro بَارو الشحن اليدوي كتالوج ليو طلبات يدوية عروض اسعار" onclick="showAdminPanel('baro')"><span class="admin-hub-icon">🟣</span><strong>BARO · الشحن اليدوي</strong><small>مساحة مستقلة لكتالوج BARO وطلباته اليدوية وعروض الأسعار، بعيداً عن الشحن الآلي.</small><span class="admin-hub-open">الدخول إلى BARO <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="baro طلبات الشحن اليدوي متابعة التنفيذ player id" onclick="showAdminPanel('baro-orders')"><span class="admin-hub-icon">📦</span><strong>طلبات BARO اليدوية</strong><small>متابعة الطلبات والوصول المباشر إلى الطلب من الإشعار.</small><span class="admin-hub-open">فتح الطلبات <b>←</b></span></button>
@@ -3106,61 +3106,6 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <div id="adminHubNoResults" class="admin-hub-no-results hidden">ما لقينا قسم بهذا الاسم. جرّب كلمة أقصر أو ابحث باسم الوظيفة.
           </div>
       </div>
-      <section id="homscardHubSection" class="homscard-hub-standalone" aria-label="مركز حمص كارد المستقل" style="margin:18px 0 28px;padding:14px;border:1px solid #7652a8;border-radius:18px;background:linear-gradient(145deg,rgba(65,38,91,.18),rgba(16,13,24,.72));">
-        <div style="margin:0 0 12px"><span class="baran-auto-eyebrow">HOMSCARD · APPROVED SUPPLIER</span><h2 style="margin:5px 0">مركز حمص كارد المستقل</h2><p class="small supplier-page-intro">بطاقة المورد وأدوات الاتصال والكتالوج والتدقيق ظاهرة مباشرة في لوحة الإدارة. وضع قراءة فقط؛ لا شراء ولا شحن.</p></div>
-        <div class="deposit-card supplier-provider-panel" id="homscardProviderPanel" style="display:block!important;visibility:visible!important;opacity:1!important;min-height:220px;border:1px solid #b58bd4;background:linear-gradient(145deg,rgba(65,38,91,.48),rgba(16,13,24,.98));">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                  <span style="font-size:28px">🏛️</span>
-                  <div><h2 style="margin:0">حمص كارد (HomsCard)</h2><p class="small" style="margin:4px 0 0">المورد الأساسي — فحص الحساب ومعاينة المنتجات بشكل مستقل</p></div>
-                  <span class="ops-pill">قراءة فقط · بلا شراء أو شحن</span>
-                </div>
-                <p class="small" style="margin:12px 0">مفاتيح الاتصال محفوظة في Supabase Secrets. هذا القسم لا ينشئ طلبات ولا يخصم رصيداً.</p>
-                <section class="deposit-card" id="baranCatalogReadinessReport" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
-                <h2>📋 تقرير جاهزية كتالوج المنتجات</h2>
-                <p class="small">يفحص جميع المنتجات دفعة واحدة: الأسعار، ربط المورد، SKU، إعداد API، رصيد المورد، وبوابة التنفيذ. التقرير للقراءة فقط.</p>
-                <button class="full secondary" type="button" id="baranCatalogReportButton" onclick="baranLoadCatalogReadinessReport()">إنشاء تقرير جاهزية الـ17 منتجاً</button>
-                <div id="baranCatalogReportStatus" class="small" role="status" aria-live="polite" style="margin-top:10px">لم يتم إنشاء التقرير بعد.</div>
-                <div id="baranCatalogReportSummary"></div>
-                <div id="baranCatalogReportList" style="display:grid;gap:10px;margin-top:12px"></div>
-              </section>
-                <div class="ops-actions">
-                  <button type="button" class="secondary" id="opsHomsProfileButton" onclick="opsTestHomsCard('profile')">🔌 اختبار اتصال حمص كارد والحساب</button>
-                  <button type="button" class="secondary" id="opsHomsProductsButton" onclick="opsTestHomsCard('products')">📦 جلب المنتجات من HomsCard</button>
-                </div>
-                <div id="opsHomsCardResult" class="ops-list" aria-live="polite">بانتظار اختبار الاتصال.</div>
-                <div class="homscard-audit-launch" style="margin:12px 0;padding:12px;border:1px solid #80619a;border-radius:12px;background:rgba(65,38,91,.22)">
-                  <div class="ops-actions" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
-                    <button type="button" class="secondary full" id="opsHomsAutoAuditButton" onclick="homscardRunAutomaticAudit()">🧠 إعادة فحص وتصنيف كل المنتجات</button>
-                    <button type="button" class="secondary full" id="opsHoms8BallPoolPageAuditButton" onclick="homscardInspect8BallPoolPages()">🎱 فحص باقات 8 Ball Pool السبع فقط (140–146)</button>
-                    <button type="button" class="secondary full" id="opsHomsPageAuditButton" onclick="homscardInspectProductPages()">🔎 فحص صفحات HomsCard وتدقيق التفاصيل</button>
-                    <button type="button" class="secondary full" id="opsHomsExportAuditButton" onclick="homscardExportAuditCsv()">⬇️ تصدير تقرير الفحص CSV</button>
-                    <button type="button" class="secondary full" id="opsHomsRestoreAuditButton" onclick="homscardRestoreSavedAudit()">♻️ استرجاع آخر تدقيق محفوظ</button>
-                  </div>
-                  <div id="opsHomsAutoAuditStatus" class="ops-muted" role="status" aria-live="polite" style="margin-top:8px">حمّل الكتالوج؛ سيبدأ الفحص تلقائياً بعد نجاح التحميل.</div>
-                  <div id="opsHomsAutoAuditResults" class="ops-list" aria-live="polite"></div>
-                </div>
-                <div id="opsHomsCatalogTools" class="homscard-catalog-tools hidden">
-                  <div class="homscard-catalog-heading"><strong>استعراض كتالوج المورد</strong><span id="opsHomsCatalogCount">لم يتم تحميل المنتجات بعد</span></div>
-                  <input id="opsHomsCatalogSearch" type="search" inputmode="search" placeholder="ابحث عن PUBG أو Free Fire أو Jawaker أو اسم المنتج..." aria-label="ابحث في كتالوج حمص كارد">
-                  <div class="homscard-catalog-filters">
-                    <select id="opsHomsCatalogCategory" aria-label="تصفية حسب التصنيف"><option value="">كل التصنيفات</option></select>
-                    <select id="opsHomsCatalogAvailability" aria-label="تصفية حسب التوفر"><option value="">كل الحالات</option><option value="available">المتوفر فقط</option><option value="unavailable">غير المتوفر فقط</option></select>
-                    <select id="opsHomsCatalogType" aria-label="تصفية حسب التصنيف المبدئي">
-                      <option value="">كل أنواع المنتجات</option>
-                      <option value="كمية متغيرة محتملة">كمية متغيرة محتملة</option>
-                      <option value="باقة ثابتة محتملة">باقة ثابتة محتملة</option>
-                      <option value="اشتراك بمدة محتملة">اشتراك بمدة محتملة</option>
-                      <option value="غير محسوم">يحتاج مراجعة</option>
-                    </select>
-                    <button type="button" class="secondary" onclick="homscardResetCatalogFilters()">مسح الفلاتر</button>
-                  </div>
-                  <div id="opsHomsCatalogResults" class="homscard-catalog-results" aria-live="polite"></div>
-                  <p class="small">هذه النتائج للبحث والمراجعة فقط. لا يوجد استيراد أو شراء أو تنفيذ شحن من هنا.</p>
-                </div>
-              </div>
-      </section>
-
-
       <div class="admin-subpanel hidden" data-admin-panel="payment-gateway">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>بوابة الدفع والتحصيل 💳</h2></div>
         <section class="deposit-card" style="margin:12px 0;border-color:#70528a">
@@ -3390,7 +3335,61 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       
       <div class="admin-subpanel hidden" data-admin-panel="suppliers">
         <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز الموردين والأسعار</h2></div>
-        <p class="small supplier-page-intro">إدارة أسعار المنتجات وربطها ومتابعة بيانات الموردين. أدوات حمص كارد موجودة في بطاقته المستقلة ضمن الصفحة الرئيسية للإدارة.</p>
+        <p class="small supplier-page-intro">إدارة أسعار المنتجات وربطها ومتابعة بيانات الموردين. أدوات حمص كارد موجودة هنا ضمن مركز الموردين.</p>
+        <div class="admin-workgroup-label"><span>02</span><div><strong>المورد المعتمد · HomsCard</strong><small>اختبار الاتصال وجلب الكتالوج والتدقيق — قراءة فقط</small></div></div>
+      <section id="homscardHubSection" class="homscard-hub-standalone" aria-label="حمص كارد · المورد المعتمد" style="margin:18px 0 28px;padding:14px;border:1px solid #7652a8;border-radius:18px;background:linear-gradient(145deg,rgba(65,38,91,.18),rgba(16,13,24,.72));">
+        <div style="margin:0 0 12px"><span class="baran-auto-eyebrow">HOMSCARD · APPROVED SUPPLIER</span><h2 style="margin:5px 0">مركز حمص كارد المستقل</h2><p class="small supplier-page-intro">إدارة اتصال المورد والكتالوج والتدقيق من داخل مركز الموردين. وضع قراءة فقط؛ لا شراء ولا شحن.</p></div>
+        <div class="deposit-card supplier-provider-panel" id="homscardProviderPanel" style="display:block!important;visibility:visible!important;opacity:1!important;min-height:220px;border:1px solid #b58bd4;background:linear-gradient(145deg,rgba(65,38,91,.48),rgba(16,13,24,.98));">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <span style="font-size:28px">🏛️</span>
+                  <div><h2 style="margin:0">حمص كارد (HomsCard)</h2><p class="small" style="margin:4px 0 0">المورد الأساسي — فحص الحساب ومعاينة المنتجات بشكل مستقل</p></div>
+                  <span class="ops-pill">قراءة فقط · بلا شراء أو شحن</span>
+                </div>
+                <p class="small" style="margin:12px 0">مفاتيح الاتصال محفوظة في Supabase Secrets. هذا القسم لا ينشئ طلبات ولا يخصم رصيداً.</p>
+                <section class="deposit-card" id="baranCatalogReadinessReport" style="border:1px solid #7652a8;background:linear-gradient(145deg,rgba(65,38,91,.38),rgba(16,13,24,.96));">
+                <h2>📋 تقرير جاهزية كتالوج المنتجات</h2>
+                <p class="small">يفحص جميع المنتجات دفعة واحدة: الأسعار، ربط المورد، SKU، إعداد API، رصيد المورد، وبوابة التنفيذ. التقرير للقراءة فقط.</p>
+                <button class="full secondary" type="button" id="baranCatalogReportButton" onclick="baranLoadCatalogReadinessReport()">إنشاء تقرير جاهزية الـ17 منتجاً</button>
+                <div id="baranCatalogReportStatus" class="small" role="status" aria-live="polite" style="margin-top:10px">لم يتم إنشاء التقرير بعد.</div>
+                <div id="baranCatalogReportSummary"></div>
+                <div id="baranCatalogReportList" style="display:grid;gap:10px;margin-top:12px"></div>
+              </section>
+                <div class="ops-actions">
+                  <button type="button" class="secondary" id="opsHomsProfileButton" onclick="opsTestHomsCard('profile')">🔌 اختبار اتصال حمص كارد والحساب</button>
+                  <button type="button" class="secondary" id="opsHomsProductsButton" onclick="opsTestHomsCard('products')">📦 جلب المنتجات من HomsCard</button>
+                </div>
+                <div id="opsHomsCardResult" class="ops-list" aria-live="polite">بانتظار اختبار الاتصال.</div>
+                <div class="homscard-audit-launch" style="margin:12px 0;padding:12px;border:1px solid #80619a;border-radius:12px;background:rgba(65,38,91,.22)">
+                  <div class="ops-actions" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+                    <button type="button" class="secondary full" id="opsHomsAutoAuditButton" onclick="homscardRunAutomaticAudit()">🧠 إعادة فحص وتصنيف كل المنتجات</button>
+                    <button type="button" class="secondary full" id="opsHoms8BallPoolPageAuditButton" onclick="homscardInspect8BallPoolPages()">🎱 فحص باقات 8 Ball Pool السبع فقط (140–146)</button>
+                    <button type="button" class="secondary full" id="opsHomsPageAuditButton" onclick="homscardInspectProductPages()">🔎 فحص صفحات HomsCard وتدقيق التفاصيل</button>
+                    <button type="button" class="secondary full" id="opsHomsExportAuditButton" onclick="homscardExportAuditCsv()">⬇️ تصدير تقرير الفحص CSV</button>
+                    <button type="button" class="secondary full" id="opsHomsRestoreAuditButton" onclick="homscardRestoreSavedAudit()">♻️ استرجاع آخر تدقيق محفوظ</button>
+                  </div>
+                  <div id="opsHomsAutoAuditStatus" class="ops-muted" role="status" aria-live="polite" style="margin-top:8px">حمّل الكتالوج؛ سيبدأ الفحص تلقائياً بعد نجاح التحميل.</div>
+                  <div id="opsHomsAutoAuditResults" class="ops-list" aria-live="polite"></div>
+                </div>
+                <div id="opsHomsCatalogTools" class="homscard-catalog-tools hidden">
+                  <div class="homscard-catalog-heading"><strong>استعراض كتالوج المورد</strong><span id="opsHomsCatalogCount">لم يتم تحميل المنتجات بعد</span></div>
+                  <input id="opsHomsCatalogSearch" type="search" inputmode="search" placeholder="ابحث عن PUBG أو Free Fire أو Jawaker أو اسم المنتج..." aria-label="ابحث في كتالوج حمص كارد">
+                  <div class="homscard-catalog-filters">
+                    <select id="opsHomsCatalogCategory" aria-label="تصفية حسب التصنيف"><option value="">كل التصنيفات</option></select>
+                    <select id="opsHomsCatalogAvailability" aria-label="تصفية حسب التوفر"><option value="">كل الحالات</option><option value="available">المتوفر فقط</option><option value="unavailable">غير المتوفر فقط</option></select>
+                    <select id="opsHomsCatalogType" aria-label="تصفية حسب التصنيف المبدئي">
+                      <option value="">كل أنواع المنتجات</option>
+                      <option value="كمية متغيرة محتملة">كمية متغيرة محتملة</option>
+                      <option value="باقة ثابتة محتملة">باقة ثابتة محتملة</option>
+                      <option value="اشتراك بمدة محتملة">اشتراك بمدة محتملة</option>
+                      <option value="غير محسوم">يحتاج مراجعة</option>
+                    </select>
+                    <button type="button" class="secondary" onclick="homscardResetCatalogFilters()">مسح الفلاتر</button>
+                  </div>
+                  <div id="opsHomsCatalogResults" class="homscard-catalog-results" aria-live="polite"></div>
+                  <p class="small">هذه النتائج للبحث والمراجعة فقط. لا يوجد استيراد أو شراء أو تنفيذ شحن من هنا.</p>
+                </div>
+              </div>
+      </section>
         <div class="admin-workgroup-label"><span>01</span><div><strong>حالة التشغيل</strong><small>تحقق من وضع الشحن الآلي قبل إدارة الموردين</small></div></div>
         <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
