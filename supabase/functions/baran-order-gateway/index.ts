@@ -11,10 +11,90 @@ const corsHeaders = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: corsHeaders });
 
+function parseHomsCardCheck(payload: any, expectedUuid: string) {
+  if (!payload || payload.status !== "OK" || !Array.isArray(payload.data))
+    return { kind: "unknown" as const, reason: "Malformed or unsuccessful supplier response" };
+  const row = payload.data.find((item: any) =>
+    item && String(item.order_uuid ?? "").toLowerCase() === expectedUuid.toLowerCase()
+  );
+  if (!row) return { kind: "unknown" as const, reason: "Supplier response did not contain the exact order UUID" };
+  const status = String(row.status ?? "").toLowerCase();
+  const supplierOrderId = typeof row.order_id === "string" ? row.order_id.trim() : "";
+  if (status === "pending") return { kind: "pending" as const, supplierOrderId: supplierOrderId || null };
+  if (status === "cancelled") return { kind: "failed" as const, supplierOrderId: supplierOrderId || null, reason: "HomsCard confirmed the order was cancelled" };
+  if (status === "completed") {
+    const totalCost = Number(row.price);
+    const quantity = Number(row.quantity);
+    const delivery = typeof row.delivery === "string" ? row.delivery.trim() : "";
+    if (!supplierOrderId || supplierOrderId.length > 160 || !Number.isFinite(totalCost) || totalCost < 0 ||
+        !Number.isSafeInteger(quantity) || quantity < 1 || !delivery || delivery.length > 4000)
+      return { kind: "unknown" as const, reason: "Completed response is missing verified order, cost, quantity, or delivery data" };
+    return { kind: "completed" as const, supplierOrderId, totalCost, quantity, delivery };
+  }
+  return { kind: "unknown" as const, reason: "Unrecognized supplier order status" };
+}
+
+function safeSupplierText(value: unknown, max: number): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  return text && text.length <= max ? text : null;
+}
+
+// Keep the deployed Edge Function self-contained; sibling function folders are not deployment dependencies.
+function normalizeHomsCardCreate(payload: any, expectedUuid: string, expectedQuantity: number) {
+  if (!payload || payload.status !== "OK" || !payload.data ||
+      typeof payload.data !== "object" || Array.isArray(payload.data)) return null;
+  const row = payload.data;
+  const status = String(row.status ?? "").toLowerCase();
+  const supplierOrderId = safeSupplierText(row.order_id, 160);
+  if (status === "pending" || status === "cancelled") {
+    return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId, status }] };
+  }
+  if (status !== "completed") return null;
+  const quantity = Number(row.quantity);
+  const price = Number(row.price);
+  const delivery = typeof row.delivery === "string" ? row.delivery.trim() : "";
+  if (!supplierOrderId || !Number.isSafeInteger(quantity) || quantity !== expectedQuantity ||
+      !Number.isFinite(price) || price < 0 || !delivery || delivery.length > 4000) return null;
+  return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId,
+    status: "completed", price, quantity, delivery }] };
+}
+
+function homscardConfirmedRejection(code: number) {
+  return [100, 103, 109, 110, 112, 113, 114].includes(Number(code));
+}
+
 function readKeyObject(name: string): string | undefined {
   const raw = Deno.env.get(name);
   if (!raw) return undefined;
   try { return JSON.parse(raw).default; } catch { return undefined; }
+}
+
+async function homscardRequest(path: string, method: "GET" | "POST", data?: Record<string, unknown>) {
+  const token = Deno.env.get("HOMSCARD_API_TOKEN");
+  if (!token) throw new Error("HOMSCARD_API_TOKEN_MISSING");
+  const body = data ? JSON.stringify(data) : "";
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const headers: Record<string,string> = { "api-token": token, "Accept": "application/json" };
+  const secret = Deno.env.get("HOMSCARD_HMAC_SECRET") ?? "";
+  if (secret) {
+    const key = await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),
+      {name:"HMAC",hash:"SHA-256"},false,["sign"]);
+    const message = timestamp + "\n" + method + "\n" + path + "\n" + body;
+    const signature = Array.from(new Uint8Array(await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(message))),
+      b=>b.toString(16).padStart(2,"0")).join("");
+    headers["X-Timestamp"] = timestamp;
+    headers["X-Signature"] = signature;
+  }
+  if (method === "POST") headers["Content-Type"] = "application/json";
+  const response = await fetch("https://homscard.com/reseller" + path, {
+    method, headers, body: method === "POST" ? body : undefined,
+    signal: AbortSignal.timeout(method === "POST" ? 60000 : 20000),
+  });
+  const raw = await response.text();
+  let payload: any;
+  try { payload = raw ? JSON.parse(raw) : {}; } catch { payload = {}; }
+  return { http_status: response.status, payload };
 }
 
 Deno.serve(async (req: Request) => {
@@ -80,15 +160,61 @@ Deno.serve(async (req: Request) => {
       return json({ success: true, report });
     }
 
-    if (body?.action === "homscard_app_quote") {
+    if ((body?.action === "homscard_app_catalog" || body?.action === "homscard_variable_catalog")) {
+      const variableCategories = new Set(["ألعاب", "تطبيقات", "اتصالات", "محافظ"]);
+      const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
+        .select("product_id,product_name,product_data,page_data,page_status,updated_at")
+        .eq("page_status", "success")
+        .order("updated_at", { ascending: false }).limit(1000);
+      if (auditError) return json({ success: false, error: "تعذر تحميل كتالوج المنتجات المتغيرة الكمية." }, 503);
+      const { data: settings, error: settingsError } = await admin.from("store_settings")
+        .select("market_exchange_rate,fx_buffer_percent,product_markup_percent").eq("id", "main").maybeSingle();
+      if (settingsError || !settings) return json({ success: false, error: "إعدادات التسعير غير متاحة." }, 503);
+      const marketRate = Number(settings.market_exchange_rate), buffer = Number(settings.fx_buffer_percent), markup = Number(settings.product_markup_percent);
+      if (![marketRate,buffer,markup].every(Number.isFinite) || marketRate <= 0 || buffer < 0 || markup < 0)
+        return json({ success: false, error: "إعدادات التسعير غير صالحة." }, 503);
+      const latest = new Map<string, any>();
+      for (const row of auditRows ?? []) if (!latest.has(String(row.product_id))) latest.set(String(row.product_id), row);
+      const result = [];
+      for (const [id, row] of latest) {
+        const data = row?.product_data ?? {}, page = row?.page_data ?? {};
+        const category = String(data.category || "").trim().replace(/^ال/, "");
+        if (!row || ![...variableCategories].some(value => category.startsWith(value)) ||
+            data.product_type !== "quantity" || data.available !== true ||
+            !(Number(data.price) > 0) || typeof page.text !== "string") continue;
+        const limits = String(page.text).match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
+        if (!limits) continue;
+        const min = Number(limits[1].replace(/,/g, "")), max = Number(limits[2].replace(/,/g, ""));
+        const cost = Number(data.price);
+        if (!Number.isSafeInteger(min) || !Number.isSafeInteger(max) || min < 1 || max < min || !Number.isFinite(cost) || cost <= 0) continue;
+        const images = [data.image_url,data.image,data.img,data.photo,page.images?.[0]].filter(v => typeof v === "string");
+        const image = images.find(v => /^https:\/\//i.test(v)) ?? "";
+        const fieldRules = [
+          { pattern: /player\s*id|معرّف اللاعب|ايدي اللاعب/i, label: "Player ID" },
+          { pattern: /رقم الهاتف|رقم الموبايل|phone|mobile/i, label: "رقم الهاتف" },
+          { pattern: /رقم المحفظة|wallet/i, label: "رقم المحفظة" },
+          { pattern: /معرّف الحساب|رقم الحساب|account\s*id|user\s*id|\buid\b/i, label: "معرّف الحساب" },
+        ];
+        const params = Array.isArray(data.params) ? data.params.filter((v: unknown) => typeof v === "string" && v.trim()) : [];
+        const targetField = params.length ? { label: String(params[0]).slice(0, 60) } : fieldRules.find(rule => rule.pattern.test(page.text));
+        result.push({
+          product_id: id, name: String(row.product_name || data.name || "منتج").slice(0, 100),
+          category: String(data.category), min_quantity: min, max_quantity: max, image,
+          requires_target: !!targetField, target_label: targetField?.label ?? "بيانات الحساب (إن لزمت)",
+          sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
+        });
+      }
+      return json({ success: true, products: result, provider: "HomsCard", mode: "read_only_catalog", scope: "all_variable_quantity_categories" });
+    }
+
+    if ((body?.action === "homscard_app_quote" || body?.action === "homscard_variable_quote")) {
       const productId = typeof body.product_id === "string" ? body.product_id.trim() : "";
-      const allowedAppIds = new Set(["18","280","49","37","3","1","45","8","43","25","893","910"]);
       const quantity = Number(body.quantity);
       const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
       const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
-      if (!allowedAppIds.has(productId)) return json({ success: false, error: "هذا التطبيق غير موجود ضمن قائمة الكميات المتغيرة المعتمدة." }, 404);
+      if (!/^[0-9]{1,10}$/.test(productId)) return json({ success: false, error: "معرّف المنتج غير صالح." }, 400);
       if (!Number.isSafeInteger(quantity) || quantity <= 0) return json({ success: false, error: "أدخل كمية صحيحة." }, 400);
-      if (!playerId || playerId.length < 2 || playerId.length > 100) return json({ success: false, error: "أدخل معرّف الحساب المطلوب بشكل صحيح." }, 400);
+      if (playerId.length > 100) return json({ success: false, error: "بيانات الحساب أطول من المسموح." }, 400);
       if (!["USD","SYP"].includes(currency)) return json({ success: false, error: "عملة الدفع غير مدعومة." }, 400);
 
       const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
@@ -97,20 +223,24 @@ Deno.serve(async (req: Request) => {
         .order("updated_at", { ascending: false }).limit(8);
       if (auditError) return json({ success: false, error: "تعذر قراءة تدقيق منتج HomsCard." }, 503);
       const audited = (auditRows ?? []).find((row: any) =>
-        row?.product_data?.category === "تطبيقات" &&
+        ["ألعاب", "تطبيقات", "اتصالات", "محافظ"].some(value => String(row?.product_data?.category || "").trim().replace(/^ال/, "").startsWith(value)) &&
         row?.product_data?.product_type === "quantity" &&
         row?.product_data?.available === true &&
         Number(row?.product_data?.price) > 0 &&
-        typeof row?.page_data?.text === "string"
+        typeof row?.page_data?.text === "string" &&
+        new Date(row.updated_at).getTime() >= Date.now() - 24 * 60 * 60 * 1000
       );
-      if (!audited) return json({ success: false, error: "تكلفة أو تفاصيل هذا التطبيق غير مؤكدة حالياً." }, 503);
+      if (!audited) return json({ success: false, error: "تكلفة أو تفاصيل هذا المنتج غير مؤكدة حالياً." }, 503);
       const pageText = String(audited.page_data.text);
+      const requiresTarget = (Array.isArray(audited.product_data?.params) && audited.product_data.params.length > 0) ||
+        /player\s*id|معرّف اللاعب|ايدي اللاعب|رقم الهاتف|رقم الموبايل|phone|mobile|رقم المحفظة|wallet|معرّف الحساب|رقم الحساب|account\s*id|user\s*id|\buid\b/i.test(pageText);
+      if (requiresTarget && playerId.length < 2) return json({ success: false, error: "أدخل بيانات الحساب المطلوبة لهذا المنتج أولاً." }, 400);
       const limits = pageText.match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
-      if (!limits) return json({ success: false, error: "حدود الكمية لم تُستخرج بشكل موثوق من صفحة المورد." }, 503);
-      const minQuantity = Number(limits[1].replace(/,/g, ""));
-      const maxQuantity = Number(limits[2].replace(/,/g, ""));
+      const minQuantity = Number(audited.product_data?.qty_values?.min ?? limits?.[1]?.replace(/,/g, ""));
+      const maxQuantity = Number(audited.product_data?.qty_values?.max ?? limits?.[2]?.replace(/,/g, ""));
+      if (!Number.isFinite(minQuantity) || !Number.isFinite(maxQuantity)) return json({ success: false, error: "حدود الكمية لم تُستخرج بشكل موثوق من صفحة المورد." }, 503);
       if (!Number.isSafeInteger(minQuantity) || !Number.isSafeInteger(maxQuantity) || minQuantity < 1 || maxQuantity < minQuantity || quantity < minQuantity || quantity > maxQuantity) {
-        return json({ success: false, error: "الكمية لهذا التطبيق يجب أن تكون بين " + minQuantity.toLocaleString("en-US") + " و" + maxQuantity.toLocaleString("en-US") + "." }, 400);
+        return json({ success: false, error: "الكمية لهذا المنتج يجب أن تكون بين " + minQuantity.toLocaleString("en-US") + " و" + maxQuantity.toLocaleString("en-US") + "." }, 400);
       }
       const unitCost = Number(audited.product_data.price);
       if (!Number.isFinite(unitCost) || unitCost <= 0) return json({ success: false, error: "سعر وحدة المورد غير صالح." }, 503);
@@ -128,7 +258,7 @@ Deno.serve(async (req: Request) => {
       const commercialRate = marketRate * (1 + bufferPercent / 100);
       const totalCost = unitCost * quantity;
       const round = (value: number, digits: number) => Number((value + Number.EPSILON).toFixed(digits));
-      const saleUsd = round(totalCost * (1 + markupPercent / 100), 2);
+      const saleUsd = round(totalCost * (1 + markupPercent / 100), 4);
       const saleSyp = Math.round(totalCost * (1 + markupPercent / 100) * commercialRate);
       const { data: adminRecord, error: adminCheckError } = await admin.from("admin_users")
         .select("user_id").eq("user_id", user.id).maybeSingle();
@@ -162,6 +292,188 @@ Deno.serve(async (req: Request) => {
         quote,
         message: "تم حساب سعر المعاينة فقط من تكلفة وحدة HomsCard وإعدادات باران. لم يتم إنشاء طلب أو تنفيذ شحن أو خصم رصيد.",
       });
+    }
+
+
+    if (body?.action === "homscard_variable_create_order") {
+      const productId = typeof body.product_id === "string" ? body.product_id.trim() : "";
+      const quantity = Number(body.quantity);
+      const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
+      const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
+      const requestId = typeof body.request_id === "string" ? body.request_id.trim() : "";
+      if (!/^[0-9]{1,10}$/.test(productId) || !Number.isSafeInteger(quantity) || quantity < 1 ||
+          !["USD","SYP"].includes(currency) ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId) ||
+          playerId.length > 100) return json({success:false,error:"بيانات الطلب غير صالحة."},400);
+      if (!Deno.env.get("HOMSCARD_API_TOKEN")) return json({success:false,error:"مفتاح HomsCard API غير مضبوط على الخادم؛ لم يتم إنشاء طلب أو خصم رصيد.",code:"SUPPLIER_SECRET_MISSING"},503);
+
+      const {data: created,error:createError}=await admin.rpc("baran_create_homscard_variable_order",{
+        p_user_id:user.id,p_product_id:productId,p_quantity:quantity,
+        p_payment_currency:currency,p_player_id:playerId||null,p_request_id:requestId,
+      });
+      if(createError){
+        console.error("HOMSCARD_VARIABLE_ORDER_CREATE_FAILED",createError.message);
+        return json({success:false,error:createError.message||"تعذر إنشاء الطلب. لم يتم إرسال طلب إلى المورد."},400);
+      }
+      const orderId=String(created?.order_id||"");
+      const supplierUuid=String(created?.supplier_order_uuid||"");
+      if(!orderId||!supplierUuid)return json({success:false,error:"تم تسجيل الطلب لكن بيانات متابعة المورد غير مكتملة. أوقفنا الإرسال للمراجعة.",order_id:orderId||null},503);
+
+      const checkPath="/check.php?uuid=1&orders="+encodeURIComponent(supplierUuid);
+      const settle=async (payload:any)=>{
+        const rows=Array.isArray(payload?.data)?payload.data:
+          payload?.data&&typeof payload.data==="object"?[payload.data]:[];
+        const parsed=parseHomsCardCheck({status:payload?.status,data:rows},supplierUuid);
+        if(parsed.kind==="completed"){
+          if(parsed.quantity!==quantity || parsed.delivery.length>2000){
+            await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"بيانات نجاح المورد لا تطابق UUID أو كمية الطلب أو حد بيانات التسليم."});
+            return {status:"awaiting_supplier",message:"وصل رد غير مطابق للطلب؛ أبقيناه قيد التحقق دون تسوية مالية."};
+          }
+          const {error:deliveryError}=await admin.from("order_fulfillment")
+            .update({supplier_delivery:parsed.delivery}).eq("order_id",orderId);
+          if(deliveryError) throw deliveryError;
+          const {error}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"succeeded",p_supplier_reference:parsed.supplierOrderId,
+            p_supplier_unit_cost:parsed.totalCost/parsed.quantity,p_cost_currency:"USD",p_reason:null,
+          });
+          if(error)throw error;
+          return {status:"completed",message:"تم تأكيد تنفيذ الطلب من HomsCard."};
+        }
+        if(parsed.kind==="failed"){
+          const {error}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"failed",p_supplier_reference:parsed.supplierOrderId,
+            p_reason:"أكد HomsCard إلغاء الطلب؛ تم طلب استرداد المبلغ لمحفظة الزبون.",
+          });
+          if(error)throw error;
+          return {status:"rejected",message:"أُلغي الطلب لدى المورد وتمت معالجة الاسترداد."};
+        }
+        await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",
+          p_reason:parsed.reason||"الطلب ما زال pending أو لم تصل نتيجة مؤكدة من HomsCard.",
+        });
+        return {status:"awaiting_supplier",message:"الطلب قيد التنفيذ أو التحقق؛ لن نكرر الإرسال أو الاسترداد قبل تأكيد النتيجة."};
+      };
+
+      if(created.duplicate===true){
+        try{
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,duplicate:true,order_id:orderId,...result});}
+        }catch(error){console.error("HOMSCARD_DUPLICATE_CHECK_FAILED",String(error));}
+        return json({success:true,duplicate:true,order_id:orderId,status:"awaiting_supplier",
+          message:"الطلب مسجل مسبقاً. نتحقق من نفس UUID لمنع أي خصم أو شحن مكرر."});
+      }
+
+      try{
+        const sent=await homscardRequest("/order.php","POST",{
+          product_id:Number(productId),order_uuid:supplierUuid,qty:quantity,...(playerId?{player_id:playerId}:{})
+        });
+        if(sent.payload?.status==="OK"&&sent.payload?.data){
+          const normalizedCreate=normalizeHomsCardCreate(sent.payload,supplierUuid,quantity);
+          if(normalizedCreate){
+            const result=await settle(normalizedCreate);
+            return json({success:true,order_id:orderId,...result});
+          }
+          await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",
+            p_reason:"رد order.php لا يطابق صيغة النجاح/الحالة الموثقة أو ينقصه تحقق السعر/الكمية/التسليم."});
+          return json({success:true,order_id:orderId,status:"awaiting_supplier",
+            message:"وصل رد إنشاء غير مكتمل أو غير مطابق؛ أبقينا الطلب قيد التحقق دون استرداد أو إعادة إرسال."});
+        }
+        const code=Number(sent.payload?.error?.code);
+        if(homscardConfirmedRejection(code)){
+          const reasons:Record<number,string>={
+            100:"رصيد حساب HomsCard غير كافٍ؛ رفض المورد الطلب.",
+            103:"بيانات اللاعب المطلوبة غير مكتملة؛ رفض المورد الطلب.",
+            109:"معرّف المنتج غير موجود لدى HomsCard.",
+            110:"المنتج غير متاح لدى HomsCard.",
+            112:"الكمية أقل من الحد الأدنى لدى المورد.",
+            113:"الكمية أكبر من الحد الأعلى لدى المورد.",
+            114:"أكد HomsCard رفض الطلب؛ يعالج المورد إعادة المبلغ إلى رصيد حسابه.",
+          };
+          const {error:settleError}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"failed",
+            p_reason:"رفض مؤكد من HomsCard (code "+code+"): "+reasons[code],
+          });
+          if(settleError)throw settleError;
+          return json({success:true,order_id:orderId,status:"rejected",refunded:true,
+            supplier_error_code:code,message:"رفض المورد الطلب وتمت معالجة استرداد رصيد الزبون في باران."});
+        }
+        if(sent.http_status>=500||code===500||code===102){
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,order_id:orderId,...result});}
+          await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"انقطع أو تعذر حسم رد إنشاء الطلب؛ تم فحص UUID ولم تظهر نتيجة مؤكدة."});
+          return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"الطلب قيد التحقق لدى المورد؛ لم نعد إرساله ولم نسترد المبلغ."});
+        }
+        await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",
+          p_reason:String(sent.payload?.error?.message||"لم يصل رد نجاح مؤكد من HomsCard؛ لا يمكن إثبات أن الطلب لم يُنشأ.").slice(0,500),
+        });
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",
+          message:"لم يصل تأكيد نهائي من المورد. أبقينا الطلب قيد التحقق دون إعادة إرسال أو استرداد حتى لا يحدث شحن أو خصم مزدوج."});
+      }catch(error){
+        console.error("HOMSCARD_ORDER_DISPATCH_UNCERTAIN",String(error));
+        try{
+          const checked=await homscardRequest(checkPath,"GET");
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,order_id:orderId,...result});}
+        }catch(checkError){console.error("HOMSCARD_ORDER_STATUS_CHECK_FAILED",String(checkError));}
+        await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"انقطع الاتصال أثناء الإرسال وتعذر التحقق؛ الطلب معلّق لمنع التكرار."});
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",
+          message:"انقطع الاتصال أثناء الإرسال. حفظنا UUID ونعلّق الطلب للتحقق؛ لا يوجد إعادة إرسال أو استرداد تلقائي."});
+      }
+    }
+
+    if (body?.action === "homscard_variable_check_order") {
+      const orderId=typeof body.order_id==="string"?body.order_id.trim():"";
+      if(!/^[0-9a-f-]{36}$/i.test(orderId))return json({success:false,error:"معرّف الطلب غير صالح."},400);
+      const {data:order,error:orderError}=await admin.from("orders").select("id,user_id,quantity,status")
+        .eq("id",orderId).eq("user_id",user.id).maybeSingle();
+      if(orderError||!order)return json({success:false,error:"الطلب غير موجود أو لا تملك صلاحية الاطلاع عليه."},404);
+      const {data:fulfillment,error:fulfillmentError}=await admin.from("order_fulfillment")
+        .select("supplier_order_uuid,supplier_id,supplier_delivery,dispatch_state")
+        .eq("order_id",orderId).maybeSingle();
+      if(fulfillmentError||!fulfillment?.supplier_order_uuid)return json({success:false,error:"لا توجد بيانات متابعة HomsCard لهذا الطلب."},404);
+      if(["succeeded","refunded","failed"].includes(String(fulfillment.dispatch_state))){
+        return json({success:true,order_id:orderId,status:order.status,dispatch_state:fulfillment.dispatch_state,delivery:fulfillment.supplier_delivery});
+      }
+      const uuid=String(fulfillment.supplier_order_uuid);
+      try{
+        const checked=await homscardRequest("/check.php?uuid=1&orders="+encodeURIComponent(uuid),"GET");
+        const parsed=parseHomsCardCheck(checked.payload,uuid);
+        if(parsed.kind==="completed"){
+          if(parsed.quantity!==Number(order.quantity)||parsed.delivery.length>2000)
+            return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"رد المورد لا يطابق كمية الطلب أو بيانات التسليم؛ بقي قيد المراجعة."});
+          const {error:deliveryError}=await admin.from("order_fulfillment")
+            .update({supplier_delivery:parsed.delivery}).eq("order_id",orderId);
+          if(deliveryError)throw deliveryError;
+          const {error}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"succeeded",p_supplier_reference:parsed.supplierOrderId,
+            p_supplier_unit_cost:parsed.totalCost/parsed.quantity,p_cost_currency:"USD",p_reason:null,
+          });
+          if(error)throw error;
+          return json({success:true,order_id:orderId,status:"completed",delivery:parsed.delivery});
+        }
+        if(parsed.kind==="failed"){
+          const {error}=await admin.rpc("baran_supplier_finalize_order",{
+            p_order_id:orderId,p_result:"failed",p_supplier_reference:parsed.supplierOrderId,
+            p_reason:"أكد HomsCard إلغاء الطلب.",
+          });
+          if(error)throw error;
+          return json({success:true,order_id:orderId,status:"rejected",refunded:true});
+        }
+        const {error:unknownError}=await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",p_reason:parsed.reason||"ما زال الطلب pending لدى HomsCard.",
+        });
+        if(unknownError)throw unknownError;
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"الطلب ما زال قيد التحقق؛ لم نكرر الإرسال أو الاسترداد."});
+      }catch(error){
+        console.error("HOMSCARD_ORDER_POLL_FAILED",String(error));
+        return json({success:false,order_id:orderId,status:"awaiting_supplier",error:"تعذر التحقق حالياً؛ لم نكرر الإرسال أو الاسترداد."},503);
+      }
     }
 
     if (body?.action === "jawaker_quote") {
