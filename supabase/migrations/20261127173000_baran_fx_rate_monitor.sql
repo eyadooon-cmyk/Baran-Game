@@ -11,7 +11,7 @@ create table if not exists public.fx_rate_state (
  id text primary key default 'main' check(id='main'), city text not null default 'damascus',
  auto_update_enabled boolean not null default true,
  status text not null default 'waiting' check(status in ('waiting','success','source_disagreement','source_unavailable','stale','disabled')),
- last_attempt_at timestamptz, last_success_at timestamptz, applied_rate_old numeric(20,6),
+ last_attempt_at timestamptz, last_manual_at timestamptz, last_success_at timestamptz, applied_rate_old numeric(20,6),
  source_difference_percent numeric(10,4), last_error text, updated_at timestamptz not null default now()
 );
 insert into public.fx_rate_state(id) values('main') on conflict(id) do nothing;
@@ -32,7 +32,7 @@ grant execute on function public.baran_verify_fx_cron_secret(text) to service_ro
 do $$
 begin
  if not exists(select 1 from vault.secrets where name='baran_fx_cron_secret') then
-  perform vault.create_secret(encode(gen_random_bytes(32),'hex'),'baran_fx_cron_secret','Private token for BARAN FX market-rate worker');
+  perform vault.create_secret(replace(gen_random_uuid()::text || gen_random_uuid()::text,'-',''),'baran_fx_cron_secret','Private token for BARAN FX market-rate worker');
  end if;
 end $$;
 do $$
