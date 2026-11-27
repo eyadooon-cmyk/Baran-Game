@@ -470,7 +470,12 @@ grant execute on function public.baran_create_homscard_fixed_order(uuid,text,tex
   end if;
   -- HomsCard's order.php requires a numeric product_id. Validate before
   -- creating an order, debiting a wallet, or queuing supplier fulfillment.
-  if v_mapping.supplier_sku !~ '^[0-9]{1,10}, ai.product_data, ai.page_data, ai.updated_at
+  if length(v_mapping.supplier_sku) < 1 or length(v_mapping.supplier_sku) > 10
+     or translate(v_mapping.supplier_sku, '0123456789', '') <> '' then
+    raise exception 'معرّف منتج HomsCard غير صالح؛ لم يتم إنشاء طلب أو خصم رصيد' using errcode='22023';
+  end if;
+
+  select ai.product_id, ai.product_data, ai.page_data, ai.updated_at
     into v_audit
     from public.baran_homscard_audit_items ai
    where ai.product_id = v_mapping.supplier_sku
