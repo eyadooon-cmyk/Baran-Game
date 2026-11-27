@@ -1,10 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const allowedOrigin = "https://eyadooon-cmyk.github.io";
 const corsHeaders = {
-  "Access-Control-Allow-Origin": allowedOrigin,
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info, x-supabase-api-version",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
   "Content-Type": "application/json; charset=utf-8",
   "Cache-Control": "no-store",
 };
