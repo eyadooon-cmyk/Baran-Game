@@ -125,9 +125,9 @@
       link.supplier_id === homsCard.id && String(link.currency || "").toUpperCase() === "USD"
     ).map((link) => {
       const product = byId.get(link.product_id);
-      if (!product || product.is_active !== true) return null;
+      if (!product || product.is_active !== true || product.product_code === "JAWAKER_TOKENS") return null;
       const costUsd = Number(link.unit_cost || 0);
-      const saleUsd = costUsd * (1 + markup / 100);
+      const saleUsd = Number((costUsd * (1 + markup / 100)).toFixed(2));
       return {
         code: product.product_code,
         name: product.name,
