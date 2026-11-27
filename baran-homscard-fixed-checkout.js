@@ -34,6 +34,15 @@
   const quoteButton=el("button","baran-fixed-quote","مراجعة السعر");quoteButton.type="button";
   const purchase=el("button","baran-fixed-purchase","تأكيد الطلب والشحن");purchase.type="button";purchase.disabled=true;
   const result=el("p","baran-fixed-result","أدخل Player ID ثم راجع السعر. هذه معاينة فقط ولا تخصم رصيداً.");
+  purchase.addEventListener("click",async()=>{
+   if(purchase.disabled)return;
+   purchase.disabled=true;quoteButton.disabled=true;result.textContent="جاري إرسال الطلب...";
+   try{
+    const d=await invoke({action:"homscard_fixed_create_order",product_code:product.product_code,player_id:player.value.trim(),payment_currency:currency.value,request_id:crypto.randomUUID()});
+    result.textContent=d.message||("تم تسجيل الطلب رقم "+String(d.order_id||"")+" وحالته "+String(d.status||"قيد التنفيذ"));
+   }catch(e){result.textContent=e.message||"تعذر إنشاء الطلب."}
+   finally{purchase.disabled=true;quoteButton.disabled=false}
+  });
   quoteButton.addEventListener("click",async()=>{
    const id=player.value.trim();if(id.length<2){result.textContent="أدخل Player ID صحيحاً.";return}
    quoteButton.disabled=true;result.textContent="جاري التحقق من المنتج والسعر...";
