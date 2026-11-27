@@ -2,7 +2,7 @@
   "use strict";
   const GATEWAY="baran-order-gateway";
   const ROOT_ID="baranInstantAppsRoot";
-  let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,loading=false,catalogPromise=null,paymentCurrency="USD",activeRequestId=null,lastOrderId=null,pollTimer=null,pollCount=0;
+  let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,loading=false,catalogPromise=null,paymentCurrency="USD",activeRequestId=null,lastOrderId=null,pollTimer=null,pollCount=0,orderSubmitted=false;
   const $=(id)=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const money=(v)=>Number(v||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:6});
@@ -93,12 +93,12 @@
     return modal;
   }
   function openCheckout(product){
-    activeProduct=product;quantity=product.min_quantity;quote=null;activeRequestId=null;lastOrderId=null;paymentCurrency="USD";
+    activeProduct=product;quantity=product.min_quantity;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;paymentCurrency="USD";
     const modal=ensureModal();$("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","HomsCard · معاينة طلب"),el("small","",money(product.sale_unit_usd)+" $ للوحدة"));
     const targetInput=$("baranIaPlayer"),targetLabel=document.querySelector('label[for="baranIaPlayer"]');
     targetInput.value="";targetInput.required=!!product.requires_target;targetInput.hidden=!product.requires_target;
     targetInput.placeholder=product.target_label||"بيانات الحساب";targetLabel.hidden=!product.requires_target;targetLabel.textContent=product.target_label||"بيانات الحساب";
-    $("baranIaStatus").textContent="";$("baranIaCurrency").value=paymentCurrency;$("baranIaPurchase").disabled=true;$("baranIaCheck").hidden=true;
+    $("baranIaStatus").textContent="";$("baranIaCurrency").value=paymentCurrency;$("baranIaPurchase").disabled=true;$("baranIaPurchase").textContent="تأكيد الطلب والشحن";$("baranIaCheck").hidden=true;
     $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","","أدخل المعرّف والكمية لحساب السعر."));
     const presets=$("baranIaPresets");presets.replaceChildren();
     const vals=[product.min_quantity,Math.min(product.max_quantity,Math.max(product.min_quantity,1000)),Math.min(product.max_quantity,Math.max(product.min_quantity,10000)),product.max_quantity].filter((v,i,a)=>a.indexOf(v)===i);
@@ -106,7 +106,7 @@
     updateQuantityUI();modal.hidden=false;document.body.classList.add("baran-ia-modal-open");
     $("baranIaPlayer").focus();
   }
-  function closeCheckout(){if(pollTimer)clearTimeout(pollTimer);pollTimer=null;const m=$(ROOT_ID);if(m)m.hidden=true;document.body.classList.remove("baran-ia-modal-open");activeProduct=null;quote=null;activeRequestId=null;lastOrderId=null;}
+  function closeCheckout(){if(pollTimer)clearTimeout(pollTimer);pollTimer=null;const m=$(ROOT_ID);if(m)m.hidden=true;document.body.classList.remove("baran-ia-modal-open");activeProduct=null;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;}
   function changeQuantity(direction){if(!activeProduct)return;const step=activeProduct.min_quantity>=1000?100:1;quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,quantity+direction*step));updateQuantityUI();scheduleQuote();}
   function updateQuantityUI(){const input=$("baranIaQuantity");if(input&&activeProduct){input.min=String(activeProduct.min_quantity);input.max=String(activeProduct.max_quantity);input.value=String(quantity);}}
   function scheduleQuote(){if(quoteTimer)clearTimeout(quoteTimer);quoteTimer=setTimeout(()=>{if(activeProduct&&(!activeProduct.requires_target||$("baranIaPlayer")?.value.trim().length>=2))fetchQuote(false);},500);}
@@ -135,14 +135,14 @@
     try{
       const data=await invoke({action:"homscard_variable_create_order",product_id:activeProduct.product_id,
         quantity,player_id:playerId,payment_currency:paymentCurrency,request_id:activeRequestId});
-      lastOrderId=data.order_id;activeRequestId=null;pollCount=0;$("baranIaCheck").hidden=false;
+      lastOrderId=data.order_id;activeRequestId=null;orderSubmitted=true;pollCount=0;$("baranIaCheck").hidden=false;
       showMessage($("baranIaStatus"),data.message||("تم تسجيل الطلب. الحالة: "+(data.status||"قيد المعالجة")+". رقم الطلب: "+data.order_id),false);
       $("baranIaPurchase").textContent="تم تسجيل الطلب";
       if(data.status!=="completed"&&data.status!=="rejected")scheduleStatusPoll();
     }catch(error){
       showMessage($("baranIaStatus"),error.message,true);
       // Keep the same request UUID on uncertain network failures to prevent duplicate orders.
-    }finally{button.disabled=!quote;}
+    }finally{button.disabled=!quote||orderSubmitted;}
   }
   function scheduleStatusPoll(){
     if(pollTimer)clearTimeout(pollTimer);
