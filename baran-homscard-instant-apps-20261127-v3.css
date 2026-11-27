@@ -83,3 +83,20 @@ body.baran-ia-modal-open{overflow:hidden}
 .baran-ia-presets-label{grid-column:1/-1;color:#cbbbd7;font-size:10px;line-height:1.7}
 .baran-ia-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
 .baran-ia-modal h3{margin-bottom:13px}
+
+
+/* HomsCard-inspired variable quantity order review */
+.baran-ia-review-panel{display:grid;gap:13px;margin-top:16px;padding:15px;border:1px solid #76558d;border-radius:17px;background:linear-gradient(155deg,#2b1d38,#14101b 82%)}
+.baran-ia-review-panel[hidden]{display:none!important}
+.baran-ia-review-panel h4{margin:0;color:#fff;font-size:19px;font-weight:950}
+.baran-ia-review-info{display:grid;gap:0;overflow:hidden;border:1px solid #654a78;border-radius:13px;background:#ffffff08}
+.baran-ia-review-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;border-bottom:1px solid #ffffff12}
+.baran-ia-review-row:last-child{border-bottom:0;background:#18372d}
+.baran-ia-review-row span{color:#cbbbd7;font-size:12px}
+.baran-ia-review-row strong{max-width:65%;color:#f3e5fb;font-size:13px;text-align:left;overflow-wrap:anywhere}
+.baran-ia-review-row:last-child strong{color:#b9f4d8;font-size:18px;direction:ltr}
+.baran-ia-review-actions{display:grid;grid-template-columns:1fr 1.2fr;gap:9px}
+.baran-ia-review-actions button{min-height:47px;border-radius:12px;font-weight:950}
+.baran-ia-review-confirm{border:0;background:linear-gradient(110deg,#d4a3f4,#9661c3);color:#1d1028}
+.baran-ia-review-confirm:disabled{opacity:.55}
+@media(max-width:360px){.baran-ia-review-panel{padding:11px}.baran-ia-review-row{padding:10px 9px}}
