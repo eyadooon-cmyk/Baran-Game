@@ -51,13 +51,14 @@
   document.body.append(overlay);document.body.classList.add("baran-fixed-modal-open");player.focus();
  }
  document.addEventListener("click",async event=>{
-  const button=event.target.closest(".baran-package-button");
+  const button=event.target.closest(".baran-package-button,.baran-service-select-button");
   if(!button||button.disabled)return;
-  const code=button.dataset.productCode||button.closest("[data-package-code]")?.dataset.packageCode;
-  if(!code)return;
+  const code=button.dataset.productCode||button.closest("[data-package-code]")?.dataset.packageCode||"";
+  const productId=button.dataset.serviceProductId||button.closest("[data-product-id]")?.dataset.productId||"";
+  if(!code&&!productId)return;
   event.preventDefault();event.stopImmediatePropagation();
   try{
-   const products=await load();const product=products.find(p=>p.product_code===code);
+   const products=await load();const product=products.find(p=>(code&&p.product_code===code)||(productId&&String(p.product_id)===String(productId)));
    if(!product)throw Error("هذا المنتج غير موجود ضمن كتالوج HomsCard الثابت المعتمد حالياً.");
    open(product);
   }catch(e){alert(e.message||"تعذر فتح المنتج الثابت.")}
