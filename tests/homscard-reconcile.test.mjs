@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildCheckPath, parseHomsCardCheck, retryDelaySeconds } from "../supabase/functions/baran-homscard-reconcile/core.mjs";
+import { readFile } from "node:fs/promises";
+
+const worker = await readFile(new URL("../supabase/functions/baran-homscard-reconcile/index.ts", import.meta.url), "utf8");
+const attemptMigration = await readFile(new URL("../supabase/migrations/20261127200000_homscard_reconcile_attempt_rpc.sql", import.meta.url), "utf8");
+const schedulerMigration = await readFile(new URL("../supabase/migrations/20261127210000_homscard_reconcile_scheduler.sql", import.meta.url), "utf8");
 
 const uuid = "ecbdd545-e616-4aee-8770-7eefa977bcd1";
 
@@ -37,4 +42,30 @@ test("retry delays are bounded and respect supplier Retry-After", () => {
 test("check path is read-only and validates UUID", () => {
   assert.equal(buildCheckPath(uuid),"/reseller/check.php?uuid=1&orders="+uuid);
   assert.throws(()=>buildCheckPath("not-a-uuid"),TypeError);
+});
+
+
+test("worker authenticates cron with a Vault-backed signature and reads attempts through a service-only RPC", () => {
+  assert.match(worker, /baran_verify_homscard_reconcile_signature/);
+  assert.match(worker, /baran_get_homscard_reconcile_attempt/);
+  assert.doesNotMatch(worker, /schema\(["']private["']\)/);
+  assert.doesNotMatch(worker, /\/order\.php/);
+  assert.match(worker, /\.limit\(3\)/);
+});
+
+test("private attempt bridge is executable only by service_role", () => {
+  assert.match(attemptMigration, /security definer/i);
+  assert.match(attemptMigration, /auth\.jwt\(\)->>'role'/);
+  assert.match(attemptMigration, /revoke all .* from public, anon, authenticated/i);
+  assert.match(attemptMigration, /grant execute .* to service_role/i);
+});
+
+test("scheduler signs requests in Vault and schedules only the read-only reconciler", () => {
+  assert.match(schedulerMigration, /vault\.create_secret/);
+  assert.match(schedulerMigration, /baran_homscard_reconcile_hmac/);
+  assert.match(schedulerMigration, /extensions\.hmac/);
+  assert.match(schedulerMigration, /baran_verify_homscard_reconcile_signature/);
+  assert.match(schedulerMigration, /cron\.schedule/);
+  assert.match(schedulerMigration, /baran-homscard-reconcile-every-minute/);
+  assert.doesNotMatch(schedulerMigration, /order\.php/);
 });
