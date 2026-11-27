@@ -149,6 +149,8 @@ Deno.serve(async (req: Request) => {
       );
       if (!audited) return json({ success: false, error: "تكلفة أو تفاصيل هذا المنتج غير مؤكدة حالياً." }, 503);
       const pageText = String(audited.page_data.text);
+      const requiresTarget = /player\\s*id|معرّف اللاعب|ايدي اللاعب|رقم الهاتف|رقم الموبايل|phone|mobile|رقم المحفظة|wallet|معرّف الحساب|رقم الحساب|account\\s*id|user\\s*id|\\buid\\b/i.test(pageText);
+      if (requiresTarget && playerId.length < 2) return json({ success: false, error: "أدخل بيانات الحساب المطلوبة لهذا المنتج أولاً." }, 400);
       const limits = pageText.match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
       if (!limits) return json({ success: false, error: "حدود الكمية لم تُستخرج بشكل موثوق من صفحة المورد." }, 503);
       const minQuantity = Number(limits[1].replace(/,/g, ""));
