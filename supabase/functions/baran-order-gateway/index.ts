@@ -80,6 +80,42 @@ Deno.serve(async (req: Request) => {
       return json({ success: true, report });
     }
 
+    if (body?.action === "homscard_app_catalog") {
+      const allowedAppIds = ["18","280","49","37","3","1","45","8","43","25","893","910"];
+      const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
+        .select("product_id,product_name,product_data,page_data,page_status,updated_at")
+        .in("product_id", allowedAppIds).eq("page_status", "success")
+        .order("updated_at", { ascending: false }).limit(96);
+      if (auditError) return json({ success: false, error: "تعذر تحميل كتالوج التطبيقات المعتمد." }, 503);
+      const { data: settings, error: settingsError } = await admin.from("store_settings")
+        .select("market_exchange_rate,fx_buffer_percent,product_markup_percent").eq("id", "main").maybeSingle();
+      if (settingsError || !settings) return json({ success: false, error: "إعدادات التسعير غير متاحة." }, 503);
+      const marketRate = Number(settings.market_exchange_rate), buffer = Number(settings.fx_buffer_percent), markup = Number(settings.product_markup_percent);
+      if (![marketRate,buffer,markup].every(Number.isFinite) || marketRate <= 0 || buffer < 0 || markup < 0)
+        return json({ success: false, error: "إعدادات التسعير غير صالحة." }, 503);
+      const latest = new Map<string, any>();
+      for (const row of auditRows ?? []) if (!latest.has(String(row.product_id))) latest.set(String(row.product_id), row);
+      const result = [];
+      for (const id of allowedAppIds) {
+        const row = latest.get(id), data = row?.product_data ?? {}, page = row?.page_data ?? {};
+        if (!row || data.category !== "تطبيقات" || data.product_type !== "quantity" || data.available !== true ||
+            !(Number(data.price) > 0) || typeof page.text !== "string") continue;
+        const limits = String(page.text).match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
+        if (!limits) continue;
+        const min = Number(limits[1].replace(/,/g, "")), max = Number(limits[2].replace(/,/g, ""));
+        const cost = Number(data.price);
+        if (!Number.isSafeInteger(min) || !Number.isSafeInteger(max) || min < 1 || max < min || !Number.isFinite(cost) || cost <= 0) continue;
+        const images = [data.image_url,data.image,data.img,data.photo,page.images?.[0]].filter(v => typeof v === "string");
+        const image = images.find(v => /^https:\/\//i.test(v)) ?? "";
+        result.push({
+          product_id: id, name: String(row.product_name || data.name || "تطبيق").slice(0, 100),
+          min_quantity: min, max_quantity: max, image,
+          sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
+        });
+      }
+      return json({ success: true, products: result, provider: "HomsCard", mode: "read_only_catalog" });
+    }
+
     if (body?.action === "homscard_app_quote") {
       const productId = typeof body.product_id === "string" ? body.product_id.trim() : "";
       const allowedAppIds = new Set(["18","280","49","37","3","1","45","8","43","25","893","910"]);
