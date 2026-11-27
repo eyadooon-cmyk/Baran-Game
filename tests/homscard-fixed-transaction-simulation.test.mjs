@@ -145,6 +145,15 @@ test("variable catalog and quantities cannot enter the fixed transaction model",
   assert.equal(s.orders.length, 0);
 });
 
+test("fixed-order RPC validates supplier SKU and supplier attempt UUID before commit", () => {
+  const skuCheck = migration.indexOf("v_mapping.supplier_sku !~");
+  const orderInsert = migration.indexOf("insert into public.orders");
+  const attemptCheck = migration.indexOf("if v_attempt_id is null or v_supplier_uuid is null");
+  const returnObject = migration.indexOf("return jsonb_build_object('success',true,'duplicate',false");
+  assert.ok(skuCheck >= 0 && skuCheck < orderInsert, "supplier SKU must be validated before financial writes");
+  assert.ok(attemptCheck >= 0 && returnObject > attemptCheck, "attempt id and UUID must be validated before returning/committing");
+});
+
 test("production RPC keeps execution server-only and checks supplier gate before order insert", () => {
   assert.match(migration, /revoke all on function public\.baran_create_homscard_fixed_order[\s\S]*from public, anon, authenticated/i);
   assert.match(migration, /grant execute on function public\.baran_create_homscard_fixed_order[\s\S]*to service_role/i);
