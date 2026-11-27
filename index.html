@@ -2372,7 +2372,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <div class="baran-shipping-choices" aria-label="طرق الشحن">
         <div class="baran-home-section-intro">
           <span class="baran-section-index">TOP-UP</span>
-          <div><h2>اختر القسم المناسب</h2><p>الألعاب والتطبيقات والشحن اليدوي عبر BARO</p></div>
+          <div><h2>اختر القسم المناسب</h2><p>الألعاب والتطبيقات والاتصالات والشحن اليدوي عبر BARO</p></div>
         </div>
 
         <button class="baran-shipping-card baran-shipping-auto" type="button" onclick="showSection('games',null)">
@@ -2399,6 +2399,18 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="baran-shipping-number">02</span>
         </button>
 
+        <button class="baran-shipping-card baran-shipping-telecom" type="button" onclick="showSection('telecomStore',this)">
+          <img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="صورة سيرياتل من كتالوج HomsCard" loading="lazy">
+          <span class="baran-shipping-shade"></span>
+          <span class="baran-shipping-content">
+            <small>SYRIATEL & MTN · TELECOM</small>
+            <strong>الاتصالات</strong>
+            <em>سيرياتل وMTN سوريا — استعرض بطاقات الشبكتين.</em>
+            <b>استعراض الاتصالات <i>←</i></b>
+          </span>
+          <span class="baran-shipping-number">03</span>
+        </button>
+
         <button class="baran-shipping-card baran-shipping-manual" type="button" onclick="showSection('manualGames',this)">
           <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1400&q=85" alt="معدات ألعاب وشحن يدوي" loading="lazy">
           <span class="baran-shipping-shade"></span>
@@ -2409,7 +2421,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
             <b>الدخول إلى الشحن اليدوي <i>←</i></b>
           </span>
           <span id="baranBaroStatus" class="baran-baro-status">تحقق من حالة الاستقبال</span>
-          <span class="baran-shipping-number">03</span>
+          <span class="baran-shipping-number">04</span>
         </button>
       </div>
 
@@ -2440,10 +2452,6 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <button class="item" type="button" onclick="showSection('appsStore',null)">
           <span class="baran-auto-category-art baran-auto-apps-art">📱</span>
           <span class="item-content"><strong>التطبيقات</strong><span>تطبيقات وخدمات رقمية</span><span class="small">استعراض التطبيقات ←</span></span>
-        </button>
-        <button class="item" type="button" onclick="showSection('telecomStore',null)">
-          <span class="baran-auto-category-art">📡</span>
-          <span class="item-content"><strong>الاتصالات</strong><span>خدمات وباقات الاتصالات وشحن الرصيد</span><span class="small">استعراض قسم الاتصالات ←</span></span>
         </button>
       </div>
     </section>
@@ -2582,9 +2590,29 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
     </section>
 
     <section id="telecomStore" class="hidden">
-      <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى الأقسام</button>
-      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">BARAN GAME · TELECOM</span><h2>الاتصالات</h2><p>قسم خدمات وباقات الاتصالات وشحن الرصيد.</p></div>
-      <div class="deposit-card baran-service-catalog" aria-live="polite"><strong>قسم الاتصالات قيد التجهيز</strong><p class="small">نعمل على تجهيز الخدمات والباقات والتحقق من الموردين والأسعار. لن يتم تفعيل أي شحن أو دفع قبل اعتماد المنتجات رسمياً.</p></div>
+      <button class="secondary baran-back-button" type="button" onclick="showSection('home',null)">← العودة للرئيسية</button>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">BARAN GAME · TELECOM</span><h2>الاتصالات</h2><p>اختر شركة الاتصالات لعرض خدماتها وباقاتها.</p></div>
+      <div class="baran-telecom-provider-grid" aria-label="شركات الاتصالات">
+        <article class="item baran-telecom-provider-card">
+          <img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/nhnhjmk90121.jpeg" alt="صورة سيرياتل من كتالوج HomsCard" loading="lazy">
+          <div class="item-content">
+            <strong>سيرياتل</strong>
+            <span>Syriatel</span>
+            <span class="small">منتجات الشركة موجودة في كتالوج HomsCard</span>
+            <span class="baran-telecom-status">قيد اعتماد باقات باران</span>
+          </div>
+        </article>
+        <article class="item baran-telecom-provider-card">
+          <img src="https://dailycard-media.s3.amazonaws.com/product_packages_images/ki987645612098nbv.jpeg" alt="صورة MTN سوريا من كتالوج HomsCard" loading="lazy">
+          <div class="item-content">
+            <strong>MTN سوريا</strong>
+            <span>MTN Syria</span>
+            <span class="small">منتجات الشركة موجودة في كتالوج HomsCard</span>
+            <span class="baran-telecom-status">قيد اعتماد باقات باران</span>
+          </div>
+        </article>
+      </div>
+      <div class="deposit-card baran-service-catalog" aria-live="polite"><strong>القسم للمعاينة فقط</strong><p class="small">الصور مأخوذة من صور منتجات المورد في كتالوج HomsCard. لن تظهر أسعار بيع أو أزرار شراء، ولن يتم إنشاء طلب أو تنفيذ شحن أو دفع قبل تدقيق الباقات واعتمادها من باران.</p></div>
     </section>
 
 
@@ -9127,6 +9155,23 @@ function renderBaranHomsCardAppsCatalog(){
   });
 }
 </script>
+
+<style id="baran-telecom-cards-preview-20261127">
+/* Four independent homepage destinations; telecom stays separate from Games. */
+#home .baran-shipping-choices{grid-template-columns:repeat(4,minmax(0,1fr))}
+.baran-telecom-provider-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0}
+.baran-telecom-provider-card{min-width:0;overflow:hidden;border:1px solid #76558f!important;background:linear-gradient(145deg,#241a30,#100c16)!important}
+.baran-telecom-provider-card img{width:100%;height:190px;object-fit:contain!important;padding:18px;background:#0d0a11;display:block}
+.baran-telecom-provider-card .item-content{display:grid;gap:7px}
+.baran-telecom-provider-card .item-content strong{font-size:20px}
+.baran-telecom-provider-card .item-content>span{color:#cbb9da;font-size:12px}
+.baran-telecom-provider-card .item-content .small{color:#b9a9c9}
+.baran-telecom-status{display:inline-flex!important;width:max-content;max-width:100%;padding:6px 10px;border:1px solid #80619a;border-radius:999px;background:#2b1b3a;color:#eadcf5!important;font-weight:800}
+@media(max-width:900px){#home .baran-shipping-choices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){#home .baran-shipping-choices{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:520px){.baran-telecom-provider-grid{grid-template-columns:minmax(0,1fr);gap:11px}.baran-telecom-provider-card img{height:175px}}
+</style>
+
 </body>
 </html>
 
