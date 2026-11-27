@@ -30,7 +30,7 @@ test("Pricing policy updates are validated server-side and audited", () => {
 test("Finance hub loads the dedicated pricing policy and HomsCard USD preview", () => {
   assert.match(index, /id="financePricingPolicyMount"/);
   assert.match(index, /renderFinancePricingPolicy\(result\)/);
-  assert.match(index, /finance-pricing\.js\?v=20261127-new-syp-v3/);
+  assert.match(index, /finance-pricing\.js\?v=20261127-new-syp-v4/);
   assert.match(pricing, /String\(supplier\.name \|\| ""\).*homscard/);
   assert.match(pricing, /link\.currency \|\| ""\).*USD/);
   assert.match(pricing, /product_markup_percent/);
