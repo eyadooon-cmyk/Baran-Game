@@ -7945,17 +7945,56 @@ function baranAddProductDetails(parent,product,categoryLabel){
  favorite.setAttribute("aria-label",saved?"إزالة من المفضلة":"إضافة إلى المفضلة");
  favorite.title=saved?"إزالة من المفضلة":"إضافة إلى المفضلة";
  favorite.addEventListener("click",()=>toggleBaranFavorite(product,categoryLabel,favorite));
- const toggle=document.createElement("button");toggle.type="button";toggle.className="baran-product-detail-toggle";toggle.textContent="＋ تفاصيل المنتج";toggle.setAttribute("aria-expanded","false");
- const panel=document.createElement("div");panel.className="baran-product-detail-panel";panel.hidden=true;
- const title=document.createElement("strong");title.textContent="تفاصيل "+(product.name||"المنتج");
- const description=document.createElement("div");description.textContent=product.description||"لا توجد تفاصيل إضافية منشورة لهذا المنتج حالياً.";
- const category=document.createElement("div");category.textContent="القسم: "+categoryLabel;
- const code=document.createElement("div");code.textContent="رمز المنتج: "+(product.product_code||"غير متوفر");
- const price=document.createElement("div");price.textContent="السعر: "+(typeof baranServicePrice==="function"?baranServicePrice(product):baranMoneyText(product));
- const availability=document.createElement("div");availability.textContent="حالة الشراء: "+((Number(product.price_usd)>0||Number(product.price_syp)>0)?"السعر مسجل — تنفيذ الطلب غير مفعّل قبل اعتماد المورد":"بانتظار اعتماد السعر والمورد");
- panel.append(title,description,category,code,price,availability);
- toggle.addEventListener("click",()=>{const opening=panel.hidden;panel.hidden=!opening;toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"－ إخفاء التفاصيل":"＋ تفاصيل المنتج";});
- parent.append(favorite,toggle,panel);
+ const toggle=document.createElement("button");
+ toggle.type="button";toggle.className="baran-product-detail-toggle";
+ toggle.textContent="＋ تفاصيل المنتج";toggle.setAttribute("aria-expanded","false");
+ toggle.addEventListener("click",()=>{
+  if(document.getElementById("baranProductDetailsPage"))return;
+  const overlay=document.createElement("section");
+  overlay.id="baranProductDetailsPage";overlay.dir="rtl";
+  overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");
+  overlay.style.cssText="position:fixed;inset:0;z-index:2147483646;overflow-y:auto;overscroll-behavior:contain;background:radial-gradient(ellipse at 90% 0%,rgba(126,77,164,.22),transparent 36rem),linear-gradient(180deg,#171020,#09070f);color:#f7effb;padding:calc(10px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom));box-sizing:border-box;font-family:inherit";
+  const style=document.createElement("style");
+  style.textContent="#baranProductDetailsPage *{box-sizing:border-box}#baranProductDetailsPage .bpd-wrap{width:100%;max-width:760px;margin:0 auto}#baranProductDetailsPage .bpd-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:8px 0 13px;border-bottom:1px solid #624779;background:rgba(20,14,28,.97)}#baranProductDetailsPage .bpd-top b{font-size:17px}#baranProductDetailsPage .bpd-close{width:42px;height:42px;border:1px solid #76558e;border-radius:12px;background:#30213e;color:#fff;font-size:25px}#baranProductDetailsPage .bpd-title{display:flex;align-items:center;gap:13px;margin:22px 0 18px}#baranProductDetailsPage .bpd-thumb{width:76px;height:76px;flex:0 0 76px;display:grid;place-items:center;overflow:hidden;border:1px solid #8e69a9;border-radius:17px;background:linear-gradient(145deg,#54396b,#21152d);font-size:30px}#baranProductDetailsPage .bpd-thumb img{width:100%;height:100%;object-fit:contain;padding:7px}#baranProductDetailsPage h2{margin:0;color:#fff;font-size:20px;line-height:1.55}#baranProductDetailsPage .bpd-card{padding:17px;border:1px solid #4d3960;border-radius:18px;background:linear-gradient(145deg,#241a30,#15101d);box-shadow:0 14px 36px #0005}#baranProductDetailsPage .bpd-desc{color:#d2c3dd;line-height:1.95;margin:0 0 14px;overflow-wrap:anywhere}#baranProductDetailsPage .bpd-price{padding:14px;margin:12px 0;border-radius:13px;background:#382449;border:1px solid #805b9b;color:#f6e8ff;font-size:17px;font-weight:900}#baranProductDetailsPage .bpd-meta{padding:11px 0;border-top:1px solid #ffffff16;color:#cdbbd9;font-size:13px;line-height:1.9;white-space:pre-line}#baranProductDetailsPage .bpd-cta{width:100%;min-height:54px;margin-top:18px;border:0;border-radius:14px;background:linear-gradient(110deg,#c18be7,#8b55b4);color:#190f22;font-size:15px;font-weight:900}#baranProductDetailsPage .bpd-cta:disabled{opacity:.5}";
+  document.head.append(style);
+  const wrap=document.createElement("div");wrap.className="bpd-wrap";
+  const top=document.createElement("header");top.className="bpd-top";
+  const brand=document.createElement("b");brand.textContent="BARAN GAME";
+  const close=document.createElement("button");close.type="button";close.className="bpd-close";close.textContent="×";close.setAttribute("aria-label","إغلاق");
+  const titleRow=document.createElement("div");titleRow.className="bpd-title";
+  const thumb=document.createElement("div");thumb.className="bpd-thumb";
+  let visual=null;
+  if(typeof baranServiceBrandVisual==="function"&&categoryLabel!=="الألعاب"){
+   try{visual=baranServiceBrandVisual(product,categoryLabel)}catch(_){}
+  }
+  const imageUrl=product.image_url||product.image||product.icon_url||product.logo_url;
+  if(imageUrl){const img=document.createElement("img");img.src=imageUrl;img.alt=product.name||"صورة المنتج";thumb.append(img)}
+  else if(visual){thumb.append(visual)}
+  else thumb.textContent=categoryLabel.includes("جواكر")?"🪙":/free.?fire/i.test(String(product.product_code||product.name||""))?"🔥":/pubg/i.test(String(product.product_code||product.name||""))?"🎮":"🎁";
+  const heading=document.createElement("h2");heading.textContent=product.name||product.product_code||"تفاصيل المنتج";
+  titleRow.append(thumb,heading);
+  const card=document.createElement("div");card.className="bpd-card";
+  const desc=document.createElement("p");desc.className="bpd-desc";desc.textContent=product.description||"تفاصيل المنتج المعتمدة من الكتالوج.";
+  const price=document.createElement("div");price.className="bpd-price";price.textContent="سعر الوحدة: "+(typeof baranServicePrice==="function"&&categoryLabel!=="الألعاب"?baranServicePrice(product):baranMoneyText(product));
+  const meta=document.createElement("div");meta.className="bpd-meta";
+  const rows=["القسم: "+categoryLabel,"رمز المنتج: "+(product.product_code||"غير متوفر")];
+  if(product.min_quantity!=null||product.max_quantity!=null)rows.push("حدود الكمية: "+(product.min_quantity??"—")+" إلى "+(product.max_quantity??"—"));
+  if(product.quantity_min!=null||product.quantity_max!=null)rows.push("حدود الكمية: "+(product.quantity_min??"—")+" إلى "+(product.quantity_max??"—"));
+  rows.push("حالة السعر: "+((Number(product.price_usd)>0||Number(product.price_syp)>0)?"مسجل في الكتالوج":"بانتظار اعتماد السعر"));
+  meta.textContent=rows.join("\n");
+  const action=parent.querySelector(".baran-service-select-button,.baran-package-button");
+  const cta=document.createElement("button");cta.type="button";cta.className="bpd-cta";
+  cta.textContent=action?(action.classList.contains("baran-package-button")?"اختيار الباقة والمتابعة":"اختيار المنتج والمتابعة"):"إغلاق التفاصيل";
+  cta.disabled=!!(action&&action.disabled);
+  cta.addEventListener("click",()=>{overlay.remove();style.remove();if(action&&!action.disabled){action.click();setTimeout(()=>{const checkout=parent.closest("section")?.querySelector(".game-checkout");if(checkout)checkout.scrollIntoView({behavior:"smooth",block:"start"});},80)}});
+  card.append(desc,price,meta,cta);
+  top.append(brand,close);wrap.append(top,titleRow,card);overlay.append(wrap);
+  const dismiss=()=>{overlay.remove();style.remove();toggle.focus()};
+  close.addEventListener("click",dismiss);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)dismiss()});
+  document.body.append(overlay);close.focus();
+ });
+ parent.append(favorite,toggle);
 }
 async function loadBaranGameCatalog(game){
   const isPubg=game==="PUBG";
@@ -9740,4 +9779,4 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
 .baran-shipping-wallets{--baran-card-accent:#a78bfa}.baran-shipping-wallets .baran-shipping-shade{background:linear-gradient(115deg,rgba(18,12,35,.94),rgba(67,35,112,.52),rgba(12,12,20,.18))}.baran-shipping-wallets .baran-shipping-content b{color:#d8c8ff}
 </style>
 
-<script src="./baran-product-full-page.js" defer></script>
+
