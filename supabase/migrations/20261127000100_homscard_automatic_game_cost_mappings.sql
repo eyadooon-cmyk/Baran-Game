@@ -45,3 +45,58 @@ set supplier_sku = excluded.supplier_sku,
     is_preferred = true,
     notes = excluded.notes,
     updated_at = now();
+
+
+-- Consolidate Jawaker tokens into one HomsCard product; server splitting belonged to a previous supplier.
+update public.products
+set product_code = 'JAWAKER_TOKENS',
+    name = 'جواكر — توكنز',
+    description = 'شحن توكنز جواكر عبر Player ID. الكمية المتاحة لدى HomsCard من 10000 إلى 10000000 توكن.',
+    updated_at = now()
+where product_code = 'JAWAKER_TOKENS_SERVER_1';
+
+update public.products
+set is_active = false,
+    description = 'منتج مكرر قديم خاص بتقسيم سيرفرات مورد سابق؛ تم إيقافه واعتماد منتج جواكر الموحد المرتبط بـ HomsCard.',
+    updated_at = now()
+where product_code = 'JAWAKER_TOKENS_SERVER_2';
+
+with token_mapping as (
+  select s.id as supplier_id, p.id as product_id
+  from public.suppliers s
+  join public.products p on p.product_code = 'JAWAKER_TOKENS'
+  where s.name = 'HomsCard' and p.is_active
+)
+insert into public.supplier_products (
+  supplier_id, product_id, supplier_sku, unit_cost, currency, is_preferred, notes
+)
+select supplier_id, product_id, '865', 0.00010693::numeric, 'USD', true,
+       'Verified HomsCard quantity product; cost per token in USD; Player ID only; quantity range 10000–10000000. Read-only mapping; execution remains disabled.'
+from token_mapping
+on conflict (supplier_id, product_id) do update
+set supplier_sku = excluded.supplier_sku,
+    unit_cost = excluded.unit_cost,
+    currency = excluded.currency,
+    is_preferred = true,
+    notes = excluded.notes,
+    updated_at = now();
+
+update public.supplier_products sp
+set is_preferred = (sp.supplier_id = (select id from public.suppliers where name = 'HomsCard')),
+    updated_at = now()
+where sp.product_id in (
+  select id from public.products
+  where is_active and (
+    product_code like 'PUBG_MOBILE_%'
+    or product_code like 'FREEFIRE_ROBOT_%'
+    or product_code like 'JAWAKER_%'
+  )
+);
+
+update public.supplier_products sp
+set is_preferred = false,
+    notes = 'Legacy duplicate for former server split; unified product JAWAKER_TOKENS is the active HomsCard mapping.',
+    updated_at = now()
+where sp.product_id = (
+  select id from public.products where product_code = 'JAWAKER_TOKENS_SERVER_2'
+);
