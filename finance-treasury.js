@@ -9,7 +9,7 @@
     opening_balance:"رصيد افتتاحي",capital_in:"إيداع رأس مال",capital_out:"سحب رأس مال",
     cash_in:"وارد نقدي",cash_out:"صادر نقدي",transfer_in:"تحويل وارد",transfer_out:"تحويل صادر",correction_in:"تسوية تصحيحية واردة",correction_out:"تسوية تصحيحية صادرة"
   };
-  const incoming = new Set(["opening_balance","capital_in","cash_in","transfer_in"]);
+  const incoming = new Set(["opening_balance","capital_in","cash_in","transfer_in","correction_in"]);
   function date(value){
     try{return new Intl.DateTimeFormat("ar-SY",{timeZone:"Asia/Damascus",dateStyle:"medium",timeStyle:"short"}).format(new Date(value));}
     catch{return String(value||"");}
