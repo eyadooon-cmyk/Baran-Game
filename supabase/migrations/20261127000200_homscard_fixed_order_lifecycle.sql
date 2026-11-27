@@ -154,8 +154,13 @@ begin
      where a.order_id = v_existing.id
      order by a.attempt_number desc limit 1;
     if v_supplier_uuid is null or v_supplier_sku is null
-       or v_supplier_sku !~ '^[0-9]{1,10}
-  end if;
+       or length(v_supplier_sku) < 1 or length(v_supplier_sku) > 10
+       or translate(v_supplier_sku, '0123456789', '') <> '' then
+      raise exception 'بيانات محاولة HomsCard للطلب السابق غير مكتملة؛ أوقفنا التكرار للمراجعة' using errcode='55000';
+    end if;
+    return jsonb_build_object('success',true,'duplicate',true,
+      'order_id',v_existing.id,'status',v_existing.status,
+      'supplier_order_uuid',v_supplier_uuid,'supplier_sku',v_supplier_sku,'quantity',1);
 
   select * into v_product
     from public.products p
@@ -189,7 +194,13 @@ begin
   end if;
   -- HomsCard's order.php requires a numeric product_id. Validate before
   -- creating an order, debiting a wallet, or queuing supplier fulfillment.
-  if v_mapping.supplier_sku !~ '^[0-9]{1,10}
+  if length(v_mapping.supplier_sku) < 1 or length(v_mapping.supplier_sku) > 10
+     or translate(v_mapping.supplier_sku, '0123456789', '') <> '' then
+    raise exception 'معرّف منتج HomsCard غير صالح؛ لم يتم إنشاء طلب أو خصم رصيد' using errcode='22023';
+  end if;
+
+  select ai.product_id, ai.product_data, ai.page_data, ai.updated_at
+    into v_audit
     from public.baran_homscard_audit_items ai
    where ai.product_id = v_mapping.supplier_sku
      and ai.page_status = 'success'
