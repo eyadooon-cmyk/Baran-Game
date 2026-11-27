@@ -80,6 +80,80 @@ Deno.serve(async (req: Request) => {
       return json({ success: true, report });
     }
 
+    if (body?.action === "jawaker_quote") {
+      const quantity = Number(body.quantity);
+      const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
+      const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
+      if (!Number.isSafeInteger(quantity) || quantity < 10000 || quantity > 10000000) {
+        return json({ success: false, error: "الكمية يجب أن تكون عدداً صحيحاً بين 10,000 و10,000,000." }, 400);
+      }
+      if (!playerId || playerId.length < 3 || playerId.length > 100) {
+        return json({ success: false, error: "أدخل Player ID صالحاً." }, 400);
+      }
+      if (!["USD", "SYP"].includes(currency)) return json({ success: false, error: "عملة الدفع غير مدعومة." }, 400);
+
+      const { data: product, error: productError } = await admin.from("products")
+        .select("id,product_code,name,category,is_active")
+        .eq("product_code", "JAWAKER_TOKENS").eq("is_active", true).maybeSingle();
+      if (productError || !product || product.category !== "game") {
+        return json({ success: false, error: "منتج جواكر توكنز غير متاح حالياً." }, 404);
+      }
+      const { data: supplier, error: supplierError } = await admin.from("suppliers")
+        .select("id").eq("name", "HomsCard").eq("is_active", true).maybeSingle();
+      if (supplierError || !supplier) return json({ success: false, error: "تعذر التحقق من مورد HomsCard." }, 503);
+      const { data: mapping, error: mappingError } = await admin.from("supplier_products")
+        .select("supplier_sku,unit_cost,currency")
+        .eq("product_id", product.id).eq("supplier_id", supplier.id)
+        .eq("supplier_sku", "865").maybeSingle();
+      if (mappingError || !mapping || mapping.currency !== "USD" || !Number.isFinite(Number(mapping.unit_cost)) || Number(mapping.unit_cost) <= 0) {
+        return json({ success: false, error: "تكلفة جواكر توكنز غير معتمدة في ربط المورد." }, 503);
+      }
+      const { data: settings, error: settingsError } = await admin.from("store_settings")
+        .select("market_exchange_rate,fx_buffer_percent,product_markup_percent")
+        .eq("id", "main").maybeSingle();
+      if (settingsError || !settings) return json({ success: false, error: "إعدادات التسعير غير متاحة." }, 503);
+      const marketRate = Number(settings.market_exchange_rate);
+      const bufferPercent = Number(settings.fx_buffer_percent);
+      const markupPercent = Number(settings.product_markup_percent);
+      if (![marketRate, bufferPercent, markupPercent].every(Number.isFinite) || marketRate <= 0 || bufferPercent < 0 || markupPercent < 0) {
+        return json({ success: false, error: "إعدادات سعر الصرف أو هامش الربح غير صالحة." }, 503);
+      }
+      const commercialRate = marketRate * (1 + bufferPercent / 100);
+      const unitCost = Number(mapping.unit_cost);
+      const totalCost = unitCost * quantity;
+      const exactSaleUsd = totalCost * (1 + markupPercent / 100);
+      const exactSaleSyp = exactSaleUsd * commercialRate;
+      const round = (value: number, digits: number) => Number((value + Number.EPSILON).toFixed(digits));
+      const { data: adminRecord, error: adminCheckError } = await admin.from("admin_users")
+        .select("user_id").eq("user_id", user.id).maybeSingle();
+      if (adminCheckError) return json({ success: false, error: "تعذر التحقق من صلاحية الإدارة." }, 500);
+      const isAdmin = !!adminRecord;
+      const quote: Record<string, unknown> = {
+        quantity,
+        sale_usd: round(exactSaleUsd, 2),
+        sale_syp: Math.round(exactSaleSyp),
+        commercial_rate: round(commercialRate, 2),
+        markup_percent: markupPercent,
+        currency,
+      };
+      if (isAdmin) {
+        quote.cost_usd = round(totalCost, 6);
+        quote.profit_usd = round(exactSaleUsd - totalCost, 6);
+        quote.profit_syp = Math.round((exactSaleUsd - totalCost) * commercialRate);
+        quote.is_admin = true;
+      }
+      return json({
+        success: true,
+        mode: "read_only_quote",
+        can_create_order: false,
+        can_purchase: false,
+        charged: false,
+        order_created: false,
+        quote,
+        message: "تم حساب سعر المعاينة فقط. لم يتم إنشاء طلب أو الاتصال بواجهة تنفيذ المورد أو خصم رصيد.",
+      });
+    }
+
     if (body?.action !== "preflight") {
       return json({ error: "هذه البوابة تدعم فحص المنتج أو تقرير الإدارة فقط؛ لا تنشئ طلباً ولا تخصم رصيداً.", code: "READ_ONLY_GATEWAY" }, 409);
     }
