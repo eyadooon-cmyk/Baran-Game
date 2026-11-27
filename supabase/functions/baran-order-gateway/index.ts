@@ -160,6 +160,82 @@ Deno.serve(async (req: Request) => {
       return json({ success: true, report });
     }
 
+
+    // Fixed HomsCard products have a separate catalog and quote contract.
+    // This path is read-only until a dedicated fixed-order transaction is reviewed and enabled.
+    if (body?.action === "homscard_fixed_catalog" || body?.action === "homscard_fixed_quote") {
+      const isQuote = body.action === "homscard_fixed_quote";
+      const productCode = typeof body.product_code === "string" ? body.product_code.trim().toUpperCase() : "";
+      const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
+      const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
+      if (isQuote && (!/^[A-Z0-9_]{3,80}$/.test(productCode) || playerId.length < 2 || playerId.length > 100))
+        return json({success:false,error:"اختر منتجاً ثابتاً وأدخل Player ID صالحاً."},400);
+      if (!["USD","SYP"].includes(currency))
+        return json({success:false,error:"عملة الدفع غير مدعومة."},400);
+
+      const {data: settings,error:settingsError}=await admin.from("store_settings")
+        .select("market_exchange_rate,fx_buffer_percent,product_markup_percent").eq("id","main").maybeSingle();
+      if(settingsError||!settings)return json({success:false,error:"إعدادات التسعير غير متاحة."},503);
+      const marketRate=Number(settings.market_exchange_rate),buffer=Number(settings.fx_buffer_percent),markup=Number(settings.product_markup_percent);
+      if(![marketRate,buffer,markup].every(Number.isFinite)||marketRate<=0||buffer<0||markup<0)
+        return json({success:false,error:"إعدادات التسعير غير صالحة."},503);
+
+      const {data:supplier,error:supplierError}=await admin.from("suppliers")
+        .select("id").ilike("name","HomsCard").eq("is_active",true).maybeSingle();
+      if(supplierError||!supplier)return json({success:false,error:"مورد HomsCard غير متاح."},503);
+
+      const {data:productRows,error:productsError}=await admin.from("products")
+        .select("id,product_code,name,description,category,price_usd,price_syp,catalog_group,sort_order")
+        .eq("is_active",true).gt("price_usd",0).is("catalog_group",null)
+        .order("sort_order",{ascending:true}).limit(250);
+      if(productsError)return json({success:false,error:"تعذر تحميل كتالوج المنتجات الثابتة."},503);
+      const ids=(productRows??[]).map((p:any)=>p.id);
+      if(!ids.length)return json({success:true,products:[],mode:"read_only_fixed_catalog",can_purchase:false});
+      const {data:mappings,error:mappingError}=await admin.from("supplier_products")
+        .select("product_id,supplier_sku,unit_cost,currency,is_preferred,input_schema")
+        .eq("supplier_id",supplier.id).eq("is_preferred",true).in("product_id",ids);
+      if(mappingError)return json({success:false,error:"تعذر قراءة ربط منتجات HomsCard."},503);
+      const mappingByProduct=new Map((mappings??[]).map((m:any)=>[String(m.product_id),m]));
+      const skus=[...new Set((mappings??[]).map((m:any)=>String(m.supplier_sku||"")).filter(Boolean))];
+      const {data:auditRows,error:auditError}=await admin.from("baran_homscard_audit_items")
+        .select("product_id,product_name,product_data,page_data,page_status,updated_at")
+        .in("product_id",skus.length?skus:["__none__"]).eq("page_status","success")
+        .order("updated_at",{ascending:false}).limit(500);
+      if(auditError)return json({success:false,error:"تعذر التحقق من تدقيق منتجات HomsCard."},503);
+      const latestAudit=new Map<string,any>();
+      for(const row of auditRows??[])if(!latestAudit.has(String(row.product_id)))latestAudit.set(String(row.product_id),row);
+      const ready=[];
+      for(const p of productRows??[]){
+        const m:any=mappingByProduct.get(String(p.id));
+        if(!m||m.currency!=="USD"||!Number.isFinite(Number(m.unit_cost))||Number(m.unit_cost)<=0)continue;
+        // Subscription products are outside the approved current catalog.
+        if(/MEMBERSHIP|SUBSCRIPTION|WEEKLY/i.test(String(p.product_code)))continue;
+        const audit=latestAudit.get(String(m.supplier_sku));
+        const data=audit?.product_data??{},page=audit?.page_data??{};
+        if(!audit||new Date(audit.updated_at).getTime()<Date.now()-24*60*60*1000||
+           data.product_type!=="package"||data.available!==true||
+           Math.abs(Number(data.price)-Number(m.unit_cost))>0.000001||
+           !Array.isArray(data.params)||data.params.length!==1||
+           !/player\s*id/i.test(String(data.params[0]))||
+           !/player\s*id/i.test(String(page.text||"")))continue;
+        const saleUsd=Number((Number(m.unit_cost)*(1+markup/100)).toFixed(2));
+        if(!(saleUsd>0)||Math.abs(Number(p.price_usd)-saleUsd)>0.000001)continue;
+        const saleSyp=Number((saleUsd*marketRate*(1+buffer/100)/100).toFixed(2));
+        ready.push({product_code:p.product_code,name:p.name,description:p.description,category:p.category,
+          supplier_sku:String(m.supplier_sku),target_label:"Player ID",sale_usd:saleUsd,sale_syp:saleSyp,
+          currency,can_purchase:false});
+      }
+      if(!isQuote)return json({success:true,mode:"read_only_fixed_catalog",can_purchase:false,products:ready});
+      const selected=ready.find((p:any)=>p.product_code===productCode);
+      if(!selected)return json({success:false,error:"المنتج الثابت غير معتمد حالياً أو يحتاج تحديث تدقيق المورد."},404);
+      const quote={product_code:selected.product_code,product_name:selected.name,player_id_masked:playerId.length>4?playerId.slice(0,2)+"•••"+playerId.slice(-2):"••••",
+        sale_usd:selected.sale_usd,sale_syp:selected.sale_syp,currency,markup_percent:markup,
+        commercial_rate:Number((marketRate*(1+buffer/100)/100).toFixed(4))};
+      return json({success:true,mode:"read_only_fixed_quote",can_create_order:false,can_purchase:false,
+        charged:false,order_created:false,quote,
+        message:"تم تأكيد سعر المنتج الثابت فقط. لا يوجد إنشاء طلب أو خصم رصيد حتى اكتمال مسار الشراء الآمن."});
+    }
+
     if ((body?.action === "homscard_app_catalog" || body?.action === "homscard_variable_catalog")) {
       const variableCategories = new Set(["ألعاب", "تطبيقات", "اتصالات", "محافظ"]);
       const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
