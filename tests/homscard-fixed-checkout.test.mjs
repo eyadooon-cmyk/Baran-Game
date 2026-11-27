@@ -64,6 +64,14 @@ test("fixed order price snapshot uses new Syrian lira commercial conversion", ()
   assert.match(migration, /market_exchange_rate \* \(1 \+ ss\.fx_buffer_percent \/ 100\) \/ 100/);
 });
 
+test("fixed-order gateway binds the database user to a verified bearer session", () => {
+  assert.match(gateway, /auth\.getUser\(accessToken\)/);
+  assert.match(gateway, /p_user_id:user\.id/);
+  assert.doesNotMatch(gateway, /p_user_id\s*:\s*body\./);
+  assert.match(migration, /revoke all on function public\.baran_create_homscard_fixed_order[\s\S]*from public, anon, authenticated/i);
+  assert.match(migration, /grant execute on function public\.baran_create_homscard_fixed_order[\s\S]*to service_role/i);
+});
+
 test("fixed gateway creates fixed orders only through the dedicated RPC", () => {
   assert.match(gateway, /homscard_fixed_create_order/);
   assert.match(gateway, /baran_create_homscard_fixed_order/);
