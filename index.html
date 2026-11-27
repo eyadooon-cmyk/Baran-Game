@@ -2364,7 +2364,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <div><h2>ابحث عن لعبتك أو خدمتك</h2><p>اكتب اسم المنتج للوصول إليه بسرعة</p></div>
         </div>
         <div class="store-search baran-home-search" role="search">
-          <div class="store-search-row"><span aria-hidden="true">⌕</span><input id="storeSearchInput" type="search" placeholder="ابحث عن PUBG أو Free Fire أو ChatGPT..." autocomplete="off" oninput="searchStore(this.value)"><button type="button" class="secondary" onclick="clearStoreSearch()">مسح</button></div>
+          <div class="store-search-row"><span aria-hidden="true">⌕</span><input id="storeSearchInput" type="search" placeholder="ابحث عن PUBG أو Free Fire أو جواكر..." autocomplete="off" oninput="searchStore(this.value)"><button type="button" class="secondary" onclick="clearStoreSearch()">مسح</button></div>
           <div id="storeSearchResults" class="store-search-results" aria-live="polite"></div>
         </div>
       </div>
@@ -2372,7 +2372,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       <div class="baran-shipping-choices" aria-label="طرق الشحن">
         <div class="baran-home-section-intro">
           <span class="baran-section-index">TOP-UP</span>
-          <div><h2>اختر طريقة الشحن</h2><p>طريقتان واضحتان، وكل طلب ضمن قسمه المستقل</p></div>
+          <div><h2>اختر القسم المناسب</h2><p>الألعاب والتطبيقات والشحن اليدوي عبر BARO</p></div>
         </div>
 
         <button class="baran-shipping-card baran-shipping-auto" type="button" onclick="showSection('games',null)">
@@ -2381,10 +2381,22 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="baran-shipping-content">
             <small>AUTOMATIC TOP-UP</small>
             <strong>الشحن الآلي</strong>
-            <em>ادخل إلى أقسام الألعاب والخدمات الرقمية واستعرض الباقات.</em>
+            <em>ادخل إلى بطاقة الألعاب واستعرض ألعاب الشحن الآلي.</em>
             <b>استعراض الأقسام <i>←</i></b>
           </span>
           <span class="baran-shipping-number">01</span>
+        </button>
+
+        <button class="baran-shipping-card baran-shipping-apps" type="button" onclick="showSection('appsStore',this)">
+          <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1400&q=85" alt="تطبيقات وخدمات رقمية" loading="lazy">
+          <span class="baran-shipping-shade"></span>
+          <span class="baran-shipping-content">
+            <small>APPS & DIGITAL SERVICES</small>
+            <strong>التطبيقات</strong>
+            <em>تصفّح التطبيقات والخدمات الرقمية المتاحة في المتجر.</em>
+            <b>استعراض التطبيقات <i>←</i></b>
+          </span>
+          <span class="baran-shipping-number">02</span>
         </button>
 
         <button class="baran-shipping-card baran-shipping-manual" type="button" onclick="showSection('manualGames',this)">
@@ -2397,7 +2409,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
             <b>الدخول إلى الشحن اليدوي <i>←</i></b>
           </span>
           <span id="baranBaroStatus" class="baran-baro-status">تحقق من حالة الاستقبال</span>
-          <span class="baran-shipping-number">02</span>
+          <span class="baran-shipping-number">03</span>
         </button>
       </div>
 
@@ -9133,7 +9145,7 @@ function baranAttachCatalogSearch(container,cardSelector,placeholder){
 #home .baran-home-search .store-search-row>span{color:#d8b5f1;font-size:27px}
 #home .baran-home-search .store-search-row input{min-width:0;height:46px;margin:0;border:0!important;background:transparent!important;box-shadow:none!important;font-size:14px!important}
 #home .baran-home-search .store-search-row button{min-height:39px;padding:8px 14px;border:1px solid #75558e;border-radius:10px;background:#33223f;color:#eadcf5}
-#home .baran-shipping-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:0 0 27px}
+#home .baran-shipping-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:0 0 27px}
 #home .baran-shipping-choices>.baran-home-section-intro{grid-column:1/-1;margin-bottom:0}
 #home .baran-shipping-card{
   position:relative;display:flex;align-items:flex-end;isolation:isolate;
@@ -9304,5 +9316,25 @@ function baranAttachCatalogSearch(container,cardSelector,placeholder){
 }
 @media(prefers-reduced-motion:reduce){
   #appShell>main>section:is(#games,#automaticGames,#pubgStore,#freeFireStore,#jawakerStore,#chatgptStore,#vpnStore,#giftCardsStore,#appsStore,#subscriptionStore) *{scroll-behavior:auto!important}
+}
+</style>
+
+
+<style id="baran-home-games-manual-only-20261127">
+/* Keep the Games entry and BARO manual top-up visible; temporarily remove other storefront categories and their contents from the customer UI. */
+#appShell>main>section:is(#services,#chatgptStore,#vpnStore,#giftCardsStore,#subscriptionStore){
+  display:none!important;
+}
+#sideDrawer [data-section="services"],
+#sideDrawer [data-section="chatgptStore"],
+#sideDrawer [data-section="vpnStore"],
+#sideDrawer [data-section="giftCardsStore"],
+#sideDrawer [data-section="appsStore"],
+#sideDrawer [data-section="subscriptionStore"]{
+  display:none!important;
+}
+#home .baran-shipping-auto,
+#home .baran-shipping-manual{
+  display:flex!important;
 }
 </style>
