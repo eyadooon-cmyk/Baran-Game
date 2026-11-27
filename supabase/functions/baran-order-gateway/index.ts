@@ -142,7 +142,8 @@ Deno.serve(async (req: Request) => {
           { pattern: /رقم المحفظة|wallet/i, label: "رقم المحفظة" },
           { pattern: /معرّف الحساب|رقم الحساب|account\s*id|user\s*id|\buid\b/i, label: "معرّف الحساب" },
         ];
-        const targetField = fieldRules.find(rule => rule.pattern.test(page.text));
+        const params = Array.isArray(data.params) ? data.params.filter((v: unknown) => typeof v === "string" && v.trim()) : [];
+        const targetField = params.length ? { label: String(params[0]).slice(0, 60) } : fieldRules.find(rule => rule.pattern.test(page.text));
         result.push({
           product_id: id, name: String(row.product_name || data.name || "منتج").slice(0, 100),
           category: String(data.category), min_quantity: min, max_quantity: max, image,
@@ -173,16 +174,18 @@ Deno.serve(async (req: Request) => {
         row?.product_data?.product_type === "quantity" &&
         row?.product_data?.available === true &&
         Number(row?.product_data?.price) > 0 &&
-        typeof row?.page_data?.text === "string"
+        typeof row?.page_data?.text === "string" &&
+        new Date(row.updated_at).getTime() >= Date.now() - 24 * 60 * 60 * 1000
       );
       if (!audited) return json({ success: false, error: "تكلفة أو تفاصيل هذا المنتج غير مؤكدة حالياً." }, 503);
       const pageText = String(audited.page_data.text);
-      const requiresTarget = /player\s*id|معرّف اللاعب|ايدي اللاعب|رقم الهاتف|رقم الموبايل|phone|mobile|رقم المحفظة|wallet|معرّف الحساب|رقم الحساب|account\s*id|user\s*id|\buid\b/i.test(pageText);
+      const requiresTarget = (Array.isArray(audited.product_data?.params) && audited.product_data.params.length > 0) ||
+        /player\s*id|معرّف اللاعب|ايدي اللاعب|رقم الهاتف|رقم الموبايل|phone|mobile|رقم المحفظة|wallet|معرّف الحساب|رقم الحساب|account\s*id|user\s*id|\buid\b/i.test(pageText);
       if (requiresTarget && playerId.length < 2) return json({ success: false, error: "أدخل بيانات الحساب المطلوبة لهذا المنتج أولاً." }, 400);
       const limits = pageText.match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
-      if (!limits) return json({ success: false, error: "حدود الكمية لم تُستخرج بشكل موثوق من صفحة المورد." }, 503);
-      const minQuantity = Number(limits[1].replace(/,/g, ""));
-      const maxQuantity = Number(limits[2].replace(/,/g, ""));
+      const minQuantity = Number(audited.product_data?.qty_values?.min ?? limits?.[1]?.replace(/,/g, ""));
+      const maxQuantity = Number(audited.product_data?.qty_values?.max ?? limits?.[2]?.replace(/,/g, ""));
+      if (!Number.isFinite(minQuantity) || !Number.isFinite(maxQuantity)) return json({ success: false, error: "حدود الكمية لم تُستخرج بشكل موثوق من صفحة المورد." }, 503);
       if (!Number.isSafeInteger(minQuantity) || !Number.isSafeInteger(maxQuantity) || minQuantity < 1 || maxQuantity < minQuantity || quantity < minQuantity || quantity > maxQuantity) {
         return json({ success: false, error: "الكمية لهذا المنتج يجب أن تكون بين " + minQuantity.toLocaleString("en-US") + " و" + maxQuantity.toLocaleString("en-US") + "." }, 400);
       }
