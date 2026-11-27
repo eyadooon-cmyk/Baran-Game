@@ -24,10 +24,84 @@
     "#financePricingPolicyMount th,#financePricingPolicyMount td{padding:9px;border-bottom:1px solid #40334b;text-align:right;white-space:nowrap}",
     "#financePricingPolicyMount th{background:#211a2b;color:#d7c4e8}",
     "#financePricingPolicyMount .pricing-policy-status{min-height:22px;color:#d7c4e8;font-size:12px;margin-top:8px}",
+    "#financePricingPolicyMount .fx-monitor-card{padding:13px;border:1px solid #554365;border-radius:13px;background:#1d1725;margin-bottom:16px}",
+    "#financePricingPolicyMount .fx-monitor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:10px 0}",
+    "#financePricingPolicyMount .fx-monitor-stat{padding:10px;border-radius:10px;background:#2a2034;min-width:0}",
+    "#financePricingPolicyMount .fx-monitor-stat strong{display:block;font-size:17px;margin-top:5px;color:#f2e8fa}",
+    "#financePricingPolicyMount .fx-monitor-meta{font-size:11px;color:#b9a9c7;line-height:1.6}",
+    "@media(max-width:500px){#financePricingPolicyMount .fx-monitor-grid{grid-template-columns:1fr 1fr}}",
     "@media(max-width:620px){#financePricingPolicyMount .pricing-policy-grid{grid-template-columns:1fr 1fr}}",
     "@media(max-width:380px){#financePricingPolicyMount .pricing-policy-grid{grid-template-columns:1fr}}"
   ].join("");
   document.head.appendChild(style);
+
+  function renderFxMonitor(data, message) {
+    const box = $("financeFxRateMount");
+    if (!box) return;
+    const state = data?.state || {};
+    const snapshots = Array.isArray(data?.snapshots) ? data.snapshots : [];
+    const latest = {};
+    snapshots.forEach((item) => {
+      if (!latest[item.provider] || new Date(item.fetched_at) > new Date(latest[item.provider].fetched_at)) latest[item.provider] = item;
+    });
+    const statusLabels = {
+      success: "المصدران متوافقان — تم تحديث السعر",
+      source_disagreement: "اختلاف بين المصدرين — أوقفنا الاعتماد الآلي",
+      source_unavailable: "تعذر الوصول للمصدرين — احتفظنا بالسعر السابق",
+      stale: "مصدر واحد فقط متاح — لم نعتمد سعراً جديداً",
+      waiting: "بانتظار أول تحديث",
+      disabled: "التحديث التلقائي متوقف"
+    };
+    const sourceCard = (name, row) => '<div class="fx-monitor-stat"><span class="fx-monitor-meta">' + name + '</span>' +
+      (row ? '<strong dir="ltr">' + syp(row.sell_old) + '</strong><span class="fx-monitor-meta">مبيع الدولار · شراء المتجر للدولار</span>' +
+        '<span class="fx-monitor-meta">شراء الصراف: ' + syp(row.buy_old) + '</span>' +
+        '<span class="fx-monitor-meta">بيانات المصدر: ' + esc(new Date(row.source_updated_at).toLocaleString("ar")) + '</span>'
+        : '<strong>لا توجد قراءة</strong><span class="fx-monitor-meta">لم يتم استلام سعر موثوق</span>') + '</div>';
+    box.innerHTML =
+      '<div class="fx-monitor-card"><div class="finance-section-heading"><div><span class="finance-kicker">LIVE SYRIAN FX</span><h3>مراقب سعر الصرف السوري التلقائي</h3>' +
+      '<p class="small">مرجع دمشق · مصدران مستقلان · تحديث مجدول كل 6 ساعات</p></div><span class="finance-section-icon">📡</span></div>' +
+      '<div class="fx-monitor-grid">' +
+      '<div class="fx-monitor-stat"><span class="fx-monitor-meta">سعر التحويل المعتمد للتكلفة</span><strong dir="ltr">' + syp(state.applied_rate_old) + '</strong><span class="fx-monitor-meta">الليرة القديمة لكل دولار</span></div>' +
+      sourceCard("Liraty", latest.Liraty) + sourceCard("LiraScope", latest.LiraScope) +
+      '</div><div class="fx-monitor-meta">الحالة: ' + esc(statusLabels[state.status] || state.status || "غير معروف") +
+      ' · فرق المصدرين: ' + (state.source_difference_percent == null ? "—" : number(state.source_difference_percent,2) + "%") +
+      '<br>آخر تحديث ناجح: ' + (state.last_success_at ? esc(new Date(state.last_success_at).toLocaleString("ar")) : "لم يحدث بعد") +
+      '<br>آخر محاولة: ' + (state.last_attempt_at ? esc(new Date(state.last_attempt_at).toLocaleString("ar")) : "—") +
+      (state.last_error ? '<br><span style="color:#e8bd83">ملاحظة: ' + esc(state.last_error) + '</span>' : '') +
+      '</div><div class="ops-actions" style="margin-top:10px"><button type="button" id="financeFxRefresh">فحص السعر الآن</button></div>' +
+      '<div id="financeFxStatus" class="pricing-policy-status" role="status" aria-live="polite">' + esc(message || "الأسعار استرشادية؛ عند اختلاف المصدرين بأكثر من 2% لا نغير سعر المتجر.") + '</div>' +
+      '<p class="fx-monitor-meta">المصدران: <a href="https://liraty.com/developers" target="_blank" rel="noopener">Liraty</a> و <a href="https://lirascope.syria-cloud.sy/ar/api-docs" target="_blank" rel="noopener">LiraScope</a>. الأسعار الجديدة تحوّل ×100 إلى الليرة القديمة. سعر المبيع هو تكلفة شراء الدولار من الصراف. لا تتغير أسعار المنتجات أو المحافظ أو الطلبات تلقائياً.</p></div>';
+    $("financeFxRefresh")?.addEventListener("click", async () => {
+      const button = $("financeFxRefresh"), status = $("financeFxStatus");
+      button.disabled = true; status.textContent = "جاري فحص المصدرين...";
+      try {
+        if (typeof window.callFxRatesApi !== "function") throw new Error("واجهة مراقب الصرف غير جاهزة.");
+        let result;
+        try { result = await window.callFxRatesApi({ action: "refresh", source: "admin" }); }
+        catch (error) {
+          const latestData = await window.callFxRatesApi();
+          renderFxMonitor(latestData, error.message);
+          return;
+        }
+        renderFxMonitor(result, result.status === "success" ? "تمت مطابقة المصدرين وتحديث سعر السوق." : (result.message || "لم نعتمد سعراً جديداً."));
+      } catch (error) {
+        status.textContent = "تعذر الفحص: " + (error?.message || "خطأ غير معروف");
+      } finally {
+        const current = $("financeFxRefresh");
+        if (current) current.disabled = false;
+      }
+    });
+  }
+
+  async function loadFxMonitor() {
+    const box = $("financeFxRateMount");
+    if (!box || typeof window.callFxRatesApi !== "function") return;
+    try {
+      renderFxMonitor(await window.callFxRatesApi());
+    } catch (error) {
+      box.innerHTML = '<div class="fx-monitor-card"><h3>مراقب سعر الصرف السوري التلقائي</h3><p class="small">تعذر تحميل حالة مراقب الصرف: ' + esc(error?.message || "خطأ غير معروف") + '</p></div>';
+    }
+  }
 
   function getRows(payload, policy) {
     const suppliers = Array.isArray(payload?.suppliers) ? payload.suppliers : [];
@@ -110,6 +184,7 @@
     const commercial = Number(policy.commercial_exchange_rate || market * (1 + buffer / 100));
     const updated = policy.updated_at ? new Date(policy.updated_at).toLocaleString("ar") : "الإعدادات الأولية";
     mount.innerHTML =
+      '<div id="financeFxRateMount"></div>' +
       '<div class="finance-section-heading"><div><span class="finance-kicker">PRICING POLICY</span><h3>سياسة التسعير وسعر الصرف</h3>' +
       '<p class="small">تكلفة المورد من حمص كارد بالدولار فقط. سعر السوق وفرق التحويل وهامش المنتج إعدادات مستقلة.</p></div><span class="finance-section-icon">💱</span></div>' +
       '<div class="pricing-policy-grid">' +
@@ -177,5 +252,6 @@
       URL.revokeObjectURL(url);
     });
     previewFromInputs();
+    loadFxMonitor();
   };
 })();
