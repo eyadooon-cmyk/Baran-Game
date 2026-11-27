@@ -72,11 +72,10 @@ Deno.serve(async (req) => {
     try {
       const uuid = String(row.supplier_order_uuid ?? "");
       const path = buildCheckPath(uuid);
-      const { data: attempt, error: attemptError } = await admin.schema("private")
-        .from("baran_supplier_order_attempts")
-        .select("id,attempt_number,supplier_order_uuid")
-        .eq("order_id", row.order_id).eq("supplier_id", supplier.id)
-        .order("attempt_number", { ascending: false }).limit(1).maybeSingle();
+      const { data: attempts, error: attemptError } = await admin.rpc(
+        "baran_get_homscard_reconcile_attempt", { p_order_id: row.order_id },
+      );
+      const attempt = Array.isArray(attempts) ? attempts[0] : null;
       if (attemptError || !attempt || attempt.supplier_order_uuid !== uuid) {
         await admin.from("order_fulfillment").update({
           dispatch_state: "awaiting_result", supplier_status: "processing",
