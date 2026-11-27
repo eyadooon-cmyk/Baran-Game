@@ -86,7 +86,7 @@ Deno.serve(async (req: Request) => {
         .select("product_id,product_name,product_data,page_data,page_status,updated_at")
         .eq("page_status", "success")
         .order("updated_at", { ascending: false }).limit(1000);
-      if (auditError) return json({ success: false, error: "تعذر تحميل كتالوج التطبيقات المعتمد." }, 503);
+      if (auditError) return json({ success: false, error: "تعذر تحميل كتالوج المنتجات المتغيرة الكمية." }, 503);
       const { data: settings, error: settingsError } = await admin.from("store_settings")
         .select("market_exchange_rate,fx_buffer_percent,product_markup_percent").eq("id", "main").maybeSingle();
       if (settingsError || !settings) return json({ success: false, error: "إعدادات التسعير غير متاحة." }, 503);
@@ -98,7 +98,8 @@ Deno.serve(async (req: Request) => {
       const result = [];
       for (const [id, row] of latest) {
         const data = row?.product_data ?? {}, page = row?.page_data ?? {};
-        if (!row || !variableCategories.has(String(data.category || "").trim()) ||
+        const category = String(data.category || "").trim().replace(/^ال/, "");
+        if (!row || ![...variableCategories].some(value => category.startsWith(value)) ||
             data.product_type !== "quantity" || data.available !== true ||
             !(Number(data.price) > 0) || typeof page.text !== "string") continue;
         const limits = String(page.text).match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
@@ -141,7 +142,7 @@ Deno.serve(async (req: Request) => {
         .order("updated_at", { ascending: false }).limit(8);
       if (auditError) return json({ success: false, error: "تعذر قراءة تدقيق منتج HomsCard." }, 503);
       const audited = (auditRows ?? []).find((row: any) =>
-        ["ألعاب", "تطبيقات", "اتصالات", "محافظ"].includes(String(row?.product_data?.category || "").trim()) &&
+        ["ألعاب", "تطبيقات", "اتصالات", "محافظ"].some(value => String(row?.product_data?.category || "").trim().replace(/^ال/, "").startsWith(value)) &&
         row?.product_data?.product_type === "quantity" &&
         row?.product_data?.available === true &&
         Number(row?.product_data?.price) > 0 &&
@@ -156,7 +157,7 @@ Deno.serve(async (req: Request) => {
       const minQuantity = Number(limits[1].replace(/,/g, ""));
       const maxQuantity = Number(limits[2].replace(/,/g, ""));
       if (!Number.isSafeInteger(minQuantity) || !Number.isSafeInteger(maxQuantity) || minQuantity < 1 || maxQuantity < minQuantity || quantity < minQuantity || quantity > maxQuantity) {
-        return json({ success: false, error: "الكمية لهذا التطبيق يجب أن تكون بين " + minQuantity.toLocaleString("en-US") + " و" + maxQuantity.toLocaleString("en-US") + "." }, 400);
+        return json({ success: false, error: "الكمية لهذا المنتج يجب أن تكون بين " + minQuantity.toLocaleString("en-US") + " و" + maxQuantity.toLocaleString("en-US") + "." }, 400);
       }
       const unitCost = Number(audited.product_data.price);
       if (!Number.isFinite(unitCost) || unitCost <= 0) return json({ success: false, error: "سعر وحدة المورد غير صالح." }, 503);
