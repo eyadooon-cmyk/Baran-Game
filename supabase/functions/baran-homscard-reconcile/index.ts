@@ -78,6 +78,11 @@ Deno.serve(async (req) => {
         .eq("order_id", row.order_id).eq("supplier_id", supplier.id)
         .order("attempt_number", { ascending: false }).limit(1).maybeSingle();
       if (attemptError || !attempt || attempt.supplier_order_uuid !== uuid) {
+        await admin.from("order_fulfillment").update({
+          dispatch_state: "awaiting_result", supplier_status: "processing",
+          next_retry_at: new Date(Date.now() + 300000).toISOString(),
+          failure_reason: "Reconciliation paused: supplier attempt UUID does not match fulfillment UUID",
+        }).eq("order_id", row.order_id);
         summary.unknown++;
         console.warn("BARAN_HOMSCARD_RECONCILE_ATTEMPT_MISMATCH", row.order_id);
         continue;
@@ -137,6 +142,11 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      const { error: deliveryError } = await admin.from("order_fulfillment").update({
+        supplier_delivery: result.delivery,
+      }).eq("order_id", row.order_id).eq("supplier_order_uuid", uuid);
+      if (deliveryError) throw new Error("Supplier delivery could not be stored: " + deliveryError.message);
+
       const unitCost = result.totalCost / result.quantity;
       const { error: finalizeError } = await admin.rpc("baran_supplier_finalize_order", {
         p_order_id: row.order_id, p_result: "succeeded",
@@ -145,16 +155,7 @@ Deno.serve(async (req) => {
         p_reason: null,
       });
       if (finalizeError) throw new Error("Success settlement RPC failed: " + finalizeError.message);
-
-      const { error: deliveryError } = await admin.from("order_fulfillment").update({
-        supplier_delivery: result.delivery,
-      }).eq("order_id", row.order_id).eq("supplier_order_uuid", uuid);
-      if (deliveryError) {
-        console.error("BARAN_HOMSCARD_DELIVERY_SAVE_FAILED", row.order_id, deliveryError.message);
-        summary.errors++;
-      } else {
-        summary.completed++;
-      }
+      summary.completed++;
     } catch (error) {
       summary.errors++;
       const message = error instanceof Error ? error.message : String(error);
