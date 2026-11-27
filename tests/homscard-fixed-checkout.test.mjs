@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const gateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
+const migration = await readFile(new URL("../supabase/migrations/20261127000200_homscard_fixed_order_lifecycle.sql", import.meta.url), "utf8");
 const fixedUi = await readFile(new URL("../baran-homscard-fixed-checkout.js", import.meta.url), "utf8");
 const variableUi = await readFile(new URL("../baran-homscard-instant-apps-20261127-v3.js", import.meta.url), "utf8");
 
@@ -45,7 +46,6 @@ test("fixed and variable products use separate customer interfaces", () => {
   assert.match(fixedUi, /action:"homscard_fixed_create_order"/);
 });
 
-const migration = await readFile(new URL("../supabase/migrations/20261127000200_homscard_fixed_order_lifecycle.sql", import.meta.url), "utf8");
 
 test("fixed order RPC is transactional, idempotent, and service-role only", () => {
   assert.match(migration, /baran_create_homscard_fixed_order/);
