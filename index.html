@@ -3794,6 +3794,9 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <div class="finance-section-heading"><div><span class="finance-kicker">OVERVIEW</span><h3>ملخص الحسابات</h3><p class="small">الأرقام المسجلة في النظام، دون احتساب أرصدة الزبائن ضمن أموال المتجر.</p></div><span class="finance-section-icon">💼</span></div>
           <div id="financeSummary" class="finance-grid">جاري تحميل الحسابات...</div>
         </section>
+        <section class="finance-section finance-pricing-policy-section">
+          <div id="financePricingPolicyMount"><p class="small">جاري تحميل سياسة التسعير...</p></div>
+        </section>
         <section class="finance-section finance-treasury-section">
           <div class="finance-section-heading"><div><span class="finance-kicker">CASH TREASURY</span><h3>الخزينة الفعلية</h3><p class="small">تتبع النقد الموجود فعلياً لدى المتجر. الرصيد بالدولار منفصل عن الليرة، ومحافظ الزبائن ومالية BARO غير داخلة هنا.</p></div><span class="finance-section-icon">🏦</span></div>
           <div id="treasurySummary" class="finance-grid">جاري تحميل الخزينة...</div>
@@ -6982,6 +6985,7 @@ async function loadAdminPanel(){
     if(typeof renderOperationsDashboard==="function")renderOperationsDashboard(result);
     if(typeof renderAdminNotifications==="function")renderAdminNotifications(result.notifications||[]);
     renderFinance(result.finance||{});
+    if(typeof window.renderFinancePricingPolicy==="function")window.renderFinancePricingPolicy(result);
     if(typeof window.renderTreasury==="function")window.renderTreasury(result.treasury||{});
     if(typeof renderAdminFeedback==="function")renderAdminFeedback(result.feedback||[]);
     renderBaranAutoSupportQueue(result.auto_support_queue||[],result.feedback||[]);
@@ -8930,6 +8934,7 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 <script src="./android-back-navigation.js?v=20261124-guest-back-fix-1"></script>
 <script src="./loyalty-coupons.js?v=20261121-club-v4"></script>
 <script src="./finance-treasury.js?v=20261122-treasury-v1"></script>
+<script src="./finance-pricing.js?v=20261127-policy-v1"></script>
 <script>
 (function(){
   let baranDeferredInstallPrompt=null;
