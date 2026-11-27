@@ -166,7 +166,7 @@
          String(data?.quote?.product_name??"").trim()!==String(requestedProduct.name??"").trim()) {
         throw new Error("تعذر مطابقة المنتج مع تسعيرة المورد. حدّث الصفحة وحاول مجدداً؛ لم يتم إنشاء طلب أو خصم رصيد.");
       }
-      quote=data.quote;
+      quote={...data.quote,can_create_order:data.can_create_order===true,can_purchase:data.can_purchase===true};
       const amount=requestedCurrency==="USD"?money(quote.sale_usd)+" $":Number(quote.sale_syp||0).toLocaleString("en-US")+" ل.س جديدة";
       const quotedUnit=Number(quote.sale_usd||0)/Number(quote.quantity||requestedQuantity);
       const unitAmount=requestedCurrency==="USD"?money(quotedUnit)+" $ / وحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س جديدة / وحدة";
@@ -174,8 +174,10 @@
       if(productMeta)productMeta.textContent=requestedCurrency==="USD"?money(quotedUnit)+" $ للوحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س جديدة للوحدة";
       $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","",amount),el("small","",unitAmount+" · "+Number(quote.quantity).toLocaleString("en-US")+" وحدة"));
       const needsTarget=requestedProduct.requires_target&&playerId.length<2;
-      $("baranIaPurchase").disabled=needsTarget;
-      showMessage($("baranIaStatus"),needsTarget?"تم تحديث السعر. أدخل معرّف الحساب لتفعيل متابعة الطلب.":"تم تحديث السعر تلقائياً حسب الكمية.",false);
+      const purchaseAllowed=quote.can_create_order===true&&quote.can_purchase===true;
+      $("baranIaPurchase").disabled=needsTarget||!purchaseAllowed;
+      if(!purchaseAllowed)$("baranIaPurchase").textContent="الشراء غير مفعّل حالياً";
+      showMessage($("baranIaStatus"),needsTarget?"تم تحديث السعر. أدخل معرّف الحساب المطلوب.":purchaseAllowed?"تم تحديث السعر وأصبحت مراجعة الطلب متاحة.":"تم تحديث السعر بنجاح. هذه معاينة فقط؛ الشراء والخصم مغلقان حالياً.",false);
     }catch(error){
       if(sequence!==quoteSequence)return;
       quote=null;$("baranIaPurchase").disabled=true;showMessage($("baranIaStatus"),error.message,true);
@@ -183,6 +185,7 @@
   }
   async function createOrder(){
     if(!activeProduct||!quote)return;
+    if(quote.can_create_order!==true||quote.can_purchase!==true){showMessage($("baranIaStatus"),"السعر محسوب بنجاح، لكن بوابة الشراء مغلقة حالياً. لم يتم إنشاء طلب أو خصم رصيد.",true);$("baranIaPurchase").disabled=true;return;}
     const playerId=$("baranIaPlayer").value.trim();
     if(activeProduct.requires_target&&playerId.length<2){showMessage($("baranIaStatus"),"أدخل بيانات الحساب المطلوبة أولاً.",true);return;}
     if(!activeRequestId)activeRequestId=crypto.randomUUID();
