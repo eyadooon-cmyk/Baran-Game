@@ -221,7 +221,7 @@ Deno.serve(async (req: Request) => {
         const saleUsd=Number((Number(m.unit_cost)*(1+markup/100)).toFixed(2));
         if(!(saleUsd>0)||Math.abs(Number(p.price_usd)-saleUsd)>0.000001)continue;
         const saleSyp=Number((saleUsd*marketRate*(1+buffer/100)/100).toFixed(2));
-        ready.push({product_code:p.product_code,name:p.name,description:p.description,category:p.category,
+        ready.push({product_id:p.id,product_code:p.product_code,name:p.name,description:p.description,category:p.category,
           supplier_sku:String(m.supplier_sku),target_label:"Player ID",sale_usd:saleUsd,sale_syp:saleSyp,
           currency,can_purchase:false});
       }
