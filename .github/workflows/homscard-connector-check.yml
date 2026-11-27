@@ -13,7 +13,7 @@ on:
       - "tests/homscard-fixed-checkout.test.mjs"
       - "tests/homscard-fixed-transaction-simulation.test.mjs"
       - "tests/postgres/homscard-fixed-order.integration.sql"
-      - "baran-homscard-fixed-checkout.js"
+      - "baran-homscard-fixed-checkout.js"\n      - "baran-homscard-player-name-check.js"\n      - "tests/homscard-player-name-check.test.mjs"
       - "baran-homscard-instant-apps-20261127-v3.js"
       - "homscard-analysis.js"
       - "homscard-intelligence.js"
@@ -89,4 +89,4 @@ jobs:
           node --check homscard-intelligence.js
           node --check baran-homscard-instant-apps.js
           node --check baran-homscard-instant-apps-20261127-v3.js
-          node --check baran-homscard-fixed-checkout.js
+          node --check baran-homscard-fixed-checkout.js\n          node --check baran-homscard-player-name-check.js
