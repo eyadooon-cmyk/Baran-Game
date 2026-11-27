@@ -9,7 +9,7 @@ const variableUi = await readFile(new URL("../baran-homscard-instant-apps-202611
 test("fixed HomsCard catalog is separate from variable quantity catalog", () => {
   assert.match(gateway, /homscard_fixed_catalog/);
   assert.match(gateway, /homscard_fixed_quote/);
-  assert.match(gateway, /catalog_group",null/);
+  assert.match(gateway, /catalog_group\.is\.null,catalog_group\.eq\.homscard_fixed/);
   assert.match(gateway, /data\.product_type!=="package"/);
   assert.match(gateway, /homscard_variable_catalog/);
 });
