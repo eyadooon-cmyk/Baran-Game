@@ -18,7 +18,7 @@ test("fixed HomsCard products require a fresh supplier audit and matching suppli
   assert.match(gateway, /Date\.now\(\)-24\*60\*60\*1000/);
   assert.match(gateway, /Math\.abs\(Number\(data\.price\)-Number\(m\.unit_cost\)\)>0\.000001/);
   assert.match(gateway, /MEMBERSHIP\|SUBSCRIPTION\|WEEKLY/);
-  assert.match(gateway, /is_preferred",true/);
+  assert.match(gateway, /is_preferred",true/);\n  assert.match(gateway, /JAWAKER_TOKENS/);\n  assert.match(migration, /\\^JAWAKER_TOKENS\\$/);
   assert.match(gateway, /target_label:"Player ID"/);
 });
 
