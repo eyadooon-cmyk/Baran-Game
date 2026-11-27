@@ -106,7 +106,7 @@ begin
   select * into v_existing from public.orders
    where user_id=p_user_id and client_request_id=p_request_id for update;
   if found then
-    if v_existing.product_code <> 'HOMSCARD_VAR_'||p_product_id
+    if v_existing.product_code <> ('HOMSCARD_VAR_'||p_product_id)
        or v_existing.quantity <> p_quantity
        or v_existing.payment_currency <> p_payment_currency
        or coalesce(v_existing.player_id,'') <> coalesce(nullif(btrim(coalesce(p_player_id,'')),''),'') then
