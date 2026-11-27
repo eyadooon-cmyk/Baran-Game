@@ -52,6 +52,7 @@ test("fixed order RPC is transactional, idempotent, and service-role only", () =
   assert.match(migration, /for update/);
   assert.match(migration, /wallet_transactions/);
   assert.match(migration, /baran_supplier_prepare_order/);
+  assert.match(migration, /supplier_id.*is distinct from v_supplier_id/);
   assert.match(migration, /execution_enabled/);
   assert.match(migration, /revoke all on function public\.baran_create_homscard_fixed_order/);
   assert.match(migration, /to service_role/);
