@@ -8155,8 +8155,8 @@ async function baranRenderJawakerQuantityCalculator(card,product){
       if(error)throw error;
       if(!data?.success||!data?.quote)throw new Error(data?.error||"تعذر حساب السعر.");
       const q=data.quote;
-      const lines=["الكمية: "+Number(q.quantity).toLocaleString("en-US")+" توكن","سعر البيع: "+(currency.value==="USD"?formatMoney(q.sale_usd,2)+" $":formatMoney(Number(q.sale_syp)/100,0)+" ل.س جديدة"),"سعر الصرف التجاري: "+formatMoney(Number(q.commercial_rate)/100,2)+" ل.س جديدة لكل دولار","هامش الربح المطبق: "+formatMoney(q.markup_percent,2)+"%"];
-      if(q.is_admin){lines.push("تكلفة المورد: "+formatMoney(q.cost_usd,4)+" $","الربح المتوقع: "+formatMoney(q.profit_usd,4)+" $ · "+formatMoney(Number(q.profit_syp)/100,0)+" ل.س جديدة");}
+      const lines=["الكمية: "+Number(q.quantity).toLocaleString("en-US")+" توكن","سعر البيع: "+(currency.value==="USD"?formatMoney(q.sale_usd,2)+" $":formatMoney(Number(q.sale_syp),0)+" ل.س جديدة"),"سعر الصرف التجاري: "+formatMoney(Number(q.commercial_rate),2)+" ل.س جديدة لكل دولار","هامش الربح المطبق: "+formatMoney(q.markup_percent,2)+"%"];
+      if(q.is_admin){lines.push("تكلفة المورد: "+formatMoney(q.cost_usd,4)+" $","الربح المتوقع: "+formatMoney(q.profit_usd,4)+" $ · "+formatMoney(Number(q.profit_syp),0)+" ل.س جديدة");}
       lines.push("معاينة فقط — الشراء والشحن والخصم غير مفعّلة.");
       result.textContent=lines.join("\n");
     }catch(error){result.textContent=error?.message||"تعذر حساب السعر. حاول مجدداً.";}
