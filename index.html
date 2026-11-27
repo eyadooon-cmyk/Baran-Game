@@ -9339,22 +9339,27 @@ function renderBaranHomsCardAppsCatalog(){
   const root=document.getElementById("appsProductCatalog");
   if(!root)return;
   const items=[
-    {id:"18",name:"Bigo",description:"شحن رصيد Bigo Live لاستخدامه في البث المباشر والتفاعل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/8215a119605b301eef539b3981dce41fc147bbf1_360.webp",min:50,max:1000000},
-    {id:"280",name:"Chamet Live",description:"شحن رصيد Chamet للتفاعل مع البث المباشر وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/c43818544a6c65b201ff47c4a386b34d3237166d_360.webp",min:15000,max:50000000},
-    {id:"49",name:"Hawa",description:"شحن رصيد Hawa للمحادثات والتواصل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/50e023e8d8343a79a06a8a719e204193cf2e0ffe_360.webp",min:1000,max:1000000},
-    {id:"37",name:"Mico Live",description:"شحن رصيد Mico Live لدعم البث المباشر والتفاعل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/df7cf64a47353642a75ebedfe1254017a8cd1ce7_360.webp",min:100,max:10000000},
-    {id:"3",name:"Poppo Live",description:"شحن رصيد Poppo Live للتفاعل مع المضيفين وإرسال الهدايا في البث.",image:"https://homscard.com/uploads/thumbs/387aa56f3cf5e2916321607792fcbf61ec3456cd_360.webp",min:100,max:10000000},
-    {id:"1",name:"Soul Chill Crystal",description:"شحن كريستالات Soul Chill لاستخدامها في مزايا وتفاعلات التطبيق.",image:"https://homscard.com/uploads/thumbs/9efc0a7f4942f348985d6907e4f0f41842f3725c_360.webp",min:1000,max:600000},
-    {id:"45",name:"Taka",description:"شحن رصيد Taka للمحادثات والتفاعل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/d6bcb526074f5d70696bd9f0dfa53e3189d8ac90_360.webp",min:100,max:10000000},
-    {id:"8",name:"Tango",description:"شحن رصيد Tango Live للتفاعل مع البث المباشر وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/698f48989f407f95dd8f160ed2f4b3424356d7c4_360.webp",min:200,max:500000},
-    {id:"43",name:"Top Top",description:"شحن رصيد TopTop للألعاب الاجتماعية والتواصل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/e98c40acc9e161b79be5a9d1f9e4e2eb2c0a58fe_360.webp",min:15000,max:25000000},
-    {id:"25",name:"Yoho",description:"شحن رصيد YOHO للمحادثات الصوتية والغرف وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/9f6d1faf6d4946eed40e719cfd6051079e2f3823_360.webp",min:10000,max:5000000},
-    {id:"893",name:"سوجو - Sugo",description:"شحن رصيد SUGO للمحادثات والتواصل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/6fd5276df01b52f631a696c652f4f341297098ea_360.webp",min:10000,max:4000000},
-    {id:"910",name:"لايكي - Likee",description:"شحن رصيد Likee لاستخدامه في البث المباشر ودعم صناع المحتوى بالهدايا.",image:"https://homscard.com/uploads/thumbs/2db94c85544a2b1d538042e08564fc9f1c914cbb_360.webp",min:50,max:50000},
-
+    {id:"18",name:"Bigo",description:"شحن رصيد Bigo Live لاستخدامه في البث المباشر والتفاعل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/8215a119605b301eef539b3981dce41fc147bbf1_360.webp",min:50,max:1000000,input:"Player ID"},
+    {id:"280",name:"Chamet Live",description:"شحن رصيد Chamet للتفاعل مع البث المباشر وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/c43818544a6c65b201ff47c4a386b34d3237166d_360.webp",min:15000,max:10000000,input:"Player ID"},
+    {id:"49",name:"Hawa",description:"شحن رصيد Hawa للمحادثات والتواصل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/50e023e8d8343a79a06a8a719e204193cf2e0ffe_360.webp",min:1000,max:1000000,input:"Player ID"},
+    {id:"37",name:"Mico Live",description:"شحن رصيد Mico Live لدعم البث المباشر والتفاعل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/df7cf64a47353642a75ebedfe1254017a8cd1ce7_360.webp",min:100,max:10000000,input:"Player ID"},
+    {id:"3",name:"Poppo Live",description:"شحن رصيد Poppo Live للتفاعل مع المضيفين وإرسال الهدايا في البث.",image:"https://homscard.com/uploads/thumbs/387aa56f3cf5e2916321607792fcbf61ec3456cd_360.webp",min:100,max:10000000,input:"Player ID"},
+    {id:"1",name:"Soul Chill Crystal",description:"شحن كريستالات Soul Chill لاستخدامها في مزايا وتفاعلات التطبيق.",image:"https://homscard.com/uploads/thumbs/9efc0a7f4942f348985d6907e4f0f41842f3725c_360.webp",min:1000,max:600000,input:"Player ID"},
+    {id:"45",name:"Taka",description:"شحن رصيد Taka للمحادثات والتفاعل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/d6bcb526074f5d70696bd9f0dfa53e3189d8ac90_360.webp",min:100,max:10000000,input:"Player ID"},
+    {id:"8",name:"Tango",description:"شحن رصيد Tango Live للتفاعل مع البث المباشر وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/698f48989f407f95dd8f160ed2f4b3424356d7c4_360.webp",min:200,max:150000,input:"Player ID"},
+    {id:"43",name:"Top Top",description:"شحن رصيد TopTop للألعاب الاجتماعية والتواصل وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/e98c40acc9e161b79be5a9d1f9e4e2eb2c0a58fe_360.webp",min:15000,max:25000000,input:"Player ID"},
+    {id:"25",name:"Yoho",description:"شحن رصيد YOHO للمحادثات الصوتية والغرف وإرسال الهدايا.",image:"https://homscard.com/uploads/thumbs/9f6d1faf6d4946eed40e719cfd6051079e2f3823_360.webp",min:10000,max:5000000,input:"Player ID"},
+    {id:"893",name:"سوجو - Sugo",description:"شحن رصيد SUGO للمحادثات والتواصل وإرسال الهدايا داخل التطبيق.",image:"https://homscard.com/uploads/thumbs/6fd5276df01b52f631a696c652f4f341297098ea_360.webp",min:10000,max:4000000,input:"ID User"},
+    {id:"910",name:"لايكي - Likee",description:"شحن رصيد Likee لاستخدامه في البث المباشر ودعم صناع المحتوى بالهدايا.",image:"https://homscard.com/uploads/thumbs/2db94c85544a2b1d538042e08564fc9f1c914cbb_360.webp",min:50,max:50000,input:"USER ID"}
   ];
-  const card=p=>'<article class="baran-hc-app-card" data-search="'+(p.name+" "+p.id).toLowerCase()+'"><div class="baran-hc-app-image"><div class="baran-hc-app-image-frame">'+(p.image?'<img src="'+p.image+'" alt="'+p.name+'" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML=\'<span>📱</span>\'">':'<span>📱</span>')+'</div><span class="baran-hc-app-image-glow" aria-hidden="true"></span></div><div class="baran-hc-app-copy"><strong>'+p.name+'</strong><p class="baran-hc-app-description">'+p.description+'</p><div class="baran-hc-app-meta"><span>HomsCard</span><span>#'+p.id+'</span></div>'+(p.package?'<div class="baran-hc-app-qty">باقة ثابتة حسب كتالوج المورد</div>':'<div class="baran-hc-app-qty">الكمية: '+p.min.toLocaleString("en-US")+' – '+p.max.toLocaleString("en-US")+'</div>')+'<span class="baran-hc-app-state">معاينة المورد · قيد اعتماد باقات باران</span></div></article>';
-  root.innerHTML='<div class="baran-hc-apps-intro"><strong>شحن تطبيقات البث والتواصل — HomsCard</strong><br>هنا تجد خدمات شحن الرصيد والعملات داخل تطبيقات البث والمحادثات والألعاب الاجتماعية. اختر التطبيق المطلوب لمعرفة خدمته، وتذكّر أن هذه معاينة لمنتجات المورد فقط؛ الأسعار والشراء والشحن غير مفعّلة حتى اعتماد باقات باران.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في تطبيقات حمص كارد"><div class="baran-hc-apps-group"><h3>تطبيقات البث المباشر والتواصل <small>12 خدمة شحن</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.filter(p=>!p.package).map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
+  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const card=p=>'<article class="baran-hc-app-card" data-product-id="'+p.id+'" data-search="'+esc((p.name+" "+p.id).toLowerCase())+'"><div class="baran-hc-app-image"><div class="baran-hc-app-image-frame"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML=\'<span>📱</span>\'"></div><span class="baran-hc-app-image-glow" aria-hidden="true"></span></div><div class="baran-hc-app-copy"><strong>'+esc(p.name)+'</strong><p class="baran-hc-app-description">'+esc(p.description)+'</p><div class="baran-hc-app-meta"><span>HomsCard</span><span>#'+p.id+'</span></div><div class="baran-hc-app-qty">الكمية المتاحة: '+p.min.toLocaleString("en-US")+' – '+p.max.toLocaleString("en-US")+'</div><span class="baran-hc-app-state">حاسبة كمية وتسعير مباشر · معاينة فقط</span></div></article>';
+  root.innerHTML='<div class="baran-hc-apps-intro"><strong>شحن تطبيقات البث والتواصل — HomsCard</strong><br>اختر الكمية بنفسك، وشاهد السعر بالدولار والليرة السورية الجديدة قبل أي خطوة. الحاسبة للمعاينة فقط ولا تنشئ طلباً ولا تخصم رصيداً.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في تطبيقات حمص كارد"><div class="baran-hc-apps-group"><h3>تطبيقات البث المباشر والتواصل <small>12 خدمة شحن بكمية متغيرة</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
+  const grid=root.querySelector("#baranHomsAppsGrid");
+  items.forEach(p=>{
+    const article=grid.querySelector('[data-product-id="'+p.id+'"]');
+    if(article)baranRenderHomsCardAppQuantityQuote(article,p);
+  });
   const search=root.querySelector(".baran-hc-apps-search");
   search.addEventListener("input",()=>{
     const q=search.value.trim().toLowerCase();let shown=0;
@@ -9363,6 +9368,45 @@ function renderBaranHomsCardAppsCatalog(){
     root.querySelector("#baranHomsAppsNoResults").hidden=shown>0;
   });
 }
+function baranRenderHomsCardAppQuantityQuote(card,p){
+  const panel=document.createElement("section");panel.className="baran-app-quantity-quote";
+  panel.style.cssText="display:grid;gap:9px;padding:11px;margin:10px;border:1px solid #6b4c91;border-radius:12px;background:#17111f;color:#f4eafa";
+  const label=document.createElement("label");label.textContent=p.input;
+  const player=document.createElement("input");player.type="text";player.autocomplete="off";player.maxLength=100;player.placeholder="أدخل "+p.input;player.style.cssText="width:100%;box-sizing:border-box;padding:10px;border:1px solid #665078;border-radius:9px;background:#0d0a12;color:#fff";
+  label.append(player);
+  const qtyLabel=document.createElement("label");qtyLabel.textContent="الكمية";
+  const step=p.min>=10000?10000:p.min>=1000?1000:p.min>=200?100:p.min;
+  const row=document.createElement("div");row.style.cssText="display:grid;grid-template-columns:42px minmax(0,1fr) 42px;gap:7px;align-items:center";
+  const minus=document.createElement("button");minus.type="button";minus.textContent="−";minus.setAttribute("aria-label","تقليل الكمية");
+  const qty=document.createElement("input");qty.type="number";qty.inputMode="numeric";qty.min=String(p.min);qty.max=String(p.max);qty.step=String(step);qty.value=String(p.min);qty.style.cssText="min-width:0;width:100%;box-sizing:border-box;text-align:center;padding:11px 5px;border:1px solid #80619a;border-radius:9px;background:#0d0a12;color:#fff;font-weight:800";
+  const plus=document.createElement("button");plus.type="button";plus.textContent="+";plus.setAttribute("aria-label","زيادة الكمية");
+  [minus,plus].forEach(b=>b.style.cssText="height:42px;border:1px solid #80619a;border-radius:10px;background:#352342;color:#fff;font-size:22px;font-weight:900");
+  const normalize=()=>{let n=Number(qty.value);if(!Number.isFinite(n))n=p.min;n=Math.min(p.max,Math.max(p.min,Math.round(n/step)*step));qty.value=String(n);return n;};
+  minus.addEventListener("click",()=>{qty.value=String(Math.max(p.min,normalize()-step));});
+  plus.addEventListener("click",()=>{qty.value=String(Math.min(p.max,normalize()+step));});
+  qty.addEventListener("change",normalize);row.append(minus,qty,plus);qtyLabel.append(row);
+  const shortcuts=document.createElement("div");shortcuts.style.cssText="display:flex;flex-wrap:wrap;gap:6px";
+  [200000,500000,1000000].filter(n=>n>=p.min&&n<=p.max).forEach(n=>{const b=document.createElement("button");b.type="button";b.textContent=n===1000000?"مليون":n.toLocaleString("ar-EG");b.style.cssText="padding:6px 9px;border:1px solid #70528a;border-radius:8px;background:#291c35;color:#e9d8f6";b.addEventListener("click",()=>qty.value=String(n));shortcuts.append(b);});
+  const currency=document.createElement("select");currency.style.cssText="width:100%;padding:10px;border:1px solid #665078;border-radius:9px;background:#0d0a12;color:#fff";currency.innerHTML='<option value="SYP">الليرة السورية الجديدة</option><option value="USD">الدولار</option>';
+  const button=document.createElement("button");button.type="button";button.textContent="احسب السعر";button.style.cssText="padding:11px;border:0;border-radius:9px;background:#8b5bb1;color:#fff;font-weight:800";
+  const result=document.createElement("div");result.className="baran-app-quote-result";result.style.cssText="font-size:12px;line-height:1.8;color:#e7d8f1";
+  button.addEventListener("click",async()=>{
+    if(typeof sb==="undefined"||!currentUser){result.textContent="سجّل الدخول أولاً لحساب السعر.";return;}
+    const amount=normalize(),playerId=player.value.trim();
+    if(playerId.length<2){result.textContent="أدخل "+p.input+" بشكل صحيح.";return;}
+    button.disabled=true;button.textContent="جاري حساب السعر…";result.textContent="";
+    try{
+      const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{action:"homscard_app_quote",product_id:p.id,quantity:amount,player_id:playerId,payment_currency:currency.value}});
+      if(error)throw error;
+      if(!data?.success||!data.quote)throw new Error(data?.error||"تعذر حساب السعر.");
+      const q=data.quote;
+      result.textContent="السعر: "+Number(q.sale_usd).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" USD · "+(Number(q.sale_syp)/100).toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س جديدة"+(q.is_admin?" · تكلفة المورد: $"+Number(q.cost_usd).toFixed(4)+" · الربح: $"+Number(q.profit_usd).toFixed(4):"")+" — معاينة فقط، لا يوجد طلب أو خصم.";
+    }catch(e){result.textContent=e?.message||"تعذر حساب السعر حالياً.";}
+    finally{button.disabled=false;button.textContent="احسب السعر";}
+  });
+  panel.append(label,qtyLabel,shortcuts,currency,button,result);card.append(panel);
+}
+
 </script>
 
 <style id="baran-telecom-cards-preview-20261127">
