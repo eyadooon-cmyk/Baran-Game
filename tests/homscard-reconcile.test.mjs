@@ -165,3 +165,14 @@ test("supplier response parser receives the complete payload and searches exact 
   assert.match(gateway, /settle\(checked\.payload\)/);
   assert.match(gateway, /normalizeHomsCardCreate\(sent\.payload,supplierUuid,quantity\)/);
 });
+
+
+const precisionMigration = await readFile(new URL("../supabase/migrations/20261128010000_homscard_supplier_cost_precision.sql", import.meta.url), "utf8");
+
+test("supplier settlement preserves eight-decimal unit and total cost precision with service-only execution", () => {
+  assert.match(precisionMigration, /supplier_unit_cost type numeric\(20,8\)/);
+  assert.match(precisionMigration, /supplier_total_cost type numeric\(20,8\)/);
+  assert.match(precisionMigration, /v_total_cost:=round\(p_supplier_unit_cost\*v_order\.quantity,8\)/);
+  assert.match(precisionMigration, /revoke all on function public\.baran_supplier_finalize_order[\s\S]*from public, anon, authenticated/i);
+  assert.match(precisionMigration, /grant execute on function public\.baran_supplier_finalize_order[\s\S]*to service_role/i);
+});
