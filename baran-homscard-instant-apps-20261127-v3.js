@@ -137,7 +137,7 @@
     $("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","مراجعة طلبك"),el("small","",productUnitPrice(product)+" للوحدة"));
     const targetInput=$("baranIaPlayer"),targetLabel=document.querySelector('label[for="baranIaPlayer"]');
     targetInput.value="";targetInput.required=!!product.requires_target;targetInput.hidden=!product.requires_target;
-    targetInput.placeholder=product.target_label||"أدخل بيانات الحساب";targetLabel.hidden=!product.requires_target;targetLabel.textContent=product.target_label||"بيانات الحساب";
+    targetInput.placeholder=product.target_label||"أدخل بيانات الحساب";targetLabel.hidden=!product.requires_target;targetLabel.textContent=product.target_label||"بيانات الحساب";\n     window.BaranPlayerNameCheck?.attach(targetInput,{product_code:product.product_code,name:product.name});
     $("baranIaStatus").textContent="";$("baranIaCurrency").value=paymentCurrency;$("baranIaPurchase").disabled=true;$("baranIaPurchase").textContent="تأكيد الطلب والشحن";$("baranIaCheck").hidden=true;
     $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","","أدخل الكمية لحساب السعر."));
     const presets=$("baranIaPresets");presets.replaceChildren(el("small","baran-ia-presets-label","كميات سريعة — اختيارات للكمية وليست باقات ثابتة"));
