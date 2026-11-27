@@ -30,7 +30,7 @@ test("Pricing policy updates are validated server-side and audited", () => {
 test("Finance hub loads the dedicated pricing policy and HomsCard USD preview", () => {
   assert.match(index, /id="financePricingPolicyMount"/);
   assert.match(index, /renderFinancePricingPolicy\(result\)/);
-  assert.match(index, /finance-pricing\.js\?v=20261127-fx-upward-only-v2/);
+  assert.match(index, /finance-pricing\.js\?v=20261127-new-syp-v1/);
   assert.match(pricing, /String\(supplier\.name \|\| ""\).*homscard/);
   assert.match(pricing, /link\.currency \|\| ""\).*USD/);
   assert.match(pricing, /product_markup_percent/);
@@ -38,15 +38,14 @@ test("Finance hub loads the dedicated pricing policy and HomsCard USD preview", 
   assert.match(pricing, /لا يتم تغيير أسعار المنتجات الحالية/);
 });
 
-test("Preview reports gross spread against market cost, not a net-profit claim", () => {
-  assert.match(pricing, /profitSyp: saleUsd \* commercial - costUsd \* market/);
+test("Preview reports gross spread against market cost in new SYP, not a net-profit claim", () => {
+  assert.match(pricing, /profitSyp: \(saleUsd \* commercial - costUsd \* market\) \/ 100/);
   assert.match(pricing, /الفارق الإجمالي قبل الرسوم/);
   assert.match(pricing, /إعادة شراء الدولار/);
 });
 
-
 test("All customer-facing HomsCard prices are converted to new SYP", () => {
-  assert.match(pricing, /سعر الدولار بالسوق السورية \\(ل\\.س جديدة\\)/);
-  assert.match(pricing, /saleSyp: saleUsd \\* commercial \\/ 100/);
-  assert.match(pricing, /syp\\(Number\\(state\\.applied_rate_old\\)\\/100\\)/);
+  assert.match(pricing, /سعر الدولار بالسوق السورية \(ل\.س جديدة\)/);
+  assert.match(pricing, /saleSyp: saleUsd \* commercial \/ 100/);
+  assert.match(pricing, /syp\(Number\(state\.applied_rate_old\)\/100\)/);
 });
