@@ -42,8 +42,7 @@ begin
     into current_price
     from public.products p
    where p.product_code = new.product_code
-     and p.is_active = true
-   and p.product_code <> 'JAWAKER_TOKENS';
+     and p.is_active = true;
 
   if current_price is null or current_price <= 0 then
     raise exception 'Product is unavailable or has no valid USD price';
