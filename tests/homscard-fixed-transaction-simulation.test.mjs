@@ -146,8 +146,8 @@ test("variable catalog and quantities cannot enter the fixed transaction model",
 });
 
 test("production RPC keeps execution server-only and checks supplier gate before order insert", () => {
-  assert.match(migration, /revoke all on function public\\.baran_create_homscard_fixed_order[\\s\\S]*from public, anon, authenticated/i);
-  assert.match(migration, /grant execute on function public\\.baran_create_homscard_fixed_order[\\s\\S]*to service_role/i);
+  assert.match(migration, /revoke all on function public\.baran_create_homscard_fixed_order[\\s\\S]*from public, anon, authenticated/i);
+  assert.match(migration, /grant execute on function public\.baran_create_homscard_fixed_order[\\s\\S]*to service_role/i);
   const gate = migration.indexOf("not v_config.integration_enabled");
   const orderInsert = migration.indexOf("insert into public.orders");
   assert.ok(gate >= 0 && orderInsert > gate, "supplier gate must precede order insertion and wallet debit");
