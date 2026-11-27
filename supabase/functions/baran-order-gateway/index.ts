@@ -80,7 +80,7 @@ Deno.serve(async (req: Request) => {
       return json({ success: true, report });
     }
 
-    if (body?.action === "homscard_app_catalog") {
+    if ((body?.action === "homscard_app_catalog" || body?.action === "homscard_variable_catalog")) {
       const variableCategories = new Set(["ألعاب", "تطبيقات", "اتصالات", "محافظ"]);
       const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
         .select("product_id,product_name,product_data,page_data,page_status,updated_at")
@@ -109,15 +109,15 @@ Deno.serve(async (req: Request) => {
         const images = [data.image_url,data.image,data.img,data.photo,page.images?.[0]].filter(v => typeof v === "string");
         const image = images.find(v => /^https:\/\//i.test(v)) ?? "";
         result.push({
-          product_id: id, name: String(row.product_name || data.name || "تطبيق").slice(0, 100),
-          min_quantity: min, max_quantity: max, image,
+          product_id: id, name: String(row.product_name || data.name || "منتج").slice(0, 100),
+          category: String(data.category), min_quantity: min, max_quantity: max, image,
           sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
         });
       }
       return json({ success: true, products: result, provider: "HomsCard", mode: "read_only_catalog", scope: "all_variable_quantity_categories" });
     }
 
-    if (body?.action === "homscard_app_quote") {
+    if ((body?.action === "homscard_app_quote" || body?.action === "homscard_variable_quote")) {
       const productId = typeof body.product_id === "string" ? body.product_id.trim() : "";
       const quantity = Number(body.quantity);
       const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
