@@ -328,8 +328,8 @@ Deno.serve(async (req: Request) => {
           p_reason:String(sent.payload?.error?.message||"رفض HomsCard الطلب دون إنشاء شحنة.").slice(0,500),
         });
         if(finalizeError)throw finalizeError;
-        return json({success:false,order_id:orderId,status:"rejected",refunded:true,
-          error:String(sent.payload?.error?.message||"رفض HomsCard الطلب؛ تمت معالجة الاسترداد.")},400);
+        return json({success:true,order_id:orderId,status:"rejected",refunded:true,
+          message:String(sent.payload?.error?.message||"رفض HomsCard الطلب؛ تمت معالجة الاسترداد إلى محفظتك.")});
       }catch(error){
         console.error("HOMSCARD_ORDER_DISPATCH_UNCERTAIN",String(error));
         try{
