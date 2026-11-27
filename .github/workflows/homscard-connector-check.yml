@@ -10,6 +10,9 @@ on:
       - "supabase/migrations/*homscard*"
       - "tests/homscard-connector.test.mjs"
       - "tests/homscard-analysis.test.mjs"
+      - "tests/homscard-fixed-checkout.test.mjs"
+      - "baran-homscard-fixed-checkout.js"
+      - "baran-homscard-instant-apps-20261127-v3.js"
       - "homscard-analysis.js"
       - "homscard-intelligence.js"
       - "admin-operations.js"
@@ -38,6 +41,8 @@ jobs:
           node-version: 22
       - name: Run HomsCard safety and analysis tests
         run: node --test tests/homscard-connector.test.mjs tests/homscard-analysis.test.mjs
+      - name: Run fixed and variable checkout contract tests
+        run: node --test tests/homscard-fixed-checkout.test.mjs
       - uses: denoland/setup-deno@v2
       - name: Type-check HomsCard Edge Function
         run: |
@@ -49,3 +54,5 @@ jobs:
           node --check homscard-analysis.js
           node --check homscard-intelligence.js
           node --check baran-homscard-instant-apps.js
+          node --check baran-homscard-instant-apps-20261127-v3.js
+          node --check baran-homscard-fixed-checkout.js
