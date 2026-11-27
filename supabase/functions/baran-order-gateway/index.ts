@@ -209,7 +209,7 @@ Deno.serve(async (req: Request) => {
         const m:any=mappingByProduct.get(String(p.id));
         if(!m||m.currency!=="USD"||!Number.isFinite(Number(m.unit_cost))||Number(m.unit_cost)<=0)continue;
         // Subscription products are outside the approved current catalog.
-        if(/MEMBERSHIP|SUBSCRIPTION|WEEKLY/i.test(String(p.product_code)))continue;
+        if(/MEMBERSHIP|SUBSCRIPTION|WEEKLY/i.test(String(p.product_code))||String(p.product_code).toUpperCase()==="JAWAKER_TOKENS")continue;
         const audit=latestAudit.get(String(m.supplier_sku));
         const data=audit?.product_data??{},page=audit?.page_data??{};
         if(!audit||new Date(audit.updated_at).getTime()<Date.now()-24*60*60*1000||
