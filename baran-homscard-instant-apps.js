@@ -132,7 +132,10 @@
       if(sequence!==quoteSequence||activeProduct!==requestedProduct||quantity!==requestedQuantity||paymentCurrency!==requestedCurrency)return;
       quote=data.quote;
       const amount=requestedCurrency==="USD"?money(quote.sale_usd)+" $":Number(quote.sale_syp||0).toLocaleString("en-US")+" ل.س";
-      const unitAmount=requestedCurrency==="USD"?money(Number(quote.sale_usd||0)/Number(quote.quantity||requestedQuantity))+" $ / وحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س / وحدة";
+      const quotedUnit=Number(quote.sale_usd||0)/Number(quote.quantity||requestedQuantity);
+      const unitAmount=requestedCurrency==="USD"?money(quotedUnit)+" $ / وحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س / وحدة";
+      const productMeta=$("baranIaProduct")?.querySelector("small");
+      if(productMeta)productMeta.textContent=requestedCurrency==="USD"?money(quotedUnit)+" $ للوحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س للوحدة";
       $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","",amount),el("small","",unitAmount+" · "+Number(quote.quantity).toLocaleString("en-US")+" وحدة"));
       const needsTarget=requestedProduct.requires_target&&playerId.length<2;
       $("baranIaPurchase").disabled=needsTarget;
