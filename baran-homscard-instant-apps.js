@@ -121,6 +121,8 @@
     sections.forEach(([id,category])=>{
       const section=$(id);if(!section)return;
       let host=section.querySelector(".baran-variable-products");
+      if(!host&&id==="appsStore")host=$("appsProductCatalog");
+      if(host)host.classList.add("baran-variable-products");
       if(!host){
         host=el("div","deposit-card baran-service-catalog baran-variable-products");
         host.setAttribute("aria-live","polite");
