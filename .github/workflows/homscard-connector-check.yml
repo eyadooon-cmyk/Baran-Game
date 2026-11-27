@@ -29,7 +29,17 @@ on:
       - "baran-homscard-instant-apps.css"
       - "supabase/migrations/*homscard*"
       - "tests/homscard-connector.test.mjs"
+      - "tests/homscard-analysis.test.mjs"
+      - "tests/homscard-fixed-checkout.test.mjs"
       - "tests/homscard-fixed-transaction-simulation.test.mjs"
+      - "tests/postgres/homscard-fixed-order.integration.sql"
+      - "baran-homscard-fixed-checkout.js"
+      - "baran-homscard-instant-apps-20261127-v3.js"
+      - "homscard-analysis.js"
+      - "homscard-intelligence.js"
+      - "admin-operations.js"
+      - "index.html"
+      - ".github/workflows/homscard-connector-check.yml"
 
 permissions:
   contents: read
