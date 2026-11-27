@@ -4837,7 +4837,7 @@ async function refreshCurrentSection(){
       case "chatgptStore": await loadBaranServiceCatalog("ai","chatgptProductCatalog","باقات ChatGPT","🤖"); break;
       case "vpnStore": await loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️"); break;
       case "giftCardsStore": await loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁"); break;
-      case "appsStore": renderBaranHomsCardAppsCatalog(); break;
+      case "appsStore": if(typeof window.loadBaranInstantApps==="function")window.loadBaranInstantApps(); break;
       case "wallet": await loadWallet(); break;
       case "orders": await loadMyOrders(); break;
       case "rewards": if(typeof loadMyRewards==="function")await loadMyRewards(); break;
