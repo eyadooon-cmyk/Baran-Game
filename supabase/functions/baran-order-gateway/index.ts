@@ -362,31 +362,33 @@ Deno.serve(async (req: Request) => {
       const uuid=String(fulfillment.supplier_order_uuid);
       try{
         const checked=await homscardRequest("/check.php?uuid=1&orders="+encodeURIComponent(uuid),"GET");
-        const item=checked.payload?.status==="OK"&&Array.isArray(checked.payload?.data)?checked.payload.data[0]:null;
-        if(!item)return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"لم تصل نتيجة مؤكدة بعد؛ بقي الطلب قيد التحقق."});
-        const state=String(item.status||"").toLowerCase();
-        if(state==="completed"){
-          const unit=Number(item.price)/Number(order.quantity);
-          if(!Number.isFinite(unit)||unit<0)return json({success:false,error:"رد المورد غير مكتمل؛ الطلب يحتاج مراجعة الإدارة."},503);
+        const parsed=parseHomsCardCheck(checked.payload,uuid);
+        if(parsed.kind==="completed"){
+          if(parsed.quantity!==Number(order.quantity)||parsed.delivery.length>2000)
+            return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"رد المورد لا يطابق كمية الطلب أو بيانات التسليم؛ بقي قيد المراجعة."});
+          const {error:deliveryError}=await admin.from("order_fulfillment")
+            .update({supplier_delivery:parsed.delivery}).eq("order_id",orderId);
+          if(deliveryError)throw deliveryError;
           const {error}=await admin.rpc("baran_supplier_finalize_order",{
-            p_order_id:orderId,p_result:"succeeded",p_supplier_reference:String(item.order_id||uuid),
-            p_supplier_unit_cost:unit,p_cost_currency:"USD",p_reason:null,
+            p_order_id:orderId,p_result:"succeeded",p_supplier_reference:parsed.supplierOrderId,
+            p_supplier_unit_cost:parsed.totalCost/parsed.quantity,p_cost_currency:"USD",p_reason:null,
           });
           if(error)throw error;
-          if(item.delivery!==undefined&&item.delivery!==null)await admin.from("order_fulfillment")
-            .update({supplier_delivery:String(item.delivery).slice(0,2000)}).eq("order_id",orderId);
-          return json({success:true,order_id:orderId,status:"completed",delivery:item.delivery??null});
+          return json({success:true,order_id:orderId,status:"completed",delivery:parsed.delivery});
         }
-        if(state==="cancelled"){
+        if(parsed.kind==="failed"){
           const {error}=await admin.rpc("baran_supplier_finalize_order",{
-            p_order_id:orderId,p_result:"failed",p_supplier_reference:String(item.order_id||uuid),
+            p_order_id:orderId,p_result:"failed",p_supplier_reference:parsed.supplierOrderId,
             p_reason:"أكد HomsCard إلغاء الطلب.",
           });
           if(error)throw error;
           return json({success:true,order_id:orderId,status:"rejected",refunded:true});
         }
-        await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"ما زال الطلب pending لدى HomsCard."});
-        return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"الطلب ما زال قيد التنفيذ لدى المورد."});
+        const {error:unknownError}=await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",p_reason:parsed.reason||"ما زال الطلب pending لدى HomsCard.",
+        });
+        if(unknownError)throw unknownError;
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"الطلب ما زال قيد التحقق؛ لم نكرر الإرسال أو الاسترداد."});
       }catch(error){
         console.error("HOMSCARD_ORDER_POLL_FAILED",String(error));
         return json({success:false,order_id:orderId,status:"awaiting_supplier",error:"تعذر التحقق حالياً؛ لم نكرر الإرسال أو الاسترداد."},503);
