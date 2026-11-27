@@ -43,3 +43,10 @@ test("Preview reports gross spread against market cost, not a net-profit claim",
   assert.match(pricing, /الفارق الإجمالي قبل الرسوم/);
   assert.match(pricing, /إعادة شراء الدولار/);
 });
+
+
+test("All customer-facing HomsCard prices are converted to new SYP", () => {
+  assert.match(pricing, /سعر الدولار بالسوق السورية \\(ل\\.س جديدة\\)/);
+  assert.match(pricing, /saleSyp: saleUsd \\* commercial \\/ 100/);
+  assert.match(pricing, /syp\\(Number\\(state\\.applied_rate_old\\)\\/100\\)/);
+});
