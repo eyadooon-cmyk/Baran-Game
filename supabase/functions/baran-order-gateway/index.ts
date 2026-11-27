@@ -81,11 +81,11 @@ Deno.serve(async (req: Request) => {
     }
 
     if (body?.action === "homscard_app_catalog") {
-      const allowedAppIds = ["18","280","49","37","3","1","45","8","43","25","893","910"];
+      const variableCategories = new Set(["ألعاب", "تطبيقات", "اتصالات", "محافظ"]);
       const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
         .select("product_id,product_name,product_data,page_data,page_status,updated_at")
-        .in("product_id", allowedAppIds).eq("page_status", "success")
-        .order("updated_at", { ascending: false }).limit(96);
+        .eq("page_status", "success")
+        .order("updated_at", { ascending: false }).limit(1000);
       if (auditError) return json({ success: false, error: "تعذر تحميل كتالوج التطبيقات المعتمد." }, 503);
       const { data: settings, error: settingsError } = await admin.from("store_settings")
         .select("market_exchange_rate,fx_buffer_percent,product_markup_percent").eq("id", "main").maybeSingle();
@@ -96,9 +96,10 @@ Deno.serve(async (req: Request) => {
       const latest = new Map<string, any>();
       for (const row of auditRows ?? []) if (!latest.has(String(row.product_id))) latest.set(String(row.product_id), row);
       const result = [];
-      for (const id of allowedAppIds) {
-        const row = latest.get(id), data = row?.product_data ?? {}, page = row?.page_data ?? {};
-        if (!row || data.category !== "تطبيقات" || data.product_type !== "quantity" || data.available !== true ||
+      for (const [id, row] of latest) {
+        const data = row?.product_data ?? {}, page = row?.page_data ?? {};
+        if (!row || !variableCategories.has(String(data.category || "").trim()) ||
+            data.product_type !== "quantity" || data.available !== true ||
             !(Number(data.price) > 0) || typeof page.text !== "string") continue;
         const limits = String(page.text).match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
         if (!limits) continue;
@@ -113,16 +114,15 @@ Deno.serve(async (req: Request) => {
           sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
         });
       }
-      return json({ success: true, products: result, provider: "HomsCard", mode: "read_only_catalog" });
+      return json({ success: true, products: result, provider: "HomsCard", mode: "read_only_catalog", scope: "all_variable_quantity_categories" });
     }
 
     if (body?.action === "homscard_app_quote") {
       const productId = typeof body.product_id === "string" ? body.product_id.trim() : "";
-      const allowedAppIds = new Set(["18","280","49","37","3","1","45","8","43","25","893","910"]);
       const quantity = Number(body.quantity);
       const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
       const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
-      if (!allowedAppIds.has(productId)) return json({ success: false, error: "هذا التطبيق غير موجود ضمن قائمة الكميات المتغيرة المعتمدة." }, 404);
+      if (!/^[0-9]{1,10}$/.test(productId)) return json({ success: false, error: "معرّف المنتج غير صالح." }, 400);
       if (!Number.isSafeInteger(quantity) || quantity <= 0) return json({ success: false, error: "أدخل كمية صحيحة." }, 400);
       if (!playerId || playerId.length < 2 || playerId.length > 100) return json({ success: false, error: "أدخل معرّف الحساب المطلوب بشكل صحيح." }, 400);
       if (!["USD","SYP"].includes(currency)) return json({ success: false, error: "عملة الدفع غير مدعومة." }, 400);
@@ -133,13 +133,13 @@ Deno.serve(async (req: Request) => {
         .order("updated_at", { ascending: false }).limit(8);
       if (auditError) return json({ success: false, error: "تعذر قراءة تدقيق منتج HomsCard." }, 503);
       const audited = (auditRows ?? []).find((row: any) =>
-        row?.product_data?.category === "تطبيقات" &&
+        ["ألعاب", "تطبيقات", "اتصالات", "محافظ"].includes(String(row?.product_data?.category || "").trim()) &&
         row?.product_data?.product_type === "quantity" &&
         row?.product_data?.available === true &&
         Number(row?.product_data?.price) > 0 &&
         typeof row?.page_data?.text === "string"
       );
-      if (!audited) return json({ success: false, error: "تكلفة أو تفاصيل هذا التطبيق غير مؤكدة حالياً." }, 503);
+      if (!audited) return json({ success: false, error: "تكلفة أو تفاصيل هذا المنتج غير مؤكدة حالياً." }, 503);
       const pageText = String(audited.page_data.text);
       const limits = pageText.match(/الكمية[\s\S]{0,100}?من\s*([0-9,]+)\s*إلى\s*([0-9,]+)/);
       if (!limits) return json({ success: false, error: "حدود الكمية لم تُستخرج بشكل موثوق من صفحة المورد." }, 503);
