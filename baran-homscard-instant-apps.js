@@ -69,14 +69,15 @@
     const qtyLabel=el("label","","الكمية المطلوبة");qtyLabel.htmlFor="baranIaQuantity";
     const qtyRow=el("div","baran-ia-quantity-row");
     const minus=el("button","baran-ia-step","−");minus.type="button";minus.addEventListener("click",()=>changeQuantity(-1));
-    const input=document.createElement("input");input.id="baranIaQuantity";input.type="number";input.inputMode="numeric";input.min="1";input.step="1";input.addEventListener("change",()=>{const v=Number(input.value);if(Number.isSafeInteger(v)&&activeProduct)quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,v));updateQuantityUI();scheduleQuote();});
+    const input=document.createElement("input");input.id="baranIaQuantity";input.type="number";input.inputMode="numeric";input.min="1";input.step="1";input.addEventListener("change",()=>{const v=Number(input.value);if(Number.isSafeInteger(v)&&activeProduct)quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,v));quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();});
     const plus=el("button","baran-ia-step","＋");plus.type="button";plus.addEventListener("click",()=>changeQuantity(1));qtyRow.append(minus,input,plus);
     const presets=el("div","baran-ia-presets");presets.id="baranIaPresets";
     const quoteBox=el("div","baran-ia-quote");quoteBox.id="baranIaQuote";quoteBox.append(el("span","","الإجمالي التقديري"),el("strong","","أدخل المعرّف والكمية لحساب السعر."));
     const currencyLabel=el("label","","عملة الدفع");currencyLabel.htmlFor="baranIaCurrency";
     const currency=document.createElement("select");currency.id="baranIaCurrency";
     [["USD","دولار أمريكي"],["SYP","ليرة سورية"]].forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;currency.append(o);});
-    currency.addEventListener("change",()=>{paymentCurrency=currency.value;quote=null;scheduleQuote();});
+    currency.addEventListener("change",()=>{paymentCurrency=currency.value;quote=null;$("baranIaPurchase").disabled=true;scheduleQuote();});
+    player.addEventListener("input",()=>{quote=null;$("baranIaPurchase").disabled=true;scheduleQuote();});
     const note=el("p","baran-ia-note","المعاينة لا تخصم رصيداً. عند تفعيل الربط واعتماد المورد فقط، يُرسل الطلب وتُتابع حالته تلقائياً.");
 
     const status=el("p","baran-ia-status");status.id="baranIaStatus";status.setAttribute("role","status");
@@ -107,7 +108,7 @@
     $("baranIaPlayer").focus();
   }
   function closeCheckout(){if(pollTimer)clearTimeout(pollTimer);pollTimer=null;const m=$(ROOT_ID);if(m)m.hidden=true;document.body.classList.remove("baran-ia-modal-open");activeProduct=null;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;}
-  function changeQuantity(direction){if(!activeProduct)return;const step=activeProduct.min_quantity>=1000?100:1;quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,quantity+direction*step));updateQuantityUI();scheduleQuote();}
+  function changeQuantity(direction){if(!activeProduct)return;const step=activeProduct.min_quantity>=1000?100:1;quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,quantity+direction*step));quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();}
   function updateQuantityUI(){const input=$("baranIaQuantity");if(input&&activeProduct){input.min=String(activeProduct.min_quantity);input.max=String(activeProduct.max_quantity);input.value=String(quantity);}}
   function scheduleQuote(){if(quoteTimer)clearTimeout(quoteTimer);quoteTimer=setTimeout(()=>{if(activeProduct&&(!activeProduct.requires_target||$("baranIaPlayer")?.value.trim().length>=2))fetchQuote(false);},500);}
   async function fetchQuote(showErrors){
