@@ -202,7 +202,7 @@ Deno.serve(async (req: Request) => {
       const commercialRate = marketRate * (1 + bufferPercent / 100);
       const totalCost = unitCost * quantity;
       const round = (value: number, digits: number) => Number((value + Number.EPSILON).toFixed(digits));
-      const saleUsd = round(totalCost * (1 + markupPercent / 100), 2);
+      const saleUsd = round(totalCost * (1 + markupPercent / 100), 4);
       const saleSyp = Math.round(totalCost * (1 + markupPercent / 100) * commercialRate);
       const { data: adminRecord, error: adminCheckError } = await admin.from("admin_users")
         .select("user_id").eq("user_id", user.id).maybeSingle();
