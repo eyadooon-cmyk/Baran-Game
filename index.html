@@ -4591,7 +4591,7 @@ async function searchStore(value){
       const small=document.createElement("small");
       const prices=[];
       if(Number(product.price_usd)>0)prices.push(Number(product.price_usd).toFixed(2)+" $");
-      if(Number(product.price_syp)>0)prices.push(Math.round(Number(product.price_syp)/100).toLocaleString("en-US")+" ل.س جديدة");
+      if(Number(product.price_syp)>0)prices.push(Math.round(Number(product.price_syp)).toLocaleString("en-US")+" ل.س جديدة");
       small.textContent=(product.description||"منتج من كتالوج Baran Game")+" · "+(prices.length?prices.join(" / "):"السعر قيد التجهيز");
       info.append(strong,small);
       const action=document.createElement("span");
@@ -4686,7 +4686,7 @@ function renderMyOrders(){
     const events=baranCustomerOrderEvents[id]||[];
     const product=order.product_name||order.product_code||"منتج";
     const amount=order.payment_currency==="SYP"&&order.total_price_syp!=null
-      ? Number(order.total_price_syp).toLocaleString("en-US")+" ل.س"
+      ? Number(order.total_price_syp).toLocaleString("en-US")+" ل.س جديدة"
       : order.total_price_usd!=null ? "$"+Number(order.total_price_usd).toFixed(2) : "السعر غير مسجل";
     const eventMarkup=events.length?events.map(ev=>'<li><span class="customer-order-event-dot"></span><div><strong>'+baranOrderEscape(baranOrderStatus(ev.new_status))+'</strong>'+(ev.customer_message?'<p>'+baranOrderEscape(ev.customer_message)+'</p>':'')+'<time>'+baranOrderEscape(baranOrderDate(ev.created_at))+'</time></div></li>').join(""):'<li><span class="customer-order-event-dot"></span><div><strong>'+baranOrderEscape(baranOrderStatus(status))+'</strong><p>هذه آخر حالة مسجلة للطلب.</p><time>'+baranOrderEscape(baranOrderDate(order.created_at))+'</time></div></li>';
     const player=order.player_id?'<div class="customer-order-meta"><span>معرّف اللاعب</span><strong>'+baranOrderEscape(order.player_id)+'</strong></div>':"";
@@ -6947,7 +6947,7 @@ function renderBaranAdminOrders(orders){
     const created=baranOrderEscape(baranOrderDate(order.created_at));
     const quantity=Math.max(1,Number(order.quantity)||1);
     const totalUsd=order.total_price_usd==null?"—":Number(order.total_price_usd).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" $";
-    const totalSyp=order.total_price_syp==null?"—":Number(order.total_price_syp).toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س";
+    const totalSyp=order.total_price_syp==null?"—":Number(order.total_price_syp).toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س جديدة";
     const fulfillment=order.fulfillment||{};
     const supplier=baranOrderEscape(fulfillment.supplier_reference||"لم يُسجّل مرجع مورد");
     const supplierStatus=baranOrderEscape(fulfillment.supplier_status||"غير متوفر");
@@ -7836,7 +7836,7 @@ function baranMoneyText(product){
   const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
   const parts=[];
   if(Number.isFinite(usd)&&usd>0)parts.push(usd.toFixed(2)+" $");
-  if(Number.isFinite(syp)&&syp>0)parts.push(Math.round(syp/100).toLocaleString("en-US")+" ل.س جديدة");
+  if(Number.isFinite(syp)&&syp>0)parts.push(Math.round(syp).toLocaleString("en-US")+" ل.س جديدة");
   return parts.length?parts.join(" · "):"السعر قيد التجهيز";
 }
 function baranSelectGamePackage(game,product){
@@ -7925,7 +7925,7 @@ function renderBaranFavorites(){
   const price=document.createElement("span");
   const prices=[];
   if(item.price_usd>0)prices.push(item.price_usd.toFixed(2)+" $");
-  if(item.price_syp>0)prices.push(Math.round(item.price_syp/100).toLocaleString("en-US")+" ل.س جديدة");
+  if(item.price_syp>0)prices.push(Math.round(item.price_syp).toLocaleString("en-US")+" ل.س جديدة");
   price.textContent=prices.length?prices.join(" · "):"السعر قيد التجهيز";
   info.append(category,name,price);
   const actions=document.createElement("div");actions.className="baran-favorite-actions";
@@ -8200,7 +8200,7 @@ function baranServicePrice(product){
  const syp=product.price_syp==null||product.price_syp===""?null:Number(product.price_syp);
  const values=[];
  if(Number.isFinite(usd)&&usd>0)values.push(usd.toFixed(2)+" $");
- if(Number.isFinite(syp)&&syp>0)values.push(Math.round(syp/100).toLocaleString("en-US")+" ل.س جديدة");
+ if(Number.isFinite(syp)&&syp>0)values.push(Math.round(syp).toLocaleString("en-US")+" ل.س جديدة");
  return values.length?values.join(" · "):"السعر قيد التجهيز";
 }
 const baranServiceSelection={product:null,category:null,containerId:null};
@@ -9442,7 +9442,7 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
       if(error)throw error;
       if(!data?.success||!data.quote)throw new Error(data?.error||"تعذر حساب السعر.");
       const q=data.quote;
-      result.textContent="السعر: "+Number(q.sale_usd).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" USD · "+(Number(q.sale_syp)/100).toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س جديدة"+(q.is_admin?" · تكلفة المورد: $"+Number(q.cost_usd).toFixed(4)+" · الربح: $"+Number(q.profit_usd).toFixed(4):"")+" — معاينة فقط، لا يوجد طلب أو خصم.";
+      result.textContent="السعر: "+Number(q.sale_usd).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" USD · "+Number(q.sale_syp).toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س جديدة"+(q.is_admin?" · تكلفة المورد: $"+Number(q.cost_usd).toFixed(4)+" · الربح: $"+Number(q.profit_usd).toFixed(4):"")+" — معاينة فقط، لا يوجد طلب أو خصم.";
     }catch(e){result.textContent=e?.message||"تعذر حساب السعر حالياً.";}
     finally{button.disabled=false;button.textContent="احسب السعر";}
   });
