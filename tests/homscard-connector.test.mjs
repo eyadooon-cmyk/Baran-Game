@@ -268,7 +268,7 @@ test("HomsCard gateway uses one persisted supplier UUID and never blindly resend
   assert.match(orderGateway, /homscard_variable_check_order/);
   assert.match(orderGateway, /order_uuid:supplierUuid/);
   assert.match(orderGateway, /p_result:"unknown"/);
-  assert.match(orderGateway, /لا نكرر الإرسال أو الاسترداد/);
+  assert.match(orderGateway, /لم نعد إرساله أو استرداده/);
   assert.match(orderGateway, /HOMSCARD_API_TOKEN/);
   assert.match(orderGateway, /X-Signature/);
 });
