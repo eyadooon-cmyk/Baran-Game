@@ -2433,7 +2433,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         </button>
         <button class="item" type="button" onclick="showSection('appsStore',null)">
           <span class="baran-auto-category-art baran-auto-apps-art">📱</span>
-          <span class="item-content"><strong>التطبيقات</strong><span>شحن أرصدة البث المباشر والمحادثات والهدايا داخل التطبيقات</span><span class="small">استعراض تطبيقات الشحن ←</span></span>
+          <span class="item-content"><strong>التطبيقات</strong><span>اشحن عملات ورصيد تطبيقات البث والمحادثة مثل Bigo وChamet وLikee، وأرسل الهدايا وتفاعل داخل التطبيق.</span><span class="small">استعراض تطبيقات الشحن ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('telecomStore',null)">
           <span class="baran-auto-category-art">📶</span>
@@ -2572,7 +2572,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <button class="item" type="button" onclick="showSection('chatgptStore',null)"><span class="item-content"><strong>الدردشة والذكاء الاصطناعي</strong><span>ChatGPT وGemini وClaude وGrok وأدوات AI</span><span class="small">فتح القسم ←</span></span></button>
         <button class="item" type="button" onclick="showSection('vpnStore',null)"><span class="item-content"><strong>VPN</strong><span>اشتراكات VPN</span><span class="small">فتح القسم ←</span></span></button>
         <button class="item" type="button" onclick="showSection('giftCardsStore',null)"><span class="item-content"><strong>Google Play</strong><span>بطاقات رقمية</span><span class="small">فتح القسم ←</span></span></button>
-        <button class="item" type="button" onclick="showSection('appsStore',null)"><span class="item-content"><strong>التطبيقات والبرامج</strong><span>Canva وCapCut وFigma وغيرها</span><span class="small">فتح القسم ←</span></span></button>
+        
         <button class="item" type="button" onclick="showSection('subscriptionStore',null)"><span class="item-content"><strong>الاشتراكات والترفيه</strong><span>Netflix وShahid وAnghami وخدمات TV</span><span class="small">فتح القسم ←</span></span></button>
       </div>
     </section>
@@ -2597,7 +2597,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="appsStore" class="hidden">
       <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى أقسام الشحن الآلي</button>
-      <div class="hero"><h2>شحن تطبيقات البث والتواصل</h2><p>اشحن الرصيد والعملات داخل تطبيقات البث المباشر والمحادثات، واستخدمها لإرسال الهدايا والتفاعل داخل التطبيق.</p></div>
+      <div class="hero"><h2>شحن رصيد وعملات التطبيقات</h2><p>اختر تطبيقك واشحن العملات أو الرصيد لاستخدامه في البث المباشر والمحادثات وإرسال الهدايا والتفاعل مع الآخرين.</p></div>
       <div id="appsProductCatalog" class="deposit-card baran-service-catalog" aria-live="polite"><strong>التطبيقات المتاحة</strong><p class="small">جاري تحميل المنتجات المعتمدة...</p></div>
     </section>
 
@@ -9234,7 +9234,7 @@ function renderBaranHomsCardAppsCatalog(){
 
   ];
   const card=p=>'<article class="baran-hc-app-card" data-search="'+(p.name+" "+p.id).toLowerCase()+'"><div class="baran-hc-app-image"><div class="baran-hc-app-image-frame">'+(p.image?'<img src="'+p.image+'" alt="'+p.name+'" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML=\'<span>📱</span>\'">':'<span>📱</span>')+'</div><span class="baran-hc-app-image-glow" aria-hidden="true"></span></div><div class="baran-hc-app-copy"><strong>'+p.name+'</strong><p class="baran-hc-app-description">'+p.description+'</p><div class="baran-hc-app-meta"><span>HomsCard</span><span>#'+p.id+'</span></div>'+(p.package?'<div class="baran-hc-app-qty">باقة ثابتة حسب كتالوج المورد</div>':'<div class="baran-hc-app-qty">الكمية: '+p.min.toLocaleString("en-US")+' – '+p.max.toLocaleString("en-US")+'</div>')+'<span class="baran-hc-app-state">معاينة المورد · قيد اعتماد باقات باران</span></div></article>';
-  root.innerHTML='<div class="baran-hc-apps-intro"><strong>شحن تطبيقات البث والتواصل — HomsCard</strong><br>هذه خدمات شحن أرصدة داخل تطبيقات البث المباشر والمحادثات والألعاب الاجتماعية، وليست تطبيقات عامة أو برامج تحميل. المعروض معاينة لمنتجات المورد؛ أسعار البيع والشراء والشحن غير مفعّلة حتى اعتماد باقات باران.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في تطبيقات حمص كارد"><div class="baran-hc-apps-group"><h3>تطبيقات البث المباشر والتواصل <small>12 خدمة شحن</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.filter(p=>!p.package).map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
+  root.innerHTML='<div class="baran-hc-apps-intro"><strong>شحن تطبيقات البث والتواصل — HomsCard</strong><br>هنا تجد خدمات شحن الرصيد والعملات داخل تطبيقات البث والمحادثات والألعاب الاجتماعية. اختر التطبيق المطلوب لمعرفة خدمته، وتذكّر أن هذه معاينة لمنتجات المورد فقط؛ الأسعار والشراء والشحن غير مفعّلة حتى اعتماد باقات باران.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في تطبيقات حمص كارد"><div class="baran-hc-apps-group"><h3>تطبيقات البث المباشر والتواصل <small>12 خدمة شحن</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.filter(p=>!p.package).map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
   const search=root.querySelector(".baran-hc-apps-search");
   search.addEventListener("input",()=>{
     const q=search.value.trim().toLowerCase();let shown=0;
