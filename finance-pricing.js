@@ -7,7 +7,7 @@
   const number = (value, digits = 2) => Number(value || 0).toLocaleString("en-US", {
     minimumFractionDigits: digits, maximumFractionDigits: digits
   });
-  const syp = (value) => Math.round(Number(value || 0)).toLocaleString("en-US") + " ل.س";
+  const syp = (value) => Number(value || 0).toLocaleString("en-US", {minimumFractionDigits:2,maximumFractionDigits:2}) + " ل.س جديدة";
   const usd = (value) => number(value, 2) + " $";
   let latestPayload = null;
 
@@ -54,15 +54,15 @@
       disabled: "التحديث التلقائي متوقف"
     };
     const sourceCard = (name, row) => '<div class="fx-monitor-stat"><span class="fx-monitor-meta">' + name + '</span>' +
-      (row ? '<strong dir="ltr">' + syp(row.sell_old) + '</strong><span class="fx-monitor-meta">مبيع الدولار · شراء المتجر للدولار</span>' +
-        '<span class="fx-monitor-meta">شراء الصراف: ' + syp(row.buy_old) + '</span>' +
+      (row ? '<strong dir="ltr">' + syp(Number(row.sell_old)/100) + '</strong><span class="fx-monitor-meta">مبيع الدولار · شراء المتجر للدولار</span>' +
+        '<span class="fx-monitor-meta">شراء الصراف: ' + syp(Number(row.buy_old)/100) + '</span>' +
         '<span class="fx-monitor-meta">بيانات المصدر: ' + esc(new Date(row.source_updated_at).toLocaleString("ar")) + '</span>'
         : '<strong>لا توجد قراءة</strong><span class="fx-monitor-meta">لم يتم استلام سعر موثوق</span>') + '</div>';
     box.innerHTML =
       '<div class="fx-monitor-card"><div class="finance-section-heading"><div><span class="finance-kicker">LIVE SYRIAN FX</span><h3>مراقب سعر الصرف السوري التلقائي</h3>' +
       '<p class="small">مرجع دمشق · مصدران مستقلان · تحديث كل 6 ساعات · الارتفاع تلقائي والانخفاض بقرار المدير فقط</p></div><span class="finance-section-icon">📡</span></div>' +
       '<div class="fx-monitor-grid">' +
-      '<div class="fx-monitor-stat"><span class="fx-monitor-meta">سعر التحويل المعتمد للتكلفة</span><strong dir="ltr">' + (state.applied_rate_old == null ? '—' : syp(state.applied_rate_old)) + '</strong><span class="fx-monitor-meta">الليرة القديمة لكل دولار</span></div>' +
+      '<div class="fx-monitor-stat"><span class="fx-monitor-meta">سعر التحويل المعتمد للتكلفة</span><strong dir="ltr">' + (state.applied_rate_old == null ? '—' : syp(Number(state.applied_rate_old)/100)) + '</strong><span class="fx-monitor-meta">ليرة جديدة لكل دولار</span></div>' +
       sourceCard("Liraty", latest.Liraty) + sourceCard("LiraScope", latest.LiraScope) +
       '</div><div class="fx-monitor-meta">الحالة: ' + esc(statusLabels[state.status] || state.status || "غير معروف") +
       ' · فرق المصدرين: ' + (state.source_difference_percent == null ? "—" : number(state.source_difference_percent,2) + "%") +
@@ -71,7 +71,7 @@
       (state.last_error ? '<br><span style="color:#e8bd83">ملاحظة: ' + esc(state.last_error) + '</span>' : '') +
       '</div><div class="ops-actions" style="margin-top:10px"><button type="button" id="financeFxRefresh">فحص السعر الآن</button></div>' +
       '<div id="financeFxStatus" class="pricing-policy-status" role="status" aria-live="polite">' + esc(message || "الأسعار استرشادية؛ عند اختلاف المصدرين بأكثر من 2% لا نغير سعر المتجر.") + '</div>' +
-      '<p class="fx-monitor-meta">المصدران: <a href="https://liraty.com/developers" target="_blank" rel="noopener">Liraty</a> و <a href="https://lirascope.syria-cloud.sy/ar/api-docs" target="_blank" rel="noopener">LiraScope</a>. الأسعار الجديدة تحوّل ×100 إلى الليرة القديمة. سعر المبيع هو تكلفة شراء الدولار من الصراف. الارتفاع يُعتمد تلقائياً، أما الانخفاض فلا يغيّر سعر المتجر إلا بقرار المدير. لا تتغير أسعار المنتجات أو المحافظ أو الطلبات تلقائياً.</p></div>';
+      '<p class="fx-monitor-meta">المصدران: <a href="https://liraty.com/developers" target="_blank" rel="noopener">Liraty</a> و <a href="https://lirascope.syria-cloud.sy/ar/api-docs" target="_blank" rel="noopener">LiraScope</a>. تُحفظ قراءات المصدر بالليرة القديمة داخلياً وتُعرض هنا بالليرة الجديدة بعد القسمة على 100. سعر المبيع هو تكلفة شراء الدولار من الصراف. الارتفاع يُعتمد تلقائياً، أما الانخفاض فلا يغيّر سعر المتجر إلا بقرار المدير.</p></div>';
     $("financeFxRefresh")?.addEventListener("click", async () => {
       const button = $("financeFxRefresh"), status = $("financeFxStatus");
       button.disabled = true; status.textContent = "جاري فحص المصدرين...";
@@ -132,15 +132,15 @@
         code: product.product_code,
         name: product.name,
         costUsd,
-        costAtMarket: costUsd * market,
+        costAtMarket: costUsd * market / 100,
         currentUsd: Number(product.price_usd || 0),
         currentSyp: Number(product.price_syp || 0),
         saleUsd,
-        saleSyp: saleUsd * commercial,
-        fxBufferSyp: costUsd * (commercial - market),
-        markupSyp: (saleUsd - costUsd) * commercial,
+        saleSyp: saleUsd * commercial / 100,
+        fxBufferSyp: costUsd * (commercial - market) / 100,
+        markupSyp: (saleUsd - costUsd) * commercial / 100,
         profitUsd: (saleUsd * commercial - costUsd * market) / market,
-        profitSyp: saleUsd * commercial - costUsd * market,
+        profitSyp: (saleUsd * commercial - costUsd * market) / 100,
         currency: link.currency
       };
     }).filter(Boolean).sort((a,b) => a.name.localeCompare(b.name, "ar"));
@@ -168,13 +168,13 @@
   function previewFromInputs() {
     if (!latestPayload) return;
     const policy = {
-      market_exchange_rate: Number($("financeMarketRate")?.value),
+      market_exchange_rate: Number($("financeMarketRate")?.value) * 100,
       fx_buffer_percent: Number($("financeFxBuffer")?.value),
       product_markup_percent: Number($("financeProductMarkup")?.value)
     };
     const commercial = policy.market_exchange_rate * (1 + policy.fx_buffer_percent / 100);
     const output = $("financeCommercialRate");
-    if (output) output.textContent = Number.isFinite(commercial) ? number(commercial, 2) + " ل.س" : "—";
+    if (output) output.textContent = Number.isFinite(commercial) ? number(commercial / 100, 2) + " ل.س جديدة" : "—";
     renderTable(getRows(latestPayload, policy));
   }
 
@@ -193,11 +193,11 @@
       '<div class="finance-section-heading"><div><span class="finance-kicker">PRICING POLICY</span><h3>سياسة التسعير وسعر الصرف</h3>' +
       '<p class="small">تكلفة المورد من حمص كارد بالدولار فقط. سعر السوق وفرق التحويل وهامش المنتج إعدادات مستقلة.</p></div><span class="finance-section-icon">💱</span></div>' +
       '<div class="pricing-policy-grid">' +
-      '<div class="pricing-policy-field"><label for="financeMarketRate">سعر الدولار بالسوق السورية (ل.س)</label><input id="financeMarketRate" type="number" min="1" step="1" value="' + esc(market) + '"></div>' +
+      '<div class="pricing-policy-field"><label for="financeMarketRate">سعر الدولار بالسوق السورية (ل.س جديدة)</label><input id="financeMarketRate" type="number" min="0.01" step="0.01" value="' + esc(market / 100) + '"></div>' +
       '<div class="pricing-policy-field"><label for="financeFxBuffer">فرق التحويل التجاري (%)</label><input id="financeFxBuffer" type="number" min="0" max="25" step="0.1" value="' + esc(buffer) + '"></div>' +
       '<div class="pricing-policy-field"><label for="financeProductMarkup">الزيادة على تكلفة المنتج (%)</label><input id="financeProductMarkup" type="number" min="0" max="100" step="0.1" value="' + esc(markup) + '"></div>' +
       '</div>' +
-      '<div class="pricing-policy-result" style="margin-top:12px"><span class="small">سعر التحويل التجاري الناتج</span><strong id="financeCommercialRate" dir="ltr">' + number(commercial,2) + ' ل.س</strong>' +
+      '<div class="pricing-policy-result" style="margin-top:12px"><span class="small">سعر التحويل التجاري الناتج</span><strong id="financeCommercialRate" dir="ltr">' + number(commercial / 100,2) + ' ل.س جديدة</strong>' +
       '<p class="small">سعر السوق × (1 + فرق التحويل التجاري). هذا الفرق ليس ربحاً صافياً قبل احتساب رسوم الدفع وتكلفة إعادة شراء الدولار.</p></div>' +
       '<div class="finance-grid" style="margin-top:12px"><div class="pricing-policy-result"><span class="small">المنتج المقترح</span><strong>تكلفة المورد + ' + number(markup,1) + '%</strong></div>' +
       '<div class="pricing-policy-result"><span class="small">المورد المعتمد للمعاينة</span><strong>HomsCard · USD</strong></div></div>' +
@@ -206,11 +206,11 @@
       '<div class="finance-section-heading" style="margin-top:18px"><div><span class="finance-kicker">HOMSCARD COST PREVIEW</span><h3>معاينة أسعار منتجات حمص كارد</h3>' +
       '<p class="small">اقتراحات للعرض فقط. الفارق الإجمالي يشمل أثر فرق التحويل والزيادة على التكلفة، قبل رسوم الدفع وإعادة شراء الدولار. لا يتم تغيير أسعار المنتجات الحالية أو فتح الشحن تلقائياً.</p></div><span class="finance-section-icon">🧮</span></div>' +
       '<div id="financePricingPreview"></div>' +
-      '<p class="small" style="margin-top:10px">آخر حفظ لسياسة التسعير: ' + esc(updated) + '. سعر الصرف القديم المستخدم في أجزاء المتجر الأخرى يبقى منفصلاً ولا يتغير من هنا.</p>';
+      '<p class="small" style="margin-top:10px">آخر حفظ لسياسة التسعير: ' + esc(updated) + '. تُحفظ قراءة السوق القديمة داخلياً، وتُعرض جميع الأسعار التجارية بالليرة الجديدة بعد القسمة على 100.</p>';
 
     ["financeMarketRate","financeFxBuffer","financeProductMarkup"].forEach((id) => $(id)?.addEventListener("input", previewFromInputs));
     $("financePricingSave")?.addEventListener("click", async () => {
-      const marketRate = Number($("financeMarketRate")?.value);
+      const marketRate = Number($("financeMarketRate")?.value) * 100;
       const fxBuffer = Number($("financeFxBuffer")?.value);
       const markup = Number($("financeProductMarkup")?.value);
       const status = $("financePricingStatus");
@@ -242,7 +242,7 @@
     });
     $("financePricingExport")?.addEventListener("click", () => {
       const rows = getRows(latestPayload, {
-        market_exchange_rate: Number($("financeMarketRate")?.value),
+        market_exchange_rate: Number($("financeMarketRate")?.value) * 100,
         fx_buffer_percent: Number($("financeFxBuffer")?.value),
         product_markup_percent: Number($("financeProductMarkup")?.value)
       });
