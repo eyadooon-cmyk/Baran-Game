@@ -5,7 +5,8 @@
   let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,quoteSequence=0,loading=false,catalogPromise=null,paymentCurrency="USD",activeRequestId=null,lastOrderId=null,pollTimer=null,pollCount=0,orderSubmitted=false;
   const $=(id)=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
-  const money=(v)=>Number(v||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:6});
+  const money=(v)=>{const n=Number(v);if(!Number.isFinite(n))return "—";if(n>0&&n<1e-12)return "<0.000000000001";return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:12});};
+  const productUnitPrice=(p)=>Number(p?.sale_unit_usd)>0?productUnitPrice(p):"يُحسب حسب الكمية";
   const safeImage=(value)=>{try{const u=new URL(String(value||""));return u.protocol==="https:"?u.href:"";}catch{return "";}};
   async function invoke(body){
     if(!window.baranSupabaseClient?.functions)throw new Error("جلسة المتجر غير جاهزة. حدّث الصفحة وسجّل الدخول.");
@@ -95,7 +96,7 @@
   }
   function openCheckout(product){
     activeProduct=product;quantity=product.min_quantity;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;paymentCurrency="USD";
-    const modal=ensureModal();$("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","HomsCard · معاينة طلب"),el("small","",money(product.sale_unit_usd)+" $ للوحدة"));
+    const modal=ensureModal();$("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","HomsCard · معاينة طلب"),el("small","",productUnitPrice(product)+" للوحدة"));
     const targetInput=$("baranIaPlayer"),targetLabel=document.querySelector('label[for="baranIaPlayer"]');
     targetInput.value="";targetInput.required=!!product.requires_target;targetInput.hidden=!product.requires_target;
     targetInput.placeholder=product.target_label||"بيانات الحساب";targetLabel.hidden=!product.requires_target;targetLabel.textContent=product.target_label||"بيانات الحساب";
@@ -122,7 +123,8 @@
       if(sequence!==quoteSequence||activeProduct!==requestedProduct||quantity!==requestedQuantity||paymentCurrency!==requestedCurrency)return;
       quote=data.quote;
       const amount=requestedCurrency==="USD"?money(quote.sale_usd)+" $":Number(quote.sale_syp||0).toLocaleString("en-US")+" ل.س";
-      $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","",amount),el("small","",Number(quote.quantity).toLocaleString("en-US")+" وحدة · ربح "+Number(quote.markup_percent||0)+"%"));
+      const unitAmount=requestedCurrency==="USD"?money(Number(quote.sale_usd||0)/Number(quote.quantity||requestedQuantity))+" $ / وحدة":(Number(quote.sale_syp||0)/Number(quote.quantity||requestedQuantity)).toLocaleString("en-US",{maximumFractionDigits:6})+" ل.س / وحدة";
+      $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","",amount),el("small","",unitAmount+" · "+Number(quote.quantity).toLocaleString("en-US")+" وحدة · ربح "+Number(quote.markup_percent||0)+"%"));
       const needsTarget=requestedProduct.requires_target&&playerId.length<2;
       $("baranIaPurchase").disabled=needsTarget;
       showMessage($("baranIaStatus"),needsTarget?"تم تحديث السعر مع الربح. أدخل معرّف الحساب لتفعيل متابعة الطلب.":"تم تحديث السعر تلقائياً حسب الكمية مع احتساب ربح المتجر.",false);
