@@ -290,8 +290,10 @@ Deno.serve(async (req: Request) => {
       if(!orderId||!supplierUuid)return json({success:false,error:"تم تسجيل الطلب لكن بيانات متابعة المورد غير مكتملة. أوقفنا الإرسال للمراجعة.",order_id:orderId||null},503);
 
       const checkPath="/check.php?uuid=1&orders="+encodeURIComponent(supplierUuid);
-      const settle=async (data:any)=>{
-        const parsed=parseHomsCardCheck({status:"OK",data:[data]},supplierUuid);
+      const settle=async (payload:any)=>{
+        const rows=Array.isArray(payload?.data)?payload.data:
+          payload?.data&&typeof payload.data==="object"?[payload.data]:[];
+        const parsed=parseHomsCardCheck({status:payload?.status,data:rows},supplierUuid);
         if(parsed.kind==="completed"){
           if(parsed.quantity!==quantity || parsed.delivery.length>2000){
             await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"بيانات نجاح المورد لا تطابق UUID أو كمية الطلب أو حد بيانات التسليم."});
@@ -325,8 +327,9 @@ Deno.serve(async (req: Request) => {
       if(created.duplicate===true){
         try{
           const checked=await homscardRequest(checkPath,"GET");
-          const item=checked.payload?.status==="OK"&&Array.isArray(checked.payload?.data)?checked.payload.data[0]:null;
-          if(item){const result=await settle(item);return json({success:true,duplicate:true,order_id:orderId,...result});}
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,duplicate:true,order_id:orderId,...result});}
         }catch(error){console.error("HOMSCARD_DUPLICATE_CHECK_FAILED",String(error));}
         return json({success:true,duplicate:true,order_id:orderId,status:"awaiting_supplier",
           message:"الطلب مسجل مسبقاً. نتحقق من نفس UUID لمنع أي خصم أو شحن مكرر."});
@@ -337,24 +340,24 @@ Deno.serve(async (req: Request) => {
           product_id:Number(productId),order_uuid:supplierUuid,qty:quantity,...(playerId?{player_id:playerId}:{})
         });
         if(sent.payload?.status==="OK"&&sent.payload?.data){
-          const result=await settle(sent.payload.data);
+          const result=await settle(sent.payload);
           return json({success:true,order_id:orderId,...result});
         }
         const code=Number(sent.payload?.error?.code);
         if(sent.http_status>=500||code===500||code===102){
           const checked=await homscardRequest(checkPath,"GET");
-          const item=checked.payload?.status==="OK"&&Array.isArray(checked.payload?.data)?checked.payload.data[0]:null;
-          if(item){const result=await settle(item);return json({success:true,order_id:orderId,...result});}
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,order_id:orderId,...result});}
           await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"انقطع أو تعذر حسم رد إنشاء الطلب؛ تم فحص UUID ولم تظهر نتيجة مؤكدة."});
           return json({success:true,order_id:orderId,status:"awaiting_supplier",message:"الطلب قيد التحقق لدى المورد؛ لم نعد إرساله ولم نسترد المبلغ."});
         }
-        const {error:finalizeError}=await admin.rpc("baran_supplier_finalize_order",{
-          p_order_id:orderId,p_result:"failed",p_supplier_reference:supplierUuid,
-          p_reason:String(sent.payload?.error?.message||"رفض HomsCard الطلب دون إنشاء شحنة.").slice(0,500),
+        await admin.rpc("baran_supplier_finalize_order",{
+          p_order_id:orderId,p_result:"unknown",
+          p_reason:String(sent.payload?.error?.message||"لم يصل رد نجاح مؤكد من HomsCard؛ لا يمكن إثبات أن الطلب لم يُنشأ.").slice(0,500),
         });
-        if(finalizeError)throw finalizeError;
-        return json({success:true,order_id:orderId,status:"rejected",refunded:true,
-          message:String(sent.payload?.error?.message||"رفض HomsCard الطلب؛ تمت معالجة الاسترداد إلى محفظتك.")});
+        return json({success:true,order_id:orderId,status:"awaiting_supplier",
+          message:"لم يصل تأكيد نهائي من المورد. أبقينا الطلب قيد التحقق دون إعادة إرسال أو استرداد حتى لا يحدث شحن أو خصم مزدوج."});
       }catch(error){
         console.error("HOMSCARD_ORDER_DISPATCH_UNCERTAIN",String(error));
         try{
