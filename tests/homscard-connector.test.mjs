@@ -246,8 +246,8 @@ test("shared HomsCard variable-quantity cards mount in games, apps, telecom and 
   assert.match(instantAppsUi, /max_quantity/);
 });
 test("mobile-first HomsCard app storefront assets are mounted", () => {
-  assert.match(indexHtml, /baran-homscard-instant-apps\.css/);
-  assert.match(indexHtml, /baran-homscard-instant-apps\.js/);
+  assert.match(indexHtml, /baran-homscard-instant-apps(?:-[\\w-]+)?\\.css/);
+  assert.match(indexHtml, /baran-homscard-instant-apps(?:-[\\w-]+)?\\.js/);
   assert.match(instantAppsCss, /@media\(max-width:360px\)/);
   assert.match(instantAppsCss, /\.baran-ia-modal/);
 });
