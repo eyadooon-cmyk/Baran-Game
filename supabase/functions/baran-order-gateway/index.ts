@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { normalizeHomsCardCreate, homscardConfirmedRejection } from "../baran-homscard-reconcile/core.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,30 +33,6 @@ function parseHomsCardCheck(payload: any, expectedUuid: string) {
     return { kind: "completed" as const, supplierOrderId, totalCost, quantity, delivery };
   }
   return { kind: "unknown" as const, reason: "Unrecognized supplier order status" };
-}
-
-function normalizeHomsCardCreate(payload: any, expectedUuid: string, expectedQuantity: number) {
-  // order.php returns a single data object; check.php returns an array.
-  if (!payload || payload.status !== "OK" || !payload.data ||
-      typeof payload.data !== "object" || Array.isArray(payload.data)) return null;
-  const row = payload.data;
-  const status = String(row.status ?? "").toLowerCase();
-  const supplierOrderId = typeof row.order_id === "string" ? row.order_id.trim() : "";
-  if (status === "pending") {
-    return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId, status: "pending" }] };
-  }
-  if (status === "cancelled") {
-    return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId, status: "cancelled" }] };
-  }
-  if (status !== "completed") return null;
-  const quantity = Number(row.quantity);
-  const price = Number(row.price);
-  const delivery = typeof row.delivery === "string" ? row.delivery.trim() : "";
-  if (!supplierOrderId || supplierOrderId.length > 160 ||
-      !Number.isSafeInteger(quantity) || quantity !== expectedQuantity ||
-      !Number.isFinite(price) || price < 0 || !delivery || delivery.length > 4000) return null;
-  return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId,
-    status: "completed", price, quantity, delivery }] };
 }
 
 function readKeyObject(name: string): string | undefined {
@@ -375,8 +352,7 @@ Deno.serve(async (req: Request) => {
             message:"وصل رد إنشاء غير مكتمل أو غير مطابق؛ أبقينا الطلب قيد التحقق دون استرداد أو إعادة إرسال."});
         }
         const code=Number(sent.payload?.error?.code);
-        const confirmedRejectionCodes=new Set([100,103,109,110,112,113,114]);
-        if(confirmedRejectionCodes.has(code)){
+        if(homscardConfirmedRejection(code)){
           const reasons:Record<number,string>={
             100:"رصيد حساب HomsCard غير كافٍ؛ رفض المورد الطلب.",
             103:"بيانات اللاعب المطلوبة غير مكتملة؛ رفض المورد الطلب.",
