@@ -48,5 +48,5 @@ test("Admin FX monitor UI provides a manual check and shows both sources", () =>
   assert.match(ui, /financeFxRefresh/);
   assert.match(ui, /Liraty/);
   assert.match(ui, /LiraScope/);
-  assert.match(ui, /×100/);
+  assert.match(ui, /\\/100/);
 });
