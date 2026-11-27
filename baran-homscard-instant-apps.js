@@ -8,7 +8,7 @@
   const $=(id)=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const money=(v)=>{const n=Number(v);if(!Number.isFinite(n))return "—";if(n>0&&n<1e-12)return "<0.000000000001";return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:12});};
-  const productUnitPrice=(p)=>Number(p?.sale_unit_usd)>0?money(p.sale_unit_usd)+" $":"يُحسب حسب الكمية";
+  const productUnitPrice=(p)=>Number(p?.sale_unit_usd)>0?money(p.sale_unit_usd)+" $ · "+Number(p.sale_unit_syp||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" ل.س جديدة":"يُحسب حسب الكمية";
   const safeImage=(value)=>{try{const u=new URL(String(value||""));return u.protocol==="https:"?u.href:"";}catch{return "";}};
   async function invoke(body){
     if(!window.baranSupabaseClient?.functions)throw new Error("جلسة المتجر غير جاهزة. حدّث الصفحة وسجّل الدخول.");
@@ -34,7 +34,7 @@
       const image=safeImage(p.image);
       if(image){const img=el("img");img.src=image;img.alt=p.name;img.loading="lazy";img.onerror=()=>{img.remove();art.append(el("span","baran-ia-placeholder","✦"));};art.append(img);}
       else art.append(el("span","baran-ia-placeholder","✦"));
-      art.append(el("span","baran-ia-live","متاح لدى المورد"));
+
       const body=el("div","baran-ia-card-body");
       body.append(el("h4","",p.name),el("p","baran-ia-range","الكمية: "+Number(p.min_quantity).toLocaleString("en-US")+" – "+Number(p.max_quantity).toLocaleString("en-US")));
       const price=el("div","baran-ia-unit");price.append(el("small","","سعر الوحدة"),el("strong","",productUnitPrice(p)));
