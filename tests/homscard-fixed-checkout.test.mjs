@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const gateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
+const fixedUi = await readFile(new URL("../baran-homscard-fixed-checkout.js", import.meta.url), "utf8");
+const variableUi = await readFile(new URL("../baran-homscard-instant-apps-20261127-v3.js", import.meta.url), "utf8");
 
 test("fixed HomsCard catalog is separate from variable quantity catalog", () => {
   assert.match(gateway, /homscard_fixed_catalog/);
@@ -25,4 +27,16 @@ test("fixed quote is read-only and cannot create orders or charge wallets", () =
   assert.match(gateway, /can_create_order:false,can_purchase:false/);
   assert.match(gateway, /charged:false,order_created:false/);
   assert.match(gateway, /لا يوجد إنشاء طلب أو خصم رصيد/);
+});
+
+test("fixed and variable products use separate customer interfaces", () => {
+  assert.match(fixedUi, /baranFixedCheckout/);
+  assert.match(fixedUi, /homscard_fixed_catalog/);
+  assert.match(fixedUi, /homscard_fixed_quote/);
+  assert.match(fixedUi, /\.baran-package-button/);
+  assert.match(variableUi, /baranInstantAppsRoot/);
+  assert.match(variableUi, /homscard_variable_catalog/);
+  assert.match(variableUi, /homscard_variable_quote/);
+  assert.match(fixedUi, /purchase\.disabled=true/);
+  assert.doesNotMatch(fixedUi, /homscard_fixed_create_order/);
 });
