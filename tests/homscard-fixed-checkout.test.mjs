@@ -42,6 +42,11 @@ test("fixed and variable products use separate customer interfaces", () => {
   assert.match(variableUi, /baranInstantAppsRoot/);
   assert.match(variableUi, /homscard_variable_catalog/);
   assert.match(variableUi, /homscard_variable_quote/);
+  assert.match(variableUi, /function openReview\(\)/);
+  assert.match(variableUi, /baranIaReviewPanel/);
+  assert.match(variableUi, /row\("الإجمالي",total\)/);
+  assert.match(variableUi, /reviewConfirm\.addEventListener\("click",createOrder\)/);
+  assert.match(variableUi, /row\("سعر الوحدة",unit\)/);
   assert.match(fixedUi, /purchase\.disabled=true/);
   assert.match(fixedUi, /action:"homscard_fixed_create_order"/);
 });
