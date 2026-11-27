@@ -4685,8 +4685,9 @@ function renderMyOrders(){
     const status=String(order.status||"").toLowerCase();
     const events=baranCustomerOrderEvents[id]||[];
     const product=order.product_name||order.product_code||"منتج";
+    const orderSyp=Number(order.total_price_syp||0)/(Number(order.exchange_rate)>1000?100:1);
     const amount=order.payment_currency==="SYP"&&order.total_price_syp!=null
-      ? Number(order.total_price_syp).toLocaleString("en-US")+" ل.س جديدة"
+      ? orderSyp.toLocaleString("en-US")+" ل.س جديدة"
       : order.total_price_usd!=null ? "$"+Number(order.total_price_usd).toFixed(2) : "السعر غير مسجل";
     const eventMarkup=events.length?events.map(ev=>'<li><span class="customer-order-event-dot"></span><div><strong>'+baranOrderEscape(baranOrderStatus(ev.new_status))+'</strong>'+(ev.customer_message?'<p>'+baranOrderEscape(ev.customer_message)+'</p>':'')+'<time>'+baranOrderEscape(baranOrderDate(ev.created_at))+'</time></div></li>').join(""):'<li><span class="customer-order-event-dot"></span><div><strong>'+baranOrderEscape(baranOrderStatus(status))+'</strong><p>هذه آخر حالة مسجلة للطلب.</p><time>'+baranOrderEscape(baranOrderDate(order.created_at))+'</time></div></li>';
     const player=order.player_id?'<div class="customer-order-meta"><span>معرّف اللاعب</span><strong>'+baranOrderEscape(order.player_id)+'</strong></div>':"";
@@ -4699,7 +4700,7 @@ async function loadMyOrders(){
   if(!list)return;
   if(!currentUser?.id){list.innerHTML='<div class="customer-order-empty">سجّل الدخول لعرض طلباتك.</div>';return;}
   list.innerHTML='<div class="customer-order-empty">جاري تحميل طلباتك بأمان...</div>';
-  const {data:orders,error}=await sb.from("orders").select("id,user_id,product_code,player_id,quantity,status,created_at,total_price_usd,total_price_syp,payment_currency").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(100);
+  const {data:orders,error}=await sb.from("orders").select("id,user_id,product_code,player_id,quantity,status,created_at,total_price_usd,total_price_syp,payment_currency,exchange_rate").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(100);
   if(error){
     console.error("Baran customer orders load failed",error);
     list.innerHTML='<div class="customer-order-empty">تعذر تحميل الطلبات حالياً. حدّث الصفحة أو حاول مرة ثانية.</div>';
@@ -6947,7 +6948,7 @@ function renderBaranAdminOrders(orders){
     const created=baranOrderEscape(baranOrderDate(order.created_at));
     const quantity=Math.max(1,Number(order.quantity)||1);
     const totalUsd=order.total_price_usd==null?"—":Number(order.total_price_usd).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" $";
-    const totalSyp=order.total_price_syp==null?"—":Number(order.total_price_syp).toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س جديدة";
+    const totalSyp=order.total_price_syp==null?"—":(Number(order.total_price_syp)/(Number(order.exchange_rate)>1000?100:1)).toLocaleString("en-US",{maximumFractionDigits:0})+" ل.س جديدة";
     const fulfillment=order.fulfillment||{};
     const supplier=baranOrderEscape(fulfillment.supplier_reference||"لم يُسجّل مرجع مورد");
     const supplierStatus=baranOrderEscape(fulfillment.supplier_status||"غير متوفر");
