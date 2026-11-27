@@ -110,7 +110,7 @@
   function closeCheckout(){if(pollTimer)clearTimeout(pollTimer);pollTimer=null;const m=$(ROOT_ID);if(m)m.hidden=true;document.body.classList.remove("baran-ia-modal-open");activeProduct=null;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;}
   function changeQuantity(direction){if(!activeProduct)return;const step=activeProduct.min_quantity>=1000?100:1;quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,quantity+direction*step));quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();}
   function updateQuantityUI(){const input=$("baranIaQuantity");if(input&&activeProduct){input.min=String(activeProduct.min_quantity);input.max=String(activeProduct.max_quantity);input.value=String(quantity);}}
-  function scheduleQuote(){if(quoteTimer)clearTimeout(quoteTimer);quoteTimer=setTimeout(()=>{if(activeProduct)fetchQuote(false);},350);}
+  function scheduleQuote(){quoteSequence++;if(quoteTimer)clearTimeout(quoteTimer);quoteTimer=setTimeout(()=>{if(activeProduct)fetchQuote(false);},350);}
   async function fetchQuote(showErrors){
     if(!activeProduct)return;
     const playerId=$("baranIaPlayer").value.trim();
