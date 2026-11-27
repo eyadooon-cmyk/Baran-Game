@@ -42,7 +42,8 @@ begin
     into current_price
     from public.products p
    where p.product_code = new.product_code
-     and p.is_active = true;
+     and p.is_active = true
+   and p.product_code <> 'JAWAKER_TOKENS';
 
   if current_price is null or current_price <= 0 then
     raise exception 'Product is unavailable or has no valid USD price';
@@ -80,7 +81,8 @@ update public.products p
    and sp.product_id = p.id
    and upper(sp.currency) = 'USD'
    and sp.unit_cost > 0
-   and p.is_active = true;
+   and p.is_active = true
+   and p.product_code <> 'JAWAKER_TOKENS';
 
 -- Backfill new-SYP display prices for active mapped products after pricing updates.
 update public.products p
@@ -97,4 +99,5 @@ update public.products p
    and sp.product_id = p.id
    and upper(sp.currency) = 'USD'
    and sp.unit_cost > 0
-   and p.is_active = true;
+   and p.is_active = true
+   and p.product_code <> 'JAWAKER_TOKENS';
