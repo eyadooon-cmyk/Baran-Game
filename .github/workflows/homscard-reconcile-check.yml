@@ -1,0 +1,25 @@
+name: HomsCard reconciliation safety tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/baran-homscard-reconcile/**"
+      - "tests/homscard-reconcile.test.mjs"
+      - ".github/workflows/homscard-reconcile-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run offline reconciliation tests
+        run: node --test tests/homscard-reconcile.test.mjs
+      - uses: denoland/setup-deno@v2
+      - name: Type-check worker
+        run: deno check supabase/functions/baran-homscard-reconcile/index.ts
