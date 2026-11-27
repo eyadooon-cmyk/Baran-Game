@@ -1,7 +1,7 @@
 "use strict";
 (function(){
   const esc = value => String(value == null ? "" : value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const money = (value,currency) => Number(value||0).toLocaleString("en-US",{minimumFractionDigits:currency==="USD"?2:0,maximumFractionDigits:currency==="USD"?2:0})+(currency==="USD"?" $":" ل.س");
+  const money = (value,currency) => Number(value||0).toLocaleString("en-US",{minimumFractionDigits:currency==="USD"?2:0,maximumFractionDigits:currency==="USD"?2:0})+(currency==="USD"?" $":" ل.س جديدة");
   const style=document.createElement("style");
   style.textContent=".treasury-entry{padding:13px;border:1px solid #49345f;border-radius:12px;background:#17121e;margin:9px 0}.treasury-entry-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:5px}.treasury-entry small{display:block;color:#a998b8;margin-top:5px}.treasury-entry p{margin:6px 0 0}.treasury-in{color:#8ce0b2}.treasury-out{color:#f0a1a1}.finance-treasury-section .finance-grid .finance-card small{display:block;margin-top:7px;color:#b9a9c7;line-height:1.7}";
   document.head.appendChild(style);
