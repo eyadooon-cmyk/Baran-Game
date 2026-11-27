@@ -5,10 +5,18 @@ on:
     paths:
       - "supabase/migrations/**"
       - "supabase/functions/baran-baro-manual/**"
+      - "supabase/functions/baran-admin/index.ts"
+      - "finance-pricing.js"
+      - "index.html"
       - "baro.js"
       - "baro-management.js"
       - "tests/baro-finance-integrity.test.mjs"
       - "tests/baro-external-sales.test.mjs"
+      - "tests/finance-pricing-policy.test.mjs"
+      - "tests/baran-fx-rate-monitor.test.mjs"
+      - "supabase/functions/baran-fx-rates/**"
+      - "supabase/migrations/20261127173000_baran_fx_rate_monitor.sql"
+      - "tests/baran-fx-rate-monitor.test.mjs"
       - ".github/workflows/baro-finance-integrity.yml"
   workflow_dispatch:
 
@@ -26,4 +34,4 @@ jobs:
         with:
           node-version: 20
       - name: Run BARO finance regression tests
-        run: node --test tests/baro-finance-integrity.test.mjs tests/baro-external-sales.test.mjs
+        run: node --test tests/baro-finance-integrity.test.mjs tests/baro-external-sales.test.mjs tests/finance-pricing-policy.test.mjs tests/baran-fx-rate-monitor.test.mjs
