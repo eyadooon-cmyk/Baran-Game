@@ -123,3 +123,19 @@ test("supplier worker never dispatches orders and retries only status reads", ()
   assert.match(worker, /parseHomsCardCheck\(payload, uuid\)/);
   assert.match(worker, /baran_supplier_finalize_order/);
 });
+
+
+test("ambiguous create-order HTTP errors never trigger automatic refunds", () => {
+  const createStart = gateway.indexOf('if (body?.action === "homscard_variable_create_order")');
+  const checkStart = gateway.indexOf('if (body?.action === "homscard_variable_check_order")', createStart);
+  const createBlock = gateway.slice(createStart, checkStart);
+  assert.match(createBlock, /p_result:"unknown"/);
+  assert.doesNotMatch(createBlock, /p_result:"failed"/);
+  assert.match(createBlock, /دون إعادة إرسال أو استرداد/);
+});
+
+test("supplier response parser receives the complete payload and searches exact UUID", () => {
+  assert.match(gateway, /Array\.isArray\(payload\?\.data\)\?payload\.data/);
+  assert.match(gateway, /settle\(checked\.payload\)/);
+  assert.match(gateway, /settle\(sent\.payload\)/);
+});
