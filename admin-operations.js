@@ -1245,6 +1245,10 @@ function homscardAutoAuditOne(p){
     kind="غير محسوم";
     confidence="منخفض";
     reason="توجد إشارة زمنية في هوية المنتج فقط؛ لا تكفي وحدها لإثبات أن المنتج اشتراك.";
+  }else if(type==="package"){
+    kind="باقة ثابتة مؤكدة من API";
+    confidence="مرتفع";
+    reason="واجهة HomsCard API تصنف المنتج صراحةً package؛ لا توجد حدود كمية، لذلك يعامل كباقة ثابتة. هذا التصنيف لا يثبت نجاح تنفيذ الشحن.";
   }else if(options.length){
     kind="كمية متغيرة محتملة";
     confidence="متوسط";
@@ -1257,8 +1261,8 @@ function homscardAutoAuditOne(p){
   const price=homscardAutoAuditNumber(p.price);
   const account=accountWords.test(paramText+" "+pageText);
   const missing=[];
-  if(!p.product_type||type==="package")missing.push("نوع المنتج قد يكون افتراضياً من الموصل");
-  if(!p.qty_values)missing.push("لا توجد خيارات كمية مؤكدة");
+  if(!p.product_type)missing.push("نوع المنتج غير موجود في API");
+  if(typeVariable&&!p.qty_values)missing.push("نوع quantity لكن خيارات الكمية غير متاحة");
   if(!params.length)missing.push("لا توجد حقول إدخال ظاهرة");
   if(price===null)missing.push("السعر غير رقمي أو غير صالح");
   const needsReview=kind==="غير محسوم"||confidence==="منخفض";
