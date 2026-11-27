@@ -362,8 +362,9 @@ Deno.serve(async (req: Request) => {
         console.error("HOMSCARD_ORDER_DISPATCH_UNCERTAIN",String(error));
         try{
           const checked=await homscardRequest(checkPath,"GET");
-          const item=checked.payload?.status==="OK"&&Array.isArray(checked.payload?.data)?checked.payload.data[0]:null;
-          if(item){const result=await settle(item);return json({success:true,order_id:orderId,...result});}
+          const rows=Array.isArray(checked.payload?.data)?checked.payload.data:
+            checked.payload?.data&&typeof checked.payload.data==="object"?[checked.payload.data]:[];
+          if(rows.length){const result=await settle(checked.payload);return json({success:true,order_id:orderId,...result});}
         }catch(checkError){console.error("HOMSCARD_ORDER_STATUS_CHECK_FAILED",String(checkError));}
         await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"انقطع الاتصال أثناء الإرسال وتعذر التحقق؛ الطلب معلّق لمنع التكرار."});
         return json({success:true,order_id:orderId,status:"awaiting_supplier",
