@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildCheckPath, parseHomsCardCheck, retryDelaySeconds } from "../supabase/functions/baran-homscard-reconcile/core.mjs";
+import { buildCheckPath, parseHomsCardCheck, retryDelaySeconds, normalizeHomsCardCreate, homscardConfirmedRejection } from "../supabase/functions/baran-homscard-reconcile/core.mjs";
 import { readFile } from "node:fs/promises";
 
 const worker = await readFile(new URL("../supabase/functions/baran-homscard-reconcile/index.ts", import.meta.url), "utf8");
@@ -9,6 +9,27 @@ const schedulerMigration = await readFile(new URL("../supabase/migrations/202611
 const settlementMigration = await readFile(new URL("../supabase/migrations/20261127190000_homscard_settlement_after_disable.sql", import.meta.url), "utf8");
 
 const uuid = "ecbdd545-e616-4aee-8770-7eefa977bcd1";
+
+test("order.php object response is normalized separately from check.php array response", () => {
+  const normalized = normalizeHomsCardCreate({status:"OK",data:{
+    order_id:"HC-CREATE-1",status:"completed",price:"4.50000001",quantity:3,delivery:"Delivered"
+  }},uuid,3);
+  assert.deepEqual(normalized,{status:"OK",data:[{
+    order_uuid:uuid,order_id:"HC-CREATE-1",status:"completed",price:4.50000001,quantity:3,delivery:"Delivered"
+  }]});
+  assert.equal(normalizeHomsCardCreate({status:"OK",data:[{order_id:"HC-1"}]},uuid,1),null);
+  assert.equal(normalizeHomsCardCreate({status:"OK",data:{
+    order_id:"HC-1",status:"completed",price:"1",quantity:2,delivery:"X"
+  }},uuid,1),null);
+  assert.equal(normalizeHomsCardCreate({status:"OK",data:{
+    order_id:"HC-1",status:"completed",price:"1",quantity:1,delivery:""
+  }},uuid,1),null);
+});
+
+test("only documented definitive rejection codes are classified as failed", () => {
+  for (const code of [100,103,109,110,112,113,114]) assert.equal(homscardConfirmedRejection(code),true);
+  for (const code of [102,120,121,128,129,500,0]) assert.equal(homscardConfirmedRejection(code),false);
+});
 
 test("completed order requires exact UUID, price, quantity, supplier reference and delivery", () => {
   assert.deepEqual(parseHomsCardCheck({status:"OK",data:[{order_uuid:uuid,status:"completed",order_id:"HC-1",price:"4.50",quantity:1,delivery:"CODE"}]},uuid),
