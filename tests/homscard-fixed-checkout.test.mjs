@@ -34,6 +34,8 @@ test("fixed and variable products use separate customer interfaces", () => {
   assert.match(fixedUi, /homscard_fixed_catalog/);
   assert.match(fixedUi, /homscard_fixed_quote/);
   assert.match(fixedUi, /\.baran-package-button/);
+  assert.match(fixedUi, /\.baran-service-select-button/);
+  assert.match(gateway, /product_id:p\.id,product_code:p\.product_code/);
   assert.match(variableUi, /baranInstantAppsRoot/);
   assert.match(variableUi, /homscard_variable_catalog/);
   assert.match(variableUi, /homscard_variable_quote/);
