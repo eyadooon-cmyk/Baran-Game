@@ -2850,7 +2850,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <div class="deposit-id" dir="ltr">bf37143ce15dd68389c21285e71818d1</div>
         <button class="full" type="button" onclick="copyOwnerFundingReceiver()">نسخ معرّف الاستلام</button>
         <label for="ownerFundingCurrency">عملة الشحن</label>
-        <select id="ownerFundingCurrency"><option value="USD">دولار أمريكي (USD)</option><option value="SYP">ليرة سورية (SYP)</option></select>
+        <select id="ownerFundingCurrency"><option value="USD">دولار أمريكي (USD)</option><option value="SYP">ليرة سورية جديدة (SYP)</option></select>
         <label for="ownerFundingAmount">المبلغ المحوّل</label>
         <input id="ownerFundingAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
         <label for="ownerFundingReference">رقم العملية / مرجع التحويل</label>
@@ -2953,7 +2953,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
             <label for="depositCurrency">عملة التحويل</label>
             <select id="depositCurrency">
               <option value="USD">دولار أمريكي (USD)</option>
-              <option value="SYP">ليرة سورية (SYP)</option>
+              <option value="SYP">ليرة سورية جديدة (SYP)</option>
             </select>
             <label for="depositAmount">المبلغ المحوّل</label>
             <input id="depositAmount" type="number" min="0.01" step="0.01" placeholder="أدخل المبلغ">
@@ -3809,7 +3809,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
               <option value="capital_in">إيداع رأس مال فعلي</option><option value="capital_out">سحب من رأس المال</option>
               <option value="transfer_in">تحويل وارد</option><option value="transfer_out">تحويل صادر</option><option value="correction_in">تسوية تصحيحية واردة</option><option value="correction_out">تسوية تصحيحية صادرة</option>
             </select></div>
-            <div class="finance-field"><label for="treasuryCurrency">العملة</label><select id="treasuryCurrency"><option value="USD">دولار أمريكي (USD)</option><option value="SYP">ليرة سورية (SYP)</option></select></div>
+            <div class="finance-field"><label for="treasuryCurrency">العملة</label><select id="treasuryCurrency"><option value="USD">دولار أمريكي (USD)</option><option value="SYP">ليرة سورية جديدة (SYP)</option></select></div>
             <div class="finance-field finance-field-wide"><label for="treasuryTitle">وصف الحركة</label><input id="treasuryTitle" maxlength="160" placeholder="مثلاً: إيداع نقدي في خزينة المتجر"></div>
             <div class="finance-field"><label for="treasuryAmount">المبلغ</label><input id="treasuryAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="أدخل المبلغ"></div>
             <div class="finance-field"><label for="treasuryReference">رقم مرجع (اختياري)</label><input id="treasuryReference" maxlength="120" placeholder="رقم حوالة أو إيصال"></div>
@@ -3830,7 +3830,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <div class="finance-section-heading"><div><span class="finance-kicker">NEW TRANSACTION</span><h3>تسجيل حركة مالية</h3><p class="small">أضف رأس مال أو مصروفاً يدوياً، أو سجّل بيعاً عند الحاجة.</p></div><span class="finance-section-icon">✍️</span></div>
           <div class="finance-form finance-form-grid">
             <div class="finance-field"><label for="financeType">نوع الحركة</label><select id="financeType" onchange="updateFinanceForm()"><option value="capital">إضافة رأس مال</option><option value="sale">تسجيل بيع منتج</option><option value="expense">تسجيل مصروف</option></select></div>
-            <div class="finance-field"><label for="financeCurrency">العملة</label><select id="financeCurrency"><option value="USD">دولار أمريكي (USD)</option><option value="SYP">ليرة سورية (SYP)</option></select></div>
+            <div class="finance-field"><label for="financeCurrency">العملة</label><select id="financeCurrency"><option value="USD">دولار أمريكي (USD)</option><option value="SYP">ليرة سورية جديدة (SYP)</option></select></div>
             <div class="finance-field finance-field-wide"><label for="financeTitle">وصف الحركة</label><input id="financeTitle" type="text" maxlength="160" placeholder="مثلاً: رأس مال بداية المتجر أو فاتورة إنترنت"></div>
             <div id="financeSaleFields" class="hidden finance-field-wide finance-sale-grid">
               <div class="finance-field"><label for="financeProductName">اسم المنتج</label><input id="financeProductName" type="text" maxlength="160" placeholder="اسم المنتج أو الاشتراك"></div>
@@ -7018,7 +7018,7 @@ async function loadAdminPanel(){
 function financeMoney(value,currency){
   const amount=Number(value||0);
   const digits=currency==="SYP"?0:2;
-  return amount.toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits})+(currency==="USD"?" $":" SYP");
+  return amount.toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits})+(currency==="USD"?" $":" ل.س جديدة");
 }
 
 function renderFinance(finance){
@@ -7031,7 +7031,7 @@ function renderFinance(finance){
     const card=document.createElement("div");
     card.className="finance-card";
     const heading=document.createElement("strong");
-    heading.textContent=currency==="USD"?"حساب الدولار":"حساب الليرة السورية";
+    heading.textContent=currency==="USD"?"حساب الدولار":"حساب الليرة السورية الجديدة";
     const lines=[
       "رأس المال: "+financeMoney(t.capital,currency),
       "إجمالي المبيعات: "+financeMoney(t.sales,currency),
@@ -9047,7 +9047,7 @@ body:has(#authScreen:not(.hidden))>header{display:none!important}
 <script src="./notification-enhancements.js?v=20261119-collapse-v3"></script>
 <script src="./android-back-navigation.js?v=20261124-guest-back-fix-1"></script>
 <script src="./loyalty-coupons.js?v=20261121-club-v4"></script>
-<script src="./finance-treasury.js?v=20261122-treasury-v1"></script>
+<script src="./finance-treasury.js?v=20261127-new-syp-v2"></script>
 <script src="./finance-pricing.js?v=20261127-new-syp-v4"></script>
 <script>
 (function(){
