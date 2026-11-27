@@ -5,14 +5,6 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
 });
 
-function constantTimeEqual(a: string, b: string) {
-  const aa = new TextEncoder().encode(a), bb = new TextEncoder().encode(b);
-  if (aa.length !== bb.length) return false;
-  let diff = 0;
-  for (let i = 0; i < aa.length; i++) diff |= aa[i] ^ bb[i];
-  return diff === 0;
-}
-
 async function signedGet(path: string, token: string, secret: string): Promise<{ response: Response; payload: unknown }> {
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const headers: Record<string, string> = { "api-token": token, "Accept": "application/json" };
@@ -36,19 +28,27 @@ async function signedGet(path: string, token: string, secret: string): Promise<{
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
-  const expectedSecret = Deno.env.get("BARAN_HOMSCARD_WORKER_SECRET") ?? "";
-  const suppliedSecret = req.headers.get("x-baran-worker-secret") ?? "";
-  if (!expectedSecret || !suppliedSecret || !constantTimeEqual(expectedSecret, suppliedSecret)) {
-    return json({ error: "Unauthorized" }, 401);
-  }
-
   const url = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const token = Deno.env.get("HOMSCARD_API_TOKEN");
   const hmacSecret = Deno.env.get("HOMSCARD_HMAC_SECRET") ?? "";
   if (!url || !serviceKey || !token) return json({ error: "Worker server configuration is incomplete" }, 503);
 
+  const rawBody = await req.text();
+  let body: unknown;
+  try { body = rawBody ? JSON.parse(rawBody) : null; } catch { return json({ error: "Invalid JSON" }, 400); }
+  if (!body || typeof body !== "object" || (body as { source?: string }).source !== "cron") {
+    return json({ error: "Invalid worker payload" }, 400);
+  }
+
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const timestamp = req.headers.get("x-baran-timestamp") ?? "";
+  const signature = req.headers.get("x-baran-signature") ?? "";
+  const { data: signatureValid, error: signatureError } = await admin.rpc(
+    "baran_verify_homscard_reconcile_signature",
+    { p_timestamp: timestamp, p_body: rawBody, p_signature: signature },
+  );
+  if (signatureError || signatureValid !== true) return json({ error: "Unauthorized" }, 401);
   const { data: supplier, error: supplierError } = await admin.from("suppliers")
     .select("id").eq("name", "HomsCard").maybeSingle();
   if (supplierError || !supplier?.id) return json({ error: "HomsCard supplier record is unavailable" }, 503);
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     .or("next_retry_at.is.null,next_retry_at.lte." + now)
     .not("supplier_order_uuid", "is", null)
     .order("updated_at", { ascending: true })
-    .limit(20);
+    .limit(3);
   if (rowsError) {
     console.error("BARAN_HOMSCARD_RECONCILE_QUEUE_READ_FAILED", rowsError.message);
     return json({ error: "Unable to load reconciliation queue" }, 500);
