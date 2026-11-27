@@ -61,7 +61,7 @@
       '<div class="fx-monitor-card"><div class="finance-section-heading"><div><span class="finance-kicker">LIVE SYRIAN FX</span><h3>مراقب سعر الصرف السوري التلقائي</h3>' +
       '<p class="small">مرجع دمشق · مصدران مستقلان · تحديث مجدول كل 6 ساعات</p></div><span class="finance-section-icon">📡</span></div>' +
       '<div class="fx-monitor-grid">' +
-      '<div class="fx-monitor-stat"><span class="fx-monitor-meta">سعر التحويل المعتمد للتكلفة</span><strong dir="ltr">' + syp(state.applied_rate_old) + '</strong><span class="fx-monitor-meta">الليرة القديمة لكل دولار</span></div>' +
+      '<div class="fx-monitor-stat"><span class="fx-monitor-meta">سعر التحويل المعتمد للتكلفة</span><strong dir="ltr">' + (state.applied_rate_old == null ? '—' : syp(state.applied_rate_old)) + '</strong><span class="fx-monitor-meta">الليرة القديمة لكل دولار</span></div>' +
       sourceCard("Liraty", latest.Liraty) + sourceCard("LiraScope", latest.LiraScope) +
       '</div><div class="fx-monitor-meta">الحالة: ' + esc(statusLabels[state.status] || state.status || "غير معروف") +
       ' · فرق المصدرين: ' + (state.source_difference_percent == null ? "—" : number(state.source_difference_percent,2) + "%") +
@@ -83,7 +83,8 @@
           renderFxMonitor(latestData, error.message);
           return;
         }
-        renderFxMonitor(result, result.status === "success" ? "تمت مطابقة المصدرين وتحديث سعر السوق." : (result.message || "لم نعتمد سعراً جديداً."));
+        const latestData = await window.callFxRatesApi();
+        renderFxMonitor(latestData, result.status === "success" ? "تمت مطابقة المصدرين وتحديث سعر السوق." : (result.message || "لم نعتمد سعراً جديداً."));
       } catch (error) {
         status.textContent = "تعذر الفحص: " + (error?.message || "خطأ غير معروف");
       } finally {
