@@ -246,8 +246,8 @@ test("shared HomsCard variable-quantity cards mount in games, apps, telecom and 
   assert.match(instantAppsUi, /max_quantity/);
 });
 test("mobile-first HomsCard app storefront assets are mounted", () => {
-  assert.match(indexHtml, /baran-homscard-instant-apps\.css/);
-  assert.match(indexHtml, /baran-homscard-instant-apps\.js/);
+  assert.match(indexHtml, /baran-homscard-instant-apps(?:-[\w-]+)?\.css/);
+  assert.match(indexHtml, /baran-homscard-instant-apps(?:-[\w-]+)?\.js/);
   assert.match(instantAppsCss, /@media\(max-width:360px\)/);
   assert.match(instantAppsCss, /\.baran-ia-modal/);
 });
@@ -284,4 +284,19 @@ test("Variable checkout invalidates the displayed quote after quantity, player I
   assert.match(instantAppsUi, /currency\.addEventListener\("change",\(\)=>\{paymentCurrency=currency\.value;quote=null;/);
   assert.match(instantAppsUi, /function changeQuantity\(direction\).*quote=null;/);
   assert.match(instantAppsUi, /orderSubmitted/);
+});
+
+test("HomsCard variable product flow opens a dedicated details stage before checkout", () => {
+  assert.match(instantAppsUi, /function openProductDetails\(product\)/);
+  assert.match(instantAppsUi, /baranIaDetails/);
+  assert.match(instantAppsUi, /baranIaDetailImage/);
+  assert.match(instantAppsUi, /baranIaDetailLimits/);
+  assert.match(instantAppsUi, /عرض التفاصيل/);
+  assert.match(instantAppsUi, /شراء الآن/);
+  assert.match(instantAppsUi, /رجوع لتفاصيل المنتج/);
+});
+test("HomsCard quantity shortcuts are derived from each product limits and are not represented as fixed packages", () => {
+  assert.match(instantAppsUi, /const vals=\[min,snap\(min\*10\),snap\(min\*100\),max\]/);
+  assert.match(instantAppsUi, /اختيارات للكمية وليست باقات ثابتة/);
+  assert.doesNotMatch(instantAppsUi, /\[200000,500000,1000000\]/);
 });

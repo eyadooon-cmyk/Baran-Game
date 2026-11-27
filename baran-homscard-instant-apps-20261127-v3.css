@@ -1,0 +1,85 @@
+/* BARAN GAME — polished HomsCard instant-app catalog and checkout */
+#appsStore .baran-auto-hero{margin-bottom:18px}
+.baran-variable-products{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+.baran-variable-products .baran-ia-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:20px 0 16px}
+.baran-variable-products .baran-ia-kicker{display:block;color:#c69ae8;font-size:10px;font-weight:900;letter-spacing:1.4px}
+.baran-variable-products .baran-ia-heading h3{margin:5px 0;color:#fff;font-size:21px;font-weight:950}
+.baran-variable-products .baran-ia-heading p{margin:0;color:#c8bdd1;font-size:12px;line-height:1.8}
+.baran-variable-products .baran-ia-count{flex:0 0 auto;padding:7px 10px;border:1px solid #76578e;border-radius:999px;color:#e5c9fa;font-size:11px}
+.baran-variable-products .baran-ia-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.baran-variable-products .baran-ia-card{min-width:0;overflow:hidden;border:1px solid #624775;border-radius:18px;background:linear-gradient(155deg,#2b1d38,#14101b 82%);box-shadow:0 12px 25px #0004}
+.baran-variable-products .baran-ia-art{height:clamp(112px,32vw,190px);position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 25%,#8052a5,#24182e 70%)}
+.baran-variable-products .baran-ia-art img{width:100%;height:100%;object-fit:cover;display:block}
+.baran-variable-products .baran-ia-placeholder{font-size:48px;color:#e7c7ff;text-shadow:0 4px 20px #0008}
+.baran-variable-products .baran-ia-live{position:absolute;top:9px;right:9px;padding:6px 8px;border-radius:999px;background:#1a9b70;color:#fff;font-size:10px;font-weight:900;box-shadow:0 3px 12px #0005}
+.baran-variable-products .baran-ia-card-body{padding:12px;display:grid;gap:9px}
+.baran-variable-products .baran-ia-card h4{margin:0;color:#fff;font-size:15px;font-weight:950;line-height:1.5}
+.baran-variable-products .baran-ia-range{margin:0;color:#bfb1ca;font-size:10px;line-height:1.7}
+.baran-variable-products .baran-ia-unit{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px 9px;border-radius:10px;background:#ffffff0b}
+.baran-variable-products .baran-ia-unit small{color:#c6b7d0;font-size:10px}
+.baran-variable-products .baran-ia-unit strong{color:#f0d7ff;font-size:12px;direction:ltr}
+.baran-variable-products .baran-ia-buy{width:100%;min-height:42px;border:0;border-radius:12px;background:linear-gradient(110deg,#d4a3f4,#9661c3);color:#1d1028;font-size:13px;font-weight:1000}
+.baran-variable-products .baran-ia-empty,.baran-variable-products .baran-ia-loading{padding:20px;border:1px dashed #705583;border-radius:15px;background:#21182b;color:#e3d3ee;text-align:center;font-size:13px;line-height:1.8}
+.baran-ia-overlay[hidden]{display:none!important}
+.baran-ia-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:14px;background:#09060dcf;backdrop-filter:blur(8px)}
+.baran-ia-modal{width:min(100%,480px);max-height:min(92dvh,780px);overflow:auto;padding:19px;border:1px solid #76558d;border-radius:22px;background:linear-gradient(160deg,#2a1c36,#120e18 72%);box-shadow:0 25px 80px #0009;color:#fff}
+.baran-ia-modal-top{display:flex;align-items:center;justify-content:space-between}
+.baran-ia-close{width:36px;height:36px;border:1px solid #705381;border-radius:50%;background:#ffffff0c;color:#fff;font-size:24px}
+.baran-ia-modal h3{margin:8px 0 15px;font-size:22px}
+.baran-ia-product-summary{display:grid;gap:5px;padding:13px;border:1px solid #6d4c82;border-radius:14px;background:#ffffff08}
+.baran-ia-product-summary strong{font-size:17px}
+.baran-ia-product-summary span{color:#bcebd7;font-size:12px}
+.baran-ia-product-summary small{color:#e2c7f5;direction:ltr;text-align:right}
+.baran-ia-form{display:grid;gap:9px;margin-top:16px}
+.baran-ia-form label{font-size:12px;font-weight:900;color:#e7d9f0}
+.baran-ia-form input{width:100%;min-width:0;min-height:46px;padding:10px 12px;border:1px solid #76598a;border-radius:12px;background:#0f0b15;color:#fff;font-size:16px}
+.baran-ia-quantity-row{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:8px}
+.baran-ia-step{border:1px solid #966db0;border-radius:12px;background:#3a2850;color:#fff;font-size:24px}
+.baran-ia-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.baran-ia-preset{min-width:0;padding:9px 3px;border:1px solid #73548a;border-radius:10px;background:#ffffff0b;color:#ead8f8;font-size:11px;font-weight:850}
+.baran-ia-quote{display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px;padding:13px;border:1px solid #388b6e;border-radius:14px;background:#12372d}
+.baran-ia-quote span{color:#c7e8db;font-size:12px}
+.baran-ia-quote strong{grid-column:2;grid-row:1/3;color:#b9f4d8;font-size:21px;direction:ltr}
+.baran-ia-quote small{color:#c7e8db;font-size:10px}
+.baran-ia-note{margin:0;color:#bdb0c8;font-size:10px;line-height:1.8}
+.baran-ia-status{min-height:18px;margin:0;font-size:11px;line-height:1.7}
+.baran-ia-status.is-error{color:#ffaaa9}.baran-ia-status.is-ok{color:#a7e6c6}
+.baran-ia-actions{display:grid;grid-template-columns:1fr 1.4fr;gap:9px;margin-top:5px}
+.baran-ia-review,.baran-ia-cancel{min-height:46px;border-radius:12px;font-weight:950}
+.baran-ia-review{border:0;background:linear-gradient(110deg,#d4a3f4,#9661c3);color:#1d1028}
+.baran-ia-review:disabled{opacity:.55}
+.baran-ia-cancel{border:1px solid #75578a;background:#ffffff08;color:#fff}
+body.baran-ia-modal-open{overflow:hidden}
+@media(max-width:360px){.baran-variable-products .baran-ia-grid{gap:8px}.baran-variable-products .baran-ia-card-body{padding:9px}.baran-variable-products .baran-ia-card h4{font-size:13px}.baran-ia-modal{padding:14px}.baran-ia-presets{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:700px){.baran-variable-products .baran-ia-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}}
+
+.baran-ia-form [hidden]{display:none!important}
+
+.baran-ia-form select#baranIaCurrency{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--border-color,#d7dbe2);border-radius:12px;background:var(--card-bg,#fff);color:inherit;font:inherit}
+.baran-ia-purchase,.baran-ia-check{min-height:46px;padding:11px 16px;border:0;border-radius:12px;background:#6d42c7;color:#fff;font-weight:800;cursor:pointer}
+.baran-ia-purchase:disabled,.baran-ia-check:disabled{opacity:.5;cursor:not-allowed}
+.baran-ia-check{background:#24212d}
+.baran-ia-actions{display:flex;flex-wrap:wrap;gap:8px}
+.baran-ia-actions button{flex:1 1 130px}
+
+/* Customer-facing catalog: quiet skeletons instead of supplier loading text */
+.baran-variable-products .baran-ia-skeleton{display:inline-block;vertical-align:top;width:calc(50% - 7px);height:238px;margin:0 10px 12px 0;border:1px solid #624775;border-radius:18px;background:linear-gradient(100deg,#21182b 20%,#3a2a49 38%,#21182b 58%);background-size:220% 100%;animation:baranCatalogShimmer 1.35s ease-in-out infinite}
+@keyframes baranCatalogShimmer{to{background-position-x:-220%}}
+@media(min-width:700px){.baran-variable-products .baran-ia-skeleton{width:calc(33.333% - 12px);height:270px}}
+@media(prefers-reduced-motion:reduce){.baran-variable-products .baran-ia-skeleton{animation:none}}
+
+/* Two-stage product details then checkout */
+.baran-ia-details{display:grid;gap:12px;padding:4px 0 2px}
+.baran-ia-details[hidden],.baran-ia-form[hidden]{display:none!important}
+.baran-ia-detail-image{height:clamp(170px,48vw,260px);display:grid;place-items:center;overflow:hidden;border:1px solid #6c4e82;border-radius:17px;background:radial-gradient(circle at 50% 35%,#76518d,#1b1424 72%)}
+.baran-ia-detail-image img{width:100%;height:100%;object-fit:contain;display:block}
+.baran-ia-details h4{margin:2px 0 0;color:#fff;font-size:21px;font-weight:950}
+.baran-ia-detail-description,.baran-ia-detail-limits,.baran-ia-detail-target{margin:0;color:#cbbbd7;font-size:12px;line-height:1.9}
+.baran-ia-detail-price{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid #76558d;border-radius:13px;background:#ffffff0b}
+.baran-ia-detail-price small{color:#d4c2e1;font-size:11px}
+.baran-ia-detail-price strong{color:#f0d7ff;font-size:17px;direction:ltr}
+.baran-ia-details-buy{min-height:48px;border:0;border-radius:13px;background:linear-gradient(110deg,#d4a3f4,#9661c3);color:#1d1028;font-size:15px;font-weight:1000}
+.baran-ia-back{min-height:44px;padding:9px 12px;border:1px solid #76558d;border-radius:11px;background:#ffffff0b;color:#f1e4fa;font-weight:850}
+.baran-ia-presets-label{grid-column:1/-1;color:#cbbbd7;font-size:10px;line-height:1.7}
+.baran-ia-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+.baran-ia-modal h3{margin-bottom:13px}

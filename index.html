@@ -2201,7 +2201,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 #games .baran-auto-category-grid .baran-auto-category-art{font-size:0!important;color:transparent!important}
 @media(max-width:380px){#games .baran-auto-category-grid .baran-auto-category-art{min-height:118px!important}}
 </style>
-<link rel="stylesheet" href="./baran-homscard-instant-apps.css?v=20261127-lifecycle-5">
+<link rel="stylesheet" href="./baran-homscard-instant-apps-20261127-v3.css">
 </head>
 <body>
 
@@ -4113,7 +4113,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 </div>
 
 <script src="./products.js"></script>
-<script src="./baran-homscard-instant-apps.js?v=20261127-lifecycle-5"></script>
+<script src="./baran-homscard-instant-apps-20261127-v3.js"></script>
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
 <script src="./community.js?v=20261117-attachments-gate-1"></script>
@@ -4780,7 +4780,7 @@ function showSection(id,button,options){
   if(id==="chatgptStore")loadBaranServiceCatalog("ai","chatgptProductCatalog","باقات ChatGPT","🤖");
   if(id==="vpnStore")loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️");
   if(id==="giftCardsStore")loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁");
-  if(id==="appsStore")renderBaranHomsCardAppsCatalog();
+  
   if(id==="subscriptionStore")loadBaranServiceCatalog("subscription","subscriptionProductCatalog","اشتراكات الترفيه والمشاهدة","📺");
   if(id==="baroManual"){const box=document.getElementById("baroCustomerCatalog"),orders=document.getElementById("baroCustomerOrders");if(typeof loadBaroCustomer!=="function"){const msg="تعذر تشغيل BARO: ملف baro.js لم يحمّل أو يحتوي خطأ JavaScript. أعد تحميل الصفحة، وإذا استمرت المشكلة أبلغ الدعم.";if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] loadBaroCustomer is unavailable");}else{try{const task=loadBaroCustomer();if(task&&typeof task.catch==="function")task.catch(error=>{const msg="تعذر تشغيل BARO: "+(error?.message||"خطأ غير معروف");if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] customer loader rejected",error);});}catch(error){const msg="تعذر تشغيل BARO: "+(error?.message||"خطأ غير معروف");if(box)box.textContent=msg;if(orders)orders.textContent=msg;console.error("[BARO] customer loader threw",error);}}}
   if(id==="orders"&&typeof loadMyOrders==="function")loadMyOrders();
@@ -4837,7 +4837,7 @@ async function refreshCurrentSection(){
       case "chatgptStore": await loadBaranServiceCatalog("ai","chatgptProductCatalog","باقات ChatGPT","🤖"); break;
       case "vpnStore": await loadBaranServiceCatalog("vpn","vpnProductCatalog","باقات VPN","🛡️"); break;
       case "giftCardsStore": await loadBaranServiceCatalog("gift_card","giftCardProductCatalog","بطاقات الهدايا","🎁"); break;
-      case "appsStore": renderBaranHomsCardAppsCatalog(); break;
+      case "appsStore": if(typeof window.loadBaranInstantApps==="function")window.loadBaranInstantApps(); break;
       case "wallet": await loadWallet(); break;
       case "orders": await loadMyOrders(); break;
       case "rewards": if(typeof loadMyRewards==="function")await loadMyRewards(); break;
