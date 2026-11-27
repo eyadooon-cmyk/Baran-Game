@@ -8046,10 +8046,13 @@ async function loadBaranJawakerCatalog(){
       const art=document.createElement("span");art.className="baran-package-art";art.textContent=String(product.product_code||"").includes("BOOSTER")?"⚡":"🪙";
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"منتج جواكر";
-      const price=document.createElement("span");price.className="game-package-price";price.textContent=baranMoneyText(product);
-      const note=document.createElement("small");note.className="game-package-pending";note.textContent=baranHasApprovedGamePrice(product)?"الشراء غير مفعّل حالياً":"بانتظار اعتماد السعر";
+      const isVariableTokens=String(product.product_code||"").toUpperCase()==="JAWAKER_TOKENS";
+      const price=document.createElement("span");price.className="game-package-price";price.textContent=isVariableTokens?"التسعير حسب عدد التوكنز":baranMoneyText(product);
+      const note=document.createElement("small");note.className="game-package-pending";note.textContent=isVariableTokens?"من 10,000 إلى 10,000,000 توكن · معاينة سعر فقط":(baranHasApprovedGamePrice(product)?"الشراء غير مفعّل حالياً":"بانتظار اعتماد السعر");
       content.append(art,name,description,price,note);
-      card.append(content);baranAddProductDetails(card,product,"جواكر");grid.append(card);
+      card.append(content);
+      if(isVariableTokens)baranRenderJawakerQuantityCalculator(card,product);
+      baranAddProductDetails(card,product,"جواكر");grid.append(card);
     });
     container.append(grid);
     baranAttachCatalogSearch(container,".baran-game-package-card","ابحث عن باقة جواكر...");
@@ -8065,6 +8068,49 @@ async function loadBaranJawakerCatalog(){
     retry.addEventListener("click",()=>{baranStoreSearchProducts=null;baranStoreSearchLoad=null;loadBaranJawakerCatalog();});
     container.append(message,retry);
   }
+}
+
+
+async function baranRenderJawakerQuantityCalculator(card,product){
+  const panel=document.createElement("section");
+  panel.className="baran-jawaker-quantity-quote";
+  panel.style.cssText="display:grid;gap:10px;padding:13px;margin-top:10px;border:1px solid #6b4c91;border-radius:14px;background:linear-gradient(145deg,#21172e,#120f19);";
+  const title=document.createElement("strong");title.textContent="شحن توكنز بكمية مخصصة";
+  const hint=document.createElement("small");hint.className="small";hint.textContent="أدخل Player ID والكمية المطلوبة. هذا فحص سعر فقط ولا ينشئ طلباً.";
+  const playerLabel=document.createElement("label");playerLabel.textContent="Player ID";
+  const player=document.createElement("input");player.type="text";player.inputMode="numeric";player.autocomplete="off";player.maxLength=100;player.placeholder="أدخل معرّف حساب جواكر";player.setAttribute("aria-label","Player ID");player.style.cssText="width:100%;padding:11px;border-radius:9px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
+  playerLabel.append(player);
+  const quantityLabel=document.createElement("label");quantityLabel.textContent="عدد التوكنز";
+  const quantity=document.createElement("input");quantity.type="number";quantity.min="10000";quantity.max="10000000";quantity.step="1";quantity.value="10000";quantity.inputMode="numeric";quantity.style.cssText="width:100%;padding:11px;border-radius:9px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
+  quantityLabel.append(quantity);
+  const currencyLabel=document.createElement("label");currencyLabel.textContent="عملة الدفع";
+  const currency=document.createElement("select");currency.style.cssText="width:100%;padding:11px;border-radius:9px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
+  [["SYP","الليرة السورية القديمة"],["USD","الدولار الأمريكي"]].forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;currency.append(option);});
+  currencyLabel.append(currency);
+  const button=document.createElement("button");button.type="button";button.className="primary";button.textContent="احسب السعر";
+  const result=document.createElement("div");result.className="small";result.setAttribute("aria-live","polite");result.style.cssText="padding:10px;border-radius:9px;background:#0d0a12;line-height:1.8;white-space:pre-line";result.textContent="أدخل البيانات ثم اضغط احسب السعر.";
+  const formatMoney=(value,digits=2)=>Number(value).toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits});
+  button.addEventListener("click",async()=>{
+    const qty=Number(quantity.value),playerId=player.value.trim();
+    if(!Number.isSafeInteger(qty)||qty<10000||qty>10000000){result.textContent="الكمية يجب أن تكون عدداً صحيحاً من 10,000 إلى 10,000,000.";return;}
+    if(!playerId||playerId.length<3){result.textContent="أدخل Player ID صحيحاً قبل حساب السعر.";return;}
+    if(!currentUser){result.textContent="سجّل الدخول أولاً لحساب السعر.";return;}
+    button.disabled=true;button.textContent="جاري حساب السعر...";
+    result.textContent="يتم حساب السعر من آخر تكلفة HomsCard المعتمدة. لا يتم إنشاء طلب أو خصم رصيد.";
+    try{
+      const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{action:"jawaker_quote",quantity:qty,player_id:playerId,payment_currency:currency.value}});
+      if(error)throw error;
+      if(!data?.success||!data?.quote)throw new Error(data?.error||"تعذر حساب السعر.");
+      const q=data.quote;
+      const lines=["الكمية: "+Number(q.quantity).toLocaleString("en-US")+" توكن","سعر البيع: "+(currency.value==="USD"?formatMoney(q.sale_usd,2)+" $":formatMoney(q.sale_syp,0)+" ل.س قديمة"),"سعر الصرف التجاري: "+formatMoney(q.commercial_rate,2)+" ل.س لكل دولار","هامش الربح المطبق: "+formatMoney(q.markup_percent,2)+"%"];
+      if(q.is_admin){lines.push("تكلفة المورد: "+formatMoney(q.cost_usd,4)+" $","الربح المتوقع: "+formatMoney(q.profit_usd,4)+" $ · "+formatMoney(q.profit_syp,0)+" ل.س");}
+      lines.push("معاينة فقط — الشراء والشحن والخصم غير مفعّلة.");
+      result.textContent=lines.join("\n");
+    }catch(error){result.textContent=error?.message||"تعذر حساب السعر. حاول مجدداً.";}
+    finally{button.disabled=false;button.textContent="احسب السعر";}
+  });
+  panel.append(title,hint,playerLabel,quantityLabel,currencyLabel,button,result);
+  card.append(panel);
 }
 
 document.addEventListener("input",event=>{
