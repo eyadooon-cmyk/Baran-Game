@@ -61,7 +61,9 @@ create table private.baran_supplier_order_attempts (
   attempt_number integer not null, supplier_order_uuid uuid default gen_random_uuid()
 );
 create table public.test_supplier_control (
-  supplier_id uuid not null, queued boolean not null default true
+  supplier_id uuid not null, queued boolean not null default true,
+  create_attempt boolean not null default true,
+  create_supplier_uuid boolean not null default true
 );
 
 create or replace function public.baran_supplier_prepare_order(p_order_id uuid)
@@ -71,9 +73,11 @@ declare v_supplier uuid; v_queued boolean; v_attempt uuid;
 begin
   select supplier_id, queued into v_supplier, v_queued
   from public.test_supplier_control limit 1;
-  if v_queued then
-    insert into private.baran_supplier_order_attempts(order_id,attempt_number)
-    values(p_order_id,1) returning id into v_attempt;
+  if v_queued and (select create_attempt from public.test_supplier_control limit 1) then
+    insert into private.baran_supplier_order_attempts(order_id,attempt_number,supplier_order_uuid)
+    values(p_order_id,1,case when (select create_supplier_uuid from public.test_supplier_control limit 1)
+      then gen_random_uuid() else null end)
+    returning id into v_attempt;
   end if;
   return jsonb_build_object(
     'supplier_id',v_supplier,'queued',coalesce(v_queued,false),
@@ -108,9 +112,9 @@ values ('10000000-0000-0000-0000-000000000001','HomsCard',true);
 insert into public.products(id,product_code,name,catalog_group,price_usd)
 values ('20000000-0000-0000-0000-000000000001','PUBGM_60','PUBG 60','homscard_fixed',10);
 insert into public.supplier_products(supplier_id,product_id,supplier_sku,is_preferred,currency,unit_cost)
-values ('10000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','SKU-60',true,'USD',10);
+values ('10000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','60',true,'USD',10);
 insert into public.baran_homscard_audit_items(product_id,product_data,page_data,page_status)
-values ('SKU-60',
+values ('60',
   '{"product_type":"package","available":true,"params":["Player ID"],"price":10}',
   '{"text":"Enter Player ID"}','success');
 insert into public.store_settings(id,product_markup_percent,market_exchange_rate,fx_buffer_percent,exchange_rate)
@@ -185,8 +189,46 @@ begin
   select balance_usd into v_balance from public.wallets where user_id=v_user;
   if v_balance <> 100 then raise exception 'supplier mismatch wallet changed'; end if;
 
+  -- A non-numeric HomsCard SKU must fail before any order or wallet write.
+  update public.supplier_products set supplier_sku='SKU-60';
+  begin
+    perform public.baran_create_homscard_fixed_order(v_user,'PUBGM_60','player-01','USD',v_request);
+    raise exception 'expected invalid supplier SKU rejection';
+  exception when others then
+    if sqlerrm = 'expected invalid supplier SKU rejection' then raise; end if;
+  end;
+  select count(*) into v_count from public.orders;
+  select balance_usd into v_balance from public.wallets where user_id=v_user;
+  if v_count <> 0 or v_balance <> 100 then raise exception 'invalid SKU left financial side effects'; end if;
+  update public.supplier_products set supplier_sku='60';
+
+  -- A queued response without an attempt id must roll back all writes.
+  update public.test_supplier_control set create_attempt=false;
+  begin
+    perform public.baran_create_homscard_fixed_order(v_user,'PUBGM_60','player-01','USD',v_request);
+    raise exception 'expected missing supplier attempt rejection';
+  exception when others then
+    if sqlerrm = 'expected missing supplier attempt rejection' then raise; end if;
+  end;
+  select count(*) into v_count from public.orders;
+  select balance_usd into v_balance from public.wallets where user_id=v_user;
+  if v_count <> 0 or v_balance <> 100 then raise exception 'missing attempt left financial side effects'; end if;
+
+  -- An attempt without a supplier UUID must also roll back all writes.
+  update public.test_supplier_control set create_attempt=true,create_supplier_uuid=false;
+  begin
+    perform public.baran_create_homscard_fixed_order(v_user,'PUBGM_60','player-01','USD',v_request);
+    raise exception 'expected missing supplier UUID rejection';
+  exception when others then
+    if sqlerrm = 'expected missing supplier UUID rejection' then raise; end if;
+  end;
+  select count(*) into v_count from public.orders;
+  select balance_usd into v_balance from public.wallets where user_id=v_user;
+  if v_count <> 0 or v_balance <> 100 then raise exception 'missing supplier UUID left financial side effects'; end if;
+
   -- Successful transaction and duplicate retry: exactly one debit and ledger row.
-  update public.test_supplier_control set supplier_id=v_supplier,queued=true;
+  update public.test_supplier_control set supplier_id=v_supplier,queued=true,
+    create_attempt=true,create_supplier_uuid=true;
   v_result := public.baran_create_homscard_fixed_order(v_user,'PUBGM_60','player-01','USD',v_request);
   if coalesce((v_result->>'success')::boolean,false) is not true
      or coalesce((v_result->>'duplicate')::boolean,true) is not false then
