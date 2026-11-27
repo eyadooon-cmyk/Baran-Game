@@ -278,3 +278,10 @@ test("Variable checkout preserves request UUID on uncertain outcomes and polls p
   assert.match(instantAppsUi, /setTimeout\(\(\)=>\{pollCount\+\+;checkOrder\(true\);\},15000\)/);
   assert.match(instantAppsUi, /orderSubmitted/);
 });
+
+test("Variable checkout invalidates the displayed quote after quantity, player ID, or currency edits", () => {
+  assert.match(instantAppsUi, /player\.addEventListener\("input",\(\)=>\{quote=null;/);
+  assert.match(instantAppsUi, /currency\.addEventListener\("change",\(\)=>\{paymentCurrency=currency\.value;quote=null;/);
+  assert.match(instantAppsUi, /function changeQuantity\(direction\).*quote=null;/);
+  assert.match(instantAppsUi, /orderSubmitted/);
+});
