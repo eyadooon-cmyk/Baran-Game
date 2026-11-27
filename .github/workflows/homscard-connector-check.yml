@@ -12,6 +12,7 @@ on:
       - "tests/homscard-analysis.test.mjs"
       - "tests/homscard-fixed-checkout.test.mjs"
       - "tests/homscard-fixed-transaction-simulation.test.mjs"
+      - "tests/postgres/homscard-fixed-order.integration.sql"
       - "baran-homscard-fixed-checkout.js"
       - "baran-homscard-instant-apps-20261127-v3.js"
       - "homscard-analysis.js"
@@ -36,6 +37,19 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: baran_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d baran_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,6 +61,12 @@ jobs:
         run: node --test tests/homscard-fixed-checkout.test.mjs
       - name: Run isolated fixed-order transaction simulation
         run: node --test tests/homscard-fixed-transaction-simulation.test.mjs
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Run actual fixed-order RPC against ephemeral PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d baran_test -v ON_ERROR_STOP=1 -f tests/postgres/homscard-fixed-order.integration.sql
       - uses: denoland/setup-deno@v2
       - name: Type-check HomsCard Edge Function
         run: |
