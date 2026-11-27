@@ -80,6 +80,90 @@ Deno.serve(async (req: Request) => {
       return json({ success: true, report });
     }
 
+    if (body?.action === "homscard_app_quote") {
+      const productId = typeof body.product_id === "string" ? body.product_id.trim() : "";
+      const allowedAppIds = new Set(["18","280","49","37","3","1","45","8","43","25","893","910"]);
+      const quantity = Number(body.quantity);
+      const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
+      const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
+      if (!allowedAppIds.has(productId)) return json({ success: false, error: "هذا التطبيق غير موجود ضمن قائمة الكميات المتغيرة المعتمدة." }, 404);
+      if (!Number.isSafeInteger(quantity) || quantity <= 0) return json({ success: false, error: "أدخل كمية صحيحة." }, 400);
+      if (!playerId || playerId.length < 2 || playerId.length > 100) return json({ success: false, error: "أدخل معرّف الحساب المطلوب بشكل صحيح." }, 400);
+      if (!["USD","SYP"].includes(currency)) return json({ success: false, error: "عملة الدفع غير مدعومة." }, 400);
+
+      const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
+        .select("product_id,product_name,product_data,page_data,page_status,updated_at")
+        .eq("product_id", productId).eq("page_status", "success")
+        .order("updated_at", { ascending: false }).limit(8);
+      if (auditError) return json({ success: false, error: "تعذر قراءة تدقيق منتج HomsCard." }, 503);
+      const audited = (auditRows ?? []).find((row: any) =>
+        row?.product_data?.category === "تطبيقات" &&
+        row?.product_data?.product_type === "quantity" &&
+        row?.product_data?.available === true &&
+        Number(row?.product_data?.price) > 0 &&
+        typeof row?.page_data?.text === "string"
+      );
+      if (!audited) return json({ success: false, error: "تكلفة أو تفاصيل هذا التطبيق غير مؤكدة حالياً." }, 503);
+      const pageText = String(audited.page_data.text);
+      const limits = pageText.match(/الكمية[\\s\\S]{0,100}?من\\s*([0-9,]+)\\s*إلى\\s*([0-9,]+)/);
+      if (!limits) return json({ success: false, error: "حدود الكمية لم تُستخرج بشكل موثوق من صفحة المورد." }, 503);
+      const minQuantity = Number(limits[1].replace(/,/g, ""));
+      const maxQuantity = Number(limits[2].replace(/,/g, ""));
+      if (!Number.isSafeInteger(minQuantity) || !Number.isSafeInteger(maxQuantity) || minQuantity < 1 || maxQuantity < minQuantity || quantity < minQuantity || quantity > maxQuantity) {
+        return json({ success: false, error: "الكمية لهذا التطبيق يجب أن تكون بين " + minQuantity.toLocaleString("en-US") + " و" + maxQuantity.toLocaleString("en-US") + "." }, 400);
+      }
+      const unitCost = Number(audited.product_data.price);
+      if (!Number.isFinite(unitCost) || unitCost <= 0) return json({ success: false, error: "سعر وحدة المورد غير صالح." }, 503);
+
+      const { data: settings, error: settingsError } = await admin.from("store_settings")
+        .select("market_exchange_rate,fx_buffer_percent,product_markup_percent")
+        .eq("id", "main").maybeSingle();
+      if (settingsError || !settings) return json({ success: false, error: "إعدادات التسعير غير متاحة." }, 503);
+      const marketRate = Number(settings.market_exchange_rate);
+      const bufferPercent = Number(settings.fx_buffer_percent);
+      const markupPercent = Number(settings.product_markup_percent);
+      if (![marketRate,bufferPercent,markupPercent].every(Number.isFinite) || marketRate <= 0 || bufferPercent < 0 || markupPercent < 0) {
+        return json({ success: false, error: "إعدادات سعر الصرف أو هامش الربح غير صالحة." }, 503);
+      }
+      const commercialRate = marketRate * (1 + bufferPercent / 100);
+      const totalCost = unitCost * quantity;
+      const round = (value: number, digits: number) => Number((value + Number.EPSILON).toFixed(digits));
+      const saleUsd = round(totalCost * (1 + markupPercent / 100), 2);
+      const saleSyp = Math.round(totalCost * (1 + markupPercent / 100) * commercialRate);
+      const { data: adminRecord, error: adminCheckError } = await admin.from("admin_users")
+        .select("user_id").eq("user_id", user.id).maybeSingle();
+      if (adminCheckError) return json({ success: false, error: "تعذر التحقق من صلاحية الإدارة." }, 500);
+      const isAdmin = !!adminRecord;
+      const quote: Record<string, unknown> = {
+        product_id: productId,
+        product_name: audited.product_name,
+        quantity,
+        min_quantity: minQuantity,
+        max_quantity: maxQuantity,
+        sale_usd: saleUsd,
+        sale_syp: saleSyp,
+        commercial_rate: round(commercialRate, 2),
+        markup_percent: markupPercent,
+        currency,
+      };
+      if (isAdmin) {
+        quote.cost_usd = round(totalCost, 6);
+        quote.profit_usd = round(saleUsd - totalCost, 6);
+        quote.profit_syp = saleSyp - Math.round(totalCost * commercialRate);
+        quote.is_admin = true;
+      }
+      return json({
+        success: true,
+        mode: "read_only_quote",
+        can_create_order: false,
+        can_purchase: false,
+        charged: false,
+        order_created: false,
+        quote,
+        message: "تم حساب سعر المعاينة فقط من تكلفة وحدة HomsCard وإعدادات باران. لم يتم إنشاء طلب أو تنفيذ شحن أو خصم رصيد.",
+      });
+    }
+
     if (body?.action === "jawaker_quote") {
       const quantity = Number(body.quantity);
       const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
