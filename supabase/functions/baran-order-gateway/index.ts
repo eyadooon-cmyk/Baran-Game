@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { parseHomsCardCheck } from "../baran-homscard-reconcile/core.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -268,34 +269,33 @@ Deno.serve(async (req: Request) => {
 
       const checkPath="/check.php?uuid=1&orders="+encodeURIComponent(supplierUuid);
       const settle=async (data:any)=>{
-        const state=String(data?.status||"").toLowerCase();
-        if(state==="completed"){
-          const total=Number(data?.price), unit=total/quantity;
-          if(!Number.isFinite(unit)||unit<0||!String(data?.order_id||supplierUuid)){
-            await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"رد نجاح المورد لا يحتوي تكلفة أو مرجعاً صالحاً."});
-            return {status:"awaiting_supplier",message:"وصل رد غير مكتمل من المورد؛ الطلب قيد التحقق."};
+        const parsed=parseHomsCardCheck({status:"OK",data:[data]},supplierUuid);
+        if(parsed.kind==="completed"){
+          if(parsed.quantity!==quantity || parsed.delivery.length>2000){
+            await admin.rpc("baran_supplier_finalize_order",{p_order_id:orderId,p_result:"unknown",p_reason:"بيانات نجاح المورد لا تطابق UUID أو كمية الطلب أو حد بيانات التسليم."});
+            return {status:"awaiting_supplier",message:"وصل رد غير مطابق للطلب؛ أبقيناه قيد التحقق دون تسوية مالية."};
           }
+          const {error:deliveryError}=await admin.from("order_fulfillment")
+            .update({supplier_delivery:parsed.delivery}).eq("order_id",orderId);
+          if(deliveryError) throw deliveryError;
           const {error}=await admin.rpc("baran_supplier_finalize_order",{
-            p_order_id:orderId,p_result:"succeeded",p_supplier_reference:String(data.order_id||supplierUuid),
-            p_supplier_unit_cost:unit,p_cost_currency:"USD",p_reason:null,
+            p_order_id:orderId,p_result:"succeeded",p_supplier_reference:parsed.supplierOrderId,
+            p_supplier_unit_cost:parsed.totalCost/parsed.quantity,p_cost_currency:"USD",p_reason:null,
           });
           if(error)throw error;
-          if(data.delivery!==undefined&&data.delivery!==null){
-            await admin.from("order_fulfillment").update({supplier_delivery:String(data.delivery).slice(0,2000)}).eq("order_id",orderId);
-          }
           return {status:"completed",message:"تم تأكيد تنفيذ الطلب من HomsCard."};
         }
-        if(state==="cancelled"){
+        if(parsed.kind==="failed"){
           const {error}=await admin.rpc("baran_supplier_finalize_order",{
-            p_order_id:orderId,p_result:"failed",p_supplier_reference:String(data?.order_id||supplierUuid),
-            p_reason:"أكد HomsCard أن الطلب ملغي؛ تم طلب استرداد المبلغ لمحفظة الزبون.",
+            p_order_id:orderId,p_result:"failed",p_supplier_reference:parsed.supplierOrderId,
+            p_reason:"أكد HomsCard إلغاء الطلب؛ تم طلب استرداد المبلغ لمحفظة الزبون.",
           });
           if(error)throw error;
           return {status:"rejected",message:"أُلغي الطلب لدى المورد وتمت معالجة الاسترداد."};
         }
         await admin.rpc("baran_supplier_finalize_order",{
-          p_order_id:orderId,p_result:"unknown",p_supplier_reference:String(data?.order_id||supplierUuid),
-          p_reason:"الطلب ما زال pending أو لم تصل نتيجة مؤكدة من HomsCard.",
+          p_order_id:orderId,p_result:"unknown",
+          p_reason:parsed.reason||"الطلب ما زال pending أو لم تصل نتيجة مؤكدة من HomsCard.",
         });
         return {status:"awaiting_supplier",message:"الطلب قيد التنفيذ أو التحقق؛ لن نكرر الإرسال أو الاسترداد قبل تأكيد النتيجة."};
       };
