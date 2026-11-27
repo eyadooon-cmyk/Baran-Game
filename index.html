@@ -3073,7 +3073,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
             <button type="button" class="admin-hub-card" data-admin-search="الطلبات متابعة الطلبات حالات شحن شراء orders" onclick="showAdminPanel('orders')"><span class="admin-hub-icon">📦</span><strong>غرفة متابعة الطلبات</strong><small>راجع الطلبات وحالاتها وتفاصيل التنفيذ، وتابع ما يحتاج إلى تدخل.</small><span class="admin-hub-open">متابعة الطلبات <b>←</b></span></button>
           </div></section>
           <section class="admin-hub-group" data-admin-group><div class="admin-hub-group-title"><span>02</span><div><strong>المنتجات والتجارة</strong><small>إدارة ما نبيعه، جاهزية الكتالوج، العروض، وبرامج الولاء.</small></div><em>CATALOG & SALES</em></div><div class="admin-hub-grid">
-            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="HomsCard حمص كارد المورد الاتصال الكتالوج التدقيق" onclick="showAdminPanel('suppliers').then(()=>document.getElementById('homscardHubSection')?.scrollIntoView({behavior:'smooth',block:'start'}))"><span class="admin-hub-icon">🏛️</span><strong>حمص كارد · المورد المعتمد</strong><small>بطاقة مستقلة للاتصال والكتالوج والتدقيق وتقرير الجاهزية، دون شراء أو شحن.</small><span class="admin-hub-open">فتح مركز حمص كارد <b>←</b></span></button>
+            <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="HomsCard حمص كارد المورد الاتصال الكتالوج التدقيق" onclick="showAdminPanel('homscard').then(()=>document.getElementById('homscardHubSection')?.scrollIntoView({behavior:'smooth',block:'start'}))"><span class="admin-hub-icon">🏛️</span><strong>حمص كارد · المورد المعتمد</strong><small>بطاقة مستقلة للاتصال والكتالوج والتدقيق وتقرير الجاهزية، دون شراء أو شحن.</small><span class="admin-hub-open">فتح مركز حمص كارد <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="الموردون المنتجات الاسعار التكلفة الربط api catalog suppliers" onclick="showAdminPanel('suppliers')"><span class="admin-hub-icon">🤝</span><strong>الموردون والكتالوج</strong><small>تابع الموردين، أسعار التكلفة، ربط المنتجات، وجاهزية البيع.</small><span class="admin-hub-open">إدارة المنتجات والموردين <b>←</b></span></button>
             <button type="button" class="admin-hub-card admin-hub-card-primary" data-admin-search="baro بَارو الشحن اليدوي كتالوج ليو طلبات يدوية عروض اسعار" onclick="showAdminPanel('baro')"><span class="admin-hub-icon">🟣</span><strong>BARO · الشحن اليدوي</strong><small>مساحة مستقلة لكتالوج BARO وطلباته اليدوية وعروض الأسعار، بعيداً عن الشحن الآلي.</small><span class="admin-hub-open">الدخول إلى BARO <b>←</b></span></button>
             <button type="button" class="admin-hub-card" data-admin-search="baro طلبات الشحن اليدوي متابعة التنفيذ player id" onclick="showAdminPanel('baro-orders')"><span class="admin-hub-icon">📦</span><strong>طلبات BARO اليدوية</strong><small>متابعة الطلبات والوصول المباشر إلى الطلب من الإشعار.</small><span class="admin-hub-open">فتح الطلبات <b>←</b></span></button>
@@ -3333,12 +3333,10 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <div id="baroFinanceStandaloneMount"></div>
       </div>
       
-      <div class="admin-subpanel hidden" data-admin-panel="suppliers">
-        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز الموردين والأسعار</h2></div>
-        <p class="small supplier-page-intro">إدارة أسعار المنتجات وربطها ومتابعة بيانات الموردين. أدوات حمص كارد موجودة هنا ضمن مركز الموردين.</p>
-        <div class="admin-workgroup-label"><span>02</span><div><strong>المورد المعتمد · HomsCard</strong><small>اختبار الاتصال وجلب الكتالوج والتدقيق — قراءة فقط</small></div></div>
-      <section id="homscardHubSection" class="homscard-hub-standalone" aria-label="حمص كارد · المورد المعتمد" style="margin:18px 0 28px;padding:14px;border:1px solid #7652a8;border-radius:18px;background:linear-gradient(145deg,rgba(65,38,91,.18),rgba(16,13,24,.72));">
-        <div style="margin:0 0 12px"><span class="baran-auto-eyebrow">HOMSCARD · APPROVED SUPPLIER</span><h2 style="margin:5px 0">مركز حمص كارد المستقل</h2><p class="small supplier-page-intro">إدارة اتصال المورد والكتالوج والتدقيق من داخل مركز الموردين. وضع قراءة فقط؛ لا شراء ولا شحن.</p></div>
+      <div class="admin-subpanel hidden" data-admin-panel="homscard">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز حمص كارد المستقل</h2></div>
+<section id="homscardHubSection" class="homscard-hub-standalone" aria-label="حمص كارد · المورد المعتمد" style="margin:18px 0 28px;padding:14px;border:1px solid #7652a8;border-radius:18px;background:linear-gradient(145deg,rgba(65,38,91,.18),rgba(16,13,24,.72));">
+        <div style="margin:0 0 12px"><span class="baran-auto-eyebrow">HOMSCARD · APPROVED SUPPLIER</span><h2 style="margin:5px 0">مركز حمص كارد المستقل</h2><p class="small supplier-page-intro">إدارة مستقلة لاتصال المورد والكتالوج والتدقيق. وضع قراءة فقط؛ لا شراء ولا شحن.</p></div>
         <div class="deposit-card supplier-provider-panel" id="homscardProviderPanel" style="display:block!important;visibility:visible!important;opacity:1!important;min-height:220px;border:1px solid #b58bd4;background:linear-gradient(145deg,rgba(65,38,91,.48),rgba(16,13,24,.98));">
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                   <span style="font-size:28px">🏛️</span>
@@ -3390,6 +3388,12 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
                 </div>
               </div>
       </section>
+      </div>
+      <div class="admin-subpanel hidden" data-admin-panel="suppliers">
+        <div class="admin-subpanel-head"><button type="button" class="secondary admin-back baran-back-button" onclick="closeAdminPanel()">← رجوع للأقسام</button><h2>مركز الموردين والأسعار</h2></div>
+        <p class="small supplier-page-intro">إدارة أسعار المنتجات وربطها ومتابعة بيانات الموردين. أدوات الموردين وربط المنتجات وإدارة الأسعار العامة.</p>
+        <div class="admin-workgroup-label"><span>02</span><div><strong>المورد المعتمد · HomsCard</strong><small>اختبار الاتصال وجلب الكتالوج والتدقيق — قراءة فقط</small></div></div>
+      
         <div class="admin-workgroup-label"><span>01</span><div><strong>حالة التشغيل</strong><small>تحقق من وضع الشحن الآلي قبل إدارة الموردين</small></div></div>
         <div class="deposit-card"><strong>الشحن الآلي · مسار المورد</strong><p class="small">هذا المفتاح مستقل عن BARO. فتحه يسمح ببوابة تجهيز الطلبات فقط؛ لا يعني أن موصل المورد الخارجي جاهز أو أن الشحن الفعلي يعمل.</p><button id="baranAutomaticToggle" class="secondary" type="button" onclick="toggleBaranAutomaticEnabled()" aria-pressed="false">تحميل حالة الشحن الآلي...</button><p id="baranAutomaticStatus" class="small" role="status" aria-live="polite">جاري التحقق من الحالة.</p></div>
         <hr style="border-color:#40334b;margin:24px 0">
