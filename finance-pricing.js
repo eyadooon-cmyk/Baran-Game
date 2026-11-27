@@ -58,7 +58,9 @@
         currentSyp: Number(product.price_syp || 0),
         saleUsd,
         saleSyp: saleUsd * commercial,
-        profitUsd: saleUsd * commercial / market - costUsd,
+        fxBufferSyp: costUsd * (commercial - market),
+        markupSyp: (saleUsd - costUsd) * commercial,
+        profitUsd: (saleUsd * commercial - costUsd * market) / market,
         profitSyp: saleUsd * commercial - costUsd * market,
         currency: link.currency
       };
@@ -79,7 +81,7 @@
       rows.map((row) => '<tr><td>' + esc(row.name) + '<small style="display:block;color:#a998b8">' + esc(row.code) + '</small></td>' +
         '<td dir="ltr">' + usd(row.costUsd) + '</td><td dir="ltr">' + syp(row.costAtMarket) + '</td>' +
         '<td dir="ltr">' + usd(row.saleUsd) + '</td><td dir="ltr">' + syp(row.saleSyp) + '</td>' +
-        '<td dir="ltr">' + syp(row.profitSyp) + '</td><td dir="ltr">' + usd(row.currentUsd) + ' / ' + syp(row.currentSyp) + '</td></tr>'
+        '<td dir="ltr">' + syp(row.fxBufferSyp) + '</td><td dir="ltr">' + syp(row.markupSyp) + '</td><td dir="ltr">' + syp(row.profitSyp) + '</td><td dir="ltr">' + usd(row.currentUsd) + ' / ' + syp(row.currentSyp) + '</td></tr>'
       ).join("") + '</tbody></table></div>';
   }
 
@@ -164,8 +166,8 @@
         product_markup_percent: Number($("financeProductMarkup")?.value)
       });
       const csv = [
-        ["product_code","product_name","supplier_cost_usd","cost_at_market_syp","suggested_sale_usd","suggested_sale_syp","expected_profit_syp","current_sale_usd","current_sale_syp"],
-        ...rows.map((row) => [row.code,row.name,row.costUsd,row.costAtMarket,row.saleUsd,row.saleSyp,row.profitSyp,row.currentUsd,row.currentSyp])
+        ["product_code","product_name","supplier_cost_usd","cost_at_market_syp","suggested_sale_usd","suggested_sale_syp","fx_buffer_reserve_syp","product_markup_syp","gross_spread_before_fees_syp","current_sale_usd","current_sale_syp"],
+        ...rows.map((row) => [row.code,row.name,row.costUsd,row.costAtMarket,row.saleUsd,row.saleSyp,row.fxBufferSyp,row.markupSyp,row.profitSyp,row.currentUsd,row.currentSyp])
       ].map((line) => line.map((value) => '"' + String(value == null ? "" : value).replace(/"/g,'""') + '"').join(",")).join("\r\n");
       const blob = new Blob(["\ufeff" + csv], {type:"text/csv;charset=utf-8"});
       const url = URL.createObjectURL(blob);
