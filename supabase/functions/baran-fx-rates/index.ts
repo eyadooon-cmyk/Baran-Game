@@ -4,7 +4,8 @@ const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ANON = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const OLD_FACTOR = 100;
 const MAX_AGE = 24 * 60 * 60 * 1000;
-const MIN_GAP = 15 * 60 * 1000;
+const CRON_MIN_GAP = 15 * 60 * 1000;
+const MANUAL_MIN_GAP = 6 * 60 * 60 * 1000;
 const ORIGINS = new Set(["https://baran-game.pages.dev","https://eyadooon-cmyk.github.io"]);
 const headers = (origin: string | null) => ({
  "Access-Control-Allow-Origin": origin && ORIGINS.has(origin) ? origin : "https://eyadooon-cmyk.github.io",
@@ -32,14 +33,14 @@ async function liraty() {
  if(p.unit!=="new"||Number(p.redenomination_factor)!==100)throw new Error("وحدة Liraty غير مؤكدة.");
  const x=(p.rates||[]).find((v:any)=>String(v.code).toUpperCase()==="USD");
  const b=num(x?.buy),s=num(x?.sell),t=date(p.updated_at);
- if(!b||!s||!t||Date.now()-new Date(t).getTime()>MAX_AGE)throw new Error("بيانات Liraty ناقصة أو قديمة.");
+ if(!b||!s||!t||Date.now()-new Date(t).getTime()>MAX_AGE||Date.now()-new Date(t).getTime() < -5*60*1000)throw new Error("بيانات Liraty ناقصة أو قديمة.");
  return normalized("Liraty",b,s,t);
 }
 async function lirascope() {
  const p=await json("https://lirascope.syria-cloud.sy/api/v1/rates/latest?currencies=USD&lang=ar");
  const x=(p.marketRates||[]).find((v:any)=>String(v.currency).toUpperCase()==="USD");
  const b=num(x?.buy),s=num(x?.sell),t=date(x?.timestampUtc??p.timestampUtc);
- if(!b||!s||!t||Date.now()-new Date(t).getTime()>MAX_AGE)throw new Error("بيانات LiraScope ناقصة أو قديمة.");
+ if(!b||!s||!t||Date.now()-new Date(t).getTime()>MAX_AGE||Date.now()-new Date(t).getTime() < -5*60*1000)throw new Error("بيانات LiraScope ناقصة أو قديمة.");
  return normalized("LiraScope",b,s,t);
 }
 Deno.serve(async(req:Request)=>{
@@ -72,12 +73,15 @@ Deno.serve(async(req:Request)=>{
   }
   if(action!=="refresh")return out({error:"Unsupported action."},400,origin);
   if(state.auto_update_enabled!==true)return out({success:true,skipped:true,state},200,origin);
-  if(state.last_attempt_at&&Date.now()-new Date(state.last_attempt_at).getTime()<MIN_GAP){
+  const manual = !cron && body.source !== "cron";
+  const priorAttempt = manual ? state.last_manual_at : state.last_attempt_at;
+  const requiredGap = manual ? MANUAL_MIN_GAP : CRON_MIN_GAP;
+  if(priorAttempt&&Date.now()-new Date(priorAttempt).getTime()<requiredGap){
    const {data:snapshots}=await admin.from("fx_rate_snapshots").select("*").order("fetched_at",{ascending:false}).limit(10);
    return out({success:true,cached:true,state,snapshots:snapshots||[],message:"آخر فحص خلال 15 دقيقة؛ استخدمنا البيانات المحفوظة."},200,origin);
   }
   const attempt=new Date().toISOString();
-  await admin.from("fx_rate_state").update({last_attempt_at:attempt,updated_at:attempt}).eq("id","main");
+  await admin.from("fx_rate_state").update({last_attempt_at:attempt,...(manual?{last_manual_at:attempt}:{}),updated_at:attempt}).eq("id","main");
   const results=await Promise.allSettled([liraty(),lirascope()]);
   const good=results.filter((x):x is PromiseFulfilledResult<any>=>x.status==="fulfilled").map(x=>x.value);
   const errors=results.filter((x):x is PromiseRejectedResult=>x.status==="rejected").map(x=>String(x.reason?.message||x.reason));
