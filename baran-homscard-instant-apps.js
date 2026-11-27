@@ -6,7 +6,7 @@
   const $=(id)=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const money=(v)=>{const n=Number(v);if(!Number.isFinite(n))return "—";if(n>0&&n<1e-12)return "<0.000000000001";return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:12});};
-  const productUnitPrice=(p)=>Number(p?.sale_unit_usd)>0?productUnitPrice(p):"يُحسب حسب الكمية";
+  const productUnitPrice=(p)=>Number(p?.sale_unit_usd)>0?money(p.sale_unit_usd)+" $":"يُحسب حسب الكمية";
   const safeImage=(value)=>{try{const u=new URL(String(value||""));return u.protocol==="https:"?u.href:"";}catch{return "";}};
   async function invoke(body){
     if(!window.baranSupabaseClient?.functions)throw new Error("جلسة المتجر غير جاهزة. حدّث الصفحة وسجّل الدخول.");
