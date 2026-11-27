@@ -10,9 +10,6 @@ on:
       - "supabase/migrations/*homscard*"
       - "tests/homscard-connector.test.mjs"
       - "tests/homscard-analysis.test.mjs"
-      - "baran-homscard-instant-apps.js"
-      - "baran-homscard-instant-apps.css"
-      - "supabase/functions/baran-order-gateway/**"
       - "homscard-analysis.js"
       - "homscard-intelligence.js"
       - "admin-operations.js"
@@ -22,6 +19,9 @@ on:
     branches: [main]
     paths:
       - "supabase/functions/baran-homscard-connector/**"
+      - "supabase/functions/baran-order-gateway/**"
+      - "baran-homscard-instant-apps.js"
+      - "baran-homscard-instant-apps.css"
       - "supabase/migrations/*homscard*"
       - "tests/homscard-connector.test.mjs"
 
