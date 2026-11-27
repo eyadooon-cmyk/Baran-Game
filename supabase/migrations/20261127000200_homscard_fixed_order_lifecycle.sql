@@ -262,6 +262,9 @@ begin
   on conflict(order_id) do nothing;
 
   v_prepare := public.baran_supplier_prepare_order(v_order.id);
+  if nullif(v_prepare->>'supplier_id','')::uuid is distinct from v_supplier_id then
+    raise exception 'اختيار المورد داخل مسار التجهيز لا يطابق HomsCard؛ ألغينا الطلب والخصم لحماية العملية';
+  end if;
   if coalesce((v_prepare->>'queued')::boolean,false) is not true then
     raise exception 'تعذر تجهيز طلب HomsCard الثابت: %',
       coalesce(v_prepare->>'message','unknown');
