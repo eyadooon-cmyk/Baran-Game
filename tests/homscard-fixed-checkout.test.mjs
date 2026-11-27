@@ -72,6 +72,13 @@ test("fixed-order gateway binds the database user to a verified bearer session",
   assert.match(migration, /grant execute on function public\.baran_create_homscard_fixed_order[\s\S]*to service_role/i);
 });
 
+test("HomsCard status polling is restricted to the customer's own fixed product and HomsCard supplier", () => {
+  assert.match(gateway, /\.eq\("id",orderId\)\.eq\("user_id",user\.id\)/);
+  assert.match(gateway, /product\?\.catalog_group!=="homscard_fixed"/);
+  assert.match(gateway, /Number\(order\.quantity\)!==1/);
+  assert.match(gateway, /String\(orderSupplier\?\.name\|\|""\)\.toLowerCase\(\)!=="homscard"/);
+});
+
 test("fixed gateway creates fixed orders only through the dedicated RPC", () => {
   assert.match(gateway, /homscard_fixed_create_order/);
   assert.match(gateway, /baran_create_homscard_fixed_order/);
