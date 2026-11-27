@@ -31,11 +31,11 @@
       const image=safeImage(p.image);
       if(image){const img=el("img");img.src=image;img.alt=p.name;img.loading="lazy";img.onerror=()=>{img.remove();art.append(el("span","baran-ia-placeholder","✦"));};art.append(img);}
       else art.append(el("span","baran-ia-placeholder","✦"));
-      art.append(el("span","baran-ia-live","⚡ تسليم فوري"));
+      art.append(el("span","baran-ia-live","متاح لدى المورد"));
       const body=el("div","baran-ia-card-body");
       body.append(el("h4","",p.name),el("p","baran-ia-range","الكمية: "+Number(p.min_quantity).toLocaleString("en-US")+" – "+Number(p.max_quantity).toLocaleString("en-US")));
       const price=el("div","baran-ia-unit");price.append(el("small","","سعر الوحدة يبدأ من"),el("strong","",money(p.sale_unit_usd)+" $"));
-      const button=el("button","baran-ia-buy","شراء الآن");
+      const button=el("button","baran-ia-buy","تحديد الكمية");
       button.type="button";button.addEventListener("click",()=>openCheckout(p));
       body.append(price,button);card.append(art,body);grid.append(card);
     });
@@ -64,7 +64,7 @@
     const title=el("h3","","إتمام الشراء");title.id="baranIaTitle";
     const summary=el("div","baran-ia-product-summary");summary.id="baranIaProduct";
     const form=el("div","baran-ia-form");
-    const idLabel=el("label","","معرّف الحساب / Player ID");idLabel.htmlFor="baranIaPlayer";
+    const idLabel=el("label","","بيانات الحساب");idLabel.htmlFor="baranIaPlayer";
     const player=document.createElement("input");player.id="baranIaPlayer";player.type="text";player.autocomplete="off";player.inputMode="text";player.placeholder="أدخل معرّف الحساب";player.maxLength=100;player.dir="ltr";
     const qtyLabel=el("label","","الكمية المطلوبة");qtyLabel.htmlFor="baranIaQuantity";
     const qtyRow=el("div","baran-ia-quantity-row");
@@ -87,8 +87,11 @@
   }
   function openCheckout(product){
     activeProduct=product;quantity=product.min_quantity;quote=null;
-    const modal=ensureModal();$("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","⚡ شحن فوري · HomsCard"),el("small","",money(product.sale_unit_usd)+" $ للوحدة"));
-    $("baranIaPlayer").value="";$("baranIaStatus").textContent="";
+    const modal=ensureModal();$("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","HomsCard · معاينة طلب"),el("small","",money(product.sale_unit_usd)+" $ للوحدة"));
+    const targetInput=$("baranIaPlayer"),targetLabel=document.querySelector('label[for="baranIaPlayer"]');
+    targetInput.value="";targetInput.required=!!product.requires_target;targetInput.hidden=!product.requires_target;
+    targetInput.placeholder=product.target_label||"بيانات الحساب";targetLabel.hidden=!product.requires_target;targetLabel.textContent=product.target_label||"بيانات الحساب";
+    $("baranIaStatus").textContent="";
     $("baranIaQuote").replaceChildren(el("span","","الإجمالي التقديري"),el("strong","","أدخل المعرّف والكمية لحساب السعر."));
     const presets=$("baranIaPresets");presets.replaceChildren();
     const vals=[product.min_quantity,Math.min(product.max_quantity,Math.max(product.min_quantity,1000)),Math.min(product.max_quantity,Math.max(product.min_quantity,10000)),product.max_quantity].filter((v,i,a)=>a.indexOf(v)===i);
@@ -103,7 +106,7 @@
   async function fetchQuote(showErrors){
     if(!activeProduct)return;
     const playerId=$("baranIaPlayer").value.trim();
-    if(playerId.length<2){if(showErrors)showMessage($("baranIaStatus"),"أدخل معرّف الحساب أولاً.",true);return;}
+    if(activeProduct.requires_target&&playerId.length<2){if(showErrors)showMessage($("baranIaStatus"),"أدخل "+(activeProduct.target_label||"بيانات الحساب")+" أولاً.",true);return;}
     const button=document.querySelector(".baran-ia-review");button.disabled=true;showMessage($("baranIaStatus"),"جاري حساب السعر...",false);
     try{
       const data=await invoke({action:"homscard_variable_quote",product_id:activeProduct.product_id,quantity,player_id:playerId,payment_currency:"USD"});
