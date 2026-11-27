@@ -1,5 +1,4 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { normalizeHomsCardCreate, homscardConfirmedRejection } from "../baran-homscard-reconcile/core.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +32,36 @@ function parseHomsCardCheck(payload: any, expectedUuid: string) {
     return { kind: "completed" as const, supplierOrderId, totalCost, quantity, delivery };
   }
   return { kind: "unknown" as const, reason: "Unrecognized supplier order status" };
+}
+
+function safeSupplierText(value: unknown, max: number): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  return text && text.length <= max ? text : null;
+}
+
+// Keep the deployed Edge Function self-contained; sibling function folders are not deployment dependencies.
+function normalizeHomsCardCreate(payload: any, expectedUuid: string, expectedQuantity: number) {
+  if (!payload || payload.status !== "OK" || !payload.data ||
+      typeof payload.data !== "object" || Array.isArray(payload.data)) return null;
+  const row = payload.data;
+  const status = String(row.status ?? "").toLowerCase();
+  const supplierOrderId = safeSupplierText(row.order_id, 160);
+  if (status === "pending" || status === "cancelled") {
+    return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId, status }] };
+  }
+  if (status !== "completed") return null;
+  const quantity = Number(row.quantity);
+  const price = Number(row.price);
+  const delivery = typeof row.delivery === "string" ? row.delivery.trim() : "";
+  if (!supplierOrderId || !Number.isSafeInteger(quantity) || quantity !== expectedQuantity ||
+      !Number.isFinite(price) || price < 0 || !delivery || delivery.length > 4000) return null;
+  return { status: "OK", data: [{ order_uuid: expectedUuid, order_id: supplierOrderId,
+    status: "completed", price, quantity, delivery }] };
+}
+
+function homscardConfirmedRejection(code: number) {
+  return [100, 103, 109, 110, 112, 113, 114].includes(Number(code));
 }
 
 function readKeyObject(name: string): string | undefined {
