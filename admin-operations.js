@@ -210,7 +210,8 @@ function renderOpsOrders(orders){
     if(order.customer_phone)card.append(opsNode("div","ops-muted","الهاتف: "+opsText(order.customer_phone)));
     card.append(opsNode("div","","المنتج: "+opsText(order.product_code)+" | اللاعب/المعرّف: "+opsText(order.player_id)));
     card.append(opsNode("div","","الكمية: "+order.quantity+" | التاريخ: "+opsDate(order.created_at)));
-    card.append(opsNode("div","","السعر: "+(order.total_price_usd!==null?opsMoney(order.total_price_usd,"USD"):"—")+" | "+(order.total_price_syp!==null?opsMoney(order.total_price_syp,"SYP"):"—")));
+    const orderSyp=Number(order.total_price_syp||0)/(Number(order.exchange_rate)>1000?100:1);
+    card.append(opsNode("div","","السعر: "+(order.total_price_usd!==null?opsMoney(order.total_price_usd,"USD"):"—")+" | "+(order.total_price_syp!==null?opsMoney(orderSyp,"SYP")+" جديدة":"—")));
     const fulfillment=order.fulfillment;
     if(fulfillment){
       card.append(opsNode("div","ops-muted","المورد: "+opsText((latestBaranOperations.suppliers||[]).find(s=>s.id===fulfillment.supplier_id)?.name)+" | حالة المورد: "+opsText(fulfillment.supplier_status)));
