@@ -1,4 +1,5 @@
 -- Ephemeral PostgreSQL integration fixture for the real fixed-order RPC.
+BEGIN;
 -- Runs only in the GitHub Actions postgres service; never points at Supabase production.
 create extension if not exists pgcrypto;
 create role anon;
