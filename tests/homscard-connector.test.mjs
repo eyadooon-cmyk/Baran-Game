@@ -285,3 +285,18 @@ test("Variable checkout invalidates the displayed quote after quantity, player I
   assert.match(instantAppsUi, /function changeQuantity\(direction\).*quote=null;/);
   assert.match(instantAppsUi, /orderSubmitted/);
 });
+
+test("HomsCard variable product flow opens a dedicated details stage before checkout", () => {
+  assert.match(instantAppsUi, /function openProductDetails\(product\)/);
+  assert.match(instantAppsUi, /baranIaDetails/);
+  assert.match(instantAppsUi, /baranIaDetailImage/);
+  assert.match(instantAppsUi, /baranIaDetailLimits/);
+  assert.match(instantAppsUi, /عرض التفاصيل/);
+  assert.match(instantAppsUi, /شراء الآن/);
+  assert.match(instantAppsUi, /رجوع لتفاصيل المنتج/);
+});
+test("HomsCard quantity shortcuts are derived from each product limits and are not represented as fixed packages", () => {
+  assert.match(instantAppsUi, /const vals=\[min,snap\(min\*10\),snap\(min\*100\),max\]/);
+  assert.match(instantAppsUi, /اختيارات للكمية وليست باقات ثابتة/);
+  assert.doesNotMatch(instantAppsUi, /\[200000,500000,1000000\]/);
+});
