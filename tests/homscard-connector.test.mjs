@@ -224,6 +224,10 @@ test("HomsCard app checkout displays a server quote without creating an order or
   assert.match(instantAppsUi, /معرّف الحساب/);
   assert.match(instantAppsUi, /الكمية المطلوبة/);
   assert.match(instantAppsUi, /مراجعة السعر/);
+  assert.match(instantAppsUi, /product\.requires_target/);
+  assert.match(orderGateway, /requiresTarget/);
+  assert.match(orderGateway, /target_label/);
+  assert.doesNotMatch(instantAppsUi, /تسليم فوري/);
   assert.match(orderGateway, /mode: "read_only_quote"/);
   assert.match(orderGateway, /can_create_order: false/);
   assert.match(orderGateway, /charged: false/);
