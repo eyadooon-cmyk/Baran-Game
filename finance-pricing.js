@@ -20,7 +20,7 @@
     "#financePricingPolicyMount .pricing-policy-result{padding:12px;border:1px solid #6a4b82;border-radius:12px;background:#21182b}",
     "#financePricingPolicyMount .pricing-policy-result strong{display:block;color:#f0e4fa;font-size:19px;margin-top:5px}",
     "#financePricingPolicyMount .pricing-preview-wrap{overflow-x:auto;margin-top:12px}",
-    "#financePricingPolicyMount table{width:100%;min-width:760px;border-collapse:collapse;font-size:12px}",
+    "#financePricingPolicyMount table{width:100%;min-width:980px;border-collapse:collapse;font-size:12px}",
     "#financePricingPolicyMount th,#financePricingPolicyMount td{padding:9px;border-bottom:1px solid #40334b;text-align:right;white-space:nowrap}",
     "#financePricingPolicyMount th{background:#211a2b;color:#d7c4e8}",
     "#financePricingPolicyMount .pricing-policy-status{min-height:22px;color:#d7c4e8;font-size:12px;margin-top:8px}",
@@ -77,7 +77,8 @@
     box.innerHTML = '<div class="pricing-preview-wrap"><table><thead><tr>' +
       '<th>المنتج</th><th>تكلفة حمص كارد</th><th>التكلفة بسعر السوق</th>' +
       '<th>سعر البيع المقترح USD</th><th>سعر البيع المقترح SYP</th>' +
-      '<th>الفارق الإجمالي قبل الرسوم</th><th>السعر الحالي USD / SYP</th></tr></thead><tbody>' +
+      '<th>مخصص فرق الصرف</th><th>زيادة المنتج</th><th>الفارق الإجمالي قبل الرسوم</th>' +
+      '<th>السعر الحالي USD / SYP</th></tr></thead><tbody>' +
       rows.map((row) => '<tr><td>' + esc(row.name) + '<small style="display:block;color:#a998b8">' + esc(row.code) + '</small></td>' +
         '<td dir="ltr">' + usd(row.costUsd) + '</td><td dir="ltr">' + syp(row.costAtMarket) + '</td>' +
         '<td dir="ltr">' + usd(row.saleUsd) + '</td><td dir="ltr">' + syp(row.saleSyp) + '</td>' +
