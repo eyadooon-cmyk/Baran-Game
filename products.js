@@ -128,7 +128,7 @@ async function loadCatalog(){
   if(!gameBox||!serviceBox)return;
   try{
     const [{data:settings,error:settingsError},{data,error}]=await Promise.all([
-      sb.from("store_settings").select("exchange_rate").eq("id","main").single(),
+      sb.from("store_settings").select("market_exchange_rate,fx_buffer_percent").eq("id","main").single(),
       sb.from("products")
         .select("id,product_code,category,name,description,price_usd,sort_order,created_at")
         .eq("is_active",true)
@@ -137,7 +137,10 @@ async function loadCatalog(){
     ]);
     if(settingsError)throw settingsError;
     if(error)throw error;
-    applyExchangeRate(settings.exchange_rate);
+    const marketRate=Number(settings.market_exchange_rate);
+    const fxBuffer=Number(settings.fx_buffer_percent);
+    if(!Number.isFinite(marketRate)||marketRate<=0||!Number.isFinite(fxBuffer)||fxBuffer<0)throw new Error("إعدادات سعر الصرف غير صالحة.");
+    applyExchangeRate((marketRate*(1+fxBuffer/100))/100);
     const products=data||[];
     [
       {box:gameBox,title:"باقات الألعاب المتاحة",items:products.filter(p=>p.category==="game")},
@@ -176,11 +179,18 @@ async function saveExchangeRate(){
   if(button)button.disabled=true;
   if(message)message.textContent="جاري تحديث سعر الصرف والأسعار...";
   try{
-    const result=await callAdminApi("POST",{action:"exchange_rate_update",exchange_rate:storedRate});
-    applyExchangeRate(result.exchange_rate);
+    const {data:policy,error:policyError}=await sb.from("store_settings")
+      .select("fx_buffer_percent,product_markup_percent").eq("id","main").single();
+    if(policyError||!policy)throw new Error("تعذر قراءة سياسة التسعير الحالية.");
+    const fxBuffer=Number(policy.fx_buffer_percent),markup=Number(policy.product_markup_percent);
+    if(!Number.isFinite(fxBuffer)||fxBuffer<0||!Number.isFinite(markup)||markup<0)throw new Error("سياسة التسعير الحالية غير صالحة.");
+    const marketRate=storedRate/(1+fxBuffer/100);
+    const result=await callAdminApi("POST",{action:"pricing_policy_update",market_exchange_rate:marketRate,fx_buffer_percent:fxBuffer,product_markup_percent:markup});
+    if(!result?.pricing_policy)throw new Error("لم يؤكد الخادم حفظ سياسة التسعير.");
+    applyExchangeRate(rate);
     if(typeof loadAdminPanel==="function")await loadAdminPanel();
     if(typeof loadCatalog==="function")await loadCatalog();
-    if(message)message.textContent="تم تحديث سعر الصرف والأسعار تلقائياً بنجاح.";
+    if(message)message.textContent="تم تحديث سعر الصرف التجاري بالليرة الجديدة وتحديث معاينة الأسعار.";
   }catch(error){
     if(message)message.textContent="تعذر تحديث سعر الصرف: "+error.message;
   }finally{if(button)button.disabled=false;}
