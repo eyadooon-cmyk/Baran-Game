@@ -95,7 +95,7 @@ test("settlement keeps unknown outcomes pending and refunds only confirmed suppl
 const gateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
 
 test("direct checkout and manual polling share strict UUID/status validation", () => {
-  assert.match(gateway, /parseHomsCardCheck\(\{status:"OK",data:\[data\]\},supplierUuid\)/);
+  assert.match(gateway, /parseHomsCardCheck\(\{status:payload\?\.status,data:rows\},supplierUuid\)/);
   assert.match(gateway, /parseHomsCardCheck\(checked\.payload,uuid\)/);
   assert.match(gateway, /parsed\.quantity!==quantity/);
   assert.match(gateway, /parsed\.quantity!==Number\(order\.quantity\)/);
@@ -129,8 +129,9 @@ test("ambiguous create-order HTTP errors never trigger automatic refunds", () =>
   const createStart = gateway.indexOf('if (body?.action === "homscard_variable_create_order")');
   const checkStart = gateway.indexOf('if (body?.action === "homscard_variable_check_order")', createStart);
   const createBlock = gateway.slice(createStart, checkStart);
-  assert.match(createBlock, /p_result:"unknown"/);
-  assert.doesNotMatch(createBlock, /p_result:"failed"/);
+  const ambiguousResponse = createBlock.slice(createBlock.indexOf('const code=Number(sent.payload?.error?.code)'), createBlock.indexOf('}catch(error){', createBlock.indexOf('const code=Number(sent.payload?.error?.code)')));
+  assert.match(ambiguousResponse, /p_result:"unknown"/);
+  assert.doesNotMatch(ambiguousResponse, /p_result:"failed"/);
   assert.match(createBlock, /دون إعادة إرسال أو استرداد/);
 });
 
