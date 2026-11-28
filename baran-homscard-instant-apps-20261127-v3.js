@@ -28,6 +28,7 @@
       const isJawaker=source==="جواكر"||/jawaker|جواكر/i.test(String(p.name||""));
       // Jawaker variable tokens belong inside the Jawaker game card, not the generic games list.
       if(category==="ألعاب"&&isJawaker)return false;
+      if(category==="جواكر")return isJawaker;
       return c.includes(category)||category.includes(c);
     });
     host.hidden=category==="ألعاب"&&!visibleProducts.length;
@@ -61,7 +62,7 @@
       try{sessionStorage.setItem(CATALOG_CACHE_KEY,JSON.stringify({savedAt:Date.now(),products}));}catch{}
       document.querySelectorAll(".baran-variable-products").forEach(host=>{
         const section=host.closest("section");
-        const category=section?.id==="automaticGames"?"ألعاب":section?.id==="appsStore"?"تطبيقات":section?.id==="telecomStore"?"اتصالات":"محافظ";
+        const category=section?.id==="automaticGames"?"ألعاب":section?.id==="jawakerStore"?"جواكر":section?.id==="appsStore"?"تطبيقات":section?.id==="telecomStore"?"اتصالات":"محافظ";
         if(host.isConnected)renderCatalog(host,category);
       });
       return products;
@@ -98,7 +99,7 @@
     const qtyLabel=el("label","","الكمية المطلوبة");qtyLabel.htmlFor="baranIaQuantity";
     const qtyRow=el("div","baran-ia-quantity-row");
     const minus=el("button","baran-ia-step","−");minus.type="button";minus.addEventListener("click",()=>changeQuantity(-1));
-    const input=document.createElement("input");input.id="baranIaQuantity";input.type="number";input.inputMode="numeric";input.min="1";input.step="1";input.addEventListener("change",()=>{const v=Number(input.value);if(Number.isSafeInteger(v)&&activeProduct)quantity=Math.min(activeProduct.max_quantity,Math.max(activeProduct.min_quantity,v));quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();});
+    const input=document.createElement("input");input.id="baranIaQuantity";input.type="number";input.inputMode="numeric";input.min="1";input.step="1";input.addEventListener("input",()=>{const v=Number(input.value);if(!Number.isSafeInteger(v)||!activeProduct)return;quantity=Math.min(Number(activeProduct.max_quantity),Math.max(Number(activeProduct.min_quantity),v));quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();});
     const plus=el("button","baran-ia-step","＋");plus.type="button";plus.addEventListener("click",()=>changeQuantity(1));qtyRow.append(minus,input,plus);
     const presets=el("div","baran-ia-presets");presets.id="baranIaPresets";
     const quoteBox=el("div","baran-ia-quote");quoteBox.id="baranIaQuote";quoteBox.append(el("span","","الإجمالي التقديري"),el("strong","","أدخل المعرّف والكمية لحساب السعر."));
@@ -148,7 +149,7 @@
   function openCheckout(product){
     if(product)activeProduct=product;if(!activeProduct)return;product=activeProduct;
     quantity=Number(product.min_quantity)||1;quote=null;activeRequestId=null;lastOrderId=null;orderSubmitted=false;paymentCurrency="USD";
-    const modal=ensureModal();$("baranIaTitle").textContent="إتمام الشراء";
+    const modal=ensureModal();$("baranIaTitle").textContent="حاسبة الكمية";
     $("baranIaDetails").hidden=true;$("baranIaProduct").hidden=false;$("baranIaForm").hidden=false;$("baranIaReviewPanel").hidden=true;
     $("baranIaProduct").replaceChildren(el("strong","",product.name),el("span","","مراجعة طلبك"),el("small","",productUnitPrice(product)+" للوحدة"));
     const targetInput=$("baranIaPlayer"),targetLabel=document.querySelector('label[for="baranIaPlayer"]');
@@ -163,7 +164,7 @@
     const snap=value=>Math.min(max,Math.max(min,min+Math.floor((value-min)/step)*step));
     const vals=[min,snap(min*10),snap(min*100),max].filter((v,i,a)=>Number.isSafeInteger(v)&&v>=min&&v<=max&&a.indexOf(v)===i);
     vals.forEach(v=>{const b=el("button","baran-ia-preset",Number(v).toLocaleString("en-US"));b.type="button";b.addEventListener("click",()=>{quantity=v;quote=null;$("baranIaPurchase").disabled=true;updateQuantityUI();scheduleQuote();});presets.append(b);});
-    updateQuantityUI();modal.hidden=false;document.body.classList.add("baran-ia-modal-open");
+    updateQuantityUI();modal.hidden=false;document.body.classList.add("baran-ia-modal-open");scheduleQuote();
     if(product.requires_target)$("baranIaPlayer").focus();else $("baranIaQuantity").focus();
   }
   function openReview(){
@@ -253,7 +254,7 @@
     finally{button.disabled=false;}
   }
   function observeSection(){
-    const sections=[["automaticGames","ألعاب"],["appsStore","تطبيقات"],["telecomStore","اتصالات"],["digitalWalletsStore","محافظ"]];
+    const sections=[["automaticGames","ألعاب"],["jawakerStore","جواكر"],["appsStore","تطبيقات"],["telecomStore","اتصالات"],["digitalWalletsStore","محافظ"]];
     sections.forEach(([id,category])=>{
       const section=$(id);if(!section||observedSections.has(section))return;
       observedSections.add(section);
