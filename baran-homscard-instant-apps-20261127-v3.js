@@ -62,7 +62,7 @@
       try{sessionStorage.setItem(CATALOG_CACHE_KEY,JSON.stringify({savedAt:Date.now(),products}));}catch{}
       document.querySelectorAll(".baran-variable-products").forEach(host=>{
         const section=host.closest("section");
-        const category=section?.id==="automaticGames"?"ألعاب":section?.id==="appsStore"?"تطبيقات":section?.id==="telecomStore"?"اتصالات":"محافظ";
+        const category=section?.id==="automaticGames"?"ألعاب":section?.id==="jawakerStore"?"جواكر":section?.id==="appsStore"?"تطبيقات":section?.id==="telecomStore"?"اتصالات":"محافظ";
         if(host.isConnected)renderCatalog(host,category);
       });
       return products;
