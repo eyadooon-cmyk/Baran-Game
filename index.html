@@ -2546,30 +2546,32 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="digitalWalletsStore" class="hidden">
       <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى أقسام المتجر</button>
-      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">DIGITAL WALLETS</span><h2>المحافظ الرقمية</h2><p>اختر المحفظة لعرض تفاصيلها وتعليمات الاستخدام، ثم انتقل إلى شاشة المتطلبات.</p></div>
       <section class="baran-wallet-services" aria-labelledby="baranWalletServicesTitle">
         <div class="baran-wallet-services-heading">
           <div><span class="baran-wallet-services-kicker">DIGITAL WALLETS</span><h2 id="baranWalletServicesTitle">اختر محفظتك</h2><p>كل محفظة لها تفاصيل ومتطلبات مستقلة.</p></div>
           <span class="baran-wallet-services-count">03 خدمات</span>
         </div>
-        <div class="baran-wallet-services-grid">
-          <article class="baran-wallet-service-card">
-            <div class="baran-wallet-service-brand baran-wallet-usdt"><img src="https://cdn.simpleicons.org/tether/26A17B" alt="شعار Tether USDT" loading="lazy"><small>USDT · BEP20</small></div>
-            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة عملات رقمية</span><h3>USDT BEP20</h3><p>تحويل إلى عنوان استقبال على شبكة BEP20 فقط.</p><div class="baran-wallet-service-meta"><span>المبلغ المسموح بالدولار</span><strong dir="ltr">$50 – $7,000</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span>عنوان USDT على شبكة BEP20</span></div></div>
-            <span class="baran-wallet-service-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
-            <button class="baran-wallet-open" type="button" onclick="openBaranWalletFlow('usdt')">عرض التفاصيل والمتطلبات</button>
+        <div class="baran-service-product-grid baran-wallet-standard-grid">
+          <article class="baran-service-product baran-service-product-polished">
+            <span class="baran-service-product-kicker">محفظة رقمية · عرض التفاصيل</span>
+            <div class="baran-service-product-head"><span class="baran-service-brand-visual" style="--brand-bg:linear-gradient(145deg,#236d5d,#12382f)"><img src="https://cdn.simpleicons.org/tether/FFFFFF" alt="USDT" loading="lazy"></span><strong>USDT BEP20</strong></div>
+            <p>تحويل واستلام USDT على شبكة BNB Smart Chain (BEP20) فقط. يتطلب عنوان استقبال صحيحاً على الشبكة نفسها.</p>
+            <span class="baran-service-product-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
+            <button class="baran-service-select-button" type="button" onclick="openBaranWalletFlow('usdt')">عرض التفاصيل</button>
           </article>
-          <article class="baran-wallet-service-card">
-            <div class="baran-wallet-service-brand baran-wallet-whish"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Logo_Whish_Money_(Lebanon).png" alt="شعار Whish Money" loading="lazy"><small>WHISH MONEY</small></div>
-            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية</span><h3>Wish Money · ويش موني</h3><p>إدخال رقم محفظة ويش موني كما هو مسجل في التطبيق.</p><div class="baran-wallet-service-meta"><span>المبلغ المسموح بالدولار</span><strong dir="ltr">$20 – $2,999</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span dir="ltr">Whish Money Number</span></div></div>
-            <span class="baran-wallet-service-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
-            <button class="baran-wallet-open" type="button" onclick="openBaranWalletFlow('whish')">عرض التفاصيل والمتطلبات</button>
+          <article class="baran-service-product baran-service-product-polished">
+            <span class="baran-service-product-kicker">محفظة إلكترونية · عرض التفاصيل</span>
+            <div class="baran-service-product-head"><span class="baran-service-brand-visual" style="--brand-bg:linear-gradient(145deg,#914d80,#3e1b3d)"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Logo_Whish_Money_(Lebanon).png" alt="Whish Money" loading="lazy"></span><strong>Wish Money · ويش موني</strong></div>
+            <p>خدمة ويش موني. جهّز رقم المحفظة كما يظهر في التطبيق مع رمز الدولة الصحيح.</p>
+            <span class="baran-service-product-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
+            <button class="baran-service-select-button" type="button" onclick="openBaranWalletFlow('whish')">عرض التفاصيل</button>
           </article>
-          <article class="baran-wallet-service-card">
-            <div class="baran-wallet-service-brand baran-wallet-sham"><img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&amp;ssl=1" alt="شعار شام كاش" loading="lazy"><small>SHAM CASH</small></div>
-            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية سورية</span><h3>Sham Cash · شام كاش</h3><p>أدخل عنوان حساب شام كاش بدقة أو أرسل صورة الباركود للدعم قبل الطلب.</p><div class="baran-wallet-service-meta"><span>المبلغ المسموح بالدولار</span><strong dir="ltr">$10 – $1,000</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span>عنوان الحساب أو باركود عبر الدعم</span></div></div>
-            <span class="baran-wallet-service-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
-            <button class="baran-wallet-open" type="button" onclick="openBaranWalletFlow('sham')">عرض التفاصيل والمتطلبات</button>
+          <article class="baran-service-product baran-service-product-polished">
+            <span class="baran-service-product-kicker">محفظة سورية · عرض التفاصيل</span>
+            <div class="baran-service-product-head"><span class="baran-service-brand-visual" style="--brand-bg:linear-gradient(145deg,#3e80a3,#172e4a)"><img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&amp;ssl=1" alt="شام كاش" loading="lazy"></span><strong>Sham Cash · شام كاش</strong></div>
+            <p>خدمة شام كاش. يلزم عنوان الحساب الدقيق، ويمكن الاستعانة بباركود الحساب للتحقق منه.</p>
+            <span class="baran-service-product-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
+            <button class="baran-service-select-button" type="button" onclick="openBaranWalletFlow('sham')">عرض التفاصيل</button>
           </article>
         </div>
         <p class="baran-wallet-services-note">الأسعار الظاهرة لدى المورد لم يُثبت بعد أنها سعر وحدة قابل للبيع؛ لذلك لا نعرض سعراً أو إجمالياً غير معتمد. لا يوجد إنشاء طلب أو خصم رصيد حالياً.</p>
@@ -9601,36 +9603,7 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
 </style>
 
  
-<style id="baran-wallet-services-homscard-20261127">
-.baran-wallet-services{margin:22px 0;padding:17px;border:1px solid #654b79;border-radius:20px;background:linear-gradient(145deg,#21182b,#120e18);box-shadow:0 12px 28px #0004}
-.baran-wallet-services-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
-.baran-wallet-services-kicker{color:#c7a6df;font-size:10px;font-weight:900;letter-spacing:1px}
-.baran-wallet-services-heading h2{margin:5px 0;color:#f2e7fa;font-size:clamp(18px,3vw,23px)}
-.baran-wallet-services-heading p{margin:0;color:#b9a9c9;font-size:12px;line-height:1.8}
-.baran-wallet-services-count{flex:0 0 auto;padding:7px 10px;border:1px solid #80619a;border-radius:999px;background:#30213d;color:#e8d7f4;font-size:11px;font-weight:900}
-.baran-wallet-services-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.baran-wallet-service-card{display:flex;flex-direction:column;min-width:0;overflow:hidden;border:1px solid #574365;border-radius:16px;background:linear-gradient(155deg,#211a29,#100d15);box-shadow:0 7px 18px #0003}
-.baran-wallet-service-brand{height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#fff}
-.baran-wallet-service-brand>span{font-size:38px;font-weight:1000;line-height:1.1}
-.baran-wallet-service-brand>small{font-size:9px;font-weight:900;letter-spacing:2px}
-.baran-wallet-usdt{background:radial-gradient(circle at 50% 20%,#2d806c,#12382f 72%)}
-.baran-wallet-whish{background:radial-gradient(circle at 50% 20%,#9b4d83,#3e1b3d 72%)}
-.baran-wallet-sham{background:radial-gradient(circle at 50% 20%,#3e80a3,#172e4a 72%)}
-.baran-wallet-service-body{display:flex;flex:1;flex-direction:column;padding:13px}
-.baran-wallet-service-type{color:#bda6cf;font-size:10px;font-weight:800}
-.baran-wallet-service-body h3{margin:5px 0;color:#f3e8fa;font-size:16px;line-height:1.5}
-.baran-wallet-service-body p{min-height:44px;margin:0 0 10px;color:#b9a9c9;font-size:11px;line-height:1.8}
-.baran-wallet-service-meta{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #3b2e46;font-size:10px}
-.baran-wallet-service-meta span{color:#a997b8}
-.baran-wallet-service-meta strong{color:#e6d5f1}
-.baran-wallet-service-field{display:grid;gap:5px;margin-top:8px;padding:9px;border:1px dashed #705586;border-radius:10px;background:#17111f}
-.baran-wallet-service-field b{color:#d7c2e8;font-size:10px}
-.baran-wallet-service-field span{color:#eee4f5;font-size:10px;line-height:1.6;overflow-wrap:anywhere}
-.baran-wallet-service-status{display:block;margin:0 12px 12px;padding:8px 9px;border:1px solid #80619a;border-radius:10px;background:#2b1b3a;color:#e6d4f3;text-align:center;font-size:10px;font-weight:900}
-.baran-wallet-services-note{margin:14px 0 0;padding:11px;border-radius:11px;background:#332818;color:#f1d8a9;font-size:11px;line-height:1.9}
-@media(max-width:760px){.baran-wallet-services-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){.baran-wallet-services{padding:12px;border-radius:16px}.baran-wallet-services-grid{grid-template-columns:minmax(0,1fr);gap:10px}.baran-wallet-service-card{display:grid;grid-template-columns:94px minmax(0,1fr)}.baran-wallet-service-brand{height:100%;min-height:100%;grid-row:1;grid-column:1}.baran-wallet-service-brand>span{font-size:31px}.baran-wallet-service-brand>small{font-size:7px;letter-spacing:1px}.baran-wallet-service-body{grid-row:1;grid-column:2;padding:11px}.baran-wallet-service-body p{min-height:0}.baran-wallet-service-status{grid-column:1/-1;margin:0 10px 10px}.baran-wallet-services-heading{gap:7px}.baran-wallet-services-count{font-size:9px;padding:6px 8px}}
-</style>
+
 
 
 <style id="baran-extra-games-cards-20261127">
@@ -9803,6 +9776,155 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
  window.openBaranWalletFlow=openBaranWalletFlow;
 })();
 </script>
+<style id="baran-wallet-standard-cards-20261128">
+ .baran-wallet-services{margin:18px 0;padding:0;border:0;background:transparent;box-shadow:none}
+ .baran-wallet-services-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid #493653}
+ .baran-wallet-services-heading h2{margin:0;color:#f2e7fa;font-size:clamp(18px,3vw,23px)}
+ .baran-wallet-services-heading p{margin:4px 0 0;color:#b9a9c9;font-size:12px;line-height:1.8}
+ .baran-wallet-services-count{flex:0 0 auto;padding:7px 10px;border:1px solid #80619a;border-radius:999px;background:#30213d;color:#e8d7f4;font-size:11px;font-weight:900}
+ .baran-wallet-standard-grid{max-width:820px}
+ .baran-wallet-services-note{margin:12px 0 0;padding:11px;border-radius:11px;background:#332818;color:#f1d8a9;font-size:11px;line-height:1.9}
+</style>
+
+<style id="baran-wallet-mobile-layout-repair-20261128">
+/* Keep wallet cards vertically stacked and prevent inline content collisions. */
+#digitalWalletsStore .baran-wallet-standard-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-items:stretch!important;
+  gap:14px!important;
+  width:100%!important;
+  max-width:820px!important;
+  margin:14px auto!important;
+}
+#digitalWalletsStore .baran-wallet-standard-grid>.baran-service-product,
+#digitalWalletsStore .baran-wallet-standard-grid>.baran-service-product-polished{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  box-sizing:border-box!important;
+  padding:15px!important;
+  overflow:visible!important;
+}
+#digitalWalletsStore .baran-service-product-kicker{
+  display:inline-flex!important;
+  align-self:flex-start!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  line-height:1.7!important;
+}
+#digitalWalletsStore .baran-service-product-head{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  gap:12px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#digitalWalletsStore .baran-service-product-head strong{
+  display:block!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.7!important;
+}
+#digitalWalletsStore .baran-service-product p{
+  display:block!important;
+  width:100%!important;
+  margin:0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.9!important;
+}
+#digitalWalletsStore .baran-service-product-status{
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  text-align:center!important;
+  white-space:normal!important;
+  line-height:1.8!important;
+}
+#digitalWalletsStore .baran-service-select-button{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-height:48px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  line-height:1.7!important;
+}
+#digitalWalletsStore .baran-wallet-services-note{
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:14px 0!important;
+  line-height:1.9!important;
+  overflow-wrap:anywhere!important;
+}
+</style>
+
+
+<style id="baran-wallet-button-label-nowrap-20261128">
+#digitalWalletsStore .baran-wallet-standard-grid .baran-service-select-button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  padding:10px 8px!important;
+  font-size:clamp(11px,3.4vw,13px)!important;
+  line-height:1.35!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  overflow-wrap:normal!important;
+  text-align:center!important;
+  letter-spacing:0!important;
+}
+</style>
+
+
+<style id="baran-wallet-card-spacing-final-20261128">
+#digitalWalletsStore .baran-wallet-standard-grid .baran-service-product{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:10px!important;
+  min-width:0!important;
+}
+#digitalWalletsStore .baran-wallet-standard-grid .baran-service-product-status{
+  display:block!important;
+  width:100%!important;
+  margin:2px 0 0!important;
+  text-align:center!important;
+}
+#digitalWalletsStore .baran-wallet-standard-grid .baran-service-select-button{
+  display:flex!important;
+  flex:0 0 auto!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-height:48px!important;
+  margin:2px 0 0!important;
+  padding:10px 8px!important;
+  box-sizing:border-box!important;
+  white-space:nowrap!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+  line-height:1.4!important;
+  text-align:center!important;
+}
+</style>
+
 </body>
 </html>
 
