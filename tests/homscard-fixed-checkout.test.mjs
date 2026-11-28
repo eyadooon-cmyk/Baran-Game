@@ -30,7 +30,7 @@ test("Jawaker custom quantity is listed under games with the current supplier pr
   assert.ok(gateway.includes('new Set(["ألعاب", "جواكر", "تطبيقات", "اتصالات", "محافظ"])'));
   assert.ok(gateway.includes('category: category === "جواكر" ? "ألعاب" : String(data.category)'));
   assert.ok(gateway.includes('sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8))'));
-  assert.ok(gateway.includes('sale_unit_syp: Number((cost * (1 + markup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(2))'));
+  assert.ok(gateway.includes('sale_unit_syp: Number((cost * (1 + markup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(8))'));
 });
 
 test("fixed quote is read-only and cannot create orders or charge wallets", () => {
