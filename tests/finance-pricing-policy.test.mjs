@@ -35,6 +35,8 @@ test("Finance hub loads the dedicated pricing policy and HomsCard USD preview", 
   assert.match(pricing, /link\.currency \|\| ""\).*USD/);
   assert.match(pricing, /product_markup_percent/);
   assert.match(pricing, /saleSyp/);
+  assert.match(pricing, /profitUsd: saleUsd - costUsd/);
+  assert.match(pricing, /ربحنا المتوقع USD/);
   assert.match(pricing, /لا يتم تغيير أسعار المنتجات الحالية/);
 });
 
