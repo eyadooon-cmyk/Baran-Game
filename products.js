@@ -164,98 +164,74 @@ async function loadCatalog(){
 }
 
 
-function renderExtraGamePriceCards(products){
-  const groups=[
-    {key:"yalla-ludo",title:"يلا لودو",icon:"🎲",match:p=>/^HOMSCARD_GAME_(104|105|106|107|108|109|110|112)$/.test(p.product_code)},
-    {key:"ludo-club",title:"لودو كلوب",icon:"🎲",match:p=>/^HOMSCARD_GAME_(1269|1270|1271|1272|1273|1274|1275)$/.test(p.product_code)},
-    {key:"billiards",title:"8 Ball Pool",icon:"🎱",match:p=>/^BILLIARDS_/.test(p.product_code)},
-    {key:"whiteout",title:"Whiteout Survival",icon:"❄️",match:p=>/^HOMSCARD_GAME_(534|535|536|537|538|539)$/.test(p.product_code)},
-    {key:"mobile-legends",title:"Mobile Legends",icon:"⚔️",match:p=>/^HOMSCARD_GAME_(197|198|199|200)$/.test(p.product_code)}
-  ];
-  groups.forEach(group=>{
-    const card=document.querySelector('[data-baran-extra-game="'+group.key+'"]');
-    if(!card)return;
-    const old=card.querySelector(".baran-extra-game-price-list");
-    if(old)old.remove();
-    const items=products.filter(group.match).sort((a,b)=>(Number(a.sort_order)||0)-(Number(b.sort_order)||0)||a.name.localeCompare(b.name,"ar"));
-    const coming=card.querySelector(".baran-game-coming");
-    if(coming){
-      coming.textContent=items.length?"الباقات والأسعار — قريباً، غير جاهز للطلب":"لا توجد باقات مسعّرة مؤكدة";
-      coming.className="small baran-game-price-status";
-    }
-    const panel=document.createElement("div");
-    panel.className="baran-extra-game-price-list game-catalog";
-    const heading=document.createElement("strong");
-    heading.textContent="باقات "+group.title+" · "+items.length;
-    panel.appendChild(heading);
-    if(!items.length){
-      const empty=document.createElement("p");
-      empty.className="small";
-      empty.textContent="لا توجد باقات مسعّرة مؤكدة حالياً من حمص كارد.";
-      panel.appendChild(empty);
-    }else{
-      const grid=document.createElement("div");
-      grid.className="game-package-grid";
-      grid.dataset.extraGamePackageGrid=group.key;
-      items.forEach(product=>{
-        const packageCard=document.createElement("div");
-        packageCard.className="baran-game-package-card";
-        packageCard.dataset.packageCode=product.product_code;
-        const option=document.createElement("button");
-        option.type="button";
-        option.className="game-package-option baran-package-button";
-        option.disabled=true;
-        option.setAttribute("aria-disabled","true");
-        option.setAttribute("aria-label",(product.name||group.title)+" — قريباً، غير جاهز للطلب");
-        const art=document.createElement("span");
-        art.className="baran-package-art";
-        art.setAttribute("aria-hidden","true");
-        art.textContent=group.icon;
-        const quantity=document.createElement("span");
-        quantity.className="baran-package-quantity";
-        quantity.textContent="باقة شحن";
-        const name=document.createElement("strong");
-        name.textContent=String(product.name||product.product_code).replace(/^(Yalla Ludo|Ludo Club|Whiteout Survival|Mobile Legends|8 Ball Pool)\s*[—-]?\s*/i,"");
-        const description=document.createElement("small");
-        description.textContent=product.description||"باقة رقمية من كتالوج حمص كارد";
-        const price=document.createElement("span");
-        price.className="game-package-price";
-        const usd=Number(product.price_usd||0),syp=Number(product.price_syp||0);
-        price.textContent=(usd>0?usd.toFixed(2)+" $":"—")+(syp>0?" · "+syp.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" ل.س جديدة":"");
-        const pending=document.createElement("small");
-        pending.className="game-package-pending";
-        pending.textContent="قريباً — غير جاهز للطلب أو الشحن";
-        option.append(art,quantity,name,description,price,pending);
-        packageCard.appendChild(option);
-        grid.appendChild(packageCard);
-      });
-      panel.appendChild(grid);
-    }
-    const note=document.createElement("p");
-    note.className="small";
-    note.textContent="الأسعار للمعاينة فقط. لا يوجد اختيار باقة أو إنشاء طلب أو خصم رصيد أو شحن.";
-    panel.appendChild(note);
-    card.querySelector(".item-content")?.appendChild(panel);
+const BARAN_EXTRA_GAME_STORES={
+  yallaLudoStore:{title:"باقات يلا لودو",codes:/^HOMSCARD_GAME_(104|105|106|107|108|109|110|112)$/,icon:"YL",units:["diamond","gold"],unitNames:{diamond:"ألماس",gold:"ذهب"},id:"yallaLudoProductCatalog"},
+  ludoClubStore:{title:"باقات لودو كلوب",codes:/^HOMSCARD_GAME_(1269|1270|1271|1272|1273|1274|1275)$/,icon:"LC",units:["cash","gold"],unitNames:{cash:"Cash",gold:"ذهب"},id:"ludoClubProductCatalog"},
+  billiardsStore:{title:"باقات 8 Ball Pool",codes:/^BILLIARDS_/,icon:"8B",units:["cashball","coin"],unitNames:{cashball:"Cash Ball",coin:"Coin"},id:"billiardsProductCatalog"},
+  whiteoutStore:{title:"باقات Whiteout Survival",codes:/^HOMSCARD_GAME_(534|535|536|537|538|539)$/,icon:"WS",units:["d"],unitNames:{d:"ألماس"},id:"whiteoutProductCatalog"},
+  mobileLegendsStore:{title:"باقات Mobile Legends",codes:/^HOMSCARD_GAME_(197|198|199|200)$/,icon:"ML",units:["diamond"],unitNames:{diamond:"ألماس"},id:"mobileLegendsProductCatalog"}
+};
+function baranExtraPackageInfo(product,config){
+  const raw=String(product.name||product.product_code||"").trim();
+  const match=raw.match(/([\\d,.]+)\\s*([KMB])?\\s*(Diamond|Diamonds|Gold|Cash\\s*Ball|Cash|Coin|D)?/i);
+  if(!match)return {amount:0,unit:"other",quantity:raw||"باقة",name:raw||"باقة"};
+  let amount=Number(match[1].replace(/,/g,""));
+  const suffix=(match[2]||"").toUpperCase();
+  if(suffix==="K")amount*=1000;else if(suffix==="M")amount*=1000000;else if(suffix==="B")amount*=1000000000;
+  const token=String(match[3]||"").toLowerCase().replace(/\\s+/g,"");
+  const unit=token==="diamonds"?"diamond":token==="cashball"?"cashball":token||"other";
+  const unitNames={diamond:"Diamond",gold:"Gold",cash:"Cash",cashball:"Cash Ball",coin:"Coin",d:"D"};
+  const quantity=(Number.isFinite(amount)&&amount>0?Math.round(amount).toLocaleString("en-US")+" ":"")+(unitNames[unit]||"");
+  return {amount:Number.isFinite(amount)?amount:0,unit,quantity:quantity||raw,name:"باقة "+(config.unitNames[unit]||"شحن")};
+}
+function baranSortExtraPackages(items,config){
+  const unitOrder=new Map(config.units.map((unit,index)=>[unit,index]));
+  return items.slice().sort((a,b)=>{
+    const x=baranExtraPackageInfo(a,config),y=baranExtraPackageInfo(b,config);
+    const ux=unitOrder.has(x.unit)?unitOrder.get(x.unit):99,uy=unitOrder.has(y.unit)?unitOrder.get(y.unit):99;
+    return ux-uy||x.amount-y.amount||(Number(a.sort_order)||0)-(Number(b.sort_order)||0);
   });
 }
-async function loadExtraGamePriceCards(){
-  if(typeof sb==="undefined"||!sb?.from)return;
+async function loadBaranExtraGameCatalog(sectionId){
+  const config=BARAN_EXTRA_GAME_STORES[sectionId],container=document.getElementById(config?.id);
+  if(!config||!container)return;
+  const heading=document.createElement("strong");heading.textContent=config.title;
+  const loading=document.createElement("p");loading.className="small";loading.textContent="جاري تحميل الباقات والأسعار...";
+  container.replaceChildren(heading,loading);
   try{
-    const {data,error}=await sb.from("products")
-      .select("product_code,name,description,price_usd,price_syp,sort_order")
-      .eq("category","game")
-      .eq("catalog_visible",true)
-      .gt("price_usd",0);
+    const {data,error}=await sb.from("products").select("id,product_code,name,description,price_usd,price_syp,sort_order").eq("category","game").eq("catalog_visible",true).gt("price_usd",0);
     if(error)throw error;
-    renderExtraGamePriceCards(data||[]);
+    const packages=baranSortExtraPackages((data||[]).filter(p=>config.codes.test(String(p.product_code||""))),config);
+    container.replaceChildren(heading);
+    if(!packages.length){const empty=document.createElement("p");empty.className="small";empty.textContent="لا توجد باقات ذات أسعار مؤكدة في الكتالوج حالياً.";container.append(empty);return;}
+    const grid=document.createElement("div");grid.className="game-package-grid";grid.dataset.extraGamePackageGrid=sectionId;
+    packages.forEach(product=>{
+      const info=baranExtraPackageInfo(product,config);
+      const card=document.createElement("div");card.className="baran-game-package-card";card.dataset.packageCode=product.product_code;
+      const button=document.createElement("button");button.type="button";button.className="game-package-option baran-package-button";button.disabled=true;button.setAttribute("aria-disabled","true");
+      button.setAttribute("aria-label",(product.name||product.product_code)+" — قريباً، غير جاهز للطلب");
+      const art=document.createElement("span");art.className="baran-package-art";art.textContent=config.icon;art.setAttribute("aria-hidden","true");
+      const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=info.quantity;
+      const name=document.createElement("strong");name.textContent=info.name;
+      const description=document.createElement("small");description.textContent="باقة ثابتة من كتالوج حمص كارد.";
+      const price=document.createElement("span");price.className="game-package-price";
+      const usd=Number(product.price_usd||0),syp=Number(product.price_syp||0);
+      price.textContent=(usd>0?usd.toFixed(2)+" $":"—")+(syp>0?" · "+syp.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" ل.س جديدة":"");
+      const action=document.createElement("span");action.className="baran-package-action";action.textContent="قريباً";
+      const pending=document.createElement("small");pending.className="game-package-pending";pending.textContent="غير جاهز للطلب أو الشحن";
+      button.append(art,quantity,name,description,price,action,pending);card.append(button);
+      if(typeof baranAddProductDetails==="function")baranAddProductDetails(card,product,"الألعاب");
+      grid.append(card);
+    });
+    container.append(grid);
+    if(typeof baranAttachCatalogSearch==="function")baranAttachCatalogSearch(container,".baran-game-package-card","ابحث عن باقة أو كمية...");
+    const note=document.createElement("p");note.className="small";note.textContent="الأسعار من كتالوج حمص كارد للمعاينة فقط. لا يوجد اختيار باقة أو إنشاء طلب أو خصم رصيد أو شحن.";container.append(note);
   }catch(error){
-    console.warn("Extra game price cards could not load:",error);
+    console.error("Baran extra game catalog:",error);container.replaceChildren(heading);
+    const message=document.createElement("p");message.className="small";message.textContent="تعذر تحميل الباقات حالياً. تحقق من الاتصال ثم أعد المحاولة.";
+    const retry=document.createElement("button");retry.type="button";retry.className="secondary";retry.textContent="إعادة تحميل الباقات";retry.addEventListener("click",()=>loadBaranExtraGameCatalog(sectionId));container.append(message,retry);
   }
 }
-
-if(document.readyState==="complete")loadExtraGamePriceCards();
-else window.addEventListener("load",loadExtraGamePriceCards,{once:true});
-
 
 async function saveExchangeRate(){
   const input=document.getElementById("exchangeRateInput");
