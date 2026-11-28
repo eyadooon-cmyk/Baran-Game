@@ -164,6 +164,78 @@ async function loadCatalog(){
 }
 
 
+function renderExtraGamePriceCards(products){
+  const groups=[
+    {key:"yalla-ludo",title:"باقات يلا لودو",match:p=>/^HOMSCARD_GAME_(104|105|106|107|108|109|110|112)$/.test(p.product_code)},
+    {key:"ludo-club",title:"باقات لودو كلوب",match:p=>/^HOMSCARD_GAME_(1269|1270|1271|1272|1273|1274|1275)$/.test(p.product_code)},
+    {key:"billiards",title:"باقات 8 Ball Pool",match:p=>/^BILLIARDS_/.test(p.product_code)},
+    {key:"whiteout",title:"باقات Whiteout Survival",match:p=>/^HOMSCARD_GAME_(534|535|536|537|538|539)$/.test(p.product_code)},
+    {key:"mobile-legends",title:"باقات Mobile Legends",match:p=>/^HOMSCARD_GAME_(197|198|199|200)$/.test(p.product_code)}
+  ];
+  groups.forEach(group=>{
+    const card=document.querySelector('[data-baran-extra-game="'+group.key+'"]');
+    if(!card)return;
+    const old=card.querySelector(".baran-extra-game-price-list");
+    if(old)old.remove();
+    const items=products.filter(group.match).sort((a,b)=>a.product_code.localeCompare(b.product_code,undefined,{numeric:true}));
+    const panel=document.createElement("div");
+    panel.className="baran-extra-game-price-list";
+    panel.style.cssText="margin-top:10px;padding:10px;border:1px solid rgba(164,125,205,.32);border-radius:12px;background:rgba(35,20,52,.42);";
+    const heading=document.createElement("strong");
+    heading.textContent=group.title+" · "+items.length+" باقات";
+    heading.style.cssText="display:block;margin-bottom:8px;font-size:13px;";
+    panel.appendChild(heading);
+    if(!items.length){
+      const empty=document.createElement("div");
+      empty.className="small";
+      empty.textContent="لا توجد باقات مسعّرة مؤكدة حالياً من حمص كارد.";
+      panel.appendChild(empty);
+    }else{
+      const list=document.createElement("div");
+      list.style.cssText="display:grid;gap:6px;max-height:260px;overflow:auto;";
+      items.forEach(product=>{
+        const row=document.createElement("div");
+        row.style.cssText="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(164,125,205,.16);";
+        const name=document.createElement("span");
+        name.textContent=product.name.replace(/^(Yalla Ludo|Ludo Club|Whiteout Survival|Mobile Legends|8 Ball Pool)\s*[—-]?\s*/i,"");
+        name.style.cssText="font-size:12px;min-width:0;";
+        const price=document.createElement("strong");
+        const usd=Number(product.price_usd||0),syp=Number(product.price_syp||0);
+        price.textContent=usd.toFixed(2)+" $ · "+syp.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" ل.س جديدة";
+        price.style.cssText="font-size:11px;white-space:nowrap;text-align:end;";
+        row.append(name,price);
+        list.appendChild(row);
+      });
+      panel.appendChild(list);
+    }
+    const note=document.createElement("div");
+    note.className="small";
+    note.textContent="أسعار للعرض فقط — الطلب والشحن متوقفان حالياً.";
+    note.style.cssText="margin-top:8px;color:#c8b5da;";
+    panel.appendChild(note);
+    card.querySelector(".item-content")?.appendChild(panel);
+  });
+}
+
+async function loadExtraGamePriceCards(){
+  if(typeof sb==="undefined"||!sb?.from)return;
+  try{
+    const {data,error}=await sb.from("products")
+      .select("product_code,name,price_usd,price_syp")
+      .eq("category","game")
+      .eq("catalog_visible",true)
+      .gt("price_usd",0);
+    if(error)throw error;
+    renderExtraGamePriceCards(data||[]);
+  }catch(error){
+    console.warn("Extra game price cards could not load:",error);
+  }
+}
+
+if(document.readyState==="complete")loadExtraGamePriceCards();
+else window.addEventListener("load",loadExtraGamePriceCards,{once:true});
+
+
 async function saveExchangeRate(){
   const input=document.getElementById("exchangeRateInput");
   const message=document.getElementById("exchangeRateMessage");
