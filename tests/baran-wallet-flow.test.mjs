@@ -30,13 +30,13 @@ test("wallet flow previews receipt locally and does not upload it", () => {
 });
 
 test("wallet calculator charges and displays in the customer selected currency only", () => {
-  assert.match(walletFlow, /baranWalletCurrency/);
-  assert.match(walletFlow, /دولار أمريكي \\(USD\\)/);
-  assert.match(walletFlow, /ليرة سورية جديدة \\(SYP\\)/);
-  assert.match(walletFlow, /currency==="SYP"\\?156\\.6:1/);
-  assert.match(walletFlow, /const total=amount\\*current\\.unitUsd/);
-  assert.match(walletFlow, /المبلغ التقديري للخصم/);
-  assert.match(walletFlow, /لا يتم تحويل المبلغ إلى عملة أخرى/);
+  assert.ok(walletFlow.includes("baranWalletCurrency"));
+  assert.ok(walletFlow.includes("دولار أمريكي (USD)"));
+  assert.ok(walletFlow.includes("ليرة سورية جديدة (SYP)"));
+  assert.ok(walletFlow.includes('currency==="SYP"?156.6:1'));
+  assert.ok(walletFlow.includes("const total=amount*current.unitUsd"));
+  assert.ok(walletFlow.includes("المبلغ التقديري للخصم"));
+  assert.ok(walletFlow.includes("لا يتم تحويل المبلغ إلى عملة أخرى"));
   assert.doesNotMatch(walletFlow, /totalUsd|totalSyp/);
 });
 
