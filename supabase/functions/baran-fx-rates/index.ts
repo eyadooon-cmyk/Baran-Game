@@ -102,10 +102,27 @@ Deno.serve(async(req:Request)=>{
   }
   // SELL is the dealer's asking price: the store's cost to acquire USD for HomsCard.
   const applied=Number(((a.sell_old+b.sell_old)/2).toFixed(2));
-  const {error:settingsError}=await admin.from("store_settings").update({market_exchange_rate:applied}).eq("id","main");
+  // Atomic upward-only update: a concurrent refresh can never overwrite a higher rate with a lower one.
+  const {error:settingsError}=await admin.from("store_settings")
+   .update({market_exchange_rate:applied}).eq("id","main").lt("market_exchange_rate",applied);
   if(settingsError)return out({success:false,error:"تعذر تحديث سياسة التسعير؛ بقي السعر السابق."},500,origin);
-  const {error:updateError}=await admin.from("fx_rate_state").update({status:"success",last_success_at:now,applied_rate_old:applied,source_difference_percent:Number(divergence.toFixed(4)),last_error:null,updated_at:now}).eq("id","main");
+  const {data:currentSettings,error:currentSettingsError}=await admin.from("store_settings")
+   .select("market_exchange_rate").eq("id","main").single();
+  if(currentSettingsError||!currentSettings)return out({success:false,error:"تعذر التحقق من سعر المتجر المعتمد."},500,origin);
+  const currentRate=num(currentSettings.market_exchange_rate);
+  if(!currentRate)return out({success:false,error:"سعر المتجر المعتمد غير صالح؛ لم نغيّره."},500,origin);
+  const decreaseHeld=applied<currentRate;
+  const nextStatus=decreaseHeld?"rate_decrease_pending":"success";
+  const {error:updateError}=await admin.from("fx_rate_state").update({
+   status:nextStatus,last_success_at:now,applied_rate_old:currentRate,
+   source_difference_percent:Number(divergence.toFixed(4)),last_error:null,updated_at:now
+  }).eq("id","main");
   if(updateError)return out({success:false,error:"تعذر تحديث حالة المراقب."},500,origin);
-  return out({success:true,status:"success",applied_rate_old:applied,rate_basis:"average_of_two_provider_sell_quotes",sources:rows,divergence_percent:Number(divergence.toFixed(4)),products_changed:false,wallets_changed:false,orders_changed:false},200,origin);
+  return out({
+   success:true,status:nextStatus,applied_rate_old:currentRate,observed_rate_old:applied,
+   retained_previous_rate:decreaseHeld,rate_basis:"average_of_two_provider_sell_quotes",
+   sources:rows,divergence_percent:Number(divergence.toFixed(4)),
+   products_changed:false,wallets_changed:false,orders_changed:false
+  },200,origin);
  }catch(e){console.error("baran-fx-rates",e instanceof Error?e.message:"unknown");return out({error:"تعذر جلب سعر الصرف؛ بقي السعر السابق دون تغيير."},500,origin);}
 });
