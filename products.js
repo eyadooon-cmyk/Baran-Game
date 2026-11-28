@@ -32,7 +32,7 @@ function renderProducts(products){
     const title=document.createElement("strong");
     title.textContent=product.name;
     const details=document.createElement("div");
-    details.textContent="الرمز: "+product.product_code+" | القسم: "+productCategoryLabel(product.category);
+    details.textContent="الرمز: "+product.product_code+" | القسم: "+productCategoryLabel(product.category)+" | هامش الربح: "+Number(product.markup_percent??4).toFixed(1)+"%";
     const description=document.createElement("div");
     description.textContent=product.description||"لا يوجد وصف.";
     const prices=document.createElement("div");
@@ -59,6 +59,7 @@ function resetProductForm(){
   ["productId","productCode","productName","productDescription"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("productCategory").value="game";
   document.getElementById("productPriceUsd").value="0";
+  document.getElementById("productMarkupPercent").value="4";
   document.getElementById("productSortOrder").value="100";
   document.getElementById("productActive").value="true";
   document.getElementById("productMessage").textContent="";
@@ -71,6 +72,7 @@ function editProduct(product){
   document.getElementById("productName").value=product.name;
   document.getElementById("productDescription").value=product.description||"";
   document.getElementById("productPriceUsd").value=product.price_usd==null?"":Number(product.price_usd);
+  document.getElementById("productMarkupPercent").value=Number(product.markup_percent??4);
   document.getElementById("productSortOrder").value=Number(product.sort_order||0);
   document.getElementById("productActive").value=String(product.is_active);
   document.getElementById("productMessage").textContent="تعدّل الآن: "+product.name;
@@ -85,17 +87,19 @@ async function saveProduct(){
   const description=document.getElementById("productDescription").value.trim();
   const priceRaw=document.getElementById("productPriceUsd").value.trim();
   const priceUsd=priceRaw===""?null:Number(priceRaw);
+  const markupPercent=Number(document.getElementById("productMarkupPercent").value);
   const sortOrder=Number(document.getElementById("productSortOrder").value);
   if(!/^[A-Z0-9][A-Z0-9_-]{1,59}$/.test(productCode)){message.textContent="اكتب رمزاً إنجليزياً من حرفين على الأقل، مثل FREEFIRE_100.";return;}
   if(name.length<2){message.textContent="اكتب اسم المنتج.";return;}
   if(priceUsd!==null&&(!Number.isFinite(priceUsd)||priceUsd<=0)){message.textContent="إذا ما عندك سعر اترك الحقل فارغاً، وإذا توفر أدخل سعراً أكبر من صفر.";return;}
+  if(!Number.isFinite(markupPercent)||markupPercent<0||markupPercent>100){message.textContent="هامش الربح يجب أن يكون بين 0 و100 بالمئة.";return;}
   if(!Number.isInteger(sortOrder)||sortOrder<0){message.textContent="ترتيب العرض يجب أن يكون رقماً صحيحاً موجباً أو صفراً.";return;}
   const payload={
     action:"product_save",
     product_id:document.getElementById("productId").value||undefined,
     product_code:productCode,
     category:document.getElementById("productCategory").value,
-    name,description,price_usd:priceUsd,
+    name,description,price_usd:priceUsd,markup_percent:markupPercent,
     sort_order:sortOrder,
     is_active:document.getElementById("productActive").value==="true"
   };
