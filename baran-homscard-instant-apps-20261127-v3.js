@@ -4,12 +4,12 @@
   const ROOT_ID="baranInstantAppsRoot";
   const observedSections=new WeakSet();
   let products=[],activeProduct=null,quantity=100,quote=null,quoteTimer=null,quoteSequence=0,catalogPromise=null,paymentCurrency="USD",activeRequestId=null,lastOrderId=null,pollTimer=null,pollCount=0,orderSubmitted=false;
-  const CATALOG_CACHE_KEY="baran_homscard_variable_catalog_v2";
+  const CATALOG_CACHE_KEY="baran_homscard_variable_catalog_v3";
   try{const cached=JSON.parse(sessionStorage.getItem(CATALOG_CACHE_KEY)||"null");if(cached&&Date.now()-cached.savedAt<10*60*1000&&Array.isArray(cached.products))products=cached.products;}catch{}
   const $=(id)=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
   const money=(v)=>{const n=Number(v);if(!Number.isFinite(n))return "—";if(n>0&&n<1e-12)return "<0.000000000001";return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:12});};
-  const productUnitPrice=(p)=>Number(p?.sale_unit_usd)>0?money(p.sale_unit_usd)+" $ · "+Number(p.sale_unit_syp||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" ل.س جديدة":"يُحسب حسب الكمية";
+  const productUnitPrice=(p)=>Number(p?.sale_unit_usd)>0?money(p.sale_unit_usd)+" $ · "+Number(p.sale_unit_syp||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:8})+" ل.س جديدة":"يُحسب حسب الكمية";
   const safeImage=(value)=>{try{const u=new URL(String(value||""));return u.protocol==="https:"?u.href:"";}catch{return "";}};
   async function invoke(body){
     if(!window.baranSupabaseClient?.functions)throw new Error("جلسة المتجر غير جاهزة. حدّث الصفحة وسجّل الدخول.");
@@ -22,7 +22,14 @@
   function renderCatalog(host,category){
     if(!host)return;
     host.replaceChildren();
-    const visibleProducts=products.filter(p=>{const c=String(p.category||"").replace(/^ال/,"");return c.includes(category)||category.includes(c);});
+    const visibleProducts=products.filter(p=>{
+      const c=String(p.category||"").replace(/^ال/,"");
+      const source=String(p.source_category||"").trim().replace(/^ال/,"");
+      const isJawaker=source==="جواكر"||/jawaker|جواكر/i.test(String(p.name||""));
+      // Jawaker variable tokens belong inside the Jawaker game card, not the generic games list.
+      if(category==="ألعاب"&&isJawaker)return false;
+      return c.includes(category)||category.includes(c);
+    });
     const head=el("div","baran-ia-heading");
     const copy=el("div");copy.append(el("span","baran-ia-kicker","BARAN GAME · شحن التطبيقات"),el("h3","","منتجات الشحن حسب الكمية"),el("p","","اختر المنتج، أدخل معرّف الحساب إذا طُلب، وحدد الكمية قبل مراجعة السعر."));
     head.append(copy,el("span","baran-ia-count",visibleProducts.length+" منتج"));
