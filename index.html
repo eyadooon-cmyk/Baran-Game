@@ -1391,37 +1391,39 @@ body:has(#authScreen:not(.hidden)){background:#08060d!important}
 @media(min-width:700px){.baran-club-admin-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
 
-/* BARAN TELECOM — WIDE VISUAL PACKAGE CATALOG */
-#telecomStore>.hero{margin-bottom:22px}
-.baran-telecom-provider-picker{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.baran-telecom-provider-picker>.item{overflow:hidden;border:1px solid rgba(167,139,250,.24);border-radius:20px;background:linear-gradient(145deg,rgba(45,28,76,.72),rgba(15,15,24,.96));box-shadow:0 12px 30px rgba(0,0,0,.18);padding:0}
-.baran-telecom-provider-picker>.item>img{display:block;width:100%;height:clamp(145px,22vw,230px);object-fit:cover}
-.baran-telecom-provider-picker>.item .item-content{display:flex;flex-direction:column;gap:8px;padding:15px}
-.baran-telecom-provider-picker>.item .item-content strong{font-size:1.08rem}
+/* BARAN TELECOM — COMPACT PACKAGE CARDS */
+#telecomStore>.hero{margin-bottom:18px}
+.baran-telecom-provider-picker{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.baran-telecom-provider-picker>.item{overflow:hidden;border:1px solid rgba(167,139,250,.22);border-radius:16px;background:linear-gradient(145deg,rgba(45,28,76,.68),rgba(15,15,24,.96));padding:0}
+.baran-telecom-provider-picker>.item>img{display:block;width:100%;height:112px;object-fit:cover}
+.baran-telecom-provider-picker>.item .item-content{display:flex;flex-direction:column;gap:6px;padding:11px}
+.baran-telecom-provider-picker>.item .item-content strong{font-size:.98rem}
 .baran-telecom-provider-picker>.item .item-content .small{color:#c4b5fd}
-.baran-telecom-packages-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.baran-telecom-package{min-width:0;overflow:hidden;border:1px solid rgba(167,139,250,.18);border-radius:17px;background:linear-gradient(160deg,rgba(38,28,57,.72),rgba(17,17,25,.98));box-shadow:0 8px 24px rgba(0,0,0,.14);padding:0;transition:transform .18s ease,border-color .18s ease}
-.baran-telecom-package>img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;background:linear-gradient(135deg,#211735,#11111b)}
-.baran-telecom-package .item-content{padding:13px 14px 15px;gap:8px}
-.baran-telecom-package .item-content strong{font-size:1rem;line-height:1.45}
-.baran-telecom-status{font-size:.76rem}
-.baran-telecom-provider-heading{margin:4px 0 16px}
-.baran-telecom-provider-heading h3{font-size:1.35rem}
+.baran-telecom-packages-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.baran-telecom-package{min-width:0;overflow:hidden;border:1px solid rgba(167,139,250,.18);border-radius:14px;background:linear-gradient(160deg,rgba(38,28,57,.72),rgba(17,17,25,.98));padding:0}
+.baran-telecom-package>img{display:block;width:100%;height:105px;object-fit:cover;background:linear-gradient(135deg,#211735,#11111b)}
+.baran-telecom-package .item-content{padding:10px;gap:6px}
+.baran-telecom-package .item-content strong{font-size:.9rem;line-height:1.4}
+.baran-telecom-status{font-size:.7rem;padding:4px 7px}
+.baran-telecom-provider-heading{margin:4px 0 14px}
+.baran-telecom-provider-heading h3{font-size:1.25rem}
 .baran-telecom-search{background:rgba(255,255,255,.035)}
-@media(hover:hover){.baran-telecom-package:hover{transform:translateY(-3px);border-color:rgba(167,139,250,.48)}}
-@media(max-width:900px){.baran-telecom-packages-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){.baran-telecom-packages-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}}
 @media(max-width:600px){
- .baran-telecom-provider-picker{grid-template-columns:1fr;gap:13px}
- .baran-telecom-provider-picker>.item{display:grid;grid-template-columns:42% minmax(0,1fr);align-items:stretch}
- .baran-telecom-provider-picker>.item>img{height:100%;min-height:126px;aspect-ratio:1/1;object-fit:cover}
- .baran-telecom-provider-picker>.item .item-content{justify-content:center;padding:12px}
- .baran-telecom-packages-grid{grid-template-columns:1fr;gap:12px}
- .baran-telecom-package{display:grid;grid-template-columns:42% minmax(0,1fr);align-items:stretch}
- .baran-telecom-package>img{height:100%;min-height:116px;aspect-ratio:1/1;object-fit:cover}
- .baran-telecom-package .item-content{justify-content:center;padding:12px}
- .baran-telecom-package .item-content strong{font-size:.96rem}
+ .baran-telecom-provider-picker{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .baran-telecom-provider-picker>.item>img{height:88px}
+ .baran-telecom-provider-picker>.item .item-content{padding:9px}
+ .baran-telecom-provider-picker>.item .item-content strong{font-size:.88rem}
+ .baran-telecom-packages-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .baran-telecom-package>img{height:94px}
+ .baran-telecom-package .item-content{padding:9px}
+ .baran-telecom-package .item-content strong{font-size:.84rem}
 }
-
+@media(max-width:360px){
+ .baran-telecom-packages-grid{gap:7px}
+ .baran-telecom-package>img{height:82px}
+ .baran-telecom-package .item-content{padding:8px}
+}
 </style>
 <link rel="stylesheet" href="./baran-premium.css?v=20261121-topup-home-v1">
 <link rel="stylesheet" href="./baran-club-admin-premium.css?v=20261121-v1">
