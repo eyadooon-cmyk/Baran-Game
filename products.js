@@ -173,12 +173,12 @@ const BARAN_EXTRA_GAME_STORES={
 };
 function baranExtraPackageInfo(product,config){
   const raw=String(product.name||product.product_code||"").trim();
-  const match=raw.match(/([\\d,.]+)\\s*([KMB])?\\s*(Diamond|Diamonds|Gold|Cash\\s*Ball|Cash|Coin|D)?/i);
+  const match=raw.match(/([\d,.]+)\s*([KMB])?\s*(Diamond|Diamonds|Gold|Cash\s*Ball|Cash|Coin|D)?/i);
   if(!match)return {amount:0,unit:"other",quantity:raw||"باقة",name:raw||"باقة"};
   let amount=Number(match[1].replace(/,/g,""));
   const suffix=(match[2]||"").toUpperCase();
   if(suffix==="K")amount*=1000;else if(suffix==="M")amount*=1000000;else if(suffix==="B")amount*=1000000000;
-  const token=String(match[3]||"").toLowerCase().replace(/\\s+/g,"");
+  const token=String(match[3]||"").toLowerCase().replace(/\s+/g,"");
   const unit=token==="diamonds"?"diamond":token==="cashball"?"cashball":token||"other";
   const unitNames={diamond:"Diamond",gold:"Gold",cash:"Cash",cashball:"Cash Ball",coin:"Coin",d:"D"};
   const quantity=(Number.isFinite(amount)&&amount>0?Math.round(amount).toLocaleString("en-US")+" ":"")+(unitNames[unit]||"");
