@@ -201,7 +201,7 @@ test("Supplier directory search does not rebuild or clear the product-link form"
 });
 
 test("HomsCard AI control center is mounted as a separate visible card and runs a bounded safe workflow", () => {
-  assert.match(intelligenceUi, /const anchor=report\|\|panel,host=anchor\.parentElement;\s*host\.insertBefore\(root,anchor\)/);
+  assert.match(intelligenceUi, /const host=panel\.parentElement;\s*if\(!host\) return;\s*host\.insertBefore\(root,panel\)/);
   assert.match(intelligenceUi, /تشغيل الفحص الشامل والإصلاح الآمن/);
   assert.match(intelligenceUi, /products_id:ids/);
   assert.match(intelligenceUi, /action:"get_latest_audit"/);
