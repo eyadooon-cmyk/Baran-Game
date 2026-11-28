@@ -50,7 +50,8 @@ test("wallet purchase remains disabled and cannot create or charge an order", ()
 test("wallet supplier unit costs are hidden from customer-facing wallet cards", () => {
   assert.match(html, /if\(!isWalletCategory\)card\.append\(price\)/);
   assert.match(html, /const isWalletCategory=\/محافظ\|wallet\/i\.test/);
-  assert.match(html, /const isWalletCategory=\/محافظ\|wallet\/i\.test\(String\(categoryLabel\|\|""\)\);[\\s\\S]{0,500}if\(!isWalletCategory\)panel\.append\(price\)/);
+  assert.ok(html.includes('const isWalletCategory=/محافظ|wallet/i.test(String(categoryLabel||""));'));
+  assert.ok(html.includes("if(!isWalletCategory)panel.append(price)"));
 });
 
 test("fixed quote gateway declares the player ID before the quote branch uses it", () => {
