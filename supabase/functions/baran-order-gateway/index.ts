@@ -752,7 +752,7 @@ Deno.serve(async (req: Request) => {
       if (!["USD", "SYP"].includes(currency)) return json({ success: false, error: "عملة الدفع غير مدعومة." }, 400);
 
       const { data: product, error: productError } = await admin.from("products")
-        .select("id,product_code,name,category,is_active")
+        .select("id,product_code,name,category,is_active,markup_percent")
         .eq("product_code", "JAWAKER_TOKENS").eq("is_active", true).maybeSingle();
       if (productError || !product || product.category !== "game") {
         return json({ success: false, error: "منتج جواكر توكنز غير متاح حالياً." }, 404);
@@ -773,7 +773,7 @@ Deno.serve(async (req: Request) => {
       if (settingsError || !settings) return json({ success: false, error: "إعدادات التسعير غير متاحة." }, 503);
       const marketRate = Number(settings.market_exchange_rate);
       const bufferPercent = Number(settings.fx_buffer_percent);
-      const markupPercent = Number(settings.product_markup_percent);
+      const markupPercent = Number(product.markup_percent ?? settings.product_markup_percent);
       if (![marketRate, bufferPercent, markupPercent].every(Number.isFinite) || marketRate <= 0 || bufferPercent < 0 || markupPercent < 0) {
         return json({ success: false, error: "إعدادات سعر الصرف أو هامش الربح غير صالحة." }, 503);
       }
