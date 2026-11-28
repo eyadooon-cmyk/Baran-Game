@@ -44,13 +44,12 @@ test("Extra game cards render verified read-only HomsCard prices", async () => {
   for (const key of ["yalla-ludo","ludo-club","billiards","whiteout","mobile-legends"]) {
     assert.ok(products.includes('key:"'+key+'"'));
   }
-  assert.match(products, /catalog_visible",true/);
-  assert.match(products, /async function loadBaranExtraGameCatalog\\(sectionId\\)/);
-  assert.match(products, /baranSortExtraPackages/);
-  assert.match(products, /button\\.disabled=true/);
-  assert.match(products, /غير جاهز للطلب أو الشحن/);
-  assert.match(products, /catalog_visible/);
-  assert.doesNotMatch(products, /card\\.querySelector\\("\\.baran-game-coming"\\)/);
+  assert.ok(products.includes('.eq("catalog_visible",true)'));
+  assert.ok(products.includes("async function loadBaranExtraGameCatalog(sectionId)"));
+  assert.ok(products.includes("baranSortExtraPackages"));
+  assert.ok(products.includes("button.disabled=true"));
+  assert.ok(products.includes("غير جاهز للطلب أو الشحن"));
+  assert.ok(!products.includes('card.querySelector(".baran-game-coming")'));
 });
 
 test("Jawaker variable orders remain blocked server-side", async () => {
