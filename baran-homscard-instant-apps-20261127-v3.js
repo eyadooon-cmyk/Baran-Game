@@ -254,7 +254,7 @@
     finally{button.disabled=false;}
   }
   function observeSection(){
-    const sections=[["automaticGames","ألعاب"],["jawakerStore","جواكر"],["appsStore","تطبيقات"],["telecomStore","اتصالات"],["digitalWalletsStore","محافظ"]];
+    const sections=[["automaticGames","ألعاب"],["appsStore","تطبيقات"],["telecomStore","اتصالات"],["digitalWalletsStore","محافظ"]];
     sections.forEach(([id,category])=>{
       const section=$(id);if(!section||observedSections.has(section))return;
       observedSections.add(section);
