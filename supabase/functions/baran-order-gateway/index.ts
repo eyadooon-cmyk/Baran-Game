@@ -128,6 +128,7 @@ Deno.serve(async (req: Request) => {
     if (rawBody.length > 8192) return json({ error: "حجم البيانات أكبر من المسموح." }, 413);
     let body: any;
     try { body = JSON.parse(rawBody); } catch { return json({ error: "بيانات الطلب غير صالحة." }, 400); }
+    const requestPlayerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
 
     const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
     if (body?.action !== "catalog_report") {
@@ -167,7 +168,7 @@ Deno.serve(async (req: Request) => {
       const isQuote = body.action === "homscard_fixed_quote";
       const productCode = typeof body.product_code === "string" ? body.product_code.trim().toUpperCase() : "";
       const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
-      if (isQuote && (!/^[A-Z0-9_]{3,80}$/.test(productCode) || playerId.length < 2 || playerId.length > 100))
+      if (isQuote && (!/^[A-Z0-9_]{3,80}$/.test(productCode) || requestPlayerId.length < 2 || requestPlayerId.length > 100))
         return json({success:false,error:"اختر منتجاً ثابتاً وأدخل Player ID صالحاً."},400);
       if (!["USD","SYP"].includes(currency))
         return json({success:false,error:"عملة الدفع غير مدعومة."},400);
@@ -227,7 +228,7 @@ Deno.serve(async (req: Request) => {
       if(!isQuote)return json({success:true,mode:"read_only_fixed_catalog",can_purchase:false,products:ready});
       const selected=ready.find((p:any)=>p.product_code===productCode);
       if(!selected)return json({success:false,error:"المنتج الثابت غير معتمد حالياً أو يحتاج تحديث تدقيق المورد."},404);
-      const quote={product_code:selected.product_code,product_name:selected.name,player_id_masked:playerId.length>4?playerId.slice(0,2)+"•••"+playerId.slice(-2):"••••",
+      const quote={product_code:selected.product_code,product_name:selected.name,player_id_masked:requestPlayerId.length>4?requestPlayerId.slice(0,2)+"•••"+requestPlayerId.slice(-2):"••••",
         sale_usd:selected.sale_usd,sale_syp:selected.sale_syp,currency,markup_percent:markup,
         commercial_rate:Number((marketRate*(1+buffer/100)/100).toFixed(4))};
       return json({success:true,mode:"read_only_fixed_quote",can_create_order:false,can_purchase:false,

@@ -9638,6 +9638,57 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
 </style>
 
 <script src="./baran-homscard-fixed-checkout.js?v=20261127-player-check-v1"></script>
+
+<style id="baran-telecom-extra-compact-20261128">
+/* Telecom package cards: compact on every screen, including narrow phones. */
+#telecomStore .baran-telecom-packages-grid{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:10px!important;
+  width:100%!important;
+}
+#telecomStore .baran-telecom-package{
+  min-width:0!important;
+  width:100%!important;
+  max-width:none!important;
+}
+#telecomStore .baran-telecom-package>img{
+  width:100%!important;height:82px!important;object-fit:cover!important;
+}
+#telecomStore .baran-telecom-package .item-content{padding:7px!important;gap:4px!important}
+#telecomStore .baran-telecom-package .item-content strong{font-size:12px!important;line-height:1.35!important;overflow-wrap:anywhere}
+#telecomStore .baran-telecom-status{font-size:9px!important;padding:3px 5px!important;white-space:normal!important}
+@media(max-width:900px){
+  #telecomStore .baran-telecom-packages-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+}
+@media(max-width:600px){
+  #telecomStore .baran-telecom-packages-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+  #telecomStore .baran-telecom-package>img{height:70px!important}
+  #telecomStore .baran-telecom-package .item-content{padding:6px!important}
+  #telecomStore .baran-telecom-package .item-content strong{font-size:11px!important}
+}
+@media(max-width:350px){
+  #telecomStore .baran-telecom-packages-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+  #telecomStore .baran-telecom-package>img{height:58px!important}
+  #telecomStore .baran-telecom-package .item-content strong{font-size:10px!important}
+}
+</style>
+<script id="baran-telecom-remove-internal-catalog-note-20261128">
+(()=>{
+  const root=document.getElementById("telecomStore");
+  if(!root)return;
+  const removeInternalNote=()=>{
+    root.querySelectorAll("p,small,div,span").forEach(node=>{
+      if(node.children.length)return;
+      const value=(node.textContent||"").replace(/\\s+/g," ").trim();
+      if(/معاينة.*(الكتالوج|الكاتلوح|فرز الكتالوج)|(الكتالوج|الكاتلوح).*معاينة/.test(value))node.remove();
+    });
+  };
+  removeInternalNote();
+  new MutationObserver(removeInternalNote).observe(root,{childList:true,subtree:true,characterData:true});
+})();
+</script>
+
 </body>
 </html>
 
