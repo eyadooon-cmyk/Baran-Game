@@ -10,7 +10,7 @@ const intelligenceUi = await readFile(new URL("../homscard-intelligence.js", imp
 const auditMigration = await readFile(new URL("../supabase/migrations/20261126100000_add_homscard_audit_storage.sql", import.meta.url), "utf8");
 const variableOrderMigration = await readFile(new URL("../supabase/migrations/20261127000100_homscard_variable_order_lifecycle.sql", import.meta.url), "utf8");
 const orderGateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
-const instantAppsUi = await readFile(new URL("../baran-homscard-instant-apps.js", import.meta.url), "utf8");
+const instantAppsUi = await readFile(new URL("../baran-homscard-instant-apps-20261127-v3.js", import.meta.url), "utf8");
 const instantAppsCss = await readFile(new URL("../baran-homscard-instant-apps.css", import.meta.url), "utf8");
 
 test("HomsCard connector is admin-authenticated and keeps credentials server-side", () => {
@@ -236,11 +236,11 @@ test("HomsCard app checkout displays a server quote without creating an order or
   assert.match(instantAppsUi, /action:"homscard_variable_check_order"/);
 });
 
-test("shared HomsCard variable-quantity cards mount in games, apps, telecom and wallets", () => {
+test("shared HomsCard variable-quantity cards mount only in games, apps and telecom, not digital wallets", () => {
   assert.match(instantAppsUi, /\["automaticGames","ألعاب"\]/);
   assert.match(instantAppsUi, /\["appsStore","تطبيقات"\]/);
   assert.match(instantAppsUi, /\["telecomStore","اتصالات"\]/);
-  assert.match(instantAppsUi, /\["digitalWalletsStore","محافظ"\]/);
+  assert.doesNotMatch(instantAppsUi, /\["digitalWalletsStore","محافظ"\]/);
   assert.match(instantAppsUi, /baran-variable-products/);
   assert.match(instantAppsUi, /min_quantity/);
   assert.match(instantAppsUi, /max_quantity/);

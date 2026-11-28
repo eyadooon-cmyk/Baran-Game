@@ -34,7 +34,8 @@ test("wallet calculator charges and displays in the customer selected currency o
   assert.ok(walletFlow.includes("دولار أمريكي (USD)"));
   assert.ok(walletFlow.includes("ليرة سورية جديدة (SYP)"));
   assert.ok(walletFlow.includes('currency==="SYP"?156.6:1'));
-  assert.ok(walletFlow.includes("const total=amount*current.unitUsd"));
+  assert.ok(walletFlow.includes("const total=amount;"));
+  assert.doesNotMatch(walletFlow, /unitUsd|unitSyp/);
   assert.ok(walletFlow.includes("المبلغ التقديري للخصم"));
   assert.ok(walletFlow.includes("لا يتم تحويل المبلغ إلى عملة أخرى"));
   assert.doesNotMatch(walletFlow, /totalUsd|totalSyp/);
