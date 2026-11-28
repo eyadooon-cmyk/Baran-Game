@@ -201,7 +201,7 @@ test("Supplier directory search does not rebuild or clear the product-link form"
 });
 
 test("HomsCard AI control center is mounted as a separate visible card and runs a bounded safe workflow", () => {
-  assert.match(intelligenceUi, /const anchor=report\|\|panel,host=anchor\.parentElement;\s*host\.insertBefore\(root,anchor\)/);
+  assert.match(intelligenceUi, /const host=panel\.parentElement;\s*if\(!host\) return;\s*host\.insertBefore\(root,panel\)/);
   assert.match(intelligenceUi, /تشغيل الفحص الشامل والإصلاح الآمن/);
   assert.match(intelligenceUi, /products_id:ids/);
   assert.match(intelligenceUi, /action:"get_latest_audit"/);
@@ -213,7 +213,7 @@ test("HomsCard AI control center is mounted as a separate visible card and runs 
 
 test("HomsCard variable quantity catalog covers all active storefront categories without hard-coded product IDs", () => {
   assert.match(orderGateway, /homscard_variable_catalog/);
-  assert.match(orderGateway, /new Set\(\["ألعاب", "تطبيقات", "اتصالات", "محافظ"\]\)/);
+  assert.match(orderGateway, /new Set\(\["ألعاب", "جواكر", "تطبيقات", "اتصالات", "محافظ"\]\)/);
   assert.match(orderGateway, /data\.product_type !== "quantity"/);
   assert.match(orderGateway, /data\.available !== true/);
   assert.match(orderGateway, /scope: "all_variable_quantity_categories"/);
