@@ -8153,7 +8153,7 @@ async function loadBaranJawakerCatalog(){
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=isVariableTokens?"اختر كمية التوكنز لمعاينة السعر قبل الشراء.":(product.description||"منتج جواكر");
       const price=document.createElement("span");price.className="game-package-price";price.textContent=isVariableTokens?"التسعير حسب عدد التوكنز":baranMoneyText(product);
-      const note=document.createElement("small");note.className="game-package-pending";note.textContent=isVariableTokens?"قريباً — غير جاهز للطلب · من 10,000 إلى 10,000,000 توكن · معاينة السعر متاحة فقط":(baranHasApprovedGamePrice(product)?"الشراء غير مفعّل حالياً":"بانتظار اعتماد السعر");
+      const note=document.createElement("small");note.className="game-package-pending";note.textContent=isVariableTokens?"معاينة السعر حسب الكمية · الشراء غير مفعّل حالياً":(baranHasApprovedGamePrice(product)?"الشراء غير مفعّل حالياً":"بانتظار اعتماد السعر");
       content.append(art,name,description,price,note);
       card.append(content);
       if(isVariableTokens){baranRenderJawakerQuantityCalculator(card,product);}
@@ -8178,45 +8178,73 @@ async function loadBaranJawakerCatalog(){
 
 
 function baranRenderJawakerQuantityCalculator(card,product){
-  const panel=document.createElement("section");
-  panel.className="baran-jawaker-quantity-quote";
-  panel.style.cssText="display:grid;gap:12px;padding:14px;margin-top:10px;border:1px solid #6b4c91;border-radius:14px;background:linear-gradient(145deg,#21172e,#120f19);";
-  const title=document.createElement("strong");title.textContent="حاسبة كمية توكنز جواكر";
-  const hint=document.createElement("small");hint.className="small";hint.textContent="حدد الكمية لمعاينة السعر تلقائياً. لا حاجة لإدخال Player ID في هذه المرحلة.";
-  const detailsButton=document.createElement("button");detailsButton.type="button";detailsButton.textContent="تفاصيل المنتج";detailsButton.className="primary";
-  const purchaseButton=document.createElement("button");purchaseButton.type="button";purchaseButton.textContent="الشراء";purchaseButton.className="secondary";
-  const tabs=document.createElement("div");tabs.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:8px";tabs.append(detailsButton,purchaseButton);
-  const details=document.createElement("div");details.style.cssText="display:grid;gap:8px;line-height:1.8";
-  const detailsText=document.createElement("small");detailsText.textContent="توكنز جواكر حسب الكمية المطلوبة، من 10,000 إلى 10,000,000 توكن. معاينة السعر حسب الكمية فقط؛ الشراء والشحن غير مفعّلين حالياً.";
-  details.append(detailsText);
+  const launch=document.createElement("button");
+  launch.type="button";launch.className="primary";launch.textContent="تفاصيل المنتج";
+  launch.style.cssText="width:100%;margin-top:10px";
+  const page=document.createElement("section");
+  page.className="baran-jawaker-product-flow";
+  page.hidden=true;
+  page.style.cssText="position:fixed;inset:0;z-index:10050;overflow-y:auto;padding:18px 14px calc(28px + env(safe-area-inset-bottom));background:#09080d;color:#fff;direction:rtl;display:none";
+  const style=document.createElement("style");
+  style.textContent=".baran-jawaker-product-flow[hidden]{display:none!important}.baran-jawaker-flow-inner{width:min(620px,100%);margin:0 auto;display:grid;gap:14px}.baran-jawaker-flow-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0 14px;border-bottom:1px solid #40334b}.baran-jawaker-flow-box{padding:16px;border:1px solid #59436e;border-radius:16px;background:linear-gradient(145deg,#21172e,#120f19);display:grid;gap:12px}.baran-jawaker-flow-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.baran-jawaker-flow-actions button{min-height:48px}.baran-jawaker-flow-muted{color:#b9a9c9;font-size:13px;line-height:1.8}.baran-jawaker-flow-result{padding:14px;border:1px solid #59436e;border-radius:12px;background:#0d0a12;line-height:1.9;white-space:pre-line}.baran-jawaker-flow-qty{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:9px;align-items:center}.baran-jawaker-flow-qty input{width:100%;min-width:0;text-align:center;font-size:20px;font-weight:700;padding:12px 4px;border-radius:10px;border:1px solid #8063a2;background:#0d0a12;color:#fff;box-sizing:border-box}.baran-jawaker-flow-qty button{height:48px;font-size:26px;border-radius:10px;border:1px solid #8063a2;background:#342344;color:#fff}.baran-jawaker-flow-shortcuts{display:flex;flex-wrap:wrap;gap:8px}.baran-jawaker-flow-shortcuts button{flex:1;min-width:85px;padding:9px 10px;border-radius:20px;border:1px solid #8063a2;background:#2b1d3a;color:#fff}";
+  const inner=document.createElement("div");inner.className="baran-jawaker-flow-inner";
+  const top=document.createElement("div");top.className="baran-jawaker-flow-top";
+  const back=document.createElement("button");back.type="button";back.className="secondary";back.textContent="← رجوع";
+  const pageTitle=document.createElement("strong");pageTitle.textContent="جواكر · توكنز";
+  top.append(back,pageTitle);
+  const detailsPage=document.createElement("div");detailsPage.style.cssText="display:grid;gap:14px";
+  const detailsBox=document.createElement("div");detailsBox.className="baran-jawaker-flow-box";
+  const image=document.createElement("img");image.src=baranJawakerArtwork(product);image.alt="جواكر توكنز";image.style.cssText="display:block;width:100%;height:180px;object-fit:contain;border-radius:12px";
+  const productName=document.createElement("strong");productName.textContent=product.name||"جواكر — توكنز";productName.style.fontSize="20px";
+  const description=document.createElement("div");description.className="baran-jawaker-flow-muted";description.textContent="توكنز جواكر حسب الكمية التي تختارها. تتوفر الكميات من 10,000 إلى 10,000,000 توكن.";
+  const availability=document.createElement("div");availability.className="baran-jawaker-flow-muted";availability.textContent="معاينة السعر متاحة حسب الكمية. الشراء والشحن غير مفعّلين حالياً.";
+  const goPurchase=document.createElement("button");goPurchase.type="button";goPurchase.className="primary";goPurchase.textContent="شراء";
+  detailsBox.append(image,productName,description,availability,goPurchase);detailsPage.append(detailsBox);
+  const purchasePage=document.createElement("div");purchasePage.hidden=true;purchasePage.style.cssText="display:grid;gap:14px";
+  const purchaseBox=document.createElement("div");purchaseBox.className="baran-jawaker-flow-box";
+  const purchaseTitle=document.createElement("strong");purchaseTitle.textContent="تحديد الكمية ومعاينة السعر";purchaseTitle.style.fontSize="18px";
   const quantityLabel=document.createElement("label");quantityLabel.textContent="عدد التوكنز";
-  const quantityRow=document.createElement("div");quantityRow.style.cssText="display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:9px;align-items:center";
-  const quantity=document.createElement("input");quantity.type="number";quantity.min="10000";quantity.max="10000000";quantity.step="10000";quantity.value="10000";quantity.inputMode="numeric";quantity.style.cssText="width:100%;min-width:0;text-align:center;font-size:20px;font-weight:700;padding:12px 4px;border-radius:10px;border:1px solid #8063a2;background:#0d0a12;color:#fff;box-sizing:border-box";
-  const minus=document.createElement("button");minus.type="button";minus.textContent="−";minus.setAttribute("aria-label","تقليل الكمية");minus.style.cssText="height:48px;font-size:26px;border-radius:10px;border:1px solid #8063a2;background:#342344;color:#fff";
-  const plus=document.createElement("button");plus.type="button";plus.textContent="+";plus.setAttribute("aria-label","زيادة الكمية");plus.style.cssText="height:48px;font-size:26px;border-radius:10px;border:1px solid #8063a2;background:#342344;color:#fff";
-  const minQty=10000,maxQty=10000000,stepQty=10000;
-  let timer=null,sequence=0;
-  const setQty=value=>{const n=Number(value);quantity.value=String(Math.max(minQty,Math.min(maxQty,Math.round((Number.isFinite(n)?n:minQty)/stepQty)*stepQty)));scheduleQuote();};
-  minus.addEventListener("click",()=>setQty(Number(quantity.value||minQty)-stepQty));
-  plus.addEventListener("click",()=>setQty(Number(quantity.value||minQty)+stepQty));
-  quantity.addEventListener("input",()=>scheduleQuote());
-  quantity.addEventListener("change",()=>setQty(quantity.value||minQty));
+  const quantityRow=document.createElement("div");quantityRow.className="baran-jawaker-flow-qty";
+  const quantity=document.createElement("input");quantity.type="number";quantity.min="10000";quantity.max="10000000";quantity.step="10000";quantity.value="10000";quantity.inputMode="numeric";
+  const minus=document.createElement("button");minus.type="button";minus.textContent="−";minus.setAttribute("aria-label","تقليل الكمية");
+  const plus=document.createElement("button");plus.type="button";plus.textContent="+";plus.setAttribute("aria-label","زيادة الكمية");
   quantityRow.append(minus,quantity,plus);
-  const shortcuts=document.createElement("div");shortcuts.style.cssText="display:flex;flex-wrap:wrap;gap:8px";
-  [["200 ألف",200000],["500 ألف",500000],["مليون",1000000]].forEach(([label,value])=>{const chip=document.createElement("button");chip.type="button";chip.textContent=label;chip.style.cssText="flex:1;min-width:85px;padding:9px 10px;border-radius:20px;border:1px solid #8063a2;background:#2b1d3a;color:#fff";chip.addEventListener("click",()=>setQty(value));shortcuts.append(chip);});
+  const shortcuts=document.createElement("div");shortcuts.className="baran-jawaker-flow-shortcuts";
+  [[ "200 ألف",200000 ],[ "500 ألف",500000 ],[ "مليون",1000000 ]].forEach(([label,value])=>{const button=document.createElement("button");button.type="button";button.textContent=label;button.addEventListener("click",()=>setQty(value));shortcuts.append(button);});
   quantityLabel.append(quantityRow,shortcuts);
   const currencyLabel=document.createElement("label");currencyLabel.textContent="عملة الدفع";
   const currency=document.createElement("select");currency.style.cssText="width:100%;padding:12px;border-radius:10px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
   [["SYP","الليرة السورية الجديدة"],["USD","الدولار الأمريكي"]].forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;currency.append(option);});
-  currencyLabel.append(currency);
-  const result=document.createElement("div");result.className="small";result.setAttribute("aria-live","polite");result.style.cssText="padding:12px;border-radius:10px;background:#0d0a12;line-height:1.9;white-space:pre-line";result.textContent="غيّر الكمية لعرض السعر تلقائياً.";
+  const result=document.createElement("div");result.className="baran-jawaker-flow-result";result.setAttribute("aria-live","polite");result.textContent="اختر الكمية لعرض سعر الزبون.";
+  const disabled=document.createElement("div");disabled.className="baran-jawaker-flow-muted";disabled.textContent="معاينة السعر فقط. لا يتم إنشاء طلب أو خصم رصيد أو تنفيذ شحن.";
+  purchaseBox.append(purchaseTitle,quantityLabel,currencyLabel,currency,result,disabled);purchasePage.append(purchaseBox);
+  const footer=document.createElement("div");footer.className="baran-jawaker-flow-actions";
+  const backDetails=document.createElement("button");backDetails.type="button";backDetails.className="secondary";backDetails.textContent="رجوع للتفاصيل";
+  const close=document.createElement("button");close.type="button";close.className="secondary";close.textContent="العودة للباقات";
+  footer.append(backDetails,close);
+  inner.append(top,detailsPage,purchasePage,footer);page.append(style,inner);document.body.append(page);
+  function showPage(which){const isPurchase=which==="purchase";detailsPage.hidden=isPurchase;purchasePage.hidden=!isPurchase;pageTitle.textContent=isPurchase?"شراء توكنز جواكر":"تفاصيل المنتج";backDetails.hidden=!isPurchase;back.textContent=isPurchase?"← التفاصيل":"← الباقات";if(isPurchase)scheduleQuote();}
+  function closePage(){page.hidden=true;page.style.display="none";document.body.style.overflow="";}
+  function openPage(){page.hidden=false;page.style.display="block";document.body.style.overflow="hidden";showPage("details");}
+  launch.addEventListener("click",openPage);
+  goPurchase.addEventListener("click",()=>showPage("purchase"));
+  back.addEventListener("click",()=>{if(!purchasePage.hidden)showPage("details");else closePage();});
+  backDetails.addEventListener("click",()=>showPage("details"));
+  close.addEventListener("click",closePage);
+  let timer=null,sequence=0;
+  const minQty=10000,maxQty=10000000,stepQty=10000;
   const formatMoney=(value,digits=2)=>Number(value).toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits});
   function scheduleQuote(){if(timer)clearTimeout(timer);const current=++sequence;timer=setTimeout(()=>fetchQuote(current),350);}
+  function setQty(value){const n=Number(value);quantity.value=String(Math.max(minQty,Math.min(maxQty,Math.round((Number.isFinite(n)?n:minQty)/stepQty)*stepQty)));scheduleQuote();}
+  minus.addEventListener("click",()=>setQty(Number(quantity.value||minQty)-stepQty));
+  plus.addEventListener("click",()=>setQty(Number(quantity.value||minQty)+stepQty));
+  quantity.addEventListener("input",scheduleQuote);
+  quantity.addEventListener("change",()=>setQty(quantity.value||minQty));
+  currency.addEventListener("change",scheduleQuote);
   async function fetchQuote(current){
     const qty=Number(quantity.value);
     if(!Number.isSafeInteger(qty)||qty<minQty||qty>maxQty){result.textContent="الكمية يجب أن تكون من 10,000 إلى 10,000,000 توكن.";return;}
-    const selectedCurrency=currency.value;
-    result.textContent="جاري تحديث السعر حسب الكمية...";
+    const selectedCurrency=currency.value;result.textContent="جاري تحديث السعر...";
     try{
       const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{action:"jawaker_quote",quantity:qty,payment_currency:selectedCurrency}});
       if(current!==sequence)return;
@@ -8225,20 +8253,12 @@ function baranRenderJawakerQuantityCalculator(card,product){
       const q=data.quote;
       const total=selectedCurrency==="USD"?formatMoney(q.sale_usd,2)+" $":formatMoney(Number(q.sale_syp),0)+" ل.س جديدة";
       const unit=selectedCurrency==="USD"?formatMoney(Number(q.sale_usd)/qty,8)+" $":formatMoney(Number(q.sale_syp)/qty,8)+" ل.س جديدة";
-      const lines=["الكمية: "+Number(q.quantity).toLocaleString("en-US")+" توكن","سعر الوحدة: "+unit,"الإجمالي: "+total,"سعر الصرف التجاري: "+formatMoney(Number(q.commercial_rate),2)+" ل.س جديدة لكل دولار","هامش الربح المطبق: "+formatMoney(q.markup_percent,2)+"%","معاينة فقط — الشراء والشحن والخصم غير مفعّلة."];
-      if(q.is_admin)lines.splice(4,0,"تكلفة المورد: "+formatMoney(q.cost_usd,4)+" $","الربح المتوقع: "+formatMoney(q.profit_usd,4)+" $ · "+formatMoney(Number(q.profit_syp),0)+" ل.س جديدة");
-      result.textContent=lines.join("\n");
-    }catch(error){if(current===sequence)result.textContent=error?.message||"تعذر حساب السعر. حاول مجدداً.";}
+      result.textContent="الكمية: "+Number(q.quantity).toLocaleString("en-US")+" توكن\nسعر الوحدة: "+unit+"\nالإجمالي: "+total;
+    }catch(error){if(current===sequence)result.textContent="تعذر تحديث السعر حالياً. حاول مجدداً.";}
   }
-  currency.addEventListener("change",scheduleQuote);
-  const purchaseView=document.createElement("div");purchaseView.hidden=true;purchaseView.style.cssText="display:grid;gap:12px";
-  purchaseView.append(hint,quantityLabel,currencyLabel,result);
-  const disabled=document.createElement("small");disabled.textContent="الشراء غير مفعّل حالياً — معاينة السعر فقط.";purchaseView.append(disabled);
-  detailsButton.addEventListener("click",()=>{details.hidden=false;purchaseView.hidden=true;detailsButton.className="primary";purchaseButton.className="secondary";});
-  purchaseButton.addEventListener("click",()=>{details.hidden=true;purchaseView.hidden=false;detailsButton.className="secondary";purchaseButton.className="primary";scheduleQuote();});
-  panel.append(tabs,details,purchaseView);
-  card.append(panel);
+  card.append(launch);
 }
+
 document.addEventListener("input",event=>{
   if(event.target?.id==="pubgPlayerId")baranUpdateGameSummary("PUBG");
   if(event.target?.id==="freeFirePlayerId")baranUpdateGameSummary("FREEFIRE");
