@@ -237,7 +237,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if ((body?.action === "homscard_app_catalog" || body?.action === "homscard_variable_catalog")) {
-      const variableCategories = new Set(["ألعاب", "تطبيقات", "اتصالات", "محافظ"]);
+      const variableCategories = new Set(["ألعاب", "جواكر", "تطبيقات", "اتصالات", "محافظ"]);
       const { data: auditRows, error: auditError } = await admin.from("baran_homscard_audit_items")
         .select("product_id,product_name,product_data,page_data,page_status,updated_at")
         .eq("page_status", "success")
@@ -275,7 +275,7 @@ Deno.serve(async (req: Request) => {
         const targetField = params.length ? { label: String(params[0]).slice(0, 60) } : fieldRules.find(rule => rule.pattern.test(page.text));
         result.push({
           product_id: id, name: String(row.product_name || data.name || "منتج").slice(0, 100),
-          category: String(data.category), min_quantity: min, max_quantity: max, image,
+          category: category === "جواكر" ? "ألعاب" : String(data.category), source_category: category, min_quantity: min, max_quantity: max, image,
           requires_target: !!targetField, target_label: targetField?.label ?? "بيانات الحساب (إن لزمت)",
           sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
           sale_unit_syp: Number((cost * (1 + markup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(2)),
