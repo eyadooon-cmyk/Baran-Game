@@ -34,7 +34,7 @@ test("wallet calculator applies supplier unit pricing and the selected currency"
   assert.ok(walletFlow.includes("دولار أمريكي (USD)"));
   assert.ok(walletFlow.includes("ليرة سورية جديدة (SYP)"));
   assert.ok(walletFlow.includes('currency==="SYP"?current.marketRateNew:1'));
-  assert.ok(walletFlow.includes("const nominalUsd=valid?(currency==="USD"?amount:Math.round(amount/current.marketRateNew)):0"));
+  assert.ok(walletFlow.includes('const nominalUsd=valid?(currency==="USD"?amount:Math.round(amount/current.marketRateNew)):0'));
   assert.ok(walletFlow.includes("const totalUsd=nominalUsd*current.saleUnitUsd"));
   assert.ok(walletFlow.includes("const totalSyp=nominalUsd*current.saleUnitSyp"));
   assert.ok(walletFlow.includes("المبلغ التقديري للخصم"));
