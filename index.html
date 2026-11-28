@@ -8182,10 +8182,13 @@ function baranRenderJawakerQuantityCalculator(card,product){
   panel.className="baran-jawaker-quantity-quote";
   panel.style.cssText="display:grid;gap:12px;padding:14px;margin-top:10px;border:1px solid #6b4c91;border-radius:14px;background:linear-gradient(145deg,#21172e,#120f19);";
   const title=document.createElement("strong");title.textContent="حاسبة كمية توكنز جواكر";
-  const hint=document.createElement("small");hint.className="small";hint.textContent="أدخل Player ID والكمية لمعاينة السعر تلقائياً. لا يمكن إرسال طلب أو خصم رصيد حالياً.";
-  const playerLabel=document.createElement("label");playerLabel.textContent="Player ID";
-  const player=document.createElement("input");player.type="text";player.inputMode="numeric";player.autocomplete="off";player.maxLength=100;player.placeholder="أدخل معرّف حساب جواكر";player.setAttribute("aria-label","Player ID");player.style.cssText="width:100%;padding:12px;border-radius:10px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
-  playerLabel.append(player);
+  const hint=document.createElement("small");hint.className="small";hint.textContent="حدد الكمية لمعاينة السعر تلقائياً. لا حاجة لإدخال Player ID في هذه المرحلة.";
+  const detailsButton=document.createElement("button");detailsButton.type="button";detailsButton.textContent="تفاصيل المنتج";detailsButton.className="primary";
+  const purchaseButton=document.createElement("button");purchaseButton.type="button";purchaseButton.textContent="الشراء";purchaseButton.className="secondary";
+  const tabs=document.createElement("div");tabs.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:8px";tabs.append(detailsButton,purchaseButton);
+  const details=document.createElement("div");details.style.cssText="display:grid;gap:8px;line-height:1.8";
+  const detailsText=document.createElement("small");detailsText.textContent=(product.description||"شحن توكنز جواكر حسب الكمية المطلوبة.")+" الكمية من 10,000 إلى 10,000,000 توكن. الشراء والشحن غير مفعّلين حالياً.";
+  details.append(detailsText);
   const quantityLabel=document.createElement("label");quantityLabel.textContent="عدد التوكنز";
   const quantityRow=document.createElement("div");quantityRow.style.cssText="display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:9px;align-items:center";
   const quantity=document.createElement("input");quantity.type="number";quantity.min="10000";quantity.max="10000000";quantity.step="10000";quantity.value="10000";quantity.inputMode="numeric";quantity.style.cssText="width:100%;min-width:0;text-align:center;font-size:20px;font-weight:700;padding:12px 4px;border-radius:10px;border:1px solid #8063a2;background:#0d0a12;color:#fff;box-sizing:border-box";
@@ -8206,18 +8209,16 @@ function baranRenderJawakerQuantityCalculator(card,product){
   const currency=document.createElement("select");currency.style.cssText="width:100%;padding:12px;border-radius:10px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
   [["SYP","الليرة السورية الجديدة"],["USD","الدولار الأمريكي"]].forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;currency.append(option);});
   currencyLabel.append(currency);
-  const result=document.createElement("div");result.className="small";result.setAttribute("aria-live","polite");result.style.cssText="padding:12px;border-radius:10px;background:#0d0a12;line-height:1.9;white-space:pre-line";result.textContent="أدخل Player ID لتظهر معاينة السعر تلقائياً.";
+  const result=document.createElement("div");result.className="small";result.setAttribute("aria-live","polite");result.style.cssText="padding:12px;border-radius:10px;background:#0d0a12;line-height:1.9;white-space:pre-line";result.textContent="غيّر الكمية لعرض السعر تلقائياً.";
   const formatMoney=(value,digits=2)=>Number(value).toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits});
   function scheduleQuote(){if(timer)clearTimeout(timer);const current=++sequence;timer=setTimeout(()=>fetchQuote(current),350);}
   async function fetchQuote(current){
-    const qty=Number(quantity.value),playerId=player.value.trim();
+    const qty=Number(quantity.value);
     if(!Number.isSafeInteger(qty)||qty<minQty||qty>maxQty){result.textContent="الكمية يجب أن تكون من 10,000 إلى 10,000,000 توكن.";return;}
-    if(!playerId||playerId.length<3){result.textContent="أدخل Player ID صحيحاً لمعاينة السعر.";return;}
-    if(!currentUser){result.textContent="سجّل الدخول أولاً لمعاينة السعر.";return;}
     const selectedCurrency=currency.value;
     result.textContent="جاري تحديث السعر حسب الكمية...";
     try{
-      const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{action:"jawaker_quote",quantity:qty,player_id:playerId,payment_currency:selectedCurrency}});
+      const {data,error}=await sb.functions.invoke("baran-order-gateway",{body:{action:"jawaker_quote",quantity:qty,payment_currency:selectedCurrency}});
       if(current!==sequence)return;
       if(error)throw error;
       if(!data?.success||!data?.quote)throw new Error(data?.error||"تعذر حساب السعر.");
@@ -8229,9 +8230,13 @@ function baranRenderJawakerQuantityCalculator(card,product){
       result.textContent=lines.join("\n");
     }catch(error){if(current===sequence)result.textContent=error?.message||"تعذر حساب السعر. حاول مجدداً.";}
   }
-  player.addEventListener("input",scheduleQuote);
   currency.addEventListener("change",scheduleQuote);
-  panel.append(title,hint,playerLabel,quantityLabel,currencyLabel,result);
+  const purchaseView=document.createElement("div");purchaseView.hidden=true;purchaseView.style.cssText="display:grid;gap:12px";
+  purchaseView.append(hint,quantityLabel,currencyLabel,result);
+  const disabled=document.createElement("small");disabled.textContent="الشراء غير مفعّل حالياً — معاينة السعر فقط.";purchaseView.append(disabled);
+  detailsButton.addEventListener("click",()=>{details.hidden=false;purchaseView.hidden=true;detailsButton.className="primary";purchaseButton.className="secondary";});
+  purchaseButton.addEventListener("click",()=>{details.hidden=true;purchaseView.hidden=false;detailsButton.className="secondary";purchaseButton.className="primary";scheduleQuote();});
+  panel.append(tabs,details,purchaseView);
   card.append(panel);
 }
 document.addEventListener("input",event=>{

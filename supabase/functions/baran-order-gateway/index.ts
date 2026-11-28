@@ -166,7 +166,6 @@ Deno.serve(async (req: Request) => {
     if (body?.action === "homscard_fixed_catalog" || body?.action === "homscard_fixed_quote") {
       const isQuote = body.action === "homscard_fixed_quote";
       const productCode = typeof body.product_code === "string" ? body.product_code.trim().toUpperCase() : "";
-      const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
       const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
       if (isQuote && (!/^[A-Z0-9_]{3,80}$/.test(productCode) || playerId.length < 2 || playerId.length > 100))
         return json({success:false,error:"اختر منتجاً ثابتاً وأدخل Player ID صالحاً."},400);
@@ -726,9 +725,6 @@ Deno.serve(async (req: Request) => {
       const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
       if (!Number.isSafeInteger(quantity) || quantity < 10000 || quantity > 10000000) {
         return json({ success: false, error: "الكمية يجب أن تكون عدداً صحيحاً بين 10,000 و10,000,000." }, 400);
-      }
-      if (!playerId || playerId.length < 3 || playerId.length > 100) {
-        return json({ success: false, error: "أدخل Player ID صالحاً." }, 400);
       }
       if (!["USD", "SYP"].includes(currency)) return json({ success: false, error: "عملة الدفع غير مدعومة." }, 400);
 
