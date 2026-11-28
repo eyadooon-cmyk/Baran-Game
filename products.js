@@ -178,6 +178,8 @@ function renderExtraGamePriceCards(products){
     const old=card.querySelector(".baran-extra-game-price-list");
     if(old)old.remove();
     const items=products.filter(group.match).sort((a,b)=>a.product_code.localeCompare(b.product_code,undefined,{numeric:true}));
+    const coming=card.querySelector(".baran-game-coming");
+    if(coming){coming.textContent=items.length?"أسعار الباقات بالأسفل — المعاينة فقط":"لا توجد أسعار مؤكدة حالياً";coming.className="small baran-game-price-status";}
     const panel=document.createElement("div");
     panel.className="baran-extra-game-price-list";
     panel.style.cssText="margin-top:10px;padding:10px;border:1px solid rgba(164,125,205,.32);border-radius:12px;background:rgba(35,20,52,.42);";
