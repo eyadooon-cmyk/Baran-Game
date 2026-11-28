@@ -10,7 +10,7 @@ const intelligenceUi = await readFile(new URL("../homscard-intelligence.js", imp
 const auditMigration = await readFile(new URL("../supabase/migrations/20261126100000_add_homscard_audit_storage.sql", import.meta.url), "utf8");
 const variableOrderMigration = await readFile(new URL("../supabase/migrations/20261127000100_homscard_variable_order_lifecycle.sql", import.meta.url), "utf8");
 const orderGateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
-const instantAppsUi = await readFile(new URL("../baran-homscard-instant-apps.js", import.meta.url), "utf8");
+const instantAppsUi = await readFile(new URL("../baran-homscard-instant-apps-20261127-v3.js", import.meta.url), "utf8");
 const instantAppsCss = await readFile(new URL("../baran-homscard-instant-apps.css", import.meta.url), "utf8");
 
 test("HomsCard connector is admin-authenticated and keeps credentials server-side", () => {
