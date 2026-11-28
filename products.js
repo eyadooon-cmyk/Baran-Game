@@ -165,11 +165,11 @@ async function loadCatalog(){
 
 
 const BARAN_EXTRA_GAME_STORES={
-  yallaLudoStore:{title:"باقات يلا لودو",codes:/^HOMSCARD_GAME_(104|105|106|107|108|109|110|112)$/,icon:"YL",units:["diamond","gold"],unitNames:{diamond:"ألماس",gold:"ذهب"},id:"yallaLudoProductCatalog"},
-  ludoClubStore:{title:"باقات لودو كلوب",codes:/^HOMSCARD_GAME_(1269|1270|1271|1272|1273|1274|1275)$/,icon:"LC",units:["cash","gold"],unitNames:{cash:"Cash",gold:"ذهب"},id:"ludoClubProductCatalog"},
-  billiardsStore:{title:"باقات 8 Ball Pool",codes:/^BILLIARDS_/,icon:"8B",units:["cashball","coin"],unitNames:{cashball:"Cash Ball",coin:"Coin"},id:"billiardsProductCatalog"},
-  whiteoutStore:{title:"باقات Whiteout Survival",codes:/^HOMSCARD_GAME_(534|535|536|537|538|539)$/,icon:"WS",units:["d"],unitNames:{d:"ألماس"},id:"whiteoutProductCatalog"},
-  mobileLegendsStore:{title:"باقات Mobile Legends",codes:/^HOMSCARD_GAME_(197|198|199|200)$/,icon:"ML",units:["diamond"],unitNames:{diamond:"ألماس"},id:"mobileLegendsProductCatalog"}
+  yallaLudoStore:{key:"yalla-ludo",title:"باقات يلا لودو",codes:/^HOMSCARD_GAME_(104|105|106|107|108|109|110|112)$/,icon:"YL",units:["diamond","gold"],unitNames:{diamond:"ألماس",gold:"ذهب"},id:"yallaLudoProductCatalog"},
+  ludoClubStore:{key:"ludo-club",title:"باقات لودو كلوب",codes:/^HOMSCARD_GAME_(1269|1270|1271|1272|1273|1274|1275)$/,icon:"LC",units:["cash","gold"],unitNames:{cash:"Cash",gold:"ذهب"},id:"ludoClubProductCatalog"},
+  billiardsStore:{key:"billiards",title:"باقات 8 Ball Pool",codes:/^BILLIARDS_/,icon:"8B",units:["cashball","coin"],unitNames:{cashball:"Cash Ball",coin:"Coin"},id:"billiardsProductCatalog"},
+  whiteoutStore:{key:"whiteout",title:"باقات Whiteout Survival",codes:/^HOMSCARD_GAME_(534|535|536|537|538|539)$/,icon:"WS",units:["d"],unitNames:{d:"ألماس"},id:"whiteoutProductCatalog"},
+  mobileLegendsStore:{key:"mobile-legends",title:"باقات Mobile Legends",codes:/^HOMSCARD_GAME_(197|198|199|200)$/,icon:"ML",units:["diamond"],unitNames:{diamond:"ألماس"},id:"mobileLegendsProductCatalog"}
 };
 function baranExtraPackageInfo(product,config){
   const raw=String(product.name||product.product_code||"").trim();
