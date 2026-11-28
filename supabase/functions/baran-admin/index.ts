@@ -1201,7 +1201,7 @@ Deno.serve(async (req: Request) => {
           saveError = result.error;
         } else {
           const result = await admin.from("products").insert(values)
-            .select("id,product_code,category,name,description,price_usd,price_syp,is_active,sort_order,created_at,updated_at").single();
+            .select("id,product_code,category,name,description,price_usd,price_syp,markup_percent,is_active,sort_order,created_at,updated_at").single();
           saved = result.data;
           saveError = result.error;
         }
