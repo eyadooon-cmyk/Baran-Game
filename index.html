@@ -2556,21 +2556,21 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
             <span class="baran-service-product-kicker">محفظة رقمية · عرض التفاصيل</span>
             <div class="baran-service-product-head"><span class="baran-service-brand-visual" style="--brand-bg:linear-gradient(145deg,#236d5d,#12382f)"><img src="https://cdn.simpleicons.org/tether/FFFFFF" alt="USDT" loading="lazy"></span><strong>USDT BEP20</strong></div>
             <p>تحويل واستلام USDT على شبكة BNB Smart Chain (BEP20) فقط. يتطلب عنوان استقبال صحيحاً على الشبكة نفسها.</p>
-            <span class="baran-service-product-status">سعر 1 USD قيمة اسمية: $1.05 · 165.74 ل.س جديدة</span>
+            <span class="baran-service-product-status" data-wallet-price="usdt">سعر 1 USD قيمة اسمية: $1.05 · 165.74 ل.س جديدة</span>
             <button class="baran-service-select-button" type="button" onclick="openBaranWalletFlow('usdt')">عرض التفاصيل</button>
           </article>
           <article class="baran-service-product baran-service-product-polished">
             <span class="baran-service-product-kicker">محفظة إلكترونية · عرض التفاصيل</span>
             <div class="baran-service-product-head"><span class="baran-service-brand-visual" style="--brand-bg:linear-gradient(145deg,#914d80,#3e1b3d)"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Logo_Whish_Money_(Lebanon).png" alt="Whish Money" loading="lazy"></span><strong>Wish Money · ويش موني</strong></div>
             <p>خدمة ويش موني. جهّز رقم المحفظة كما يظهر في التطبيق مع رمز الدولة الصحيح.</p>
-            <span class="baran-service-product-status">سعر 1 USD قيمة اسمية: $1.04 · 164.16 ل.س جديدة</span>
+            <span class="baran-service-product-status" data-wallet-price="whish">سعر 1 USD قيمة اسمية: $1.04 · 164.16 ل.س جديدة</span>
             <button class="baran-service-select-button" type="button" onclick="openBaranWalletFlow('whish')">عرض التفاصيل</button>
           </article>
           <article class="baran-service-product baran-service-product-polished">
             <span class="baran-service-product-kicker">محفظة سورية · عرض التفاصيل</span>
             <div class="baran-service-product-head"><span class="baran-service-brand-visual" style="--brand-bg:linear-gradient(145deg,#3e80a3,#172e4a)"><img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&amp;ssl=1" alt="شام كاش" loading="lazy"></span><strong>Sham Cash · شام كاش</strong></div>
             <p>خدمة شام كاش. يلزم عنوان الحساب الدقيق، ويمكن الاستعانة بباركود الحساب للتحقق منه.</p>
-            <span class="baran-service-product-status">سعر 1 USD قيمة اسمية: $1.05 · 165.74 ل.س جديدة</span>
+            <span class="baran-service-product-status" data-wallet-price="sham">سعر 1 USD قيمة اسمية: $1.05 · 165.74 ل.س جديدة</span>
             <button class="baran-service-select-button" type="button" onclick="openBaranWalletFlow('sham')">عرض التفاصيل</button>
           </article>
         </div>
@@ -9732,7 +9732,8 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
  let current=null,qty=10,currency="USD",account="",transferCode="",receiptFile=null,receiptPreviewUrl="";
  function node(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
  function close(preserveAttachment=false){document.getElementById("baranWalletFlow")?.remove();document.body.style.overflow="";if(!preserveAttachment){if(receiptPreviewUrl)URL.revokeObjectURL(receiptPreviewUrl);receiptPreviewUrl="";receiptFile=null;transferCode="";}}
- function openBaranWalletFlow(key){current=cfg[key];if(!current)return;qty=current.min;currency="USD";account="";transferCode="";if(receiptPreviewUrl)URL.revokeObjectURL(receiptPreviewUrl);receiptPreviewUrl="";receiptFile=null;render(1);}
+ async function refreshWalletPricing(){try{const codes=["HOMSCARD_WALLET_USDT_BEP20","HOMSCARD_WALLET_WHISH_MONEY","HOMSCARD_WALLET_SHAM_CASH"];const {data,error}=await sb.from("products").select("product_code,price_usd,price_syp").in("product_code",codes).eq("is_active",true);if(error||!Array.isArray(data))return;const map={HOMSCARD_WALLET_USDT_BEP20:"usdt",HOMSCARD_WALLET_WHISH_MONEY:"whish",HOMSCARD_WALLET_SHAM_CASH:"sham"};data.forEach(row=>{const key=map[row.product_code],item=cfg[key],usd=Number(row.price_usd),syp=Number(row.price_syp);if(!item||!Number.isFinite(usd)||usd<=0||!Number.isFinite(syp)||syp<=0)return;item.saleUnitUsd=usd;item.saleUnitSyp=syp;item.marketRateNew=syp/usd/1.02;const label=document.querySelector('[data-wallet-price="'+key+'"]');if(label)label.textContent="سعر 1 USD قيمة اسمية: $"+usd.toFixed(2)+" · "+syp.toFixed(2)+" ل.س جديدة";});}catch(_){/* Keep the last verified cached pricing if the catalog is temporarily unavailable. */}}
+ function openBaranWalletFlow(key){current=cfg[key];if(!current)return;qty=current.min;currency="USD";account="";transferCode="";if(receiptPreviewUrl)URL.revokeObjectURL(receiptPreviewUrl);receiptPreviewUrl="";receiptFile=null;refreshWalletPricing().finally(()=>{render(1);});}
  function render(step){
   close(true);
   const root=node("div","baran-wallet-flow");root.id="baranWalletFlow";root.dir="rtl";root.setAttribute("role","dialog");root.setAttribute("aria-modal","true");
