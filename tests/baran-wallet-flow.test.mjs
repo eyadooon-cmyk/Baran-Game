@@ -29,16 +29,20 @@ test("wallet flow previews receipt locally and does not upload it", () => {
   assert.doesNotMatch(walletFlow, /\.storage\.from\(|\.upload\(|functions\.invoke\(/);
 });
 
-test("wallet calculator charges and displays in the customer selected currency only", () => {
+test("wallet calculator applies supplier unit pricing and the selected currency", () => {
   assert.ok(walletFlow.includes("baranWalletCurrency"));
   assert.ok(walletFlow.includes("دولار أمريكي (USD)"));
   assert.ok(walletFlow.includes("ليرة سورية جديدة (SYP)"));
-  assert.ok(walletFlow.includes('currency==="SYP"?156.6:1'));
-  assert.ok(walletFlow.includes("const total=amount;"));
-  assert.doesNotMatch(walletFlow, /unitUsd|unitSyp/);
+  assert.ok(walletFlow.includes('currency==="SYP"?current.marketRateNew:1'));
+  assert.ok(walletFlow.includes("const nominalUsd=valid?(currency==="USD"?amount:Math.round(amount/current.marketRateNew)):0"));
+  assert.ok(walletFlow.includes("const totalUsd=nominalUsd*current.saleUnitUsd"));
+  assert.ok(walletFlow.includes("const totalSyp=nominalUsd*current.saleUnitSyp"));
   assert.ok(walletFlow.includes("المبلغ التقديري للخصم"));
-  assert.ok(walletFlow.includes("لا يتم تحويل المبلغ إلى عملة أخرى"));
-  assert.doesNotMatch(walletFlow, /totalUsd|totalSyp/);
+  assert.ok(walletFlow.includes("سعر البيع لكل 1 USD"));
+  assert.doesNotMatch(walletFlow, /156\.6|const total=amount/);
+  assert.ok(walletFlow.includes("HOMSCARD_WALLET_USDT_BEP20"));
+  assert.ok(walletFlow.includes("HOMSCARD_WALLET_WHISH_MONEY"));
+  assert.ok(walletFlow.includes("HOMSCARD_WALLET_SHAM_CASH"));
 });
 
 test("wallet purchase remains disabled and cannot create or charge an order", () => {
