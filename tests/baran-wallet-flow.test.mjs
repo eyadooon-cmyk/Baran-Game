@@ -47,9 +47,9 @@ test("wallet calculator applies supplier unit pricing and the selected currency"
 
 
 test("USDT BEP20 does not ask for a transfer receipt image", () => {
-  assert.match(walletFlow, /if\(current!==cfg\.usdt\)\{[\s\S]*?رقم الحوالة \/ رمز التحويل/);
-  assert.match(walletFlow, /if\(current!==cfg\.usdt\)\{[\s\S]*?صورة إيصال التحويل/);
-  assert.match(walletFlow, /current===cfg\.usdt\?\[\]:\[\["صورة الإيصال"/);
+  assert.match(walletFlow, /if\(current!==cfg\.usdt&&current!==cfg\.whish\)\{[\s\S]*?رقم الحوالة \/ رمز التحويل/);
+  assert.match(walletFlow, /if\(current!==cfg\.usdt&&current!==cfg\.whish\)\{[\s\S]*?صورة إيصال التحويل/);
+  assert.match(walletFlow, /current===cfg\.usdt\|\|current===cfg\.whish\?\[\]:\[\["رمز التحويل"/);
   assert.match(walletFlow, /الشراء قريباً — غير متاح حالياً/);
 });
 
@@ -72,3 +72,5 @@ test("fixed quote gateway declares the player ID before the quote branch uses it
   assert.ok(declaration >= 0 && quoteBranch > declaration);
   assert.match(gateway, /requestPlayerId\.length < 2/);
 });
+
+test("Whish Money does not ask for a transfer code or receipt image", () => {\n  assert.match(walletFlow, /if\\(current!==cfg\\.usdt&&current!==cfg\\.whish\\)\\{[\\s\\S]*?رقم الحوالة \/ رمز التحويل/);\n  assert.match(walletFlow, /current===cfg\\.usdt\\|\\|current===cfg\\.whish\\?\\[\\]:\\[\\["رمز التحويل"/);\n  assert.match(walletFlow, /field:"رقم محفظة Whish Money"/);\n  assert.match(walletFlow, /الشراء قريباً — غير متاح حالياً/);\n});\n
