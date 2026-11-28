@@ -8151,7 +8151,7 @@ async function loadBaranJawakerCatalog(){
       const content=document.createElement("div");content.className="game-package-option";content.style.cursor="default";
       const art=document.createElement("div");art.className="baran-jawaker-product-art";const artImage=document.createElement("img");artImage.src=baranJawakerArtwork(product);artImage.alt="صورة "+(product.name||"منتج جواكر");artImage.loading="lazy";artImage.decoding="async";artImage.width=360;artImage.height=230;artImage.style.cssText="display:block;width:100%;height:112px;object-fit:contain;border-radius:12px";art.append(artImage);
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
-      const description=document.createElement("small");description.textContent=product.description||"منتج جواكر";
+      const description=document.createElement("small");description.textContent=isVariableTokens?"اختر كمية التوكنز لمعاينة السعر قبل الشراء.":(product.description||"منتج جواكر");
       const price=document.createElement("span");price.className="game-package-price";price.textContent=isVariableTokens?"التسعير حسب عدد التوكنز":baranMoneyText(product);
       const note=document.createElement("small");note.className="game-package-pending";note.textContent=isVariableTokens?"قريباً — غير جاهز للطلب · من 10,000 إلى 10,000,000 توكن · معاينة السعر متاحة فقط":(baranHasApprovedGamePrice(product)?"الشراء غير مفعّل حالياً":"بانتظار اعتماد السعر");
       content.append(art,name,description,price,note);
@@ -8187,7 +8187,7 @@ function baranRenderJawakerQuantityCalculator(card,product){
   const purchaseButton=document.createElement("button");purchaseButton.type="button";purchaseButton.textContent="الشراء";purchaseButton.className="secondary";
   const tabs=document.createElement("div");tabs.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:8px";tabs.append(detailsButton,purchaseButton);
   const details=document.createElement("div");details.style.cssText="display:grid;gap:8px;line-height:1.8";
-  const detailsText=document.createElement("small");detailsText.textContent=(product.description||"شحن توكنز جواكر حسب الكمية المطلوبة.")+" الكمية من 10,000 إلى 10,000,000 توكن. الشراء والشحن غير مفعّلين حالياً.";
+  const detailsText=document.createElement("small");detailsText.textContent="توكنز جواكر حسب الكمية المطلوبة، من 10,000 إلى 10,000,000 توكن. معاينة السعر حسب الكمية فقط؛ الشراء والشحن غير مفعّلين حالياً.";
   details.append(detailsText);
   const quantityLabel=document.createElement("label");quantityLabel.textContent="عدد التوكنز";
   const quantityRow=document.createElement("div");quantityRow.style.cssText="display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:9px;align-items:center";
