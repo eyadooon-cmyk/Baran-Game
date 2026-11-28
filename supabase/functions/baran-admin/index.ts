@@ -172,7 +172,7 @@ Deno.serve(async (req: Request) => {
       };
       const { data: products, error: productsError } = await admin
         .from("products")
-        .select("id,product_code,category,name,description,price_usd,price_syp,is_active,sort_order,created_at,updated_at")
+        .select("id,product_code,category,name,description,price_usd,price_syp,markup_percent,is_active,sort_order,created_at,updated_at")
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
       if (productsError) {
@@ -1156,6 +1156,7 @@ Deno.serve(async (req: Request) => {
         const name = typeof body.name === "string" ? body.name.trim() : "";
         const description = typeof body.description === "string" ? body.description.trim() : "";
         const usd = body.price_usd === null || body.price_usd === undefined || body.price_usd === "" ? null : body.price_usd;
+        const markupPercent = body.markup_percent === undefined ? 4 : Number(body.markup_percent);
         const sortOrder = body.sort_order ?? 100;
         const { data: settings, error: settingsError } = await admin
           .from("store_settings").select("exchange_rate").eq("id", "main").single();
@@ -1172,6 +1173,7 @@ Deno.serve(async (req: Request) => {
           return respond({ error: "تحقق من اسم المنتج والوصف." }, 400);
         }
         if ((usd !== null && (typeof usd !== "number" || !Number.isFinite(usd) || usd <= 0 || usd > 100000000)) ||
+            !Number.isFinite(markupPercent) || markupPercent < 0 || markupPercent > 100 ||
             !Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 100000) {
           return respond({ error: "إذا توفر السعر فأدخل قيمة صحيحة أكبر من صفر، وتحقق من ترتيب العرض." }, 400);
         }
@@ -1182,6 +1184,7 @@ Deno.serve(async (req: Request) => {
           description,
           price_usd: usd,
           price_syp: syp,
+          markup_percent: markupPercent,
           is_active: body.is_active !== false,
           sort_order: sortOrder,
           updated_at: new Date().toISOString(),
@@ -1193,7 +1196,7 @@ Deno.serve(async (req: Request) => {
             return respond({ error: "معرّف المنتج غير صحيح." }, 400);
           }
           const result = await admin.from("products").update(values).eq("id", body.product_id)
-            .select("id,product_code,category,name,description,price_usd,price_syp,is_active,sort_order,created_at,updated_at").single();
+            .select("id,product_code,category,name,description,price_usd,price_syp,markup_percent,is_active,sort_order,created_at,updated_at").single();
           saved = result.data;
           saveError = result.error;
         } else {
