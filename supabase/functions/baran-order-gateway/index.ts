@@ -185,7 +185,7 @@ Deno.serve(async (req: Request) => {
       if(supplierError||!supplier)return json({success:false,error:"مورد HomsCard غير متاح."},503);
 
       const {data:productRows,error:productsError}=await admin.from("products")
-        .select("id,product_code,name,description,category,price_usd,price_syp,catalog_group,sort_order")
+        .select("id,product_code,name,description,category,price_usd,price_syp,markup_percent,catalog_group,sort_order")
         .eq("is_active",true).gt("price_usd",0).or("catalog_group.is.null,catalog_group.eq.homscard_fixed")
         .order("sort_order",{ascending:true}).limit(250);
       if(productsError)return json({success:false,error:"تعذر تحميل كتالوج المنتجات الثابتة."},503);
@@ -218,18 +218,20 @@ Deno.serve(async (req: Request) => {
            !Array.isArray(data.params)||data.params.length!==1||
            !/player\s*id/i.test(String(data.params[0]))||
            !/player\s*id/i.test(String(page.text||"")))continue;
-        const saleUsd=Number((Number(m.unit_cost)*(1+markup/100)).toFixed(2));
-        if(!(saleUsd>0)||Math.abs(Number(p.price_usd)-saleUsd)>0.000001)continue;
+        const productMarkup=Number(p.markup_percent ?? markup);
+        const minimumSaleUsd=Number((Number(m.unit_cost)*(1+productMarkup/100)).toFixed(2));
+        const saleUsd=Number(Number(p.price_usd).toFixed(2));
+        if(!(saleUsd>0)||!Number.isFinite(productMarkup)||productMarkup<0||saleUsd+0.000001<minimumSaleUsd)continue;
         const saleSyp=Number((saleUsd*marketRate*(1+buffer/100)/100).toFixed(2));
         ready.push({product_id:p.id,product_code:p.product_code,name:p.name,description:p.description,category:p.category,
           supplier_sku:String(m.supplier_sku),target_label:"Player ID",sale_usd:saleUsd,sale_syp:saleSyp,
-          currency,can_purchase:false});
+          markup_percent:productMarkup,currency,can_purchase:false});
       }
       if(!isQuote)return json({success:true,mode:"read_only_fixed_catalog",can_purchase:false,products:ready});
       const selected=ready.find((p:any)=>p.product_code===productCode);
       if(!selected)return json({success:false,error:"المنتج الثابت غير معتمد حالياً أو يحتاج تحديث تدقيق المورد."},404);
       const quote={product_code:selected.product_code,product_name:selected.name,player_id_masked:requestPlayerId.length>4?requestPlayerId.slice(0,2)+"•••"+requestPlayerId.slice(-2):"••••",
-        sale_usd:selected.sale_usd,sale_syp:selected.sale_syp,currency,markup_percent:markup,
+        sale_usd:selected.sale_usd,sale_syp:selected.sale_syp,currency,markup_percent:selected.markup_percent,
         commercial_rate:Number((marketRate*(1+buffer/100)/100).toFixed(4))};
       return json({success:true,mode:"read_only_fixed_quote",can_create_order:false,can_purchase:false,
         charged:false,order_created:false,quote,
@@ -249,6 +251,15 @@ Deno.serve(async (req: Request) => {
       const marketRate = Number(settings.market_exchange_rate), buffer = Number(settings.fx_buffer_percent), markup = Number(settings.product_markup_percent);
       if (![marketRate,buffer,markup].every(Number.isFinite) || marketRate <= 0 || buffer < 0 || markup < 0)
         return json({ success: false, error: "إعدادات التسعير غير صالحة." }, 503);
+      const { data: variableSupplier, error: variableSupplierError } = await admin.from("suppliers")
+        .select("id").ilike("name", "HomsCard").eq("is_active", true).maybeSingle();
+      if (variableSupplierError || !variableSupplier) return json({ success: false, error: "مورد HomsCard غير متاح." }, 503);
+      const { data: variableMappings, error: variableMappingsError } = await admin.from("supplier_products")
+        .select("supplier_sku,products(markup_percent)")
+        .eq("supplier_id", variableSupplier.id).eq("is_preferred", true);
+      if (variableMappingsError) return json({ success: false, error: "تعذر قراءة هوامش المنتجات." }, 503);
+      const marginBySku = new Map((variableMappings ?? []).map((m: any) =>
+        [String(m.supplier_sku), Number(m.products?.markup_percent ?? markup)]));
       const latest = new Map<string, any>();
       for (const row of auditRows ?? []) if (!latest.has(String(row.product_id))) latest.set(String(row.product_id), row);
       const result = [];
@@ -263,6 +274,7 @@ Deno.serve(async (req: Request) => {
         const min = Number(limits[1].replace(/,/g, "")), max = Number(limits[2].replace(/,/g, ""));
         const cost = Number(data.price);
         if (!Number.isSafeInteger(min) || !Number.isSafeInteger(max) || min < 1 || max < min || !Number.isFinite(cost) || cost <= 0) continue;
+        const itemMarkup = marginBySku.get(String(id)) ?? markup;
         const images = [data.image_url,data.image,data.img,data.photo,page.images?.[0]].filter(v => typeof v === "string");
         const image = images.find(v => /^https:\/\//i.test(v)) ?? "";
         const fieldRules = [
@@ -277,8 +289,9 @@ Deno.serve(async (req: Request) => {
           product_id: id, name: String(row.product_name || data.name || "منتج").slice(0, 100),
           category: category === "جواكر" ? "ألعاب" : String(data.category), source_category: category, min_quantity: min, max_quantity: max, image,
           requires_target: !!targetField, target_label: targetField?.label ?? "بيانات الحساب (إن لزمت)",
-          sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
-          sale_unit_syp: Number((cost * (1 + markup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(8)),
+          markup_percent: itemMarkup,
+          sale_unit_usd: Number((cost * (1 + itemMarkup / 100)).toFixed(8)),
+          sale_unit_syp: Number((cost * (1 + itemMarkup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(8)),
         });
       }
       return json({ success: true, products: result, provider: "HomsCard", mode: "read_only_catalog", scope: "all_variable_quantity_categories" });
@@ -332,11 +345,21 @@ Deno.serve(async (req: Request) => {
       if (![marketRate,bufferPercent,markupPercent].every(Number.isFinite) || marketRate <= 0 || bufferPercent < 0 || markupPercent < 0) {
         return json({ success: false, error: "إعدادات سعر الصرف أو هامش الربح غير صالحة." }, 503);
       }
+      const { data: variableSupplier, error: variableSupplierError } = await admin.from("suppliers")
+        .select("id").ilike("name", "HomsCard").eq("is_active", true).maybeSingle();
+      if (variableSupplierError || !variableSupplier) return json({ success: false, error: "مورد HomsCard غير متاح." }, 503);
+      const { data: marginMapping, error: marginMappingError } = await admin.from("supplier_products")
+        .select("products(markup_percent)")
+        .eq("supplier_id", variableSupplier.id).eq("supplier_sku", productId).eq("is_preferred", true).maybeSingle();
+      if (marginMappingError) return json({ success: false, error: "تعذر قراءة هامش ربح المنتج." }, 503);
+      const productMarkupPercent = Number(marginMapping?.products?.markup_percent ?? markupPercent);
+      if (!Number.isFinite(productMarkupPercent) || productMarkupPercent < 0)
+        return json({ success: false, error: "هامش ربح المنتج غير صالح." }, 503);
       const commercialRate = marketRate * (1 + bufferPercent / 100);
       const totalCost = unitCost * quantity;
       const round = (value: number, digits: number) => Number((value + Number.EPSILON).toFixed(digits));
-      const saleUsd = round(totalCost * (1 + markupPercent / 100), 4);
-      const saleSyp = Number((totalCost * (1 + markupPercent / 100) * commercialRate / 100).toFixed(2));
+      const saleUsd = round(totalCost * (1 + productMarkupPercent / 100), 4);
+      const saleSyp = Number((totalCost * (1 + productMarkupPercent / 100) * commercialRate / 100).toFixed(2));
       const { data: adminRecord, error: adminCheckError } = await admin.from("admin_users")
         .select("user_id").eq("user_id", user.id).maybeSingle();
       if (adminCheckError) return json({ success: false, error: "تعذر التحقق من صلاحية الإدارة." }, 500);
@@ -350,7 +373,7 @@ Deno.serve(async (req: Request) => {
         sale_usd: saleUsd,
         sale_syp: saleSyp,
         commercial_rate: round(commercialRate / 100, 2),
-        markup_percent: markupPercent,
+        markup_percent: productMarkupPercent,
         currency,
       };
       if (isAdmin) {
@@ -730,7 +753,7 @@ Deno.serve(async (req: Request) => {
       if (!["USD", "SYP"].includes(currency)) return json({ success: false, error: "عملة الدفع غير مدعومة." }, 400);
 
       const { data: product, error: productError } = await admin.from("products")
-        .select("id,product_code,name,category,is_active")
+        .select("id,product_code,name,category,is_active,markup_percent")
         .eq("product_code", "JAWAKER_TOKENS").eq("is_active", true).maybeSingle();
       if (productError || !product || product.category !== "game") {
         return json({ success: false, error: "منتج جواكر توكنز غير متاح حالياً." }, 404);
@@ -751,7 +774,7 @@ Deno.serve(async (req: Request) => {
       if (settingsError || !settings) return json({ success: false, error: "إعدادات التسعير غير متاحة." }, 503);
       const marketRate = Number(settings.market_exchange_rate);
       const bufferPercent = Number(settings.fx_buffer_percent);
-      const markupPercent = Number(settings.product_markup_percent);
+      const markupPercent = Number(product.markup_percent ?? settings.product_markup_percent);
       if (![marketRate, bufferPercent, markupPercent].every(Number.isFinite) || marketRate <= 0 || bufferPercent < 0 || markupPercent < 0) {
         return json({ success: false, error: "إعدادات سعر الصرف أو هامش الربح غير صالحة." }, 503);
       }

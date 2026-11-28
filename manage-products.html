@@ -69,6 +69,9 @@ a{color:#c5b4d6}
   <label for="productPriceUsd">السعر بالدولار</label>
   <input id="productPriceUsd" type="number" min="0.01" step="0.01" value="" inputmode="decimal" placeholder="اتركه فارغاً إذا لم يتحدد السعر" oninput="updateProductPricePreview()">
   <p id="productPricePreview" class="small">أدخل سعر الدولار لمعاينة سعر الليرة.</p>
+  <label for="productMarkupPercent">هامش ربح المنتج (%)</label>
+  <input id="productMarkupPercent" type="number" min="0" max="100" step="0.1" value="4" inputmode="decimal">
+  <p class="small">يُطبّق على المنتج المرتبط بحمص كارد، والافتراضي للمنتجات الجديدة 4%.</p>
   <label for="productSortOrder">ترتيب العرض</label>
   <input id="productSortOrder" type="number" min="0" step="1" value="100">
   <label for="productActive">حالة المنتج</label>
@@ -167,7 +170,7 @@ async function boot(){
   }catch(error){note.textContent="لا يمكن فتح إدارة المنتجات: "+error.message+" — إذا لم تكن مسجلاً، افتح المتجر وسجّل الدخول."}
 }
 </script>
-<script src="./products.js?v=20261109-2" onerror="document.getElementById('productMessage').textContent='تعذر تحميل ملف الحفظ products.js. أعد تحميل الصفحة.'"></script>
+<script src="./products.js?v=20261128-1" onerror="document.getElementById('productMessage').textContent='تعذر تحميل ملف الحفظ products.js. أعد تحميل الصفحة.'"></script>
 <script>
 function handleSaveProductClick(){
   const message=document.getElementById("productMessage");
