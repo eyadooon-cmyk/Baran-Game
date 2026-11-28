@@ -218,7 +218,7 @@
     finally{button.disabled=false;}
   }
   function observeSection(){
-    const sections=[["automaticGames","ألعاب"],["appsStore","تطبيقات"],["telecomStore","اتصالات"],["digitalWalletsStore","محافظ"]];
+    const sections=[["automaticGames","ألعاب"],["appsStore","تطبيقات"],["telecomStore","اتصالات"]];
     sections.forEach(([id,category])=>{
       const section=$(id);if(!section)return;
       let host=section.querySelector(".baran-variable-products");
