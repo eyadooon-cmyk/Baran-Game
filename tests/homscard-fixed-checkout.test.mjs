@@ -25,6 +25,7 @@ test("fixed HomsCard products require a fresh supplier audit and matching suppli
   assert.match(gateway, /target_label:"Player ID"/);
 });
 
+// Regression guard: Jawaker quantity pricing remains read-only in the games category.
 test("Jawaker custom quantity is listed under games with the current supplier price formula", () => {
   assert.ok(gateway.includes('new Set(["ألعاب", "جواكر", "تطبيقات", "اتصالات", "محافظ"])'));
   assert.ok(gateway.includes('category: category === "جواكر" ? "ألعاب" : String(data.category)'));
