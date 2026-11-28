@@ -278,7 +278,7 @@ Deno.serve(async (req: Request) => {
           category: category === "جواكر" ? "ألعاب" : String(data.category), source_category: category, min_quantity: min, max_quantity: max, image,
           requires_target: !!targetField, target_label: targetField?.label ?? "بيانات الحساب (إن لزمت)",
           sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8)),
-          sale_unit_syp: Number((cost * (1 + markup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(2)),
+          sale_unit_syp: Number((cost * (1 + markup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(8)),
         });
       }
       return json({ success: true, products: result, provider: "HomsCard", mode: "read_only_catalog", scope: "all_variable_quantity_categories" });

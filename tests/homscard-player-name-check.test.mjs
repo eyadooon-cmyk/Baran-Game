@@ -30,3 +30,33 @@ test("player checker loads before both HomsCard checkout interfaces", () => {
   assert.ok(checker >= 0 && checker < variableCheckout);
   assert.ok(checker < fixedCheckout);
 });
+
+
+test("Jawaker variable tokens stay inside the Jawaker store and retain precise unit pricing", () => {
+  assert.match(variable, /source==="جواكر"\|\|\/jawaker\|جواكر\/i\.test/);
+  assert.match(variable, /maximumFractionDigits:8\}\)\+" ل\.س جديدة"/);
+  assert.match(variable, /baran_homscard_variable_catalog_v3/);
+  assert.match(variable, /host\.hidden=category==="ألعاب"&&!visibleProducts\.length/);
+});
+
+test("Extra game cards render verified read-only HomsCard prices", async () => {
+  const products = await readFile(new URL("../products.js", import.meta.url), "utf8");
+  for (const key of ["yalla-ludo","ludo-club","billiards","whiteout","mobile-legends"]) {
+    assert.ok(products.includes('key:"'+key+'"'));
+  }
+  assert.match(products, /catalog_visible",true/);
+  assert.match(products, /أسعار للعرض فقط — الطلب والشحن متوقفان حالياً/);
+  assert.match(products, /card\.querySelector\("\.baran-game-coming"\)/);
+  assert.match(products, /coming\.className="small baran-game-price-status"/);
+  assert.ok(products.includes("HOMSCARD_GAME_(197|198|199|200)"));
+});
+
+test("Jawaker variable orders remain blocked server-side", async () => {
+  const gateway = await readFile(new URL("../supabase/functions/baran-order-gateway/index.ts", import.meta.url), "utf8");
+  const start = gateway.indexOf('if (body?.action === "homscard_variable_create_order")');
+  const end = gateway.indexOf('if (body?.action === "homscard_variable_check_order")', start);
+  const block = gateway.slice(start, end);
+  assert.match(block, /JAWAKER_TOKENS/);
+  assert.match(block, /PRODUCT_NOT_READY/);
+  assert.match(block, /charged: false/);
+});
