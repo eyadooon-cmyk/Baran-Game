@@ -374,6 +374,24 @@ Deno.serve(async (req: Request) => {
 
     if (body?.action === "homscard_variable_create_order") {
       const productId = typeof body.product_id === "string" ? body.product_id.trim() : "";
+      // Jawaker custom tokens remain preview-only until the product is formally approved.
+      const { data: jawakerProduct } = await admin.from("products")
+        .select("id").eq("product_code", "JAWAKER_TOKENS").maybeSingle();
+      if (jawakerProduct?.id) {
+        const { data: jawakerMappings } = await admin.from("supplier_products")
+          .select("supplier_sku").eq("product_id", jawakerProduct.id);
+        if (String(jawakerProduct.id) === productId ||
+            (jawakerMappings || []).some((mapping: any) => String(mapping.supplier_sku) === productId)) {
+          return json({
+            success: false,
+            code: "PRODUCT_NOT_READY",
+            error: "منتج جواكر غير جاهز للطلب حالياً. يمكنك مراجعة السعر فقط؛ لم يتم إنشاء طلب أو إرسال أي شيء للمورد.",
+            can_create_order: false,
+            order_created: false,
+            charged: false,
+          }, 409);
+        }
+      }
       const quantity = Number(body.quantity);
       const currency = typeof body.payment_currency === "string" ? body.payment_currency.toUpperCase() : "SYP";
       const playerId = typeof body.player_id === "string" ? body.player_id.trim() : "";
