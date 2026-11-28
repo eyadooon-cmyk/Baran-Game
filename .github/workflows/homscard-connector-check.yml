@@ -11,6 +11,7 @@ on:
       - "tests/homscard-connector.test.mjs"
       - "tests/homscard-analysis.test.mjs"
       - "tests/homscard-fixed-checkout.test.mjs"
+      - "tests/baran-wallet-flow.test.mjs"
       - "tests/homscard-fixed-transaction-simulation.test.mjs"
       - "tests/postgres/homscard-fixed-order.integration.sql"
       - "baran-homscard-fixed-checkout.js"
@@ -33,6 +34,7 @@ on:
       - "tests/homscard-connector.test.mjs"
       - "tests/homscard-analysis.test.mjs"
       - "tests/homscard-fixed-checkout.test.mjs"
+      - "tests/baran-wallet-flow.test.mjs"
       - "tests/homscard-fixed-transaction-simulation.test.mjs"
       - "tests/postgres/homscard-fixed-order.integration.sql"
       - "baran-homscard-fixed-checkout.js"
@@ -73,6 +75,8 @@ jobs:
         run: node --test tests/homscard-connector.test.mjs tests/homscard-analysis.test.mjs
       - name: Run fixed and variable checkout contract tests
         run: node --test tests/homscard-fixed-checkout.test.mjs tests/homscard-player-name-check.test.mjs
+      - name: Run wallet preview and disabled-checkout regression tests
+        run: node --test tests/baran-wallet-flow.test.mjs
       - name: Run isolated fixed-order transaction simulation
         run: node --test tests/homscard-fixed-transaction-simulation.test.mjs
       - name: Install PostgreSQL client
