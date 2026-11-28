@@ -26,10 +26,10 @@ test("fixed HomsCard products require a fresh supplier audit and matching suppli
 });
 
 test("Jawaker custom quantity is listed under games with the current supplier price formula", () => {
-  assert.match(gateway, /new Set\\(\\["ألعاب", "جواكر", "تطبيقات", "اتصالات", "محافظ"\\]\\)/);
-  assert.match(gateway, /category: category === "جواكر" \\? "ألعاب" : String\\(data\\.category\\)/);
-  assert.match(gateway, /sale_unit_usd: Number\\(\\(cost \\* \\(1 \\+ markup \\/ 100\\)\\)\\.toFixed\\(8\\)\\)/);
-  assert.match(gateway, /sale_unit_syp: Number\\(\\(cost \\* \\(1 \\+ markup \\/ 100\\) \\* marketRate \\* \\(1 \\+ buffer \\/ 100\\) \\/ 100\\)\\.toFixed\\(2\\)\\)/);
+  assert.ok(gateway.includes('new Set(["ألعاب", "جواكر", "تطبيقات", "اتصالات", "محافظ"])'));
+  assert.ok(gateway.includes('category: category === "جواكر" ? "ألعاب" : String(data.category)'));
+  assert.ok(gateway.includes('sale_unit_usd: Number((cost * (1 + markup / 100)).toFixed(8))'));
+  assert.ok(gateway.includes('sale_unit_syp: Number((cost * (1 + markup / 100) * marketRate * (1 + buffer / 100) / 100).toFixed(2))'));
 });\n\ntest("fixed quote is read-only and cannot create orders or charge wallets", () => {
   assert.match(gateway, /mode:"read_only_fixed_quote"/);
   assert.match(gateway, /can_create_order:false,can_purchase:false/);
