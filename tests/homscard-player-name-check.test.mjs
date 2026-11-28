@@ -45,10 +45,12 @@ test("Extra game cards render verified read-only HomsCard prices", async () => {
     assert.ok(products.includes('key:"'+key+'"'));
   }
   assert.match(products, /catalog_visible",true/);
-  assert.match(products, /أسعار للعرض فقط — الطلب والشحن متوقفان حالياً/);
-  assert.match(products, /card\.querySelector\("\.baran-game-coming"\)/);
-  assert.match(products, /coming\.className="small baran-game-price-status"/);
-  assert.ok(products.includes("HOMSCARD_GAME_(197|198|199|200)"));
+  assert.match(products, /async function loadBaranExtraGameCatalog\\(sectionId\\)/);
+  assert.match(products, /baranSortExtraPackages/);
+  assert.match(products, /button\\.disabled=true/);
+  assert.match(products, /غير جاهز للطلب أو الشحن/);
+  assert.match(products, /catalog_visible/);
+  assert.doesNotMatch(products, /card\\.querySelector\\("\\.baran-game-coming"\\)/);
 });
 
 test("Jawaker variable orders remain blocked server-side", async () => {
