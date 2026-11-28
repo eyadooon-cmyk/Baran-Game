@@ -139,7 +139,7 @@
         saleSyp: saleUsd * commercial / 100,
         fxBufferSyp: costUsd * (commercial - market) / 100,
         markupSyp: (saleUsd - costUsd) * commercial / 100,
-        profitUsd: (saleUsd * commercial - costUsd * market) / market,
+        profitUsd: saleUsd - costUsd,
         profitSyp: (saleUsd * commercial - costUsd * market) / 100,
         currency: link.currency
       };
@@ -155,12 +155,12 @@
     }
     box.innerHTML = '<div class="pricing-preview-wrap"><table><thead><tr>' +
       '<th>المنتج</th><th>تكلفة حمص كارد</th><th>التكلفة بسعر السوق</th>' +
-      '<th>سعر البيع المقترح USD</th><th>سعر البيع المقترح SYP</th>' +
+      '<th>سعر البيع المقترح USD</th><th>ربحنا المتوقع USD</th><th>سعر البيع المقترح SYP</th>' +
       '<th>مخصص فرق الصرف</th><th>زيادة المنتج</th><th>الفارق الإجمالي قبل الرسوم</th>' +
       '<th>السعر الحالي USD / SYP</th></tr></thead><tbody>' +
       rows.map((row) => '<tr><td>' + esc(row.name) + '<small style="display:block;color:#a998b8">' + esc(row.code) + '</small></td>' +
         '<td dir="ltr">' + usd(row.costUsd) + '</td><td dir="ltr">' + syp(row.costAtMarket) + '</td>' +
-        '<td dir="ltr">' + usd(row.saleUsd) + '</td><td dir="ltr">' + syp(row.saleSyp) + '</td>' +
+        '<td dir="ltr">' + usd(row.saleUsd) + '</td><td dir="ltr"><strong style="color:#8ce0b2">' + usd(row.profitUsd) + '</strong></td><td dir="ltr">' + syp(row.saleSyp) + '</td>' +
         '<td dir="ltr">' + syp(row.fxBufferSyp) + '</td><td dir="ltr">' + syp(row.markupSyp) + '</td><td dir="ltr">' + syp(row.profitSyp) + '</td><td dir="ltr">' + usd(row.currentUsd) + ' / ' + syp(row.currentSyp) + '</td></tr>'
       ).join("") + '</tbody></table></div>';
   }
