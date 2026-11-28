@@ -73,4 +73,9 @@ test("fixed quote gateway declares the player ID before the quote branch uses it
   assert.match(gateway, /requestPlayerId\.length < 2/);
 });
 
-test("Whish Money does not ask for a transfer code or receipt image", () => {\n  assert.match(walletFlow, /if\\(current!==cfg\\.usdt&&current!==cfg\\.whish\\)\\{[\\s\\S]*?رقم الحوالة \/ رمز التحويل/);\n  assert.match(walletFlow, /current===cfg\\.usdt\\|\\|current===cfg\\.whish\\?\\[\\]:\\[\\["رمز التحويل"/);\n  assert.match(walletFlow, /field:"رقم محفظة Whish Money"/);\n  assert.match(walletFlow, /الشراء قريباً — غير متاح حالياً/);\n});\n
+test("Whish Money does not ask for a transfer code or receipt image", () => {
+  assert.match(walletFlow, /if\(current!==cfg\.usdt&&current!==cfg\.whish\)\{[\s\S]*?رقم الحوالة \/ رمز التحويل/);
+  assert.match(walletFlow, /current===cfg\.usdt\|\|current===cfg\.whish\?\[\]:\[\["رمز التحويل"/);
+  assert.match(walletFlow, /field:"رقم محفظة Whish Money"/);
+  assert.match(walletFlow, /الشراء قريباً — غير متاح حالياً/);
+});
