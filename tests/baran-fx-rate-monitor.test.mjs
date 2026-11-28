@@ -53,9 +53,12 @@ test("Admin FX monitor UI provides a manual check and shows both sources", () =>
 
 test("Automatic FX refresh only raises the stored market rate and holds decreases", () => {
   assert.match(worker, /\.lt\("market_exchange_rate",applied\)/);
-  assert.match(worker, /const decreaseHeld=applied<currentRate/);
+  assert.match(worker, /const candidate=Number\(\(\(a\.sell_old\+b\.sell_old\)\/2\)\.toFixed\(2\)\)/);
+  assert.match(worker, /const decreased=candidate<applied/);
   assert.match(worker, /status:nextStatus/);
-  assert.match(worker, /nextStatus=decreaseHeld\?"rate_decrease_pending":"success"/);
-  assert.match(worker, /retained_previous_rate:decreaseHeld/);
+  assert.match(worker, /nextStatus=decreased\?"rate_decrease_pending":"success"/);
+  assert.match(worker, /retained_previous_rate:decreased/);
+  assert.match(worker, /candidate_rate_old:candidate/);
+  assert.match(worker, /last_error:decreased\?/);
   assert.match(ui, /rate_decrease_pending:/);
 });
