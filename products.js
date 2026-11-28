@@ -165,11 +165,11 @@ async function loadCatalog(){
 
 
 const BARAN_EXTRA_GAME_STORES={
-  yallaLudoStore:{key:"yalla-ludo",title:"باقات يلا لودو",codes:/^HOMSCARD_GAME_(104|105|106|107|108|109|110|112)$/,icon:"YL",units:["diamond","gold"],unitNames:{diamond:"ألماس",gold:"ذهب"},id:"yallaLudoProductCatalog"},
-  ludoClubStore:{key:"ludo-club",title:"باقات لودو كلوب",codes:/^HOMSCARD_GAME_(1269|1270|1271|1272|1273|1274|1275)$/,icon:"LC",units:["cash","gold"],unitNames:{cash:"Cash",gold:"ذهب"},id:"ludoClubProductCatalog"},
-  billiardsStore:{key:"billiards",title:"باقات 8 Ball Pool",codes:/^BILLIARDS_/,icon:"8B",units:["cashball","coin"],unitNames:{cashball:"Cash Ball",coin:"Coin"},id:"billiardsProductCatalog"},
-  whiteoutStore:{key:"whiteout",title:"باقات Whiteout Survival",codes:/^HOMSCARD_GAME_(534|535|536|537|538|539)$/,icon:"WS",units:["d"],unitNames:{d:"ألماس"},id:"whiteoutProductCatalog"},
-  mobileLegendsStore:{key:"mobile-legends",title:"باقات Mobile Legends",codes:/^HOMSCARD_GAME_(197|198|199|200)$/,icon:"ML",units:["diamond"],unitNames:{diamond:"ألماس"},id:"mobileLegendsProductCatalog"}
+  yallaLudoStore:{key:"yalla-ludo",title:"باقات يلا لودو",codes:/^HOMSCARD_GAME_(104|105|106|107|108|109|110|112)$/,image:"https://img.tapimg.net/market/images/2a6deb395c3445180ceff676bf97b384.jpg",alt:"Yalla Ludo",units:["diamond","gold"],unitNames:{diamond:"ألماس",gold:"ذهب"},id:"yallaLudoProductCatalog"},
+  ludoClubStore:{key:"ludo-club",title:"باقات لودو كلوب",codes:/^HOMSCARD_GAME_(1269|1270|1271|1272|1273|1274|1275)$/,image:"https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/8b/58/83/8b5883f9-ed7f-ded5-5011-48b6bd6c279a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/1024x1024bb.png",alt:"Ludo Club",units:["cash","gold"],unitNames:{cash:"Cash",gold:"ذهب"},id:"ludoClubProductCatalog"},
+  billiardsStore:{key:"billiards",title:"باقات 8 Ball Pool",codes:/^BILLIARDS_/,image:"https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/74/5c/61/745c6160-c9d9-804c-d2ae-6a9ecd8f1fe8/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg",alt:"8 Ball Pool",units:["cashball","coin"],unitNames:{cashball:"Cash Ball",coin:"Coin"},id:"billiardsProductCatalog"},
+  whiteoutStore:{key:"whiteout",title:"باقات Whiteout Survival",codes:/^HOMSCARD_GAME_(534|535|536|537|538|539)$/,image:"https://res.ldrescdn.com/rms/ldplayer/process/img/430e3dc9b3e748e69a972d79dade0c6b1763237006.png?x-oss-process=image%2Fformat%2Cwebp%2Fquality%2CQ_100%2Fresize%2Cw_1024",alt:"Whiteout Survival",units:["d"],unitNames:{d:"ألماس"},id:"whiteoutProductCatalog"},
+  mobileLegendsStore:{key:"mobile-legends",title:"باقات Mobile Legends",codes:/^HOMSCARD_GAME_(197|198|199|200)$/,image:"https://is4-ssl.mzstatic.com/image/thumb/Purple126/v4/0e/ae/e4/0eaee45b-a414-e99b-2eed-b7868478f522/AppIcon-0-0-0-6-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/1200x630wa.png",alt:"Mobile Legends",units:["diamond"],unitNames:{diamond:"ألماس"},id:"mobileLegendsProductCatalog"}
 };
 function baranExtraPackageInfo(product,config){
   const raw=String(product.name||product.product_code||"").trim();
@@ -210,7 +210,7 @@ async function loadBaranExtraGameCatalog(sectionId){
       const card=document.createElement("div");card.className="baran-game-package-card";card.dataset.packageCode=product.product_code;
       const button=document.createElement("button");button.type="button";button.className="game-package-option baran-package-button";button.disabled=true;button.setAttribute("aria-disabled","true");
       button.setAttribute("aria-label",(product.name||product.product_code)+" — قريباً، غير جاهز للطلب");
-      const art=document.createElement("span");art.className="baran-package-art";art.textContent=config.icon;art.setAttribute("aria-hidden","true");
+      const art=document.createElement("img");art.className="baran-package-game-image";art.src=config.image;art.alt=config.alt;art.loading="lazy";art.decoding="async";art.width=96;art.height=96;art.style.cssText="display:block;width:100%;height:88px;object-fit:contain;border-radius:10px;background:#100c16;margin-bottom:4px";art.addEventListener("error",()=>{art.hidden=true;},{once:true});
       const quantity=document.createElement("span");quantity.className="baran-package-quantity";quantity.textContent=info.quantity;
       const name=document.createElement("strong");name.textContent=info.name;
       const description=document.createElement("small");description.textContent="باقة ثابتة من كتالوج حمص كارد.";
