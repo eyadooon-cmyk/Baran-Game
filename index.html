@@ -7891,7 +7891,7 @@ async function baranRunAdminOrderPreflight(){
    console.error("Baran admin order preflight:",error);
  }finally{if(button){button.disabled=false;button.textContent="إعادة فحص الجاهزية";}}
 }
-function baranRenderUnifiedSelection(target,product,priceText,detailText){
+function baranRenderUnifiedSelection(target,product,priceText,detailText,showPrice=true){
  if(!target)return;
  target.replaceChildren();
  target.classList.add("baran-unified-selection");
@@ -7901,7 +7901,7 @@ function baranRenderUnifiedSelection(target,product,priceText,detailText){
  const detail=document.createElement("p");detail.className="small";detail.textContent=detailText||"راجع البيانات قبل المتابعة.";
  const note=document.createElement("p");note.className="small";note.textContent="معاينة فقط: لم يتم إنشاء طلب أو حجز المنتج أو خصم أي رصيد.";
  const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="الشراء والشحن غير مفعّلين حالياً حتى التحقق من المورد ومسار التنفيذ.";
- target.append(heading,name,price,detail,note,status);
+ target.append(heading,name);if(showPrice)target.append(price);target.append(detail,note,status);
 }
 const baranGameSelections={PUBG:null,FREEFIRE:null};
 function baranHasApprovedGamePrice(product){
@@ -8053,19 +8053,20 @@ function baranAddProductDetails(parent,product,categoryLabel){
   titleRow.append(thumb,heading);
   const card=document.createElement("div");card.className="bpd-card";
   const desc=document.createElement("p");desc.className="bpd-desc";desc.textContent=product.description||"تفاصيل المنتج المعتمدة من الكتالوج.";
+  const isWalletCategory=/محافظ|wallet/i.test(String(categoryLabel||""));
   const price=document.createElement("div");price.className="bpd-price";price.textContent="سعر الوحدة: "+(typeof baranServicePrice==="function"&&categoryLabel!=="الألعاب"?baranServicePrice(product):baranMoneyText(product));
   const meta=document.createElement("div");meta.className="bpd-meta";
   const rows=["القسم: "+categoryLabel,"رمز المنتج: "+(product.product_code||"غير متوفر")];
   if(product.min_quantity!=null||product.max_quantity!=null)rows.push("حدود الكمية: "+(product.min_quantity??"—")+" إلى "+(product.max_quantity??"—"));
   if(product.quantity_min!=null||product.quantity_max!=null)rows.push("حدود الكمية: "+(product.quantity_min??"—")+" إلى "+(product.quantity_max??"—"));
-  rows.push("حالة السعر: "+((Number(product.price_usd)>0||Number(product.price_syp)>0)?"مسجل في الكتالوج":"بانتظار اعتماد السعر"));
+  if(!isWalletCategory)rows.push("حالة السعر: "+((Number(product.price_usd)>0||Number(product.price_syp)>0)?"مسجل في الكتالوج":"بانتظار اعتماد السعر"));
   meta.textContent=rows.join("\n");
   const action=parent.querySelector(".baran-service-select-button,.baran-package-button");
   const cta=document.createElement("button");cta.type="button";cta.className="bpd-cta";
   cta.textContent=action?(action.classList.contains("baran-package-button")?"اختيار الباقة والمتابعة":"اختيار المنتج والمتابعة"):"إغلاق التفاصيل";
   cta.disabled=!!(action&&action.disabled);
   cta.addEventListener("click",()=>{overlay.remove();style.remove();if(action&&!action.disabled){action.click();setTimeout(()=>{const checkout=parent.closest("section")?.querySelector(".game-checkout");if(checkout)checkout.scrollIntoView({behavior:"smooth",block:"start"});},80)}});
-  card.append(desc,price,meta,cta);
+  card.append(desc);if(!isWalletCategory)card.append(price);card.append(meta,cta);
   top.append(brand,close);wrap.append(top,titleRow,card);overlay.append(wrap);
   const dismiss=()=>{overlay.remove();style.remove();toggle.focus()};
   close.addEventListener("click",dismiss);
@@ -8339,7 +8340,7 @@ function baranShowServiceSelection(product,category,containerId){
  baranServiceSelection.product=product;baranServiceSelection.category=category;baranServiceSelection.containerId=containerId;
  let preview=container.querySelector(".baran-service-selection-preview");
  if(!preview){preview=document.createElement("section");preview.className="baran-service-selection-preview";preview.setAttribute("aria-live","polite");container.append(preview);}
- baranRenderUnifiedSelection(preview,product,baranServicePrice(product),"القسم: "+category+" · "+(product.description||"خدمة رقمية"));
+ baranRenderUnifiedSelection(preview,product,baranServicePrice(product),"القسم: "+category+" · "+(product.description||"خدمة رقمية"),!(/محافظ|wallet/i.test(String(category||""))));
  container.querySelectorAll("[data-service-product-id]").forEach(button=>{
   const selected=button.dataset.serviceProductId===String(product.id);
   button.textContent=selected?"تم الاختيار للمراجعة":"اختيار للمراجعة";
@@ -8430,13 +8431,14 @@ async function loadBaranServiceCatalog(category,containerId,title,icon){
    const name=document.createElement("strong");name.textContent=product.name||product.product_code||"منتج رقمي";
    head.append(name);
    const description=document.createElement("p");description.textContent=product.description||"خدمة رقمية من Baran Game.";
+   const isWalletCategory=/محافظ|wallet/i.test(String(category||"")+" "+String(title||""));
    const price=document.createElement("div");price.className="baran-service-product-price";price.textContent=baranServicePrice(product);
-   card.append(availability,head,description,price);
-   if(price.textContent==="السعر قيد التجهيز"){
+   card.append(availability,head,description);if(!isWalletCategory)card.append(price);
+   if(!isWalletCategory&&price.textContent==="السعر قيد التجهيز"){
     const status=document.createElement("span");status.className="baran-service-product-status";status.textContent="بانتظار اعتماد السعر";card.append(status);
    }
    baranAddProductDetails(card,product,title);
-   const choose=document.createElement("button");choose.type="button";choose.className="baran-service-select-button";choose.textContent="اختيار للمراجعة";choose.dataset.serviceProductId=String(product.id||"");choose.setAttribute("aria-pressed","false");choose.disabled=price.textContent==="السعر قيد التجهيز"||!product.id;choose.addEventListener("click",()=>baranShowServiceSelection(product,category,containerId));card.append(choose);
+   const choose=document.createElement("button");choose.type="button";choose.className="baran-service-select-button";choose.textContent="اختيار للمراجعة";choose.dataset.serviceProductId=String(product.id||"");choose.setAttribute("aria-pressed","false");choose.disabled=isWalletCategory||price.textContent==="السعر قيد التجهيز"||!product.id;choose.addEventListener("click",()=>baranShowServiceSelection(product,category,containerId));card.append(choose);
    grid.append(card);
    });
    container.append(grid);
@@ -9785,7 +9787,7 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
    const review=node("div","baran-wallet-review");review.id="baranWalletReview";panel.append(review);
    const disabled=node("button","baran-wallet-disabled","الشراء قريباً — غير متاح حالياً");disabled.type="button";disabled.disabled=true;panel.append(disabled);
    const back=node("button","baran-wallet-flow-back","رجوع إلى التفاصيل");back.type="button";back.style.width="100%";back.style.marginTop="9px";back.addEventListener("click",()=>render(1));panel.append(back);wrap.append(panel);
-   function refreshReview(){const box=document.getElementById("baranWalletReview");if(!box)return;box.replaceChildren();const valid=Number.isFinite(Number(qty))&&Number(qty)>=current.min&&Number(qty)<=current.max;const amount=valid?Number(qty):0;const totalUsd=amount*current.unitUsd;const totalSyp=amount*current.unitSyp;const fmt=(v,d=2)=>Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});[[ "المحفظة",current.name],["الحساب",account.trim()||"لم يُدخل بعد"],["رمز التحويل",transferCode.trim()||"لم يُدخل بعد"],["صورة الإيصال",receiptFile?receiptFile.name:"لم تُرفق"],["مبلغ الشحن",valid?"$"+fmt(amount,0):"أدخل مبلغاً ضمن الحدود"],["سعر الوحدة","$"+fmt(current.unitUsd,5)],["الإجمالي التقديري",valid?"$"+fmt(totalUsd,2):"—"],["بالليرة السورية الجديدة",valid?fmt(totalSyp,2)+" ل.س":"—"]].forEach(([k,v])=>{const row=node("div","baran-wallet-review-row");row.append(node("span","",k),node("strong","",v));box.append(row);});const total=node("div","baran-wallet-total");total.append(node("small","","الإجمالي التقديري · محسوب تلقائياً حسب المبلغ"),node("strong","",valid?"$"+fmt(totalUsd,2):"—"),node("small","",valid?fmt(totalSyp,2)+" ل.س سورية جديدة":"تحقق من المبلغ المدخل"));box.append(total);}
+   function refreshReview(){const box=document.getElementById("baranWalletReview");if(!box)return;box.replaceChildren();const valid=Number.isFinite(Number(qty))&&Number(qty)>=current.min&&Number(qty)<=current.max;const amount=valid?Number(qty):0;const totalUsd=amount*current.unitUsd;const totalSyp=amount*current.unitSyp;const fmt=(v,d=2)=>Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});[[ "المحفظة",current.name],["الحساب",account.trim()||"لم يُدخل بعد"],["رمز التحويل",transferCode.trim()||"لم يُدخل بعد"],["صورة الإيصال",receiptFile?receiptFile.name:"لم تُرفق"],["مبلغ الشحن",valid?"$"+fmt(amount,0):"أدخل مبلغاً ضمن الحدود"],["الإجمالي التقديري",valid?"$"+fmt(totalUsd,2):"—"],["بالليرة السورية الجديدة",valid?fmt(totalSyp,2)+" ل.س":"—"]].forEach(([k,v])=>{const row=node("div","baran-wallet-review-row");row.append(node("span","",k),node("strong","",v));box.append(row);});const total=node("div","baran-wallet-total");total.append(node("small","","الإجمالي التقديري · محسوب تلقائياً حسب المبلغ"),node("strong","",valid?"$"+fmt(totalUsd,2):"—"),node("small","",valid?fmt(totalSyp,2)+" ل.س سورية جديدة":"تحقق من المبلغ المدخل"));box.append(total);}
    function setQty(value){qty=Math.max(current.min,Math.min(current.max,Math.round(Number(value)||current.min)));quantity.value=String(qty);refreshReview();}
    refreshReview();
   }
