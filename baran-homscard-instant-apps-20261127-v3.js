@@ -30,6 +30,8 @@
       if(category==="ألعاب"&&isJawaker)return false;
       return c.includes(category)||category.includes(c);
     });
+    host.hidden=category==="ألعاب"&&!visibleProducts.length;
+    if(host.hidden)return;
     const head=el("div","baran-ia-heading");
     const copy=el("div");copy.append(el("span","baran-ia-kicker","BARAN GAME · شحن التطبيقات"),el("h3","","منتجات الشحن حسب الكمية"),el("p","","اختر المنتج، أدخل معرّف الحساب إذا طُلب، وحدد الكمية قبل مراجعة السعر."));
     head.append(copy,el("span","baran-ia-count",visibleProducts.length+" منتج"));
