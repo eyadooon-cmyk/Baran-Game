@@ -48,7 +48,7 @@ test("Extra game cards render verified read-only HomsCard prices", async () => {
   assert.match(products, /أسعار للعرض فقط — الطلب والشحن متوقفان حالياً/);
   assert.match(products, /card\.querySelector\("\.baran-game-coming"\)/);
   assert.match(products, /coming\.className="small baran-game-price-status"/);
-  assert.match(products, /HOMSCARD_GAME_(197|198|199|200)/);
+  assert.ok(products.includes("HOMSCARD_GAME_(197|198|199|200)"));
 });
 
 test("Jawaker variable orders remain blocked server-side", async () => {
