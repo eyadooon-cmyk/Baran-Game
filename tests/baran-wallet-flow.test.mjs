@@ -29,16 +29,15 @@ test("wallet flow previews receipt locally and does not upload it", () => {
   assert.doesNotMatch(walletFlow, /\.storage\.from\(|\.upload\(|functions\.invoke\(/);
 });
 
-test("wallet calculator uses approved preview values and shows USD plus new SYP", () => {
-  assert.match(walletFlow, /unitUsd:1\.04545/);
-  assert.match(walletFlow, /unitSyp:163\.6861065/);
-  assert.match(walletFlow, /unitUsd:1\.03515/);
-  assert.match(walletFlow, /unitSyp:162\.0734355/);
-  assert.match(walletFlow, /unitUsd:1\.0506/);
-  assert.match(walletFlow, /unitSyp:164\.492442/);
-  assert.match(walletFlow, /amount\*current\.unitUsd/);
-  assert.match(walletFlow, /amount\*current\.unitSyp/);
-  assert.match(walletFlow, /الليرة السورية الجديدة/);
+test("wallet calculator charges and displays in the customer selected currency only", () => {
+  assert.match(walletFlow, /baranWalletCurrency/);
+  assert.match(walletFlow, /دولار أمريكي \\(USD\\)/);
+  assert.match(walletFlow, /ليرة سورية جديدة \\(SYP\\)/);
+  assert.match(walletFlow, /currency==="SYP"\\?156\\.6:1/);
+  assert.match(walletFlow, /const total=amount\\*current\\.unitUsd/);
+  assert.match(walletFlow, /المبلغ التقديري للخصم/);
+  assert.match(walletFlow, /لا يتم تحويل المبلغ إلى عملة أخرى/);
+  assert.doesNotMatch(walletFlow, /totalUsd|totalSyp/);
 });
 
 test("wallet purchase remains disabled and cannot create or charge an order", () => {
