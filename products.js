@@ -130,7 +130,7 @@ async function loadCatalog(){
       sb.from("store_settings").select("market_exchange_rate,fx_buffer_percent").eq("id","main").single(),
       sb.from("products")
         .select("id,product_code,category,name,description,price_usd,sort_order,created_at")
-        .or("is_active.eq.true,catalog_visible.eq.true")
+        .eq("catalog_visible",true)
         .order("sort_order",{ascending:true})
         .order("created_at",{ascending:false})
     ]);
