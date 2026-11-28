@@ -352,7 +352,10 @@ Deno.serve(async (req: Request) => {
         .select("products(markup_percent)")
         .eq("supplier_id", variableSupplier.id).eq("supplier_sku", productId).eq("is_preferred", true).maybeSingle();
       if (marginMappingError) return json({ success: false, error: "تعذر قراءة هامش ربح المنتج." }, 503);
-      const productMarkupPercent = Number(marginMapping?.products?.markup_percent ?? markupPercent);
+      const mappedProduct: any = Array.isArray(marginMapping?.products)
+        ? marginMapping.products[0]
+        : marginMapping?.products;
+      const productMarkupPercent = Number(mappedProduct?.markup_percent ?? markupPercent);
       if (!Number.isFinite(productMarkupPercent) || productMarkupPercent < 0)
         return json({ success: false, error: "هامش ربح المنتج غير صالح." }, 503);
       const commercialRate = marketRate * (1 + bufferPercent / 100);

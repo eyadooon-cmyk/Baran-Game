@@ -31,6 +31,8 @@ test("Fixed, variable and Jawaker quote paths use each product's margin", () => 
   assert.match(gateway, /markup_percent:productMarkup/);
   assert.match(gateway, /marginBySku/);
   assert.match(gateway, /productMarkupPercent/);
+  assert.match(gateway, /Array\.isArray\(marginMapping\?\.products\)/);
+  assert.match(gateway, /mappedProduct\?\.markup_percent/);
   assert.match(gateway, /product\.markup_percent \?\? settings\.product_markup_percent/);
   assert.match(variableOrderMigration, /coalesce\(p\.markup_percent,ss\.product_markup_percent\)/);
 });
