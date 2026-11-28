@@ -36,6 +36,7 @@ test("Jawaker variable tokens stay inside the Jawaker store and retain precise u
   assert.match(variable, /source==="جواكر"\|\|\/jawaker\|جواكر\/i\.test/);
   assert.match(variable, /maximumFractionDigits:8\}\)\+" ل\.س جديدة"/);
   assert.match(variable, /baran_homscard_variable_catalog_v3/);
+  assert.match(variable, /host\.hidden=category==="ألعاب"&&!visibleProducts\.length/);
 });
 
 test("Jawaker variable orders remain blocked server-side", async () => {
