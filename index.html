@@ -8125,10 +8125,19 @@ async function loadBaranJawakerCatalog(){
   const status=document.createElement("p");status.className="small";status.textContent="جاري تحميل الباقات المعتمدة...";
   container.append(heading,status);
   try{
-    const catalog=await loadBaranStoreSearchProducts();
-    const packages=(catalog||[])
-      .filter(p=>p.category==="game"&&/^JAWAKER_/.test(String(p.product_code||"").toUpperCase()))
-      .sort((a,b)=>(Number(a.sort_order)||0)-(Number(b.sort_order)||0));
+    // Load only Jawaker products here; do not wait for the full-store search catalog.
+    // A bounded wait prevents the page from remaining forever on the loading message.
+    const request=sb.from("products")
+      .select("id,product_code,name,description,category,catalog_group,price_usd,price_syp,is_active,sort_order")
+      .eq("is_active",true).eq("category","game").like("product_code","JAWAKER_%")
+      .order("sort_order",{ascending:true});
+    let timeoutId;
+    const timeout=new Promise((_,reject)=>{timeoutId=setTimeout(()=>reject(new Error("انتهت مهلة الاتصال بكتالوج جواكر. تحقق من الاتصال ثم أعد المحاولة.")),12000);});
+    let response;
+    try{response=await Promise.race([request,timeout]);}
+    finally{clearTimeout(timeoutId);}
+    if(response.error)throw response.error;
+    const packages=Array.isArray(response.data)?response.data:[];
     container.replaceChildren(heading);
     if(!packages.length){
       const empty=document.createElement("p");empty.className="small";
@@ -8163,7 +8172,7 @@ async function loadBaranJawakerCatalog(){
     const message=document.createElement("p");message.className="small";
     message.textContent="تعذر تحميل كتالوج جواكر: "+(error?.message||"تحقق من الاتصال ثم أعد المحاولة.");
     const retry=document.createElement("button");retry.type="button";retry.className="secondary";retry.textContent="إعادة تحميل الباقات";
-    retry.addEventListener("click",()=>{baranStoreSearchProducts=null;baranStoreSearchLoad=null;loadBaranJawakerCatalog();});
+    retry.addEventListener("click",()=>loadBaranJawakerCatalog());
     container.append(message,retry);
   }
 }
