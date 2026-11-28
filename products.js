@@ -122,7 +122,6 @@ async function toggleProduct(product){
 }
 
 async function loadCatalog(){
-  if(!currentUser)return;
   const gameBox=document.getElementById("gameProductCatalog");
   const serviceBox=document.getElementById("serviceProductCatalog");
   if(!gameBox||!serviceBox)return;
@@ -131,7 +130,7 @@ async function loadCatalog(){
       sb.from("store_settings").select("market_exchange_rate,fx_buffer_percent").eq("id","main").single(),
       sb.from("products")
         .select("id,product_code,category,name,description,price_usd,sort_order,created_at")
-        .eq("is_active",true)
+        .or("is_active.eq.true,catalog_visible.eq.true")
         .order("sort_order",{ascending:true})
         .order("created_at",{ascending:false})
     ]);
@@ -155,7 +154,7 @@ async function loadCatalog(){
         const title=document.createElement("strong");title.textContent=product.name;
         const description=document.createElement("p");description.textContent=product.description||"";
         const prices=document.createElement("div");prices.className="product-prices";prices.textContent=productPriceText(product);
-        const note=document.createElement("div");note.className="small";note.textContent=product.price_usd==null||Number(product.price_usd)<=0?"قيد التجهيز — السعر غير محدد، والطلب غير متاح حالياً.":"الطلب والشحن غير مفعّلين بعد.";
+        const note=document.createElement("div");note.className="small";note.textContent=product.price_usd==null||Number(product.price_usd)<=0?"قيد التجهيز — السعر غير محدد، والطلب غير متاح حالياً." :"الطلب والشحن غير مفعّلين بعد.";
         card.append(title,description,prices,note);group.box.appendChild(card);
       });
     });
