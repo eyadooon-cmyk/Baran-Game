@@ -79,3 +79,9 @@ test("Whish Money does not ask for a transfer code or receipt image", () => {
   assert.match(walletFlow, /field:"رقم محفظة Whish Money"/);
   assert.match(walletFlow, /الشراء قريباً — غير متاح حالياً/);
 });
+
+test("wallet details step does not execute amount controls before the user continues", () => {
+  assert.match(walletFlow, /if\(step===1\)\{[\s\S]*?wrap\.append\(panel\);\s*\}else\{[\s\S]*?panel\.append\(uploadBox\);\s*\}\s*const qtyLabel/);
+  assert.match(walletFlow, /const next=node\("button","baran-wallet-flow-continue"/);
+  assert.match(walletFlow, /const qtyLabel=node\("label","baran-wallet-flow-label","عملة مبلغ الشحن"\)/);
+});
