@@ -2536,7 +2536,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
           <span class="item-content"><strong>FREE FIRE</strong><span>جواهر وعضويات Free Fire</span><span class="small">فتح متجر Free Fire ←</span></span>
         </button>
         <button class="item" type="button" onclick="showSection('jawakerStore',null)">
-          <span class="baran-auto-game-art baran-jawaker-art"><span aria-hidden="true">♛</span><small>JAWAKER</small></span>
+          <span class="baran-auto-game-art baran-jawaker-art"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cdefs%3E%3CradialGradient id='g'%3E%3Cstop stop-color='%23e6bd67'/%3E%3Cstop offset='1' stop-color='%23241727'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='80' cy='80' r='76' fill='url(%23g)' stroke='%23f4d99a' stroke-width='3'/%3E%3Cpath d='M43 111V55l19 17 18-33 18 33 19-17v56z' fill='%23f7e7bd' stroke='%238e6129' stroke-width='4' stroke-linejoin='round'/%3E%3Ctext x='80' y='137' text-anchor='middle' font-family='Arial' font-size='14' font-weight='900' fill='%23fff1ce'%3EJAWAKER%3C/text%3E%3C/svg%3E" alt="شعار جواكر" loading="lazy"></span>
           <span class="item-content"><strong>جواكر · JAWAKER</strong><span>توكنز السيرفرات ومسرّعات جواكر</span><span class="small">فتح متجر جواكر ←</span></span>
         </button>
         <button class="item baran-extra-game-card" type="button" onclick="showSection('yallaLudoStore',null)">
@@ -4122,7 +4122,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
 <script src="./products.js?v=20261128-extra-game-images-v4"></script>
 <script src="./baran-homscard-player-name-check.js?v=20261127-optional-v1"></script>
-<script src="./baran-homscard-instant-apps-20261127-v3.js?v=20261128-jawaker-unit-precision-v1"></script>
+<script src="./baran-homscard-instant-apps-20261127-v3.js?v=20261128-jawaker-artwork-v2"></script>
 <script src="./account-security.js"></script>
 <script src="./profile-settings.js?v=20261107-1"></script>
 <script src="./community.js?v=20261117-attachments-gate-1"></script>
@@ -8087,6 +8087,20 @@ async function loadBaranGameCatalog(game){
     container.append(message,retry);
   }
 }
+function baranJawakerArtwork(product){
+  const code=String(product?.product_code||"").toUpperCase();
+  const name=String(product?.name||"JAWAKER");
+  let primary="#d7a844",secondary="#6f4518",label="JAWAKER",symbol="✦";
+  if(code.includes("TOKENS")){primary="#e7bd56";secondary="#805018";label="TOKENS";symbol="●";}
+  else if(code.includes("BOOSTER_RED")){primary="#ff6b70";secondary="#8d1d36";label="RED BOOSTER";symbol="⚡";}
+  else if(code.includes("BOOSTER_BLUE")){primary="#63b9ff";secondary="#174b9a";label="BLUE BOOSTER";symbol="⚡";}
+  else if(code.includes("BOOSTER_BLACK")){primary="#b9a9d2";secondary="#30263f";label="BLACK BOOSTER";symbol="⚡";}
+  else if(code.includes("BOOSTER_GOLD")){primary="#ffe08a";secondary="#98631c";label="GOLD BOOSTER";symbol="⚡";}
+  const safeLabel=label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 230"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34203f"/><stop offset="1" stop-color="#100d18"/></linearGradient><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+primary+'"/><stop offset="1" stop-color="'+secondary+'"/></linearGradient><filter id="shadow"><feGaussianBlur stdDeviation="7"/></filter></defs><rect x="5" y="5" width="350" height="220" rx="25" fill="url(#bg)" stroke="'+primary+'" stroke-opacity=".7" stroke-width="3"/><circle cx="180" cy="100" r="69" fill="'+primary+'" opacity=".14" filter="url(#shadow)"/><circle cx="180" cy="94" r="59" fill="url(#metal)" stroke="#fff2cf" stroke-opacity=".8" stroke-width="3"/><circle cx="180" cy="94" r="47" fill="none" stroke="#fff2cf" stroke-opacity=".6" stroke-width="2" stroke-dasharray="5 5"/><text x="180" y="116" text-anchor="middle" font-family="Arial,sans-serif" font-size="'+(symbol==="●"?"62":"58")+'" font-weight="900" fill="#fff9e9" stroke="'+secondary+'" stroke-width="1">'+symbol+'</text><text x="180" y="188" text-anchor="middle" font-family="Arial,sans-serif" font-size="20" font-weight="900" letter-spacing="2" fill="#fff0c9">'+safeLabel+'</text><path d="M28 32h54M278 198h54" stroke="'+primary+'" stroke-width="3" stroke-linecap="round" opacity=".7"/></svg>';
+  return "data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(svg);
+}
+
 async function loadBaranJawakerCatalog(){
   const container=document.getElementById("jawakerProductCatalog");
   if(!container)return;
@@ -8109,7 +8123,7 @@ async function loadBaranJawakerCatalog(){
     packages.forEach(product=>{
       const card=document.createElement("div");card.className="baran-game-package-card";
       const content=document.createElement("div");content.className="game-package-option";content.style.cursor="default";
-      const art=document.createElement("span");art.className="baran-package-art";art.textContent=String(product.product_code||"").includes("BOOSTER")?"⚡":"🪙";
+      const art=document.createElement("div");art.className="baran-jawaker-product-art";const artImage=document.createElement("img");artImage.src=baranJawakerArtwork(product);artImage.alt="صورة "+(product.name||"منتج جواكر");artImage.loading="lazy";artImage.decoding="async";artImage.width=360;artImage.height=230;artImage.style.cssText="display:block;width:100%;height:112px;object-fit:contain;border-radius:12px";art.append(artImage);
       const name=document.createElement("strong");name.textContent=product.name||product.product_code;
       const description=document.createElement("small");description.textContent=product.description||"منتج جواكر";
       const isVariableTokens=String(product.product_code||"").toUpperCase()==="JAWAKER_TOKENS";
