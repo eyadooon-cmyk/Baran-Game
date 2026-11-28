@@ -2555,19 +2555,19 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
         <div class="baran-wallet-services-grid">
           <article class="baran-wallet-service-card">
             <div class="baran-wallet-service-brand baran-wallet-usdt"><img src="https://cdn.simpleicons.org/tether/26A17B" alt="شعار Tether USDT" loading="lazy"><small>USDT · BEP20</small></div>
-            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة عملات رقمية</span><h3>USDT BEP20</h3><p>تحويل إلى عنوان استقبال على شبكة BEP20 فقط.</p><div class="baran-wallet-service-meta"><span>الكمية المسموحة</span><strong dir="ltr">50 – 7,000</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span>عنوان USDT على شبكة BEP20</span></div></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة عملات رقمية</span><h3>USDT BEP20</h3><p>تحويل إلى عنوان استقبال على شبكة BEP20 فقط.</p><div class="baran-wallet-service-meta"><span>المبلغ المسموح بالدولار</span><strong dir="ltr">$50 – $7,000</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span>عنوان USDT على شبكة BEP20</span></div></div>
             <span class="baran-wallet-service-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
             <button class="baran-wallet-open" type="button" onclick="openBaranWalletFlow('usdt')">عرض التفاصيل والمتطلبات</button>
           </article>
           <article class="baran-wallet-service-card">
             <div class="baran-wallet-service-brand baran-wallet-whish"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Logo_Whish_Money_(Lebanon).png" alt="شعار Whish Money" loading="lazy"><small>WHISH MONEY</small></div>
-            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية</span><h3>Wish Money · ويش موني</h3><p>إدخال رقم محفظة ويش موني كما هو مسجل في التطبيق.</p><div class="baran-wallet-service-meta"><span>الكمية المسموحة</span><strong dir="ltr">20 – 2,999</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span dir="ltr">Whish Money Number</span></div></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية</span><h3>Wish Money · ويش موني</h3><p>إدخال رقم محفظة ويش موني كما هو مسجل في التطبيق.</p><div class="baran-wallet-service-meta"><span>المبلغ المسموح بالدولار</span><strong dir="ltr">$20 – $2,999</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span dir="ltr">Whish Money Number</span></div></div>
             <span class="baran-wallet-service-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
             <button class="baran-wallet-open" type="button" onclick="openBaranWalletFlow('whish')">عرض التفاصيل والمتطلبات</button>
           </article>
           <article class="baran-wallet-service-card">
             <div class="baran-wallet-service-brand baran-wallet-sham"><img src="https://i0.wp.com/www.zarkachat.com/wp-content/uploads/2024/12/cham-cash-342342f.webp?fit=850%2C850&amp;ssl=1" alt="شعار شام كاش" loading="lazy"><small>SHAM CASH</small></div>
-            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية سورية</span><h3>Sham Cash · شام كاش</h3><p>أدخل عنوان حساب شام كاش بدقة أو أرسل صورة الباركود للدعم قبل الطلب.</p><div class="baran-wallet-service-meta"><span>الكمية المسموحة</span><strong dir="ltr">10 – 1,000</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span>عنوان الحساب أو باركود عبر الدعم</span></div></div>
+            <div class="baran-wallet-service-body"><span class="baran-wallet-service-type">محفظة إلكترونية سورية</span><h3>Sham Cash · شام كاش</h3><p>أدخل عنوان حساب شام كاش بدقة أو أرسل صورة الباركود للدعم قبل الطلب.</p><div class="baran-wallet-service-meta"><span>المبلغ المسموح بالدولار</span><strong dir="ltr">$10 – $1,000</strong></div><div class="baran-wallet-service-field"><b>المتطلب</b><span>عنوان الحساب أو باركود عبر الدعم</span></div></div>
             <span class="baran-wallet-service-status">السعر وطريقة التنفيذ قيد الاعتماد</span>
             <button class="baran-wallet-open" type="button" onclick="openBaranWalletFlow('sham')">عرض التفاصيل والمتطلبات</button>
           </article>
@@ -9756,7 +9756,7 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
   const brandCopy=node("div");brandCopy.append(node("h2","",current.name),node("p","",current.type));brand.append(brandCopy);wrap.append(brand);
   if(step===1){
    const panel=node("section","baran-wallet-flow-panel");panel.append(node("h3","","تفاصيل الخدمة وتعليمات الاستخدام"));
-   panel.append(node("p","","الكمية المتاحة حسب بيانات المنتج: "+current.min.toLocaleString("en-US")+" إلى "+current.max.toLocaleString("en-US")+"."));
+   panel.append(node("p","","المبلغ المتاح بالدولار حسب بيانات المنتج: $"+current.min.toLocaleString("en-US")+" إلى "+current.max.toLocaleString("en-US")+" USD."));
    const list=node("ul");current.instructions.forEach(line=>list.append(node("li","",line)));panel.append(list);
    panel.append(node("p","", "السعر: قيد اعتماد سعر البيع النهائي."));
    panel.append(node("div","baran-wallet-flow-warning",current.warning));
@@ -9767,13 +9767,13 @@ function baranRenderHomsCardAppQuantityQuote(card,p){
    const label=node("label","baran-wallet-flow-label",current.field);label.htmlFor="baranWalletAccount";panel.append(label);
    const input=node("input","baran-wallet-flow-input");input.id="baranWalletAccount";input.type="text";input.autocomplete="off";input.placeholder=current.placeholder;input.value=account;input.addEventListener("input",()=>{account=input.value;refreshReview();});panel.append(input);
    if(current===cfg.sham)panel.append(node("div","baran-wallet-flow-warning","لإرسال صورة الباركود، تواصل مع الدعم قبل إنشاء الطلب. رفع الصور غير متاح في هذا المسار حالياً."));
-   const qtyLabel=node("label","baran-wallet-flow-label","الكمية المطلوبة");qtyLabel.htmlFor="baranWalletQuantity";panel.append(qtyLabel);
+   const qtyLabel=node("label","baran-wallet-flow-label","مبلغ الشحن بالدولار");qtyLabel.htmlFor="baranWalletQuantity";panel.append(qtyLabel);
    const qtyRow=node("div","baran-wallet-qty-row");const minus=node("button","","−");minus.type="button";minus.addEventListener("click",()=>setQty(qty-1));const quantity=node("input","baran-wallet-flow-input");quantity.id="baranWalletQuantity";quantity.type="number";quantity.inputMode="numeric";quantity.min=String(current.min);quantity.max=String(current.max);quantity.step="1";quantity.value=String(qty);quantity.addEventListener("change",()=>setQty(Number(quantity.value)));const plus=node("button","","+");plus.type="button";plus.addEventListener("click",()=>setQty(qty+1));qtyRow.append(minus,quantity,plus);panel.append(qtyRow);
-   const quick=node("div","baran-wallet-quick");current.quick.forEach(v=>{const btn=node("button","",v.toLocaleString("en-US"));btn.type="button";btn.addEventListener("click",()=>setQty(v));quick.append(btn);});panel.append(quick);
+   const quick=node("div","baran-wallet-quick");current.quick.forEach(v=>{const btn=node("button","","$"+v.toLocaleString("en-US"));btn.type="button";btn.addEventListener("click",()=>setQty(v));quick.append(btn);});panel.append(quick);
    const review=node("div","baran-wallet-review");review.id="baranWalletReview";panel.append(review);
    const disabled=node("button","baran-wallet-disabled","الشراء قريباً — غير متاح حالياً");disabled.type="button";disabled.disabled=true;panel.append(disabled);
    const back=node("button","baran-wallet-flow-back","رجوع إلى التفاصيل");back.type="button";back.style.width="100%";back.style.marginTop="9px";back.addEventListener("click",()=>render(1));panel.append(back);wrap.append(panel);
-   function refreshReview(){const box=document.getElementById("baranWalletReview");if(!box)return;box.replaceChildren();[[ "المحفظة",current.name],["الحساب",account.trim()||"لم يُدخل بعد"],["الكمية",qty.toLocaleString("en-US")],["سعر الوحدة","قيد الاعتماد"],["الإجمالي","يظهر بعد اعتماد سعر البيع"]].forEach(([k,v])=>{const row=node("div","baran-wallet-review-row");row.append(node("span","",k),node("strong","",v));box.append(row);});}
+   function refreshReview(){const box=document.getElementById("baranWalletReview");if(!box)return;box.replaceChildren();[[ "المحفظة",current.name],["الحساب",account.trim()||"لم يُدخل بعد"],["مبلغ الشحن بالدولار","$"+qty.toLocaleString("en-US")],["سعر البيع","قيد الاعتماد"],["الإجمالي","يظهر بعد اعتماد سعر البيع"]].forEach(([k,v])=>{const row=node("div","baran-wallet-review-row");row.append(node("span","",k),node("strong","",v));box.append(row);});}
    function setQty(value){qty=Math.max(current.min,Math.min(current.max,Math.round(Number(value)||current.min)));quantity.value=String(qty);refreshReview();}
    refreshReview();
   }
