@@ -507,6 +507,7 @@ Deno.serve(async (req: Request) => {
         description?: string;
         price_usd?: number | string | null;
         price_syp?: number;
+        markup_percent?: number;
         is_active?: boolean;
         sort_order?: number;
         exchange_rate?: number;
