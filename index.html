@@ -2449,7 +2449,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
       </div>
 
       <div class="deposit-card homscard-standalone-catalog" style="margin:22px 0;border:1px solid #76558f;background:linear-gradient(145deg,#21172c,#120e18)">
-        <div class="baran-home-section-intro"><span class="baran-section-index">HOMSCARD</span><div><h2>كتالوج HomsCard المستقل</h2><p>أسعار باقات الألعاب للعرض والمقارنة فقط — لا يوجد شراء أو طلب أو شحن.</p></div></div>
+        <div class="baran-home-section-intro"><span class="baran-section-index">GAME PRICES</span><div><h2>قائمة أسعار الألعاب</h2><p>أسعار استرشادية للعرض فقط — الشراء والطلب والشحن غير متاح.</p></div></div>
         <div id="gameProductCatalog" aria-live="polite"><p class="small">جاري تحميل قائمة الأسعار...</p></div>
         <div id="serviceProductCatalog" class="hidden"></div>
       </div>
@@ -2495,10 +2495,10 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="digitalWalletsStore" class="hidden">
       <button class="secondary baran-back-button" type="button" onclick="showSection('games',null)">← العودة إلى أقسام المتجر</button>
-      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">HOMSCARD · DIGITAL WALLETS</span><h2>خدمات المحافظ الرقمية</h2><p>محافظ وخدمات دفع خارجية من كتالوج المورد. هذه معاينة فقط إلى حين استكمال تدقيق الربط والأسعار.</p></div>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">DIGITAL WALLETS</span><h2>خدمات المحافظ الرقمية</h2><p>محافظ وخدمات دفع خارجية من كتالوج المورد. هذه معاينة فقط إلى حين استكمال تدقيق الربط والأسعار.</p></div>
       <section class="baran-wallet-services" aria-labelledby="baranWalletServicesTitle">
         <div class="baran-wallet-services-heading">
-          <div><span class="baran-wallet-services-kicker">HOMSCARD · DIGITAL WALLETS</span><h2 id="baranWalletServicesTitle">خدمات المحافظ الرقمية</h2><p>ثلاث خدمات من كتالوج حمص كارد — معاينة فقط إلى حين استكمال تدقيق الربط والأسعار.</p></div>
+          <div><span class="baran-wallet-services-kicker">DIGITAL WALLETS</span><h2 id="baranWalletServicesTitle">خدمات المحافظ الرقمية</h2><p>ثلاث خدمات رقمية — معاينة فقط إلى حين استكمال تدقيق الأسعار.</p></div>
           <span class="baran-wallet-services-count">03 خدمات</span>
         </div>
         <div class="baran-wallet-services-grid">
@@ -2679,7 +2679,7 @@ html[data-baran-theme="day"] .baran-auto-category-grid .baran-auto-category-art{
 
     <section id="telecomStore" class="hidden">
       <button class="secondary baran-back-button" type="button" onclick="showSection('home',null)">← العودة للرئيسية</button>
-      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">BARAN GAME · TELECOM</span><h2>باقات الاتصالات</h2><p>كل الباقات التي عثرنا عليها في كتالوج HomsCard، مرتبة حسب الشركة.</p></div>
+      <div class="hero baran-auto-hero"><span class="baran-auto-eyebrow">BARAN GAME · TELECOM</span><h2>باقات الاتصالات</h2><p>استعرض باقات الاتصالات المتاحة، مرتبة حسب الشركة.</p></div>
       <div class="deposit-card baran-service-catalog"><strong>معاينة وفرز الكتالوج فقط</strong><p class="small">تم فرز 42 منتجاً: 22 لسيرياتل و20 لـ MTN. حالة التوفر من آخر تدقيق للكتالوج بتاريخ 26-11-2026، وقد تتغير عند المزامنة. لا توجد أسعار بيع أو أزرار شراء أو تنفيذ شحن.</p></div>
 
       
@@ -9379,8 +9379,8 @@ function renderBaranHomsCardAppsCatalog(){
     {id:"910",name:"لايكي - Likee",description:"شحن رصيد Likee لاستخدامه في البث المباشر ودعم صناع المحتوى بالهدايا.",image:"https://homscard.com/uploads/thumbs/2db94c85544a2b1d538042e08564fc9f1c914cbb_360.webp",min:50,max:50000,input:"USER ID"}
   ];
   const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const card=p=>'<article class="baran-hc-app-card" data-product-id="'+p.id+'" data-search="'+esc((p.name+" "+p.id).toLowerCase())+'"><div class="baran-hc-app-image"><div class="baran-hc-app-image-frame"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML=\'<span>📱</span>\'"></div><span class="baran-hc-app-image-glow" aria-hidden="true"></span></div><div class="baran-hc-app-copy"><strong>'+esc(p.name)+'</strong><p class="baran-hc-app-description">'+esc(p.description)+'</p><div class="baran-hc-app-meta"><span>HomsCard</span><span>#'+p.id+'</span></div><div class="baran-hc-app-qty">الكمية المتاحة: '+p.min.toLocaleString("en-US")+' – '+p.max.toLocaleString("en-US")+'</div><span class="baran-hc-app-state">حاسبة كمية وتسعير مباشر · معاينة فقط</span></div></article>';
-  root.innerHTML='<div class="baran-hc-apps-intro"><strong>شحن تطبيقات البث والتواصل — HomsCard</strong><br>اختر الكمية بنفسك، وشاهد السعر بالدولار والليرة السورية الجديدة قبل أي خطوة. الحاسبة للمعاينة فقط ولا تنشئ طلباً ولا تخصم رصيداً.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في تطبيقات حمص كارد"><div class="baran-hc-apps-group"><h3>تطبيقات البث المباشر والتواصل <small>12 خدمة شحن بكمية متغيرة</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
+  const card=p=>'<article class="baran-hc-app-card" data-product-id="'+p.id+'" data-search="'+esc((p.name+" "+p.id).toLowerCase())+'"><div class="baran-hc-app-image"><div class="baran-hc-app-image-frame"><img src="'+esc(p.image)+'" alt="'+esc(p.name)+'" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML=\'<span>📱</span>\'"></div><span class="baran-hc-app-image-glow" aria-hidden="true"></span></div><div class="baran-hc-app-copy"><strong>'+esc(p.name)+'</strong><p class="baran-hc-app-description">'+esc(p.description)+'</p><div class="baran-hc-app-meta"><span>BARAN GAME</span><span>#'+p.id+'</span></div><div class="baran-hc-app-qty">الكمية المتاحة: '+p.min.toLocaleString("en-US")+' – '+p.max.toLocaleString("en-US")+'</div><span class="baran-hc-app-state">حاسبة كمية وتسعير مباشر · معاينة فقط</span></div></article>';
+  root.innerHTML='<div class="baran-hc-apps-intro"><strong>شحن تطبيقات البث والتواصل</strong><br>اختر الكمية بنفسك، وشاهد السعر بالدولار والليرة السورية الجديدة قبل أي خطوة. الحاسبة للمعاينة فقط ولا تنشئ طلباً ولا تخصم رصيداً.</div><input class="baran-hc-apps-search" type="search" placeholder="ابحث عن تطبيق أو رقم المنتج..." aria-label="البحث في التطبيقات"><div class="baran-hc-apps-group"><h3>تطبيقات البث المباشر والتواصل <small>12 خدمة شحن بكمية متغيرة</small></h3><div class="baran-hc-apps-grid" id="baranHomsAppsGrid">'+items.map(card).join("")+'</div></div><div class="baran-hc-app-empty" id="baranHomsAppsNoResults" hidden>ما لقينا تطبيق بهالاسم.</div>';
   const grid=root.querySelector("#baranHomsAppsGrid");
   items.forEach(p=>{
     const article=grid.querySelector('[data-product-id="'+p.id+'"]');
