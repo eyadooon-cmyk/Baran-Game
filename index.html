@@ -8074,11 +8074,12 @@ async function loadBaranJawakerCatalog(){
       const description=document.createElement("small");description.textContent=product.description||"منتج جواكر";
       const isVariableTokens=String(product.product_code||"").toUpperCase()==="JAWAKER_TOKENS";
       const price=document.createElement("span");price.className="game-package-price";price.textContent=isVariableTokens?"التسعير حسب عدد التوكنز":baranMoneyText(product);
-      const note=document.createElement("small");note.className="game-package-pending";note.textContent=isVariableTokens?"من 10,000 إلى 10,000,000 توكن · معاينة سعر فقط":(baranHasApprovedGamePrice(product)?"الشراء غير مفعّل حالياً":"بانتظار اعتماد السعر");
+      const note=document.createElement("small");note.className="game-package-pending";note.textContent=isVariableTokens?"قريباً — غير جاهز للطلب · من 10,000 إلى 10,000,000 توكن · معاينة السعر متاحة فقط":(baranHasApprovedGamePrice(product)?"الشراء غير مفعّل حالياً":"بانتظار اعتماد السعر");
       content.append(art,name,description,price,note);
       card.append(content);
-      if(isVariableTokens)baranRenderJawakerQuantityCalculator(card,product);
-      baranAddProductDetails(card,product,"جواكر");grid.append(card);
+      if(isVariableTokens){baranRenderJawakerQuantityCalculator(card,product);}
+      else{baranAddProductDetails(card,product,"جواكر");}
+      grid.append(card);
     });
     container.append(grid);
     baranAttachCatalogSearch(container,".baran-game-package-card","ابحث عن باقة جواكر...");
@@ -8101,8 +8102,8 @@ async function baranRenderJawakerQuantityCalculator(card,product){
   const panel=document.createElement("section");
   panel.className="baran-jawaker-quantity-quote";
   panel.style.cssText="display:grid;gap:12px;padding:14px;margin-top:10px;border:1px solid #6b4c91;border-radius:14px;background:linear-gradient(145deg,#21172e,#120f19);";
-  const title=document.createElement("strong");title.textContent="شحن توكنز بكمية مخصصة";
-  const hint=document.createElement("small");hint.className="small";hint.textContent="أدخل Player ID وحدد الكمية. معاينة سعر فقط — لا يتم إنشاء طلب.";
+  const title=document.createElement("strong");title.textContent="معاينة كمية توكنز جواكر";
+  const hint=document.createElement("small");hint.className="small";hint.textContent="الخدمة قيد التجهيز — أدخل Player ID والكمية لمراجعة السعر فقط. لا يمكن إرسال طلب حالياً.";
   const playerLabel=document.createElement("label");playerLabel.textContent="Player ID";
   const player=document.createElement("input");player.type="text";player.inputMode="numeric";player.autocomplete="off";player.maxLength=100;player.placeholder="أدخل معرّف حساب جواكر";player.setAttribute("aria-label","Player ID");player.style.cssText="width:100%;padding:12px;border-radius:10px;border:1px solid #59476d;background:#0d0a12;color:#fff;box-sizing:border-box";
   playerLabel.append(player);
