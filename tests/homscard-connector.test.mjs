@@ -236,11 +236,11 @@ test("HomsCard app checkout displays a server quote without creating an order or
   assert.match(instantAppsUi, /action:"homscard_variable_check_order"/);
 });
 
-test("shared HomsCard variable-quantity cards mount in games, apps, telecom and wallets", () => {
+test("shared HomsCard variable-quantity cards mount only in games, apps and telecom, not digital wallets", () => {
   assert.match(instantAppsUi, /\["automaticGames","ألعاب"\]/);
   assert.match(instantAppsUi, /\["appsStore","تطبيقات"\]/);
   assert.match(instantAppsUi, /\["telecomStore","اتصالات"\]/);
-  assert.match(instantAppsUi, /\["digitalWalletsStore","محافظ"\]/);
+  assert.doesNotMatch(instantAppsUi, /\["digitalWalletsStore","محافظ"\]/);
   assert.match(instantAppsUi, /baran-variable-products/);
   assert.match(instantAppsUi, /min_quantity/);
   assert.match(instantAppsUi, /max_quantity/);
