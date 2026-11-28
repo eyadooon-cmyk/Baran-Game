@@ -47,6 +47,7 @@ test("wallet calculator applies supplier unit pricing and the selected currency"
 
 
 test("USDT BEP20 does not ask for a transfer receipt image", () => {
+  assert.match(walletFlow, /if\(current!==cfg\.usdt\)\{[\s\S]*?رقم الحوالة \/ رمز التحويل/);
   assert.match(walletFlow, /if\(current!==cfg\.usdt\)\{[\s\S]*?صورة إيصال التحويل/);
   assert.match(walletFlow, /current===cfg\.usdt\?\[\]:\[\["صورة الإيصال"/);
   assert.match(walletFlow, /الشراء قريباً — غير متاح حالياً/);
