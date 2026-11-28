@@ -50,3 +50,12 @@ test("Admin FX monitor UI provides a manual check and shows both sources", () =>
   assert.match(ui, /LiraScope/);
   assert.match(ui, /\/100/);
 });
+
+test("Automatic FX refresh only raises the stored market rate and holds decreases", () => {
+  assert.match(worker, /\.lt\("market_exchange_rate",applied\)/);
+  assert.match(worker, /const decreaseHeld=applied<currentRate/);
+  assert.match(worker, /status:nextStatus/);
+  assert.match(worker, /nextStatus=decreaseHeld\?"rate_decrease_pending":"success"/);
+  assert.match(worker, /retained_previous_rate:decreaseHeld/);
+  assert.match(ui, /rate_decrease_pending:/);
+});
