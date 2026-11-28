@@ -38,7 +38,7 @@ test("Automatic refresh is scheduled conservatively within the free LiraScope mo
 
 test("The store uses the dealer sell quote to calculate USD acquisition cost", () => {
   assert.match(worker, /average_of_two_provider_sell_quotes/);
-  assert.match(worker, /market_exchange_rate:applied/);
+  assert.match(worker, /market_exchange_rate:candidate/);
   assert.match(worker, /products_changed:false,wallets_changed:false,orders_changed:false/);
 });
 
@@ -49,4 +49,16 @@ test("Admin FX monitor UI provides a manual check and shows both sources", () =>
   assert.match(ui, /Liraty/);
   assert.match(ui, /LiraScope/);
   assert.match(ui, /\/100/);
+});
+
+test("Automatic FX refresh only raises the stored market rate and holds decreases", () => {
+  assert.match(worker, /\.lt\("market_exchange_rate",candidate\)/);
+  assert.match(worker, /const candidate=Number\(\(\(a\.sell_old\+b\.sell_old\)\/2\)\.toFixed\(2\)\)/);
+  assert.match(worker, /const decreased=candidate<applied/);
+  assert.match(worker, /status:nextStatus/);
+  assert.match(worker, /nextStatus=decreased\?"rate_decrease_pending":"success"/);
+  assert.match(worker, /retained_previous_rate:decreased/);
+  assert.match(worker, /candidate_rate_old:candidate/);
+  assert.match(worker, /last_error:decreased\?/);
+  assert.match(ui, /rate_decrease_pending:/);
 });
